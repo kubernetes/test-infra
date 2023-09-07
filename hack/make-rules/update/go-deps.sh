@@ -17,48 +17,137 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-if [[ -z "${REPO_ROOT:-}" ]]; then
-  REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
-fi
-cd $REPO_ROOT
+SCRIPT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="${SCRIPT_ROOT}/../../.."
 
-echo "Ensuring go version."
-source ./hack/build/setup-go.sh
+function usage() {
+  >&2 cat <<EOF
+Build Prow components and deploy them into the KIND test cluster.
+
+Usage: $0 [OPTIONS] [packages]
+
+Examples:
+  # Update all packages with '-u' flag in the root folder. Run "go mod tidy".
+  $0 --minor
+
+  # Update all packages with '-u=patch' flag in the root folder. Run "go mod tidy".
+  $0 --patch
+
+  # Update "ko" package in the hack/tools/go.mod file. Run "go mod tidy".
+  $0 --minor --tools github.com/google/ko
+
+Options:
+    --minor:
+        Pass "-u" flag to "go get". Run "go mod tidy".
+
+    --patch:
+        Pass "-u=patch" flag to "go get". Run "go mod tidy".
+
+    --tools:
+        Do the actions inside the hack/tools folder, not the root folder. All
+        other flags are still observed.
+
+    --only-tidy:
+        Don't update anything. Instead just run "go mod tidy" in the root and
+        hack/tools folders. This is the behavior if no arguments are provided.
+
+    --help:
+        Display this help message.
+EOF
+}
+
+function update() {
+  declare -a packages
+  local update_mode
+  update_mode="${1}"
+  shift
+  packages=("$@")
+  # Update all packages if no packages are provided.
+  if [[ -z "${packages[*]}" ]]; then
+    packages=("./...")
+  fi
+
+  echo >&2 "Running" go get "${update_mode}" "${packages[@]}"
+  go get "${update_mode}" "${packages[@]}"
+}
+
+function tidy() {
+  echo >&2 "Running" go mod tidy
+  go mod tidy
+}
+
+function main() {
+  declare -a packages
+  local update_mode
+  local tools
+  local only_tidy=0
+
+  if ! (($#)); then
+    only_tidy=1
+  fi
+
+  for arg in "$@"; do
+    case "${arg}" in
+      --minor)
+        update_mode="-u"
+        ;;
+      --patch)
+        update_mode="-u=patch"
+        ;;
+      --tools)
+        tools="${arg}"
+        ;;
+      --only-tidy)
+        only_tidy=1
+        ;;
+      --help)
+        usage
+        return
+        ;;
+      -*)
+        echo >&2 "Unrecognized option '${arg}'"
+        usage
+        return
+        ;;
+      *)
+        packages+=("${arg}")
+        ;;
+    esac
+  done
+
+  echo >&2 "Ensuring go version."
+  # shellcheck disable=SC1091
+  source "${REPO_ROOT}"/hack/build/setup-go.sh
+
+  echo >&2 "Go version: $(go version)"
+
+  export GO111MODULE=on
+  export GOPROXY=https://proxy.golang.org
+  export GOSUMDB=sum.golang.org
+
+  if ((only_tidy)); then
+    pushd "${REPO_ROOT}"
+    tidy
+    pushd "${REPO_ROOT}/hack/tools"
+    tidy
+    echo >&2 "SUCCESS: ran go mod tidy in root and hack/tools folders"
+    return
+  fi
+
+  if [[ -n "${tools:-}" ]]; then
+    pushd "${REPO_ROOT}/hack/tools"
+  else
+    pushd "${REPO_ROOT}"
+  fi
+  if [[ -n "${update_mode:-}" ]]; then
+    update "${update_mode}" "${packages[@]}"
+  fi
+
+  tidy
+
+  echo >&2 "SUCCESS: updated modules"
+}
 
 trap 'echo "FAILED" >&2' ERR
 
-export GO111MODULE=on
-export GOPROXY=https://proxy.golang.org
-export GOSUMDB=sum.golang.org
-mode="${1:-}"
-shift || true
-case "$mode" in
---minor)
-    if [[ -z "$@" ]]; then
-      go get -u ./...
-    else
-      go get -u "$@"
-    fi
-    ;;
---patch)
-    if [[ -z "$@" ]]; then
-      go get -u=patch ./...
-    else
-      go get -u=patch "$@"
-    fi
-    ;;
-"")
-    # Just validate, or maybe manual go.mod edit
-    ;;
-*)
-    echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
-    exit 1
-    ;;
-esac
-
-echo "Updating go mod tidy"
-echo "Go version: $(go version)"
-go mod tidy
-cd "${REPO_ROOT}/hack/tools"
-go mod tidy
-echo "SUCCESS: updated modules"
+main "$@"
