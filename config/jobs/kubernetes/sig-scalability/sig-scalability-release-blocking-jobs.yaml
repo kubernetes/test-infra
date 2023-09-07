@@ -32,8 +32,9 @@ periodics:
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
+      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
@@ -109,8 +110,9 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=50
       - --env=CL2_RATE_LIMIT_POD_CREATION=false
+      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
       # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
       # TODO(#1311): Clean this up after the experiment - it should allow
       #   to hugely decrease pod-startup-latency across the whole test.
