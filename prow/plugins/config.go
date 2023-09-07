@@ -95,6 +95,7 @@ type Configuration struct {
 	Override             Override                     `json:"override,omitempty"`
 	Help                 Help                         `json:"help,omitempty"`
 	UpdateBot            UpdateBot                    `json:"updatebot,omitempty"`
+	Topic                []Topic                      `json:"topic,omitempty"`
 }
 
 type Help struct {
@@ -686,6 +687,14 @@ type Welcome struct {
 	// Post welcome message in all cases, even if PR author is not an existing
 	// contributor or part of the organization
 	AlwaysPost bool `json:"always_post,omitempty"`
+}
+
+// Topic is config for the topic plugin.
+type Topic struct {
+	// Repos is either of the form org/repos or just org.
+	Repos              []string `json:"repos,omitempty"`
+	IntegrateRepo      string   `json:"integrate_repo,omitempty"`
+	IntegrateMilestone string   `json:"integrate_milestone`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
