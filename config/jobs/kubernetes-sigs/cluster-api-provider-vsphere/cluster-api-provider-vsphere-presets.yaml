@@ -1,6 +1,6 @@
 presets:
 - labels:
-    preset-cluster-api-provider-vsphere-e2e-config-test: "true"
+    preset-cluster-api-provider-vsphere-e2e-config: "true"
   env:
   - name: GOVC_URL
     valueFrom:
@@ -65,7 +65,7 @@ presets:
       - key: vmc-capv-services.kubeconfig
         path: capv-services.conf
 - labels:
-    preset-cluster-api-provider-vsphere-gcs-creds-test: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds: "true"
   env:
   - name: GCR_KEY_FILE
     value: /root/.capv/keyfile.json
