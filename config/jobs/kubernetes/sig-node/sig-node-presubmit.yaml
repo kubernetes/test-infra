@@ -749,7 +749,7 @@ presubmits:
             - --
             - --deployment=node
             - --gcp-zone=us-west1-b
-            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-multi-numa.yaml
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
             - --provider=gce
@@ -811,8 +811,8 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[Feature:TopologyManager\]
-        - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial-multi-numa.yaml
+        - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
   - name: pull-kubernetes-node-kubelet-serial-hugepages
     cluster: k8s-infra-prow-build
     always_run: false
@@ -1230,7 +1230,7 @@ presubmits:
             - --
             - --deployment=node
             - --gcp-zone=us-west1-b
-            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-multi-numa.yaml
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
             - --provider=gce
