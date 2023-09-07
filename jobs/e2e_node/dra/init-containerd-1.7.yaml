@@ -20,6 +20,9 @@ write_files:
   path: /etc/cni/net.d/10-mynet.conf
 
 runcmd:
+  - echo "The test runs from /tmp folder, remounting it so that it can run executable."
+  - mount /tmp /tmp -o remount,exec,suid
+
   - echo "This will install and configure containerd 1.7 for DRA tests"
 
   - echo "Stopping containerd"
