@@ -70,7 +70,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.28"
             - name: CLUSTER_TEMPLATE # CAPZ config
               value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
@@ -229,7 +229,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.28"
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Flexible"
             - name: CLUSTER_TEMPLATE # CAPZ config
@@ -300,7 +300,7 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "standard"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.28"
             - name: GINKGO_ARGS # cloud-provider-azure config
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -358,7 +358,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.28"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
     annotations:
@@ -515,7 +515,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.28"
             - name: CLUSTER_TEMPLATE # CAPZ config
               value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
@@ -581,7 +581,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.28"
             - name: CLUSTER_TEMPLATE # CAPZ config
               value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
@@ -900,7 +900,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "latest"
+          value: "latest-1.28"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
   annotations:
@@ -952,7 +952,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "latest"
+          value: "latest-1.28"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
   annotations:
@@ -1006,7 +1006,7 @@ periodics:
         - name: TEST_WINDOWS # CAPZ config
           value: "true"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "latest"
+          value: "latest-1.28"
         - name: WORKER_MACHINE_COUNT # CAPZ config
           value: "0"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -1065,7 +1065,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "standard"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1127,7 +1127,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "standard"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[LinuxOnly\] --node-os-distro=windows --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1196,7 +1196,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "standard"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1253,7 +1253,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "latest"
+          value: "latest-1.28"
         - name: CLUSTER_TEMPLATE # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
@@ -1308,7 +1308,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "latest"
+          value: "latest-1.28"
         - name: CLUSTER_TEMPLATE # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ci-version-oot-credential-provider.yaml
         - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
@@ -1373,7 +1373,7 @@ periodics:
       - name: TEST_CCM # CAPZ config
         value: "true"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1438,7 +1438,7 @@ periodics:
       - name: TEST_CCM # CAPZ config
         value: "true"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
         value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes|RuntimeClass.should.run.a.Pod.requesting.a.RuntimeClass.with.scheduling.with.taints|Multi-AZ.Clusters.should.spread.the.pods.of.a.replication.controller.across.zones|Multi-AZ.Clusters.should.spread.the.pods.of.a.service.across.zones|Should.test.that.pv.used.in.a.pod.that.is.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.used.in.a.pod.that.is.force.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart|subPath.should.unmount.if.pod.is.force.deleted.while.kubelet.is.down|subPath.should.unmount.if.pod.is.gracefully.deleted.while.kubelet.is.down|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart --report-dir=/logs/artifacts --disable-log-dump=true
@@ -1506,7 +1506,7 @@ periodics:
       - name: TEST_CCM # CAPZ config
         value: "true"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
         value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs --report-dir=/logs/artifacts --disable-log-dump=true
@@ -1572,7 +1572,7 @@ periodics:
       - name: TEST_CCM # CAPZ config
         value: "true"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest"
+        value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
