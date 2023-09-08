@@ -2,6 +2,10 @@
 
 module k8s.io/test-infra
 
+// Please DO NOT add any "replace" directives to go.mod files in this repo.
+// See the following for an explanation of why this is problematic for published
+// packages: https://github.com/golang/go/issues/44840#issuecomment-1651863470
+
 require (
 	bitbucket.org/creachadair/stringset v0.0.9
 	cloud.google.com/go/automl v1.12.0
@@ -22,7 +26,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/bwmarrin/snowflake v0.0.0
 	// Upstream is unmaintained. This fork introduces two important changes:
-	// * We log an error if writing a cache key fails (e.G. because disk is full)
+	// * We log an error if writing a cache key fails (e.g. because disk is full)
 	// * We inject a header that allows ghproxy to detect if the response was revalidated or a cache miss
 	github.com/cjwagner/httpcache v0.0.0-20230907212505-d4841bbad466
 	github.com/clarketm/json v1.13.4
