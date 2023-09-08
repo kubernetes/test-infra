@@ -868,7 +868,7 @@ require_matching_label:
     This PR is currently missing an area label, which is used to identify the modified component when generating release notes.
 
     Area labels can be added by org members by writing `/area ${COMPONENT}` in a comment
-    
+
     Please see the [labels list](https://github.com/kubernetes/test-infra/blob/master/label_sync/labels.md#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs) for possible areas.
 - missing_label: needs-triage
   org: kubernetes-sigs
@@ -1163,7 +1163,7 @@ plugins:
     - milestonestatus
     - release-note
     - require-matching-label
-  
+
   kubernetes/cloud-provider-gcp:
     plugins:
     - require-matching-label
@@ -1210,7 +1210,9 @@ plugins:
 
   kubernetes/kubeadm:
     plugins:
+    - mergecommitblocker
     - milestone
+    - override
 
   kubernetes/kubectl:
     plugins:
@@ -1437,7 +1439,7 @@ plugins:
 
   kubernetes-sigs/cluster-api-operator:
     plugins:
-    - require-matching-label   
+    - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-aws:
     plugins:
