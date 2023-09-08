@@ -17,6 +17,8 @@ limitations under the License.
 package entrypoint
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -144,9 +146,10 @@ fi
 exit 3
 }
 trap cleanup SIGINT SIGTERM EXIT
+echo process started
 sleep infinity &
 wait`},
-			expectedLog:    "level=error msg=\"Entrypoint received interrupt: terminated\"\nlevel=error msg=\"Process gracefully exited before 15s grace period\"\n",
+			expectedLog:    "process started\nlevel=error msg=\"Entrypoint received interrupt: terminated\"\nlevel=error msg=\"Process gracefully exited before 15s grace period\"\n",
 			expectedMarker: "3",
 			expectedCode:   3,
 		},
@@ -162,9 +165,10 @@ fi
 exit 3
 }
 trap cleanup SIGINT SIGTERM EXIT
+echo process started
 sleep infinity &
 wait`},
-			expectedLog:    "level=error msg=\"Entrypoint received interrupt: terminated\"\nlevel=error msg=\"Process gracefully exited before 15s grace period\"\n",
+			expectedLog:    "process started\nlevel=error msg=\"Entrypoint received interrupt: terminated\"\nlevel=error msg=\"Process gracefully exited before 15s grace period\"\n",
 			expectedMarker: "130",
 			expectedCode:   130,
 		},
@@ -219,6 +223,12 @@ wait`},
 
 			if testCase.interrupt {
 				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					// sync with ExecuteProcess func to ensure that process has already started
+					if err := waitForFileToBeWritten(ctx, options.ProcessLog); err != nil {
+						t.Errorf("failed to wait for file: %v", err)
+					}
 					time.Sleep(200 * time.Millisecond)
 					interrupt <- syscall.SIGTERM
 				}()
@@ -243,5 +253,21 @@ func compareFileContents(name, file, expected string, t *testing.T) {
 	}
 	if string(data) != expected {
 		t.Errorf("%s: expected contents: %q, got %q", name, expected, data)
+	}
+}
+
+func waitForFileToBeWritten(ctx context.Context, file string) error {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			fileInfo, _ := os.Stat(file)
+			if fileInfo.Size() != 0 {
+				return nil
+			}
+		case <-ctx.Done():
+			return fmt.Errorf("cancelled while waiting for file %s to exist", file)
+		}
 	}
 }
