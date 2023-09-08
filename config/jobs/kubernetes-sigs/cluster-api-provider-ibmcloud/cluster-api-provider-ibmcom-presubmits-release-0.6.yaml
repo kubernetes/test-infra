@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^release-0-6
+      - ^release-0.6
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     labels:
@@ -36,7 +36,7 @@ presubmits:
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^release-0-6
+      - ^release-0.6
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     labels:
@@ -62,7 +62,7 @@ presubmits:
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^release-0-6
+      - ^release-0.6
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     labels:
@@ -97,7 +97,7 @@ presubmits:
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^release-0-6
+      - ^release-0.6
     optional: false
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
@@ -121,7 +121,7 @@ presubmits:
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^release-0-6
+      - ^release-0.6
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
@@ -150,7 +150,7 @@ presubmits:
     labels:
       preset-service-account: "true"
     branches:
-    - ^release-0-6
+    - ^release-0.6
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
