@@ -41,10 +41,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
+	"github.com/cjwagner/httpcache"
+	"github.com/cjwagner/httpcache/diskcache"
+	rediscache "github.com/cjwagner/httpcache/redis"
 	"github.com/gomodule/redigo/redis"
-	"github.com/gregjones/httpcache"
-	"github.com/gregjones/httpcache/diskcache"
-	rediscache "github.com/gregjones/httpcache/redis"
 	"github.com/peterbourgon/diskv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
