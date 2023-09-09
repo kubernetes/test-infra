@@ -9,6 +9,7 @@ dashboard_groups:
     - provider-aws-fsx-csi-driver
     - provider-aws-fsx-openzfs-csi-driver
     - provider-aws-iam-authenticator
+    - provider-aws-periodics
 
 dashboards:
 - name: provider-aws-encryption-provider
@@ -19,3 +20,4 @@ dashboards:
 - name: provider-aws-fsx-csi-driver
 - name: provider-aws-fsx-openzfs-csi-driver
 - name: provider-aws-iam-authenticator
+- name: provider-aws-periodics

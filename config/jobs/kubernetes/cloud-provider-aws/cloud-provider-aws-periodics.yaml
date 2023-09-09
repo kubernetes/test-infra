@@ -1,0 +1,87 @@
+periodics:
+- interval: 6h
+  cluster: k8s-infra-prow-build
+  name: ci-cloud-provider-aws-e2e
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  annotations:
+    testgrid-tab-name: E2E - Cloud Provider AWS
+    testgrid-dashboards: provider-aws-periodics
+    description: Runs e2e against cloud-provider-aws master on AWS
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-aws-credential-aws-oss-testing: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-aws
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-aws
+    workdir: true
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e
+      - KOPS_STATE_STORE=s3://cloud-provider-aws-e2e
+      securityContext:
+        privileged: true
+- interval: 6h
+  cluster: k8s-infra-prow-build
+  name: ci-cloud-provider-aws-e2e-with-kubernetes-master
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  annotations:
+    testgrid-tab-name: E2E - Cloud Provider AWS - with latest k8s.io/kubernetes
+    testgrid-dashboards: provider-aws-periodics
+    description: Runs e2e against cloud-provider-aws master on AWS using latest k8s.io/kubernetes libraries
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-aws-credential-aws-oss-testing: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-aws
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-aws
+    workdir: true
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e-latest-k8s
+      - KOPS_STATE_STORE=s3://cloud-provider-aws-e2e
+      securityContext:
+        privileged: true
