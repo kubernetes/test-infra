@@ -7,7 +7,7 @@ periodics:
     timeout: 80m
   annotations:
     testgrid-tab-name: E2E - Cloud Provider AWS
-    testgrid-dashboards: provider-aws-periodics
+    testgrid-dashboards: amazon-ec2, provider-aws-periodics
     description: Runs e2e against cloud-provider-aws master on AWS
   labels:
     preset-service-account: "true"
@@ -50,7 +50,7 @@ periodics:
     timeout: 80m
   annotations:
     testgrid-tab-name: E2E - Cloud Provider AWS - with latest k8s.io/kubernetes
-    testgrid-dashboards: provider-aws-periodics
+    testgrid-dashboards: amazon-ec2, provider-aws-periodics
     description: Runs e2e against cloud-provider-aws master on AWS using latest k8s.io/kubernetes libraries
   labels:
     preset-service-account: "true"
