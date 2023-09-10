@@ -2,6 +2,7 @@ periodics:
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   # on a kind cluster with containerd updated to a version with CDI support.
   - name: ci-kind-dra
+    cluster: eks-prow-build-cluster
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
@@ -37,12 +38,12 @@ periodics:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 2
+            memory: 9Gi
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 2
+            memory: 9Gi
 
   # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   - name: ci-node-e2e-crio-dra
