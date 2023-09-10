@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/repo-infra:
   - name: pull-repo-infra-tests
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: k8s.io/repo-infra
@@ -13,6 +14,13 @@ presubmits:
         command:
         - ./presubmit.sh
         imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: repo-infra
