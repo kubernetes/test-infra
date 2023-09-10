@@ -87,10 +87,6 @@ def build_test(cloud='aws',
         kops_ssh_user = distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
 
-        if networking == 'cilium-eni':
-            # Needed for higher "IPs per node" limits
-            extra_flags.append('--node-size=t3.large')
-
     elif cloud == 'gce':
         kops_image = None
         kops_ssh_user = 'prow'
@@ -421,6 +417,9 @@ def generate_grid():
         for distro in distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in kops_versions:
+                    extra_flags = []
+                    if networking == 'cilium-eni':
+                        extra_flags = ['--node-size=t3.large']
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro,
@@ -428,6 +427,7 @@ def generate_grid():
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
                                    networking=networking,
+                                   extra_flags=extra_flags,
                                    irsa=False)
                     )
 
