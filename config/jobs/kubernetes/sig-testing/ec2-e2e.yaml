@@ -174,6 +174,59 @@ presubmits:
             requests:
               cpu: 8
               memory: 10Gi
+  - name: pull-kubernetes-e2e-ec2-cloud-provider-quick
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: presubmits-ec2
+    labels:
+      preset-e2e-containerd-ec2: "true"
+      preset-dind-enabled: "true"
+    path_alias: sigs.k8s.io/provider-aws-test-infra
+    always_run: true
+    optional: true
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              cd kubetest2-ec2 && GOPROXY=direct go install .
+              VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+              kubetest2 ec2 \
+               --stage https://dl.k8s.io/ci/ \
+               --external-cloud-provider true \
+               --version $VERSION \
+               --up \
+               --down \
+               --test=ginkgo \
+               -- \
+               --parallel=30 \
+              --focus-regex='Pods should be submitted and removed'
+          env:
+            - name: USE_DOCKERIZED_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 8
+              memory: 10Gi
+            requests:
+              cpu: 8
+              memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-canary
     skip_branches:
       - release-\d+\.\d+  # per-release image
@@ -213,6 +266,66 @@ presubmits:
                --region us-east-1 \
                --target-build-arch linux/amd64 \
                --stage provider-aws-test-infra \
+               --up \
+               --down \
+               --test=ginkgo \
+               -- \
+               --use-built-binaries true \
+               --parallel=30 \
+               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+          env:
+            - name: USE_DOCKERIZED_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 8
+              memory: 10Gi
+            requests:
+              cpu: 8
+              memory: 10Gi
+  - name: pull-kubernetes-e2e-ec2-cloud-provider-canary
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: presubmits-ec2
+    labels:
+      preset-e2e-containerd-ec2: "true"
+      preset-dind-enabled: "true"
+    path_alias: sigs.k8s.io/provider-aws-test-infra
+    always_run: true
+    optional: true
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              cd kubetest2-ec2 && GOPROXY=direct go install .
+              kubetest2 ec2 \
+               --build \
+               --region us-east-1 \
+               --target-build-arch linux/amd64 \
+               --stage provider-aws-test-infra \
+               --external-cloud-provider true \
                --up \
                --down \
                --test=ginkgo \
