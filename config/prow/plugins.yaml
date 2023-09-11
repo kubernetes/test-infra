@@ -257,6 +257,7 @@ lgtm:
   - kubernetes-sigs/cluster-api-operator
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/kueue
   store_tree_hash: true
 
 blockades:
