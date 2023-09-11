@@ -24,7 +24,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e-k8s-1-27-1
+  - name: pull-kubebuilder-e2e-k8s-1-28-0
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -37,13 +37,11 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
-            # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
             - runner.sh
-            # this MUST be a relative directory with "./" or the runner will fail to find the file
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.27.1"
+              value: "v1.28.0"
           resources:
             limits:
               cpu: 4000m
@@ -55,11 +53,11 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-27-1
+      testgrid-tab-name: kubebuilder-e2e-1-28-0
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-26-0
+  - name: pull-kubebuilder-e2e-k8s-1-27-3
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -72,13 +70,11 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
-            # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
             - runner.sh
-            # this MUST be a relative directory with "./" or the runner will fail to find the file
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.26.0"
+              value: "v1.27.3"
           resources:
             limits:
               cpu: 4000m
@@ -90,11 +86,11 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-26-0
+      testgrid-tab-name: kubebuilder-e2e-1-27-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-25-3
+  - name: pull-kubebuilder-e2e-k8s-1-26-6
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -107,13 +103,11 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
-            # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
             - runner.sh
-            # this MUST be a relative directory with "./" or the runner will fail to find the file
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.25.3"
+              value: "v1.26.6"
           resources:
             limits:
               cpu: 4000m
@@ -125,7 +119,7 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-25-3
+      testgrid-tab-name: kubebuilder-e2e-1-26-6
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
