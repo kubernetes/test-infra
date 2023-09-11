@@ -10,7 +10,8 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
@@ -36,7 +37,8 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
@@ -61,7 +63,8 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
@@ -89,7 +92,8 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
@@ -401,7 +405,8 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
