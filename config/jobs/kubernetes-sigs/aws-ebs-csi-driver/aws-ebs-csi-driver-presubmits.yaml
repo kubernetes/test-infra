@@ -2,7 +2,6 @@ presubmits:
   kubernetes-sigs/aws-ebs-csi-driver:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows
     always_run: true
-    optional: true
     decorate: true
     skip_branches:
     - gh-pages
