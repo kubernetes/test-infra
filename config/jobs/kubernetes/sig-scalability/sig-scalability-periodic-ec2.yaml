@@ -1,4 +1,32 @@
 periodics:
+- name: maintenance-ci-scale-aws-janitor
+  cluster: eks-prow-build-cluster
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+  decorate: true
+  spec:
+    containers:
+    - command:
+      - /app
+      args:
+      - --ttl=12h
+      - --path=s3://k8s-infra-kops-scale-tests/objs.json
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20230908-da54d76
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-scale-aws-janitor
+    description: Deletes old AWS resources for scalability jobs
+
 - name: ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2
   cluster: eks-prow-build-cluster
   interval: 12h
