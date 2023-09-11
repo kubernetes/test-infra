@@ -6,11 +6,6 @@ presubmits:
     decoration_config:
       timeout: 5m
     path_alias: k8s.io/kubernetes
-    extra_refs:
-      - org: kubernetes
-        repo: sig-security
-        base_ref: main
-        workdir: true
     always_run: false
     optional: true
     run_if_changed: '^(go.mod|go.sum|vendor)'
@@ -22,8 +17,7 @@ presubmits:
         args:
         - -c
         - |
-          cd ../kubernetes
-          ../sig-security/sig-security-tooling/govulncheck/hack/govulncheck-presubmit.sh
+          ./hack/verify-govulncheck.sh
         resources:
           limits:
             cpu: 2
