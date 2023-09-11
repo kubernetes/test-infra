@@ -248,45 +248,6 @@ presubmits:
       testgrid-tab-name: pr-e2e-main
       description: Runs only PR Blocking e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-main-oldpreset
-    branches:
-    - ^main$
-    labels:
-      preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config-old: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds-old: "true"
-      preset-kind-volume-mounts: "true"
-    always_run: false
-    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
-    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    max_concurrency: 3
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
-        command:
-        - runner.sh
-        args:
-        - ./hack/e2e.sh
-        env:
-        - name: GINKGO_FOCUS
-          value: "\\[PR-Blocking\\]"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-          capabilities:
-            add: ["NET_ADMIN"]
-        resources:
-          requests:
-            cpu: "4000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-main-oldpreset
-      description: Runs only PR Blocking e2e tests
-
-
   - name: pull-cluster-api-provider-vsphere-e2e-full-main
     branches:
     - ^main$
