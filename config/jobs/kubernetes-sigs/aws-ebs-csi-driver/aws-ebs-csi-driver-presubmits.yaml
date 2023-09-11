@@ -201,3 +201,28 @@ presubmits:
       testgrid-tab-name: pull-external-test-eks
       description: kubernetes/kubernetes external test on pull request on eks
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-external-test-kustomize
+    always_run: true
+    optional: true
+    decorate: true
+    skip_branches:
+      - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-external-kustomize
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-external-test-kustomize
+      description: kubernetes/kubernetes external test on pull request via kustomize
+      testgrid-num-columns-recent: '30'
