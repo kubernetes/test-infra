@@ -7,7 +7,7 @@ images:
     machine: n1-standard-2 # These tests need a lot of memory
     project: ubuntu-os-gke-cloud
   cos-stable1:
-    image_family: cos-97-lts # deprecated after March 2024 (https://cloud.google.com/container-optimized-os/docs/release-notes)
+    image_family: cos-beta
     project: cos-cloud
     machine: n1-standard-2 # These tests need a lot of memory
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
