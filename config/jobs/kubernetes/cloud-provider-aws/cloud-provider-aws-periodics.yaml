@@ -86,7 +86,7 @@ periodics:
       securityContext:
         privileged: true
 - interval: 6h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-cloud-provider-aws-e2e-kubetest2
   decorate: true
   decoration_config:
@@ -97,7 +97,6 @@ periodics:
     testgrid-num-failures-to-alert: "10"
     testgrid-dashboards: presubmits-ec2, amazon-ec2
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-aws-credential-aws-oss-testing: "true"
     preset-k8s-ssh: "true"
@@ -149,7 +148,7 @@ periodics:
       securityContext:
         privileged: true
 - interval: 6h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-cloud-provider-aws-e2e-kubetest2-quick
   decorate: true
   decoration_config:
@@ -160,7 +159,6 @@ periodics:
     testgrid-num-failures-to-alert: "10"
     testgrid-dashboards: presubmits-ec2, amazon-ec2
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-aws-credential-aws-oss-testing: "true"
     preset-k8s-ssh: "true"
