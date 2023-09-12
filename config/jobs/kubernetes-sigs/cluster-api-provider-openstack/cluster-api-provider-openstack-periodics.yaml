@@ -13,10 +13,6 @@ periodics:
     repo: cluster-api-provider-openstack
     base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: main
-    path_alias: "sigs.k8s.io/image-builder"
   max_concurrency: 1
   spec:
     containers:
@@ -67,14 +63,6 @@ periodics:
     repo: cluster-api-provider-openstack
     base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: main
-    path_alias: "sigs.k8s.io/image-builder"
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   max_concurrency: 1
   spec:
     containers:
@@ -115,9 +103,9 @@ periodics:
   interval: 12h
   extra_refs:
   - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
+    repo: cluster-api-provider-openstack
+    base_ref: main
+    path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
