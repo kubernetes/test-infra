@@ -128,6 +128,24 @@ periodics:
         - -c
         - |
           GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+
+          VERSION=$(git describe --dirty --tags --match='v*')
+          BUILD_IMAGE=ko.local:${VERSION}
+          REGION=${REGION:-"us-east-1"}
+
+          make switch-to-latest-k8s ko-build-local
+
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
+          IMAGE_TAG=${VERSION}
+
+          echo "Building and pushing test driver image to ${IMAGE_NAME}:${IMAGE_TAG}"
+          aws ecr get-login-password --region "${REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+          docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
+          docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+
+          GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+
           kubetest2 ec2 \
            --build \
            --region us-east-1 \
@@ -189,6 +207,23 @@ periodics:
         - bash
         - -c
         - |
+          GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+
+          VERSION=$(git describe --dirty --tags --match='v*')
+          BUILD_IMAGE=ko.local:${VERSION}
+          REGION=${REGION:-"us-east-1"}
+
+          make switch-to-latest-k8s ko-build-local
+
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
+          IMAGE_TAG=${VERSION}
+
+          echo "Building and pushing test driver image to ${IMAGE_NAME}:${IMAGE_TAG}"
+          aws ecr get-login-password --region "${REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+          docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
+          docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+
           GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
           VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
           kubetest2 ec2 \
