@@ -18,32 +18,39 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h0m0s
-  labels:
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-    preset-capz-containerd-1-6-latest: "true"
-    preset-capz-windows-2019: "true"
-    preset-capz-windows-common-125: "true"
-    preset-capz-windows-parallel: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
-    workdir: true
+    workdir: false
   - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: release-1.25
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+    workdir: true
+  labels:
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-windows-2019: "true"
+    preset-capz-windows-common-125: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
       - runner.sh
-      - ./scripts/ci-conformance.sh
+      - env
+      - KUBERNETES_VERSION=latest-1.25
+      - ./capz/run-capz-e2e.sh
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       name: ""
       resources:
@@ -52,6 +59,9 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
+      env:
+        - name: IMAGE_VERSION
+          value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-1.25-informing, sig-windows-1.25-release, sig-windows-signal
