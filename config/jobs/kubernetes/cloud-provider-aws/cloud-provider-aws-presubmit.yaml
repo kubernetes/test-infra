@@ -51,7 +51,7 @@ presubmits:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
-      serviceAccountName: node-e2e-tests
+      serviceAccountName: provider-aws-test-role
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
@@ -129,7 +129,7 @@ presubmits:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
-      serviceAccountName: node-e2e-tests
+      serviceAccountName: provider-aws-test-role
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
