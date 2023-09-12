@@ -647,6 +647,8 @@ presubmits:
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
+            - --upload=gs://kubernetes-jenkins/pr-logs
+            - --service-account=/etc/service-account/service-account.json
             - --timeout=240
             - --root=/go/src
             - --scenario=kubernetes_e2e
