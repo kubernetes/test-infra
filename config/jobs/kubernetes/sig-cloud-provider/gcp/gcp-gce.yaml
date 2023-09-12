@@ -622,6 +622,112 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-team@kubernetes.io
     description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
+- interval: 120m
+  name: ci-kubernetes-e2e-ubuntu-arm64-gce-containerd-canary
+  cluster: k8s-infra-prow-build
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+            make test-e2e-install
+            IMAGE=$(gcloud compute images describe-from-family ubuntu-2204-lts --project ubuntu-os-cloud --format='value(selfLink.scope(projects))')
+            kubetest2 kops \
+              -v 2 \
+              --up --down \
+              --cloud-provider=gce \
+              --create-args="--image=${IMAGE} --channel=alpha --zones=us-central1-a --gce-service-account=default --set=spec.containerd.version=1.7.5 --set=spec.containerd.runc.version=1.1.9" \
+              --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+              --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+              --test=kops \
+              -- \
+              --test-args="-test.timeout=70m --minStartupPods=8" \
+              --test-package-bucket=k8s-release-dev \
+              --test-package-dir=ci \
+              --test-package-marker=latest.txt \
+              --skip-regex="\[Driver:.gcepd\]|\[Driver:.nfs\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
+              --parallel=30
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: google-gce, google-gci #, sig-release-master-blocking
+    testgrid-tab-name: gce-ubuntu-arm64-master-containerd-canary
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com #, release-team@kubernetes.io
+    description: Uses kubetest2 to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based and uses containerd) created with kops
+
+- interval: 120m
+  name: ci-kubernetes-e2e-ubuntu-arm64-gce-containerd
+  cluster: k8s-infra-prow-build
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      workdir: true
+      path_alias: k8s.io/kops
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+            make test-e2e-install
+            IMAGE=$(gcloud compute images describe-from-family ubuntu-2204-lts-arm64 --project ubuntu-os-cloud --format='value(selfLink.scope(projects))')
+            kubetest2 kops \
+              -v 2 \
+              --up --down \
+              --cloud-provider=gce \
+              --create-args="--image=${IMAGE} --channel=alpha --zones=us-central1-a --gce-service-account=default --set=spec.cloudControllerManager.image=gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager@sha256:0482201c37dd87810b8d9664c39b98eba4211748d527aa092830f530fa0f8267" \
+              --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+              --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+              --test=kops \
+              -- \
+              --test-args="-test.timeout=70m --minStartupPods=8" \
+              --test-package-bucket=k8s-release-dev \
+              --test-package-dir=ci \
+              --test-package-marker=latest.txt \
+              --skip-regex="\[Driver:.gcepd\]|\[Driver:.nfs\]|[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
+              --parallel=30
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: google-gce, google-gci #, sig-release-master-blocking
+    testgrid-tab-name: gce-ubuntu-arm64-master-containerd
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com #, release-team@kubernetes.io
+    description: Uses kubetest2 to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based and uses containerd) created with kops
+
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   labels:
