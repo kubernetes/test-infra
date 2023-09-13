@@ -4,6 +4,7 @@
 dashboards:
 - name: amazon-ec2
 - name: amazon-ec2-node
+- name: amazon-ec2-provider
 
 #
 # Start dashboard groups
@@ -13,3 +14,4 @@ dashboard_groups:
   dashboard_names:
   - amazon-ec2
   - amazon-ec2-node
+  - amazon-ec2-provider
