@@ -50,7 +50,10 @@ aliases:
     - soltysh
   sig-cloud-provider-leads:
     - andrewsykim
+    - bridgetkromhout
     - cheftako
+    - elmiko
+    - nckturner
   sig-cluster-lifecycle-leads:
     - fabriziopandini
     - justinsb
