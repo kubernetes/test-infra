@@ -2,6 +2,7 @@
 postsubmits:
   kubernetes-sigs/kind:
   - name: ci-kind-test
+    cluster: default
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true

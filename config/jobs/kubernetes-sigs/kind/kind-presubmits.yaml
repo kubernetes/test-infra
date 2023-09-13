@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/kind:
   - name: pull-kind-build
+    cluster: default
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
@@ -17,6 +18,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-kind-test
+    cluster: default
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
@@ -33,6 +35,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-kind-verify
+    cluster: default
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true

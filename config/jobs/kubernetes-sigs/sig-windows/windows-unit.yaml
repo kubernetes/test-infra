@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-unit-windows-master
+  cluster: default
   interval: 12h
   decorate: true
   decoration_config:

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kube-storage-version-migrator:
   - name: pull-kube-storage-version-migrator-disruptive
+    cluster: default
     decorate: true
     always_run: true
     labels:

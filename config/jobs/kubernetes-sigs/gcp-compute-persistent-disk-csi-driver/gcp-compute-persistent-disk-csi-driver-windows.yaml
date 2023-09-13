@@ -1,5 +1,6 @@
 periodics:
 - name: ci-gce-pd-csi-driver-latest-k8s-master-windows-2019
+  cluster: default
   extra_refs:
   - org: kubernetes-sigs
     repo: gcp-compute-persistent-disk-csi-driver
@@ -48,6 +49,7 @@ periodics:
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-2019
+    cluster: default
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"

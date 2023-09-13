@@ -4,6 +4,7 @@ presubmits:
   kubernetes/kubernetes:
 
   - name: pull-kubernetes-e2e-gci-gce-ingress
+    cluster: default
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
     - master
@@ -72,6 +73,7 @@ presubmits:
       description: Uses kubetest to run e2e Conformance, SIG-Network or Network Ingress tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
+    cluster: default
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
     - master
@@ -140,6 +142,7 @@ presubmits:
       description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
   - name: pull-kubernetes-e2e-gci-gce-ipvs
+    cluster: default
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
     - master

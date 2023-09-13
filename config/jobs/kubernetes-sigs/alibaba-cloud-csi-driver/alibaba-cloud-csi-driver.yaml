@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/alibaba-cloud-csi-driver:
 
   - name: pull-alibaba-cloud-csi-driver-verify-fmt
+    cluster: default
     always_run: true
     decorate: true
     spec:
@@ -17,6 +18,7 @@ presubmits:
       description: Verifies the Golang sources have been formatted
 
   - name: pull-alibaba-cloud-csi-driver-verify-lint
+    cluster: default
     always_run: true
     decorate: true
     spec:
@@ -32,6 +34,7 @@ presubmits:
       description: Verifies the Golang sources are linted
 
   - name: pull-alibaba-cloud-csi-driver-verify-vet
+    cluster: default
     always_run: true
     decorate: true
     spec:
@@ -47,6 +50,7 @@ presubmits:
       description: Vets the Golang sources have been vetted
 
   - name: pull-alibaba-cloud-csi-driver-verify-unit
+    cluster: default
     always_run: true
     decorate: true
     spec:

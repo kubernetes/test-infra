@@ -88,6 +88,7 @@ presubmits:
           privileged: true
 
   - name: pull-kubernetes-e2e-gce-big-performance
+    cluster: default
     always_run: false
     max_concurrency: 1
     branches:
@@ -221,6 +222,7 @@ presubmits:
           privileged: true
 
   - name: pull-kubernetes-e2e-gce-scale-performance-manual
+    cluster: default
     always_run: false
     max_concurrency: 1
     branches:
@@ -493,6 +495,7 @@ presubmits:
 
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
+    cluster: default
     always_run: false
     skip_report: false
     max_concurrency: 3
@@ -536,6 +539,7 @@ presubmits:
         - --timeout=120m
 
   - name: pull-perf-tests-clusterloader2
+    cluster: default
     always_run: false
     skip_report: false
     max_concurrency: 3
@@ -606,6 +610,7 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-perf-tests-clusterloader2-kubemark
+    cluster: default
     always_run: false
     skip_report: false
     max_concurrency: 3
@@ -682,6 +687,7 @@ presubmits:
 
   # Fork of kubernetes/kubernetes: pull-kubernetes-e2e-gce-scale-performance-manual
   - name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance-manual
+    cluster: default
     always_run: false
     max_concurrency: 1
     branches:
@@ -772,6 +778,7 @@ presubmits:
           privileged: true
 
   - name: pull-perf-tests-util-images
+    cluster: default
     always_run: false
     skip_report: false
     max_concurrency: 10
@@ -807,6 +814,7 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-all-python
+    cluster: default
     decorate: true
     always_run: true
     skip_branches:
@@ -831,6 +839,7 @@ presubmits:
               memory: "2Gi"
 
   - name: pull-perf-tests-verify-test
+    cluster: default
     decorate: true
     always_run: true
     skip_branches:
@@ -853,6 +862,7 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-dashboard
+    cluster: default
     decorate: true
     run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
     skip_branches:
@@ -877,6 +887,7 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-lint
+    cluster: default
     decorate: true
     always_run: true
     skip_branches:

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: check-dependency-stats
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 5m

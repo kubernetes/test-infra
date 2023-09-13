@@ -127,6 +127,7 @@ presubmits:
       description: Runs integration tests
 
   - name: pull-cluster-api-provider-vsphere-e2e-main
+    cluster: default
     branches:
     - ^main$
     labels:
@@ -165,6 +166,7 @@ presubmits:
       description: Runs only PR Blocking e2e tests
 
   - name: pull-cluster-api-provider-vsphere-e2e-full-main
+    cluster: default
     branches:
     - ^main$
     labels:
@@ -201,6 +203,7 @@ presubmits:
       description: Runs all e2e tests
 
   - name: pull-cluster-api-provider-vsphere-conformance-main
+    cluster: default
     branches:
     - ^main$
     labels:

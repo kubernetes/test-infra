@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows-service-proxy
+  cluster: default
   interval: 72h
   decorate: true
   decoration_config:
@@ -51,6 +52,7 @@ periodics:
     testgrid-dashboards: sig-windows-experimental
     testgrid-tab-name: capz-master-windows-service-proxy
 - name: ci-kubernetes-e2e-capz-master-windows-hyperv
+  cluster: default
   interval: 168h
   decorate: true
   decoration_config:

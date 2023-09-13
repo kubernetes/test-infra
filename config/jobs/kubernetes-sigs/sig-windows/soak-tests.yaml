@@ -2,6 +2,7 @@
 presubmits:
   kubernetes/perf-tests:
   - name: soak-tests-capz-windows-2019
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -81,6 +82,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
 periodics:
   - name: hourly-soak-tests-capz-windows-2019
+    cluster: default
     cron: "0 * * * MON-SAT"
     decorate: true
     path_alias: k8s.io/perf-tests
@@ -145,6 +147,7 @@ periodics:
       description: "Run clusterloader2 tests every hour on a capz Windows 2019 cluster"
       testgrid-num-columns-recent: '30'
   - name: delete-win-soak-test-cluster
+    cluster: default
     cron: "0 0 * * SUN"
     decorate: true
     decoration_config:
@@ -182,6 +185,7 @@ periodics:
       testgrid-num-columns-recent: '30'
 
   - name: build-win-soak-test-cluster
+    cluster: default
     cron: "0 1 * * SUN"
     decorate: true
     decoration_config:

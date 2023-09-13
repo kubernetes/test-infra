@@ -57,6 +57,7 @@ presubmits:
       description: aws efs csi driver unit test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-efs-csi-driver-e2e
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -81,6 +82,7 @@ presubmits:
       description: aws efs csi driver e2e test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-efs-csi-driver-external-test-eks
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:

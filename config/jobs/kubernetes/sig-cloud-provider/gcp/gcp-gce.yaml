@@ -103,6 +103,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-kubernetes-e2e-gce-cos-kubetest2
+    cluster: default
     # explicitly needs /test pull-kubernetes-e2e-gce to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -326,6 +327,7 @@ presubmits:
             privileged: true
 
   - name: pull-kubernetes-e2e-gce-cos-alpha-features
+    cluster: default
     optional: true
     run_if_changed: '^.*feature.*\.go'
     branches:

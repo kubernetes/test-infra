@@ -29,6 +29,7 @@ presubmits:
       description: aws fsx openzfs csi driver unit test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-fsx-openzfs-csi-driver-sanity
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:

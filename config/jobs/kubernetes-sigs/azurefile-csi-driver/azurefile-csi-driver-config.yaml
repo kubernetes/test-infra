@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/azurefile-csi-driver:
   - name: pull-azurefile-csi-driver-verify
+    cluster: default
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -22,6 +23,7 @@ presubmits:
       description: "Run code verification tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-unit
+    cluster: default
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -43,6 +45,7 @@ presubmits:
       description: "Run unit tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-sanity
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -65,6 +68,7 @@ presubmits:
       description: "Run sanity tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-integration
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -87,6 +91,7 @@ presubmits:
       description: "Run integration tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -131,6 +136,7 @@ presubmits:
       description: "Run E2E tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-vmss
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -175,6 +181,7 @@ presubmits:
       description: "Run E2E tests on a VMSS-based cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-windows
+    cluster: default
     decorate: true
     always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -226,6 +233,7 @@ presubmits:
       description: "Run E2E tests on a Windows cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-migration
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -280,6 +288,7 @@ presubmits:
       description: "Run E2E tests on a cluster for Azure File CSI driver with CSI migration feature enabled on Linux nodes."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-windows-build
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -299,6 +308,7 @@ presubmits:
       description: "Run make azurefile-windows for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-windows-containerd
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -350,6 +360,7 @@ presubmits:
       description: "Run E2E tests on a Windows containerd cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-migration-windows
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -413,6 +424,7 @@ presubmits:
       description: "Run E2E tests on a cluster for Azure File CSI driver with CSI migration feature enabled on Windows nodes."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-external-e2e-smb
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -460,6 +472,7 @@ presubmits:
       description: "Run External E2E tests for Azure File CSI driver using SMB protocol."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-external-e2e-smb-windows
+    cluster: default
     decorate: true
     always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -513,6 +526,7 @@ presubmits:
       description: "Run External E2E tests for Azure File CSI driver using SMB protocol on Windows."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-external-e2e-nfs
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -560,6 +574,7 @@ presubmits:
       description: "Run External E2E tests for Azure File CSI driver using NFS protocol."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz-windows-2019
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -611,6 +626,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2019 cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz-windows-2022
+    cluster: default
     decorate: true
     always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -666,6 +682,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2022 cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz-windows-2019-hostprocess
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -719,6 +736,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2019 Host-Process cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
@@ -776,6 +794,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2022 Host-Process cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver

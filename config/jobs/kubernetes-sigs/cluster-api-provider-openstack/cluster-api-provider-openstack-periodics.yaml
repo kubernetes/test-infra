@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-openstack-e2e-test-main
+  cluster: default
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -50,6 +51,7 @@ periodics:
       - error
       report_template: ':alert: Failed periodic job: {{.Status.State}}. <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-cluster-lifecycle-cluster-api-provider-openstack|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
 - name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
+  cluster: default
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -93,6 +95,7 @@ periodics:
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "48"
 - name: periodic-cluster-api-provider-openstack-e2e-full-test-main
+  cluster: default
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"

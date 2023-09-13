@@ -31,6 +31,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
+      cluster: default
       skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
@@ -84,6 +85,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-capz-1-27 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-capz-1-27
+      cluster: default
       skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
@@ -145,6 +147,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-1-27
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-27
+      cluster: default
       skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
@@ -222,6 +225,7 @@ presubmits:
         description: "Run unit tests for cloud-provider-azure release-1.27."
         testgrid-num-columns-recent: "30"
     - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz-1-27
+      cluster: default
       always_run: false
       decorate: true
       decoration_config:
@@ -273,6 +277,7 @@ presubmits:
         description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on IPv6 vmss, using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz-1-27
+      cluster: default
       always_run: false
       decorate: true
       decoration_config:
@@ -324,6 +329,7 @@ presubmits:
         description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on DualStack vmss, using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz-1-27
+      cluster: default
       always_run: false
       decorate: true
       decoration_config:
@@ -376,6 +382,7 @@ presubmits:
         description: "Runs Azure specific tests with cloud-provider-azure IPv6 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-ccm-dualstack-capz-1-27
+      cluster: default
       always_run: false
       decorate: true
       decoration_config:

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/apiserver-network-proxy:
   - name: pull-apiserver-network-proxy-test
+    cluster: default
     always_run: true
     skip_report: false
     decorate: true
@@ -17,6 +18,7 @@ presubmits:
       testgrid-tab-name: pr-test
       description: Tests the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-amd64
+    cluster: default
     always_run: true
     skip_report: false
     decorate: true
@@ -39,6 +41,7 @@ presubmits:
       testgrid-tab-name: pr-docker-build-amd64
       description: Build amd64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-arm64
+    cluster: default
     always_run: true
     skip_report: false
     decorate: true
@@ -61,6 +64,7 @@ presubmits:
       testgrid-tab-name: pr-docker-build-arm64
       description: Build arm64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-make-lint
+    cluster: default
     always_run: true
     skip_report: false
     decorate: true

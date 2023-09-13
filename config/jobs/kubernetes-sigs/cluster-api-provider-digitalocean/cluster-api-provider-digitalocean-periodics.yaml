@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-digitalocean-conformance
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -32,6 +33,7 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 
 - name: periodic-cluster-api-provider-digitalocean-conformance-ci-artifacts
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h

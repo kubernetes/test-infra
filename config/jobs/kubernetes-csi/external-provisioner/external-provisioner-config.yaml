@@ -381,6 +381,7 @@ presubmits:
             cpu: 4
 
   - name: pull-kubernetes-csi-external-provisioner-canary
+    cluster: default
     optional: true
     decorate: true
     skip_report: false

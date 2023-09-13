@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-storage-scalability
+  cluster: default
   tags:
     - "perfDashPrefix: storage"
     - "perfDashJobType: storage"

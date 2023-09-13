@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-test-main
+  cluster: default
   interval: 2h
   decorate: true
   decoration_config:
@@ -29,6 +30,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-test-mink8s-main
+  cluster: default
   interval: 2h
   decorate: true
   decoration_config:
@@ -68,6 +70,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-main
+  cluster: default
   interval: 2h
   decorate: true
   decoration_config:
@@ -110,6 +113,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-dualstack-and-ipv6-main
+  cluster: default
   interval: 2h
   decorate: true
   decoration_config:
@@ -155,6 +159,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
+  cluster: default
   interval: 2h
   decorate: true
   decoration_config:

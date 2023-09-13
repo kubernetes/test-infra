@@ -1,6 +1,7 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-openstack:
   - name: ci-cluster-api-provider-openstack-conformance-test
+    cluster: default
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

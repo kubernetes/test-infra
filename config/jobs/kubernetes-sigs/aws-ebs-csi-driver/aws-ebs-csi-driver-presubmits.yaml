@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-ebs-csi-driver:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -25,6 +26,7 @@ presubmits:
       description: aws ebs csi driver External Storage tests for Windows on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-test-helm-chart
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -105,6 +107,7 @@ presubmits:
       description: aws ebs csi driver unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -129,6 +132,7 @@ presubmits:
       description: aws ebs csi driver e2e test on single az on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -153,6 +157,7 @@ presubmits:
       description: aws ebs csi driver e2e test on mutiple AZs on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -177,6 +182,7 @@ presubmits:
       description: kubernetes/kubernetes external test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-eks
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:
@@ -201,6 +207,7 @@ presubmits:
       description: kubernetes/kubernetes external test on pull request on eks
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-kustomize
+    cluster: default
     always_run: true
     optional: true
     decorate: true

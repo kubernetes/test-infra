@@ -350,6 +350,7 @@ presubmits:
 
   # Executes the e2e tests.
   - name: pull-cloud-provider-vsphere-e2e-test
+    cluster: default
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -389,6 +390,7 @@ postsubmits:
 
   # Deploys the images and binaries after all merges to master
   - name: post-cloud-provider-vsphere-deploy
+    cluster: default
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -424,6 +426,7 @@ postsubmits:
 
   # Deploys images and binaries for tagged releases
   - name: post-cloud-provider-vsphere-release
+    cluster: default
     decorate: true
     labels:
       preset-dind-enabled: "true"

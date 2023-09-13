@@ -136,6 +136,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.5
       testgrid-tab-name: capi-operator-pr-test-release-0-5
   - name: pull-cluster-api-operator-e2e-release-0-5
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-operator"
     optional: false
     decorate: true

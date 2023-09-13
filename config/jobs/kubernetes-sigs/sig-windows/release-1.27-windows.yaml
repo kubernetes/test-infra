@@ -14,6 +14,7 @@ presets:
     value: "Standard_D4s_v3"
 periodics:
 - name: ci-kubernetes-e2e-capz-windows-1-27
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h0m0s
@@ -63,6 +64,7 @@ periodics:
     testgrid-dashboards: sig-release-1.27-informing, sig-windows-signal,  sig-windows-1.27-release
     testgrid-tab-name: capz-windows-containerd-1.27
 - name: ci-kubernetes-e2e-capz-1-27-windows-serial-slow
+  cluster: default
   interval: 48h
   decorate: true
   decoration_config:

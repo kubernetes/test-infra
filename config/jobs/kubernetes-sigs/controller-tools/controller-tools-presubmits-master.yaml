@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/controller-tools:
   - name: pull-controller-tools-test-master
+    cluster: default
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/controller-tools

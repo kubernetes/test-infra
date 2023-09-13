@@ -53,6 +53,7 @@ presubmits:
       description: aws load balancer controller unit tests
       testgrid-num-columns-recent: '30'
   - name: pull-aws-load-balancer-controller-e2e-test
+    cluster: default
     always_run: true
     decorate: true
     labels:

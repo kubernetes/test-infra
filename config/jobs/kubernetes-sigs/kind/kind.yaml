@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kind-unit-test
+  cluster: default
   interval: 6h
   decorate: true
   extra_refs:

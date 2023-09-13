@@ -278,6 +278,7 @@ periodics:
           memory: "2Gi"
 
 - name: ci-kubernetes-kubemark-100-gce-scheduler-highqps
+  cluster: default
   tags:
   - "perfDashPrefix: kubemark-100Nodes-scheduler-highqps"
   - "perfDashJobType: performance"

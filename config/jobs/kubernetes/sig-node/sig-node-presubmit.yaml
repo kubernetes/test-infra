@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-containerd-gce
+    cluster: default
     always_run: false
     optional: true
     skip_branches:
@@ -240,6 +241,7 @@ presubmits:
               cpu: 8
               memory: 10Gi
   - name: pull-kubernetes-node-arm64-ubuntu-serial-gce
+    cluster: default
     # this is functional duplicated with `pull-kubernetes-node-arm64-e2e-containerd-serial-ec2`, consider to remove one of them when either of them is green
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -295,6 +297,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-kubernetes-node-e2e-containerd-kubetest2
+    cluster: default
     always_run: false
     optional: true
     branches:
@@ -491,6 +494,7 @@ presubmits:
             memory: 6Gi
 
   - name: pull-kubernetes-node-kubelet-serial-containerd
+    cluster: default
     always_run: false
     optional: true
     skip_report: false
@@ -531,6 +535,7 @@ presubmits:
               cpu: 4
               memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-containerd-alpha-features
+    cluster: default
     always_run: false
     optional: true
     skip_report: false
@@ -573,6 +578,7 @@ presubmits:
   # TODO(gjkim42, SidecarContainers): Remove this once SidecarContainers
   # graduates to beta.
   - name: pull-kubernetes-node-kubelet-serial-containerd-sidecar-containers
+    cluster: default
     always_run: false
     optional: true
     skip_report: false
@@ -613,6 +619,7 @@ presubmits:
               cpu: 4
               memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-containerd-kubetest2
+    cluster: default
     # explicitly needs /test pull-kubernetes-node-kubelet-serial-containerd-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -1526,6 +1533,7 @@ presubmits:
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   # on a kind cluster with containerd updated to a version with CDI support.
   - name: pull-kubernetes-kind-dra
+    cluster: default
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1894,6 +1902,7 @@ presubmits:
   #     Until then, this job complements pull-kubernetes-e2e-gce-cos-alpha-features by running inplace pod resize e2e tests
   #     full-spectrum against containerd/main which has the necessary CRI support.
   - name: pull-kubernetes-e2e-inplace-pod-resize-containerd-main-v2
+    cluster: default
     optional: true
     always_run: false
     run_if_changed: 'test/e2e/node/pod_resize.go|pkg/kubelet/kubelet.go|pkg/kubelet/kubelet_pods.go|pkg/kubelet/kuberuntime/kuberuntime_manager.go'

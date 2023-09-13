@@ -78,6 +78,7 @@ periodics:
     description: Runs integration tests
 
 - name: periodic-cluster-api-provider-vsphere-e2e-full-release-1-6
+  cluster: default
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -121,6 +122,7 @@ periodics:
     description: Runs all e2e tests
 
 - name: periodic-cluster-api-provider-vsphere-conformance-release-1-6
+  cluster: default
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"

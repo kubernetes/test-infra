@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
+    cluster: default
     always_run: true
     labels:
       preset-service-account: "true"
@@ -25,6 +26,7 @@ presubmits:
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
       description: Kubernetes e2e tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
+    cluster: default
     always_run: true
     labels:
       preset-service-account: "true"
@@ -45,6 +47,7 @@ presubmits:
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-sanity
       description: Kubernetes sanity tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-unit
+    cluster: default
     always_run: true
     labels:
       preset-service-account: "true"
@@ -65,6 +68,7 @@ presubmits:
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-unit
       description: Kubernetes unit tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
+    cluster: default
     always_run: true
     labels:
       preset-service-account: "true"
@@ -95,6 +99,7 @@ presubmits:
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-verify
       description: Kubernetes verify tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+    cluster: default
     always_run: true
     labels:
       preset-service-account: "true"

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
   - name: pull-azuredisk-csi-driver-verify-mainv2
+    cluster: default
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -27,6 +28,7 @@ presubmits:
       description: "Run code verification tests for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit-mainv2
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -50,6 +52,7 @@ presubmits:
       description: "Run unit tests for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-sanity-mainv2
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -78,6 +81,7 @@ presubmits:
       description: "Run sanity tests for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration-mainv2
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -106,6 +110,7 @@ presubmits:
       description: "Run integration tests for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -160,6 +165,7 @@ presubmits:
       description: "Run E2E tests on a single-az cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -215,6 +221,7 @@ presubmits:
       description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -271,6 +278,7 @@ presubmits:
       description: "Run E2E tests on a cluster for Azure Disk CSI V2 driver with CSI migration feature enabled on Linux nodes."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-windows-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -331,6 +339,7 @@ presubmits:
       description: "Run E2E tests on a cluster for Azure Disk CSI V2 driver with CSI migration feature enabled on Windows nodes."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -392,6 +401,7 @@ presubmits:
       description: "Run E2E tests on a Windows cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build-mainv2
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -413,6 +423,7 @@ presubmits:
       description: "Run make azuredisk-windows for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-external-e2e-single-az-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -471,6 +482,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-azuredisk-csi-driver-external-e2e-windows-mainv2 is currently experimental and not yet stable
   - name: pull-azuredisk-csi-driver-external-e2e-windows-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -532,6 +544,7 @@ presubmits:
       description: "Run External E2E tests for Azure Disk CSI driver V2 on Windows."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows-containerd-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -591,6 +604,7 @@ presubmits:
       description: "Run E2E tests on a Windows containerd cluster for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows-2019-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h
@@ -655,6 +669,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2019 cluster for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows-2022-mainv2
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decoration_config:
@@ -721,6 +736,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2022 cluster for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-mainv2
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 3h

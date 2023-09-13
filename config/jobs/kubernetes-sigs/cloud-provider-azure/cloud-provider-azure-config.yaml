@@ -31,6 +31,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-capz runs Azure specific e2e tests on vmss.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz
+    cluster: default
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     decoration_config:
@@ -83,6 +84,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz
+    cluster: default
     always_run: false
     decorate: true
     decoration_config:
@@ -135,6 +137,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on IPv6 vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz
+    cluster: default
     always_run: false
     decorate: true
     decoration_config:
@@ -188,6 +191,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific e2e tests on vmssflex.
   - name: pull-cloud-provider-azure-e2e-ccm-vmssflex-capz
+    cluster: default
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     decoration_config:
@@ -255,6 +259,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-capz runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz
+    cluster: default
     skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     decoration_config:
@@ -316,6 +321,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-capz runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm-capz
+    cluster: default
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     decoration_config:
@@ -367,6 +373,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz
+    cluster: default
     always_run: false
     decorate: true
     decoration_config:
@@ -420,6 +427,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure IPv6 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-capz
+    cluster: default
     always_run: false
     decorate: true
     decoration_config:
@@ -474,6 +482,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz runs Azure specific e2e tests with cloud controller manager and IP-based load balancer backend pools.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
+    cluster: default
     always_run: false
     optional: true
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
@@ -543,6 +552,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz runs Azure specific e2e tests with cloud controller manager and multiple standard load balancers.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz
+    cluster: default
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     decoration_config:

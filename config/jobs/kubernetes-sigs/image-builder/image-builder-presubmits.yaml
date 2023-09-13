@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/image-builder:
   - name: pull-azure-vhds
+    cluster: default
     labels:
       preset-azure-cred: "true"
     decorate: true
@@ -22,6 +23,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-vhds
   - name: pull-azure-sigs
+    cluster: default
     labels:
       preset-azure-cred: "true"
     decorate: true
@@ -95,6 +97,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-packer-validate
   - name: pull-image-builder-gcp-all
+    cluster: default
     path_alias: sigs.k8s.io/image-builder
     always_run: false
     optional: true

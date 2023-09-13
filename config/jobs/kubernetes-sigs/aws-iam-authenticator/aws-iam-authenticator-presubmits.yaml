@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-iam-authenticator:
   - name: pull-aws-iam-authenticator-unit
+    cluster: default
     always_run: true
     decorate: true
     labels:
@@ -19,6 +20,7 @@ presubmits:
       description: AWS IAM Authenticator unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-iam-authenticator-integration
+    cluster: default
     always_run: true
     decorate: true
     labels:
@@ -38,6 +40,7 @@ presubmits:
       description: AWS IAM Authenticator integration test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-iam-authenticator-e2e
+    cluster: default
     always_run: true
     decorate: true
     labels:
@@ -64,6 +67,7 @@ presubmits:
     - release-0.5
     - release-0.6
   - name: pull-aws-iam-authenticator-e2e-kind
+    cluster: default
     always_run: true
     decorate: true
     labels:

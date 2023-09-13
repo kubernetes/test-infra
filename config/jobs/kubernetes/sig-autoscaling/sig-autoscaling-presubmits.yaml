@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gci-gce-autoscaling
+    cluster: default
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
       testgrid-tab-name: gci-gce-autoscaling-pull
@@ -49,6 +50,7 @@ presubmits:
           privileged: true
 
   - name: pull-kubernetes-e2e-autoscaling-hpa-cpu
+    cluster: default
     annotations:
       testgrid-dashboards: sig-autoscaling-hpa
       testgrid-tab-name: gci-gce-autoscaling-hpa-cpu-pull
@@ -91,6 +93,7 @@ presubmits:
           privileged: true
 
   - name: pull-kubernetes-e2e-autoscaling-hpa-cm
+    cluster: default
     annotations:
       testgrid-dashboards: sig-autoscaling-hpa
       testgrid-tab-name: gci-gce-autoscaling-hpa-cm-pull

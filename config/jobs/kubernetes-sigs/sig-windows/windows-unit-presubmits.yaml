@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-ci-kubernetes-unit-windows
+    cluster: default
     always_run: false
     optional: true
     decorate: true

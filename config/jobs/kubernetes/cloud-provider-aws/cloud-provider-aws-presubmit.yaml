@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-aws:
   - name: pull-cloud-provider-aws-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -9,10 +10,17 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-aws-credential-aws-oss-testing: "true"
+      preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         command:
         - runner.sh
         args:
@@ -28,6 +36,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
 
   - name: pull-cloud-provider-aws-e2e-kubetest2
+    cluster: eks-prow-build-cluster
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
@@ -41,7 +50,6 @@ presubmits:
     path_alias: k8s.io/cloud-provider-aws
     always_run: true
     optional: true
-    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 4h
@@ -106,6 +114,7 @@ presubmits:
               memory: 10Gi
 
   - name: pull-cloud-provider-aws-e2e-kubetest2-quick
+    cluster: eks-prow-build-cluster
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
@@ -119,7 +128,6 @@ presubmits:
     path_alias: k8s.io/cloud-provider-aws
     always_run: true
     optional: true
-    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 4h

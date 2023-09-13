@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/blob-csi-driver:
   - name: pull-blob-csi-driver-verify
+    cluster: default
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -22,6 +23,7 @@ presubmits:
       description: "Run code verification tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-unit
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -43,6 +45,7 @@ presubmits:
       description: "Run unit tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-sanity
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -66,6 +69,7 @@ presubmits:
       description: "Run sanity tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-integration
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -89,6 +93,7 @@ presubmits:
       description: "Run integration tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -135,6 +140,7 @@ presubmits:
       description: "Run E2E tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-vmss
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -179,6 +185,7 @@ presubmits:
       description: "Run E2E tests on a VMSS-based cluster for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-proxy
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -228,6 +235,7 @@ presubmits:
       description: "Run E2E tests for Azure Blob Storage CSI driver based on blobfuse-proxy"
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-external-e2e-blobfuse
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -277,6 +285,7 @@ presubmits:
       description: "Run External E2E tests for Azure Blob Storage CSI driver using blobfuse."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-external-e2e-blobfuse-v2
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -326,6 +335,7 @@ presubmits:
       description: "Run External E2E tests for Azure Blob Storage CSI driver using blobfuse v2."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-external-e2e-nfs
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -375,6 +385,7 @@ presubmits:
       description: "Run External E2E tests for Azure Blob Storage CSI driver using nfs."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-capz
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver

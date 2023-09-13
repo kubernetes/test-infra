@@ -97,6 +97,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-lint-release-1-2
   - name: pull-cluster-api-provider-digitalocean-e2e-release-1-2
+    cluster: default
     always_run: true
     optional: false
     decorate: true
@@ -126,6 +127,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-e2e-release-1-2
   - name: pull-cluster-api-provider-digitalocean-capi-e2e-release-1-2
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -160,6 +162,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-capi-e2e-release-1-2
   - name: pull-cluster-api-provider-digitalocean-e2e-workload-upgrade-release-1-2
+    cluster: default
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -192,6 +195,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-e2e-upgrade-release-1-2
   - name: pull-cluster-api-provider-digitalocean-conformance-release-1-2
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -221,6 +225,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-conformance-release-1-2
   - name: pull-cluster-api-provider-digitalocean-conformance-ci-artifacts-release-1-2
+    cluster: default
     always_run: false
     optional: true
     decorate: true

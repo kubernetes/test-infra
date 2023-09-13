@@ -9,6 +9,7 @@
 presubmits:
   kubernetes/perf-tests:
   - name: pull-perf-tests-100-adhoc
+    cluster: default
     always_run: false # This test needs to be triggered manually via `/test pull-perf-tests-100-adhoc`
     max_concurrency: 1 # Keep at 1 until we figure out a proper reservation system.
     skip_report: false # Report the status on github.

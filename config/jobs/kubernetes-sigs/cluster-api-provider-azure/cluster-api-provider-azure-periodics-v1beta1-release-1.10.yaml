@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-azure-conformance-v1beta1-release-1-10
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -34,6 +35,7 @@ periodics:
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.10 (v1beta1)
 - name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-10
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -78,6 +80,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.10 (v1beta1)
 - name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-10
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -113,6 +116,7 @@ periodics:
     testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-10
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-10
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -148,6 +152,7 @@ periodics:
     testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-10
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-10
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h

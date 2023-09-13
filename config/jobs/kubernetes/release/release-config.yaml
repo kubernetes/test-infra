@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/release:
   - name: pull-release-cluster-up
+    cluster: default
     run_if_changed: '^push-build.sh'
     labels:
       preset-service-account: "true"

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kube-batch:
   - name: pull-kube-batch-verify
+    cluster: default
     branches:
     - master
     always_run: true

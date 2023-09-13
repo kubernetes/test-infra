@@ -4,6 +4,7 @@ presubmits:
 
   # kinder presubmits
   - name: pull-kubeadm-kinder-verify
+    cluster: default
     decorate: true
     optional: false
     path_alias: "k8s.io/kubeadm"
@@ -15,6 +16,7 @@ presubmits:
         - "./kinder/hack/verify-all.sh"
 
   - name: pull-kubeadm-kinder-upgrade-latest
+    cluster: default
     decorate: true
     optional: false
     run_if_changed: '^kinder\/.*$'

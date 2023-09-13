@@ -78,6 +78,7 @@ periodics:
     description: Runs integration tests
 
 - name: periodic-cluster-api-provider-vsphere-e2e-full-main
+  cluster: default
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -121,6 +122,7 @@ periodics:
     description: Runs all e2e tests
 
 - name: periodic-cluster-api-provider-vsphere-conformance-main
+  cluster: default
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -164,6 +166,7 @@ periodics:
     description: Runs conformance tests for CAPV
 
 - name: periodic-cluster-api-provider-vsphere-coverage-main
+  cluster: default
   interval: 24h
   decorate: true
   rerun_auth_config:

@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kind-kms
+    cluster: default
     decorate: true
     decoration_config:
       timeout: 150m

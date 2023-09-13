@@ -1,6 +1,7 @@
 postsubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: postsubmit-node-feature-discovery-verify-master
+    cluster: default
     branches:
     - ^main$
     - ^master
@@ -22,6 +23,7 @@ postsubmits:
               name: nfd-creds
               key: codecov-token
   - name: postsubmit-node-feature-discovery-e2e-test
+    cluster: default
     branches:
     - ^main$
     - ^master$

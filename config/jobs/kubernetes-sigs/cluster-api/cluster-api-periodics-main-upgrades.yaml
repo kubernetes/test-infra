@@ -1,6 +1,7 @@
 periodics:
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-23-1-24-main
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -54,6 +55,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-24-1-25-main
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -107,6 +109,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-25-1-26-main
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -160,6 +163,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-26-1-27-main
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -213,6 +217,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-27-1-28-main
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -266,6 +271,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-28-latest-main
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:

@@ -48,6 +48,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-openstack-e2e-test
+    cluster: default
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -88,6 +89,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-e2e-test
   - name: pull-cluster-api-provider-openstack-conformance-test
+    cluster: default
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -131,6 +133,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-conformance-test
   - name: pull-cluster-api-provider-openstack-e2e-full-test
+    cluster: default
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

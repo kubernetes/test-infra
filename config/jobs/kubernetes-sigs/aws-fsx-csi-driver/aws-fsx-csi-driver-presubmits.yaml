@@ -57,6 +57,7 @@ presubmits:
       description: aws fsx csi driver unit test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-fsx-csi-driver-e2e
+    cluster: default
     always_run: true
     decorate: true
     skip_branches:

@@ -1,6 +1,7 @@
 periodics:
 
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-25-1-26-main
+  cluster: default
   interval: 24h
   decorate: true
   labels:
@@ -46,6 +47,7 @@ periodics:
     testgrid-tab-name: capi-periodic-upgrade-main-1-25-1-26
 
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-26-1-27-main
+  cluster: default
   interval: 24h
   decorate: true
   labels:
@@ -91,6 +93,7 @@ periodics:
     testgrid-tab-name: capi-periodic-upgrade-main-1-26-1-27
 
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-27-1-28-main
+  cluster: default
   interval: 24h
   decorate: true
   labels:

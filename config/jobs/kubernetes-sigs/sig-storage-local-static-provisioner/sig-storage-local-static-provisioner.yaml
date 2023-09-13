@@ -73,6 +73,7 @@ presubmits:
             memory: 4Gi
 
   - name: pull-sig-storage-local-static-provisioner-e2e
+    cluster: default
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -92,6 +93,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-sig-storage-local-static-provisioner-e2e-windows-2019
+    cluster: default
     always_run: false
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -137,6 +139,7 @@ presubmits:
 
 periodics:
 - name: ci-sig-storage-local-static-provisioner-master-gce-latest
+  cluster: default
   interval: 4h
   decorate: true
   labels:

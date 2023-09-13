@@ -32,6 +32,7 @@ presubmits:
             memory: "4Gi"
   # Check that images to be promoted are free of fixable vulnerabilities
   - name: pull-k8sio-cip-vuln
+    cluster: default
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-k8sio
@@ -57,6 +58,7 @@ presubmits:
         - --certificate-oidc-issuer=https://accounts.google.com
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
+    cluster: default
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-k8sio
@@ -78,6 +80,7 @@ presubmits:
         - name: GOPATH
           value: /go
   - name: pull-k8sio-file-promo
+    cluster: default
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
@@ -102,6 +105,7 @@ presubmits:
   # Adds two extra containers to dry-run miroring for staging and production mirrors.
   # TODO(justinsb): merge with pull-k8sio-file-promo once we are happy with it
   - name: pull-k8sio-file-promo-with-mirroring
+    cluster: default
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio

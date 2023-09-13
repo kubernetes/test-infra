@@ -253,6 +253,7 @@ presubmits:
 
   # Executes the e2e tests.
   - name: pull-cloud-provider-vsphere-e2e-test-1-26-minus
+    cluster: default
     decorate: true
     labels:
       preset-dind-enabled: "true"

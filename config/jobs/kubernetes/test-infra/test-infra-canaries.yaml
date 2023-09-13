@@ -1,5 +1,6 @@
 periodics:
 - name: ci-test-infra-benchmark-demo
+  cluster: default
   interval: 24h
   decorate: true
   extra_refs:

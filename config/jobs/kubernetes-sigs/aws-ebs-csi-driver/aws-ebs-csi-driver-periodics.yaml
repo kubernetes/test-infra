@@ -1,5 +1,6 @@
 periodics:
 - name: ci-aws-ebs-csi-driver-unit-test
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -28,6 +29,7 @@ periodics:
     description: aws ebs csi driver unit test, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-e2e-single-az
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -56,6 +58,7 @@ periodics:
     description: aws ebs csi driver e2e test on single az, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-e2e-multi-az
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -84,6 +87,7 @@ periodics:
     description: aws ebs csi driver e2e test on mutiple AZs, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-external-test
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 1h20m

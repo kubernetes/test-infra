@@ -70,6 +70,7 @@ presets:
       value: "true"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows
+  cluster: default
   interval: 3h
   decorate: true
   decoration_config:
@@ -124,6 +125,7 @@ periodics:
     testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -177,6 +179,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow-hpa
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -228,6 +231,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master-serial-slow-hpa
 - name: ci-kubernetes-e2e-capz-master-windows-2022
+  cluster: default
   interval: 3h
   decorate: true
   decoration_config:
@@ -277,6 +281,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master
 - name: ci-kubernetes-e2e-capz-master-windows-2022-serial-slow
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -332,6 +337,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-windows-2022-serial-slow-hpa
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -386,6 +392,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master-serial-slow-hpa
 - name: ci-kubernetes-e2e-azuredisk-capz-windows-2019
+  cluster: default
   interval: 48h
   decorate: true
   decoration_config:
@@ -476,6 +483,7 @@ periodics:
 #     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
 #     description: Run Azure File e2e test in a CAPZ cluster on Windows 2019 nodes
 - name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
+  cluster: default
   interval: 24h
   decorate: true
   decoration_config:
@@ -525,6 +533,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
 - name: ci-kubernetes-e2e-capz-master-windows-alpha
+  cluster: default
   interval: 3h
   decorate: true
   decoration_config:

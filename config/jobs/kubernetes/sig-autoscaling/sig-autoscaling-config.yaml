@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
+  cluster: default
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -31,6 +32,7 @@ periodics:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
+  cluster: default
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -62,6 +64,7 @@ periodics:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
+  cluster: default
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -93,6 +96,7 @@ periodics:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-full
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
+  cluster: default
   interval: 3h
   labels:
     preset-service-account: "true"
@@ -124,6 +128,7 @@ periodics:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  cluster: default
   interval: 2h
   labels:
     preset-service-account: "true"

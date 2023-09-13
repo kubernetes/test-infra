@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-azure-conformance-main
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -34,6 +35,7 @@ periodics:
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-main
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -78,6 +80,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-capi-e2e-main
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -113,6 +116,7 @@ periodics:
     testgrid-tab-name: capz-periodic-capi-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-apiversion-upgrade-main
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -153,6 +157,7 @@ periodics:
     testgrid-tab-name: capz-periodic-apiversion-upgrade-main
     description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
 - name: periodic-cluster-api-provider-azure-coverage
+  cluster: default
   interval: 12h
   decorate: true
   path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -186,6 +191,7 @@ periodics:
       securityContext:
         privileged: true
 - name: periodic-cluster-api-provider-azure-e2e-main
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -221,6 +227,7 @@ periodics:
     testgrid-tab-name: capz-periodic-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-e2e-aks-main
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h

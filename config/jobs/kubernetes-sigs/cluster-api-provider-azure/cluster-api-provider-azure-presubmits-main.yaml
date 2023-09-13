@@ -69,6 +69,7 @@ presubmits:
       testgrid-tab-name: capz-pr-build-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
@@ -102,6 +103,7 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-optional
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -137,6 +139,7 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-optional-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-aks
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
@@ -172,6 +175,7 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-aks-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-capi-e2e
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-e2e.sh|Makefile'
@@ -239,6 +243,7 @@ presubmits:
       testgrid-tab-name: capz-pr-verify-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -273,6 +278,7 @@ presubmits:
       testgrid-tab-name: capz-pr-conformance-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -314,6 +320,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-k8s-ci-main
   - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -362,6 +369,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-main
   - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts-serial-slow
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -412,6 +420,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
+    cluster: default
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
@@ -430,6 +439,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-main
   - name: pull-cluster-api-provider-azure-e2e-workload-upgrade
+    cluster: default
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -468,6 +478,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-upgrade
   - name: pull-cluster-api-provider-azure-apiversion-upgrade
+    cluster: default
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -510,6 +521,7 @@ presubmits:
       testgrid-tab-name: capz-pr-apiversion-upgrade-main
       description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
   - name: pull-cluster-api-provider-azure-ci-entrypoint
+    cluster: default
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true

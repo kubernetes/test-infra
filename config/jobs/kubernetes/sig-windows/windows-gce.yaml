@@ -50,6 +50,7 @@ presets:
 
 periodics:
 - name: ci-kubernetes-e2e-windows-containerd-gce-master
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h
@@ -99,6 +100,7 @@ periodics:
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 - name: ci-kubernetes-e2e-windows-win2022-containerd-gce-master
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h

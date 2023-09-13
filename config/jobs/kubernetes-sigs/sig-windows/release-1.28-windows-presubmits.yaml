@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-capz-windows-1-28
+    cluster: default
     always_run: false
     branches:
     - release-1.28

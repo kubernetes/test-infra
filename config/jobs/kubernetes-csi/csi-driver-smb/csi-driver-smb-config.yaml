@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-csi/csi-driver-smb:
   - name: pull-csi-driver-smb-verify
+    cluster: default
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -24,6 +25,7 @@ presubmits:
       description: "Run code verification tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-unit
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -47,6 +49,7 @@ presubmits:
       description: "Run unit tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-sanity
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -72,6 +75,7 @@ presubmits:
       description: "Run sanity tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-integration
+    cluster: default
     decorate: true
     always_run: false
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -97,6 +101,7 @@ presubmits:
       description: "Run integration tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-windows-build
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -118,6 +123,7 @@ presubmits:
       description: "Run make smb-windows for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -164,6 +170,7 @@ presubmits:
       description: "Run E2E tests for SMB CSI driver on VMAS cluster."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-vmss
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -210,6 +217,7 @@ presubmits:
       description: "Run E2E tests for SMB CSI driver on VMSS cluster."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-windows
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -263,6 +271,7 @@ presubmits:
       description: "Run Windows E2E tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-windows-containerd
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
@@ -316,6 +325,7 @@ presubmits:
       description: "Run Windows containerd E2E tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-capz
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -364,6 +374,7 @@ presubmits:
       description: "Run E2E tests on a capz cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-capz-windows-2019
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -420,6 +431,7 @@ presubmits:
       description: "Run E2E tests on a capz Windows 2019 cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-external-e2e
+    cluster: default
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb

@@ -31,6 +31,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-26
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-26
+      cluster: default
       skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
@@ -84,6 +85,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-capz-1-26 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-capz-1-26
+      cluster: default
       skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
@@ -145,6 +147,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-1-26
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-26
+      cluster: default
       skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:

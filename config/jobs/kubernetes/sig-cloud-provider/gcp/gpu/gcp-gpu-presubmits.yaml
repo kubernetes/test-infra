@@ -10,6 +10,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: default
     skip_branches:
     - release-\d+\.\d+
     annotations:

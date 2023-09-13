@@ -85,6 +85,7 @@ presets:
 presubmits:
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
+    cluster: default
     always_run: true
     decorate: true
     labels:
@@ -106,6 +107,7 @@ presubmits:
       testgrid-tab-name: pull-ingress-gce-test
 
   - name: pull-ingress-gce-verify
+    cluster: default
     always_run: true
     decorate: true
     branches:
@@ -129,6 +131,7 @@ presubmits:
       testgrid-tab-name: pull-ingress-gce-verify
 
   - name: pull-ingress-gce-e2e
+    cluster: default
     always_run: true
     optional: false
     decorate: true
@@ -160,6 +163,7 @@ presubmits:
 
 periodics:
 - name: ci-ingress-gce-e2e
+  cluster: default
   interval: 6h
   labels:
     preset-service-account: "true"

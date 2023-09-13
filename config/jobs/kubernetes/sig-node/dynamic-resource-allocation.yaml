@@ -47,6 +47,7 @@ periodics:
 
   # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   - name: ci-node-e2e-crio-dra
+    cluster: default
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
@@ -82,6 +83,7 @@ periodics:
 
   # This job runs the same tests as ci-node-e2e-crio-dra with Containerd 1.7 runtime
   - name: ci-node-e2e-containerd-1-7-dra
+    cluster: default
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation

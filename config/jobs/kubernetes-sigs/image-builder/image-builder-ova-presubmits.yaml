@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/image-builder:
     - name: pull-ova-all
+      cluster: default
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"

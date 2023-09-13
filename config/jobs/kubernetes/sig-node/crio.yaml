@@ -1,5 +1,6 @@
 periodics:
 - name: ci-crio-cgroupv1-node-e2e-conformance
+  cluster: default
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -66,6 +67,7 @@ periodics:
 #     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
 #     description: "OWNER: sig-node; runs NodeConformance and alpha e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-features
+  cluster: default
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -98,6 +100,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-flaky
+  cluster: default
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -130,6 +133,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-unlabelled
+  cluster: default
   interval: 12h
   labels:
     preset-service-account: "true"
@@ -162,6 +166,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - name: ci-crio-cgroupv1-node-e2e-eviction
+  cluster: default
   interval: 4h30m
   labels:
     preset-service-account: "true"
@@ -194,6 +199,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv2-node-e2e-conformance
+  cluster: default
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -226,6 +232,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
 - name: ci-crio-cgroupv1-node-e2e-resource-managers
+  cluster: default
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -258,6 +265,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes CPU, Memory and Topology manager e2e tests"
 - name: ci-crio-cgroupv1-node-e2e-hugepages
+  cluster: default
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -290,6 +298,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes hugepages e2e tests"
 - name: ci-crio-cgroupv1-evented-pleg
+  cluster: default
   interval: 3h
   labels:
     preset-service-account: "true"

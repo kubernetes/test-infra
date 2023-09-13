@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kube-storage-version-migrator:
   - name: pull-kube-storage-version-migrator-test
+    cluster: default
     decorate: true
     always_run: true
     spec:
@@ -14,6 +15,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-test
   - name: pull-kube-storage-version-migrator-manually-launched-e2e
+    cluster: default
     decorate: true
     always_run: true
     labels:
@@ -46,6 +48,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-manually-launched
   - name: pull-kube-storage-version-migrator-fully-automated-e2e
+    cluster: default
     decorate: true
     always_run: true
     labels:
@@ -79,6 +82,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-fully-automated
   - name: pull-kube-storage-version-migrator-ha-master
+    cluster: default
     path_alias: "sigs.k8s.io/kube-storage-version-migrator"
     decorate: true
     decoration_config:

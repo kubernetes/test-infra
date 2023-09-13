@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-capz-windows-1-27
+    cluster: default
     decorate: true
     always_run: false
     optional: true

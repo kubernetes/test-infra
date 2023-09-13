@@ -1,5 +1,6 @@
 periodics:
 - name: ci-test-infra-continuous-test
+  cluster: default
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -28,6 +29,7 @@ periodics:
     description: Runs `make test verify` on the test-infra repo every hour
 
 - name: metrics-kettle
+  cluster: default
   interval: 1h
   decorate: true
   extra_refs:
@@ -54,6 +56,7 @@ periodics:
     description: Monitors Kettle's BigQuery database freshness.
 
 - name: test-infra-fuzz
+  cluster: default
   labels:
     preset-dind-enabled: "true"
   decorate: true
@@ -94,6 +97,7 @@ periodics:
     description: Runs clusterfuzzlite every hour
 
 - name: test-infra-cfl-coverage-report
+  cluster: default
   labels:
     preset-dind-enabled: "true"
   decorate: true
@@ -135,6 +139,7 @@ periodics:
     description: Runs clusterfuzzlite coverage report every day
 
 - name: test-infra-cfl-prune
+  cluster: default
   labels:
     preset-dind-enabled: "true"
   decorate: true

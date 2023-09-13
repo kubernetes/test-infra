@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/windows-operational-readiness:
   - name: operational-tests-capz-windows-2019
+    cluster: default
     decorate: true
     always_run: false
     optional: true

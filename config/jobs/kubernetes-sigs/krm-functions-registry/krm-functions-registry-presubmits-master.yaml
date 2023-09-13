@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/krm-functions-registry:
   - name: pull-krm-functions-registry-test-master
+    cluster: default
     decorate: true
     always_run: true
     labels:

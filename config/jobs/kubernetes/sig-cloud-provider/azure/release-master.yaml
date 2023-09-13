@@ -2,6 +2,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-capz-azure-disk
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -57,6 +58,7 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-azure-disk-vmss
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -114,6 +116,7 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-azure-file
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -170,6 +173,7 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-azure-file-vmss
+    cluster: default
     decorate: true
     always_run: false
     optional: true
@@ -228,6 +232,7 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-conformance
+    cluster: default
     decorate: true
     always_run: false
     optional: true

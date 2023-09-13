@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-digitalocean-conformance-release-1-2
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 4h

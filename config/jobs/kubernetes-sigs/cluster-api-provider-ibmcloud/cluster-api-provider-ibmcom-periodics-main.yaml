@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-ibmcloud-coverage
+  cluster: default
   interval: 12h
   decorate: true
   extra_refs:
