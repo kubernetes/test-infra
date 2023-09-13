@@ -1,6 +1,6 @@
 periodics:
 - interval: 6h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-cloud-provider-aws-e2e
   decorate: true
   decoration_config:
@@ -12,7 +12,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
     preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
@@ -43,7 +43,7 @@ periodics:
       securityContext:
         privileged: true
 - interval: 6h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-cloud-provider-aws-e2e-with-kubernetes-master
   decorate: true
   decoration_config:
@@ -55,7 +55,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
     preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
@@ -98,7 +98,7 @@ periodics:
     testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
   labels:
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
     preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
@@ -178,7 +178,7 @@ periodics:
     testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
   labels:
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
     preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
