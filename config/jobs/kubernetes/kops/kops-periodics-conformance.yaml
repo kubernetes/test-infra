@@ -36,8 +36,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=150m -num-nodes=0" \
+          --test-args="-test.timeout=150m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable-1.28.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[NoSkip\]" \
@@ -101,8 +100,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=150m -num-nodes=0" \
+          --test-args="-test.timeout=150m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable-1.28.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[NoSkip\]" \
@@ -166,8 +164,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=150m -num-nodes=0" \
+          --test-args="-test.timeout=150m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable-1.27.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[NoSkip\]" \
@@ -231,8 +228,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=150m -num-nodes=0" \
+          --test-args="-test.timeout=150m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable-1.27.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[NoSkip\]" \

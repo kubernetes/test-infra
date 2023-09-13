@@ -36,8 +36,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -94,13 +93,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20230912-1501' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -157,13 +155,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-12-amd64-20230910-1499' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -225,8 +222,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -288,8 +284,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -351,8 +346,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -414,8 +408,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -472,13 +465,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230822.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230906.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -535,13 +527,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.1.20230906.1-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.1.20230912.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -603,8 +594,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -661,13 +651,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-9.2.0_HVM-20230726-x86_64-61-Hourly2-GP2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-9.2.0_HVM-20230905-x86_64-38-Hourly2-GP2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -729,8 +718,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -793,8 +781,7 @@ periodics:
           --validation-wait=20m \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:

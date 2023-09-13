@@ -1346,9 +1346,24 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-ci',
             networking='cilium',
-            tab_name='e2e-gce-ci',
+            tab_name='e2e-gce-ubuntu-ci',
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
+            distro="cos-105",
+            k8s_version='ci',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-cos-kubenet',
+            networking='kubenet',
+            tab_name='e2e-gce-cos-ci',
+            always_run=False,
+            extra_flags=["--image=cos-105-lts/cos-105-17412-156-49",
+                         "--set=spec.kubeDNS.provider=KubeDNS",
+                         "--gce-service-account=default",], # Workaround for test-infra#24747
+            skip_regex=r'\[Driver:.nfs\]|\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
             cloud='gce',

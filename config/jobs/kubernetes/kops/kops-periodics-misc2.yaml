@@ -36,8 +36,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable-1.28.txt \
           --parallel=25
       env:
@@ -165,8 +164,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -229,8 +227,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -289,13 +286,12 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20230802-1460' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20230912-1501' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -358,8 +354,7 @@ periodics:
           --validation-wait=20m \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -421,8 +416,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -484,8 +478,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -548,8 +541,7 @@ periodics:
           --validation-wait=20m \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -612,8 +604,7 @@ periodics:
           --validation-wait=20m \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -675,8 +666,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -738,8 +728,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -801,8 +790,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -865,8 +853,7 @@ periodics:
           --terraform-version=1.0.5 \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -929,8 +916,7 @@ periodics:
           --terraform-version=1.0.5 \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -992,8 +978,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -1055,8 +1040,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=latest.txt \
           --parallel=25
       env:
@@ -1118,8 +1102,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -1183,8 +1166,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -1250,8 +1232,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -1318,8 +1299,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
           --parallel=25
@@ -1664,8 +1644,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -1727,8 +1706,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -1792,8 +1770,7 @@ periodics:
           --template-path=/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -1856,8 +1833,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic|serve.endpoints.on.same.port.and.different.protocols|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local" \
           --parallel=25
@@ -1920,8 +1896,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m -num-nodes=0 --tooling=kops" \
           --test-package-marker=stable.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic|serve.endpoints.on.same.port.and.different.protocols|SSH.should.SSH.to.all.nodes.and.run.commands|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local" \
           --parallel=25
@@ -1985,8 +1960,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=120m -num-nodes=0" \
+          --test-args="-test.timeout=120m -num-nodes=0 --tooling=kops" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
