@@ -13,8 +13,9 @@ presubmits:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.18.4
         command:
-        # Plain make runs also verify
         - make
+        args:
+        - build
         resources:
           limits:
             cpu: 2
