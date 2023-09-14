@@ -8,7 +8,6 @@ presubmits:
     - gh-pages
     path_alias: k8s.io/cloud-provider-aws
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
@@ -48,6 +47,7 @@ presubmits:
     labels:
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
+      preset-aws-credential-aws-shared-testing: "true"
     path_alias: k8s.io/cloud-provider-aws
     always_run: true
     optional: true
@@ -126,6 +126,7 @@ presubmits:
     labels:
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
+      preset-aws-credential-aws-shared-testing: "true"
     path_alias: k8s.io/cloud-provider-aws
     always_run: true
     optional: true

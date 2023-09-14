@@ -10,7 +10,6 @@ periodics:
     testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
     description: Runs e2e against cloud-provider-aws master on AWS
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-aws-credential-aws-shared-testing: "true"
     preset-k8s-ssh: "true"
@@ -54,7 +53,6 @@ periodics:
     testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
     description: Runs e2e against cloud-provider-aws master on AWS using latest k8s.io/kubernetes libraries
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
     preset-aws-credential-aws-shared-testing: "true"
     preset-k8s-ssh: "true"
