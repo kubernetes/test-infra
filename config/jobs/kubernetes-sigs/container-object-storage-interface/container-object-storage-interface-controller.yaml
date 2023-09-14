@@ -1,49 +1,77 @@
 presubmits:
   kubernetes-sigs/container-object-storage-interface-controller:
-  - name: pull-container-object-storage-interface-controller-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface-controller
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface-controller
-      testgrid-tab-name: build
-      description: Build test in container-object-storage-interface-controller repo.
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest
-        command:
-        - make
-        args:
-        - build
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
 
-  - name: pull-container-object-storage-interface-controller-unit
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface-controller
-    annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface-controller
-      testgrid-tab-name: unit
-      description: Unit tests in container-object-storage-interface-controller repo.
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:latest
-        command:
-        - make
-        args:
-        - test
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
+    - name: pull-container-object-storage-interface-controller-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface-controller
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface-controller
+        testgrid-tab-name: build
+        description: Build test in container-object-storage-interface-controller repo.
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest
+            command:
+              - make
+            args:
+              - build
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+
+    - name: pull-container-object-storage-interface-controller-unit
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/container-object-storage-interface-controller
+      annotations:
+        testgrid-dashboards: sig-storage-container-object-storage-interface-controller
+        testgrid-tab-name: unit
+        description: Unit tests in container-object-storage-interface-controller repo.
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:latest
+            command:
+              - make
+            args:
+              - test
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+
+
+postsubmits:
+  kubernetes-sigs/container-object-storage-interface-controller:
+    # based on https://github.com/kubernetes/test-infra/blob/master/config/jobs/image-pushing/README.md#prow-config-template
+    - name: post-container-object-storage-interface-controller-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # have to report image builds to sig-storage-image-build: https://testgrid.k8s.io/sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build
+      decorate: true
+      branches:
+        #<!-- disable image builds from master temporarily --># - ^master$
+        - ^canary$ # use canary branch for testing image build itself
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          # docs for this image: `docker run --rm -it --entrypoint /run.sh <image> --help`
+          - image: gcr.io/k8s-staging-test-infra/image-builder:latest
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-sig-storage
+              - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+              # Prow env vars: https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
+              - --env-passthrough=PULL_BASE_REF # becomes _PULL_BASE_REF in the build
+              - .
