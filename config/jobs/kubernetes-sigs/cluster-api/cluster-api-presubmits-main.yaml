@@ -92,7 +92,6 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    optional: true
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -128,7 +127,6 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    optional: true
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -196,7 +194,6 @@ presubmits:
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
-    optional: true
     always_run: false
     branches:
       # The script this job runs is not in all branches.
@@ -234,7 +231,6 @@ presubmits:
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
-    optional: true
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -269,7 +265,6 @@ presubmits:
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
-    optional: true
     always_run: false
     branches:
     # The script this job runs is not in all branches.
