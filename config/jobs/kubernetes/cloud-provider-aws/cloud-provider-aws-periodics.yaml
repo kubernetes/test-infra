@@ -25,6 +25,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: aws-shared-testing-role
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       resources:
@@ -68,6 +69,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: aws-shared-testing-role
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       resources:
@@ -111,7 +113,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: provider-aws-test-role
+    serviceAccountName: aws-shared-testing-role
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       resources:
@@ -191,7 +193,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: provider-aws-test-role
+    serviceAccountName: aws-shared-testing-role
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       resources:
