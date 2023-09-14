@@ -1,6 +1,7 @@
 periodics:
 - name: ci-crio-cgroupv1-node-e2e-conformance
   interval: 1h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -67,6 +68,7 @@ periodics:
 #     description: "OWNER: sig-node; runs NodeConformance and alpha e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-features
   interval: 1h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -99,6 +101,7 @@ periodics:
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-flaky
   interval: 2h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -131,6 +134,7 @@ periodics:
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-unlabelled
   interval: 12h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -163,6 +167,7 @@ periodics:
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - name: ci-crio-cgroupv1-node-e2e-eviction
   interval: 4h30m
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -195,6 +200,7 @@ periodics:
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv2-node-e2e-conformance
   interval: 1h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -227,6 +233,7 @@ periodics:
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
 - name: ci-crio-cgroupv1-node-e2e-resource-managers
   interval: 4h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -259,6 +266,7 @@ periodics:
     description: "Executes CPU, Memory and Topology manager e2e tests"
 - name: ci-crio-cgroupv1-node-e2e-hugepages
   interval: 4h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -291,6 +299,7 @@ periodics:
     description: "Executes hugepages e2e tests"
 - name: ci-crio-cgroupv1-evented-pleg
   interval: 3h
+  decorate: true
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
