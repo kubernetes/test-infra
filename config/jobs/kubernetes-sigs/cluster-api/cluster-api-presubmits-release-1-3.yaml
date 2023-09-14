@@ -239,7 +239,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    optional: true
     always_run: false
     branches:
     - ^release-1.3$
@@ -275,7 +274,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    optional: true
     always_run: false
     branches:
     - ^release-1.3$
