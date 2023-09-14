@@ -39,7 +39,7 @@ periodics:
       args:
       - make
       - test-e2e
-      - KOPS_STATE_STORE=s3://cloud-provider-aws-e2e
+      - KOPS_STATE_STORE=s3://cloud-provider-aws-shared-e2e
       securityContext:
         privileged: true
 - interval: 6h
@@ -82,7 +82,7 @@ periodics:
       args:
       - make
       - test-e2e-latest-k8s
-      - KOPS_STATE_STORE=s3://cloud-provider-aws-e2e
+      - KOPS_STATE_STORE=s3://cloud-provider-aws-shared-e2e
       securityContext:
         privileged: true
 - interval: 6h
