@@ -9,6 +9,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -49,10 +50,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: deb10
@@ -72,6 +74,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -94,7 +97,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20230912-1501' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -112,10 +115,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: deb11
@@ -135,6 +139,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -157,7 +162,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-12-amd64-20230910-1499' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -175,10 +180,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: deb12
@@ -198,6 +204,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -238,10 +245,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2004
@@ -261,6 +269,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -301,10 +310,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2004arm64
@@ -324,6 +334,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -364,10 +375,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
@@ -387,6 +399,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -427,10 +440,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204arm64
@@ -450,6 +464,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -472,7 +487,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230822.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230906.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -490,10 +505,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: amzn2
@@ -513,6 +529,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -535,7 +552,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.1.20230906.1-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.1.20230912.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -553,10 +570,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
@@ -576,6 +594,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -616,10 +635,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel8
@@ -639,6 +659,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -661,7 +682,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-9.2.0_HVM-20230726-x86_64-61-Hourly2-GP2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-9.2.0_HVM-20230905-x86_64-38-Hourly2-GP2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -679,10 +700,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel9
@@ -702,6 +724,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -742,10 +765,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rocky8
@@ -765,6 +789,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -806,10 +831,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: flatcar

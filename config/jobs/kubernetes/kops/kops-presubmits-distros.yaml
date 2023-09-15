@@ -5,6 +5,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "deb10", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-debian10
+    cluster: default
     branches:
     - master
     always_run: false
@@ -69,6 +70,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "deb11", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-debian11
+    cluster: default
     branches:
     - master
     always_run: false
@@ -98,7 +100,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20230802-1460' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-11-amd64-20230912-1501' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -133,6 +135,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "deb12", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-debian12
+    cluster: default
     branches:
     - master
     always_run: false
@@ -162,7 +165,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-12-amd64-20230802-1460' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-12-amd64-20230910-1499' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -197,6 +200,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-ubuntu2004
+    cluster: default
     branches:
     - master
     always_run: false
@@ -261,6 +265,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-ubuntu2004arm64
+    cluster: default
     branches:
     - master
     always_run: false
@@ -325,6 +330,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-ubuntu2204
+    cluster: default
     branches:
     - master
     always_run: false
@@ -389,6 +395,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-ubuntu2204arm64
+    cluster: default
     branches:
     - master
     always_run: false
@@ -453,6 +460,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "amzn2", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-amazonlinux2
+    cluster: default
     branches:
     - master
     always_run: false
@@ -482,7 +490,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230822.0-x86_64-gp2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230906.0-x86_64-gp2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -517,6 +525,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-al2023
+    cluster: default
     branches:
     - master
     always_run: false
@@ -546,7 +555,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/al2023-ami-2023.1.20230906.1-kernel-6.1-x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/al2023-ami-2023.1.20230912.0-kernel-6.1-x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -581,6 +590,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "rhel8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-rhel8
+    cluster: default
     branches:
     - master
     always_run: false
@@ -645,6 +655,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "rhel9", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-rhel9
+    cluster: default
     branches:
     - master
     always_run: false
@@ -674,7 +685,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='309956199498/RHEL-9.2.0_HVM-20230726-x86_64-61-Hourly2-GP2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='309956199498/RHEL-9.2.0_HVM-20230905-x86_64-38-Hourly2-GP2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -709,6 +720,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "rocky8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-rocky8
+    cluster: default
     branches:
     - master
     always_run: false
@@ -773,6 +785,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "flatcar", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-flatcar
+    cluster: default
     branches:
     - master
     always_run: false

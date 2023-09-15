@@ -11,6 +11,7 @@
     {%- else %}
     preset-k8s-ssh: "true"
     {%- endif %}
+  cluster: {{build_cluster}}
   decorate: true
   decoration_config:
     timeout: {{job_timeout}}
@@ -91,7 +92,8 @@
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi

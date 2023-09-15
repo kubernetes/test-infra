@@ -5,6 +5,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-ci
+    cluster: default
     branches:
     - master
     always_run: false
@@ -72,6 +73,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-ci-ha
+    cluster: default
     branches:
     - master
     always_run: false
@@ -139,6 +141,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "channels", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico
+    cluster: default
     branches:
     - master
     always_run: true
@@ -203,6 +206,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce-cilium
+    cluster: default
     branches:
     - master
     always_run: true
@@ -265,6 +269,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-etcd"}
   - name: pull-kops-e2e-k8s-gce-cilium-etcd
+    cluster: default
     branches:
     - master
     always_run: false
@@ -327,6 +332,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: pull-kops-e2e-k8s-gce-ipalias
+    cluster: default
     branches:
     - master
     always_run: true
@@ -389,6 +395,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce-long-cluster-name
+    cluster: default
     branches:
     - master
     always_run: false
@@ -451,6 +458,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce-ci
+    cluster: default
     branches:
     - master
     always_run: false
@@ -515,6 +523,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "feature_flags": "GoogleCloudBucketACL", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd
+    cluster: default
     branches:
     - master
     always_run: false
@@ -579,6 +588,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "extra_flags": "--set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-cloud-controller-manager
+    cluster: default
     branches:
     - master
     always_run: false
@@ -645,6 +655,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-load-balancer-controller
+    cluster: default
     branches:
     - master
     always_run: false
@@ -701,6 +712,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-addon-resource-tracking
+    cluster: default
     branches:
     - master
     always_run: false
@@ -757,6 +769,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-metrics-server
+    cluster: default
     branches:
     - master
     always_run: false
@@ -813,6 +826,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-pod-identity-webhook
+    cluster: default
     branches:
     - master
     always_run: false
@@ -869,6 +883,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-external-dns
+    cluster: default
     branches:
     - master
     always_run: false
@@ -933,6 +948,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--ipv6 --bastion --set=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-ipv6-external-dns
+    cluster: default
     branches:
     - master
     always_run: false
@@ -997,6 +1013,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-node-local-dns
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1061,6 +1078,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-apiserver-nodes
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1128,6 +1146,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-arm64
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1192,6 +1211,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--dns=none --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-dns-none
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1256,6 +1276,7 @@ presubmits:
 
 # {"cloud": "gce", "distro": "u2204", "extra_flags": "--dns=none --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-gce-dns-none
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1318,6 +1339,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-nlb
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1382,6 +1404,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-terraform
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1447,6 +1470,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--ipv6 --bastion --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-ipv6-terraform
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1512,6 +1536,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-latest-e2e-aws-k8s-1-24
+    cluster: default
     branches:
     - master
     always_run: false
@@ -1576,6 +1601,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "channels", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-28
+    cluster: default
     branches:
     - release-1.28
     always_run: true
@@ -1640,6 +1666,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "channels", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-27
+    cluster: default
     branches:
     - release-1.27
     always_run: true
@@ -1704,6 +1731,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "channels", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.26", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-26
+    cluster: default
     branches:
     - release-1.26
     always_run: true
@@ -1768,6 +1796,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "channels", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.25", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-25
+    cluster: default
     branches:
     - release-1.25
     always_run: true
@@ -1832,6 +1861,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "channels", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-24
+    cluster: default
     branches:
     - release-1.24
     always_run: true
@@ -1896,6 +1926,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-karpenter
+    cluster: default
     branches:
     - master
     run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/'
@@ -1962,6 +1993,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-ipv6-karpenter
+    cluster: default
     branches:
     - master
     always_run: false
@@ -2027,6 +2059,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest
+    cluster: default
     branches:
     - master
     always_run: false
@@ -2091,6 +2124,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest
+    cluster: default
     branches:
     - master
     always_run: false
@@ -2161,6 +2195,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-126-ko126-to-klatest-kolatest-many-addons
+    cluster: default
     branches:
     - master
     run_if_changed: '^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)'
@@ -2232,6 +2267,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k126-ko126-to-k127-kolatest-karpenter
+    cluster: default
     branches:
     - master
     always_run: false
@@ -2305,6 +2341,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k126-ko127-to-k127-kolatest-karpenter
+    cluster: default
     branches:
     - master
     run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/'
@@ -2377,6 +2414,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: presubmit-kops-aws-boskos
+    cluster: default
     branches:
     - master
     always_run: false
@@ -2432,6 +2470,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: presubmit-kops-aws-boskos-kubetest2
+    cluster: default
     branches:
     - master
     always_run: false

@@ -62,6 +62,7 @@ def build_test(cloud='aws',
                runs_per_day=0,
                scenario=None,
                env=None,
+               build_cluster="default",
                template_path=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
@@ -176,6 +177,7 @@ def build_test(cloud='aws',
         image=image,
         scenario=scenario,
         env=env,
+        build_cluster=build_cluster,
     )
 
     spec = {
@@ -252,6 +254,7 @@ def presubmit_test(branch='master',
                    env=None,
                    template_path=None,
                    use_boskos=False,
+                   build_cluster="default",
                    use_preset_for_account_creds=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
@@ -331,6 +334,7 @@ def presubmit_test(branch='master',
         template_path=template_path,
         boskos_resource_type=boskos_resource_type,
         use_preset_for_account_creds=use_preset_for_account_creds,
+        build_cluster=build_cluster,
     )
 
     spec = {
@@ -831,6 +835,24 @@ def generate_misc():
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
                    runs_per_day=3),
+        # test kops with GCE COS
+        build_test(name_override="kops-grid-gce-cos-105-ci",
+                   cloud="gce",
+                   distro="cos105",
+                   networking="kubenet",
+                   k8s_version="ci",
+                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_channel="alpha",
+                   build_cluster="k8s-infra-prow-build",
+                   extra_flags=[
+                       "--image=cos-105-lts/cos-105-17412-156-49",
+                       "--set=spec.kubeDNS.provider=KubeDNS",
+                       "--gce-service-account=default", # Workaround for test-infra#24747
+                   ],
+                   skip_regex=r'\[Driver:.nfs\]|\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   test_timeout_minutes=60,
+                   runs_per_day=3),
+
     ]
     return results
 
@@ -1092,6 +1114,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
+            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
@@ -1102,6 +1125,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
+            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
@@ -1123,6 +1147,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-small-scale-amazonvpc-using-cl2',
             scenario='scalability',
+            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
