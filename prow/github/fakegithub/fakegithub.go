@@ -585,11 +585,21 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
-	return f.AddLabels(owner, repo, number, label)
+	return f.AddLabelsWithContext(context.Background(), owner, repo, number, label)
+}
+
+// AddLabelWithContext adds a label with a provided context
+func (f *FakeClient) AddLabelWithContext(ctx context.Context, owner, repo string, number int, label string) error {
+	return f.AddLabelsWithContext(context.Background(), owner, repo, number, label)
 }
 
 // AddLabels adds a list of labels
 func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string) error {
+	return f.AddLabelsWithContext(context.Background(), owner, repo, number, labels...)
+}
+
+// AddLabelsWithContext adds a list of labels with a provided context
+func (f *FakeClient) AddLabelsWithContext(ctx context.Context, owner, repo string, number int, labels ...string) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	for _, label := range labels {
