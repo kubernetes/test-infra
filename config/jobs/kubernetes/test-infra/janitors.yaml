@@ -1,4 +1,32 @@
 periodics:
+- name: maintenance-ci-shared-aws-janitor
+  cluster: eks-prow-build-cluster
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-aws-shared-testing: "true"
+  decorate: true
+  spec:
+    containers:
+    - command:
+      - /app
+      args:
+      - --ttl=6h
+      - --path=s3://cloud-provider-aws-shared-e2e/objs.json
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20230908-da54d76
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-shared-aws-janitor
+    description: Deletes old AWS resources for shared jobs
+
 - interval: 1h
   name: maintenance-ci-aws-janitor
   labels:
