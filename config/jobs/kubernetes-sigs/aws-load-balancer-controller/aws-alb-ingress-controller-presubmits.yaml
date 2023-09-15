@@ -59,7 +59,7 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential-aws-oss-testing: "true"
+      preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
