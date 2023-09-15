@@ -19,6 +19,7 @@ presubmits:
       description: AWS IAM Authenticator unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-iam-authenticator-integration
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -32,12 +33,20 @@ presubmits:
         args:
         - make
         - integration
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-aws-iam-authenticator
       testgrid-tab-name: pull-integration
       description: AWS IAM Authenticator integration test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-iam-authenticator-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -54,6 +63,13 @@ presubmits:
         - e2e
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-aws-iam-authenticator
       testgrid-tab-name: pull-e2e
@@ -64,6 +80,7 @@ presubmits:
     - release-0.5
     - release-0.6
   - name: pull-aws-iam-authenticator-e2e-kind
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -83,6 +100,13 @@ presubmits:
           value: kind
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-aws-iam-authenticator
       testgrid-tab-name: pull-e2e-kind
