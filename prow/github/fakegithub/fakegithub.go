@@ -358,6 +358,11 @@ func (f *FakeClient) DeleteCommentWithContext(_ context.Context, owner, repo str
 
 // DeleteStaleComments deletes comments flagged by isStale.
 func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+	return f.DeleteStaleCommentsWithContext(context.Background(), org, repo, number, comments, isStale)
+}
+
+// DeleteStaleCommentsWithContext deletes comments flagged by isStale with a provided context.
+func (f *FakeClient) DeleteStaleCommentsWithContext(ctx context.Context, org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
 	if comments == nil {
 		comments, _ = f.ListIssueComments(org, repo, number)
 	}
