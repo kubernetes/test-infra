@@ -47,6 +47,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-gcp-make
+    cluster: k8s-infra-prow-build
     always_run: true
     optional: false
     decorate: true
@@ -107,6 +108,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-verify
   - name: pull-cluster-api-provider-gcp-e2e-test
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -138,10 +140,14 @@ presubmits:
               memory: "9000Mi"
               # during the tests more like 3-20m is used
               cpu: 2000m
+            limits:
+              memory: "9000Mi"
+              cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-test
   - name: pull-cluster-api-provider-gcp-conformance-ci-artifacts
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -183,10 +189,14 @@ presubmits:
               memory: "9000Mi"
               # during the tests more like 3-20m is used
               cpu: 2000m
+            limits:
+              memory: "9000Mi"
+              cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-ci-artifacts
   - name: pull-cluster-api-provider-gcp-conformance
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -218,10 +228,14 @@ presubmits:
               memory: "9000Mi"
               # during the tests more like 3-20m is used
               cpu: 2000m
+            limits:
+              memory: "9000Mi"
+              cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance
   - name: pull-cluster-api-provider-gcp-capi-e2e
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -253,10 +267,14 @@ presubmits:
             requests:
               memory: "9000Mi"
               cpu: 2000m
+            limits:
+              memory: "9000Mi"
+              cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-capi-e2e-test
   - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -284,6 +302,9 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              memory: "9000Mi"
+              cpu: 2000m
             requests:
               memory: "9000Mi"
               cpu: 2000m
