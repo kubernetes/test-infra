@@ -1,5 +1,6 @@
 
 - name: {{job_name}}
+  cluster: {{build_cluster}}
   cron: '{{cron}}'
   labels:
     preset-service-account: "true"
@@ -33,9 +34,10 @@
       imagePullPolicy: Always
       resources:
         limits:
+          cpu: "4"
           memory: 6Gi
         requests:
-          cpu: "2"
+          cpu: "4"
           memory: 6Gi
       securityContext:
         privileged: true

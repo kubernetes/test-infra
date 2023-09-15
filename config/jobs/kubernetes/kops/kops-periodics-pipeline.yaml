@@ -9,6 +9,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -52,10 +53,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
@@ -75,6 +77,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -118,10 +121,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
@@ -141,6 +145,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
@@ -184,10 +189,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
