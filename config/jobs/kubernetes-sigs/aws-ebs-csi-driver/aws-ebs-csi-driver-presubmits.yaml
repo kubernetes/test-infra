@@ -43,6 +43,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-aws-credential-shared-oss-testing: "true"
     spec:
+      serviceAccountName: aws-shared-testing-role
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
