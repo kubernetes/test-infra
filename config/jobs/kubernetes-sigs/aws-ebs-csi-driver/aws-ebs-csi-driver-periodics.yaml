@@ -1,5 +1,6 @@
 periodics:
 - name: ci-aws-ebs-csi-driver-unit-test
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -7,7 +8,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: aws-ebs-csi-driver
@@ -22,12 +23,20 @@ periodics:
       - test
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: "2"
+          memory: "4Gi"
+        requests:
+          cpu: "2"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver
     testgrid-tab-name: ci-unit-test
     description: aws ebs csi driver unit test, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-e2e-single-az
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -35,7 +44,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: aws-ebs-csi-driver
@@ -50,12 +59,20 @@ periodics:
       - test-e2e-single-az
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: "2"
+          memory: "4Gi"
+        requests:
+          cpu: "2"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver
     testgrid-tab-name: ci-e2e-test-single-az
     description: aws ebs csi driver e2e test on single az, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-e2e-multi-az
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -63,7 +80,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: aws-ebs-csi-driver
@@ -78,12 +95,20 @@ periodics:
       - test-e2e-multi-az
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: "2"
+          memory: "4Gi"
+        requests:
+          cpu: "2"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver
     testgrid-tab-name: ci-e2e-test-multi-az
     description: aws ebs csi driver e2e test on mutiple AZs, continuous
     testgrid-num-columns-recent: '30'
 - name: ci-aws-ebs-csi-driver-external-test
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 1h20m
@@ -91,7 +116,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-aws-credential-aws-oss-testing: "true"
+    preset-aws-credential-aws-shared-testing: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: aws-ebs-csi-driver
@@ -106,6 +131,13 @@ periodics:
       - test-e2e-external
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: "2"
+          memory: "4Gi"
+        requests:
+          cpu: "2"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-aws-ebs-csi-driver
     testgrid-tab-name: ci-external-test
