@@ -56,6 +56,8 @@ presubmits:
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 4h
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
