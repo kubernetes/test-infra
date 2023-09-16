@@ -41,7 +41,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-aws-credential-shared-oss-testing: "true"
+      preset-aws-credential-aws-shared-testing: "true"
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
