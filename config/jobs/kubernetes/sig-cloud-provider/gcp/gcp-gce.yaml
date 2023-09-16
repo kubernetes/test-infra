@@ -624,6 +624,7 @@ periodics:
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -648,6 +649,13 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
       - --timeout=70m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-alpha-enabled-default
@@ -864,6 +872,7 @@ periodics:
 
 - interval: 12h
   name: ci-kubernetes-soak-gce-gci
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -888,12 +897,20 @@ periodics:
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-soak
     testgrid-tab-name: gce-gci
 
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-beta
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -918,12 +935,20 @@ periodics:
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.15
 
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-stable1
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -947,12 +972,20 @@ periodics:
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.14
 
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-stable2
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -976,12 +1009,20 @@ periodics:
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.13
 
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-stable3
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -1005,6 +1046,13 @@ periodics:
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.12
