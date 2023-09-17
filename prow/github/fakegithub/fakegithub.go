@@ -358,6 +358,11 @@ func (f *FakeClient) DeleteCommentWithContext(_ context.Context, owner, repo str
 
 // DeleteStaleComments deletes comments flagged by isStale.
 func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+	return f.DeleteStaleCommentsWithContext(context.Background(), org, repo, number, comments, isStale)
+}
+
+// DeleteStaleCommentsWithContext deletes comments flagged by isStale with a provided context.
+func (f *FakeClient) DeleteStaleCommentsWithContext(ctx context.Context, org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
 	if comments == nil {
 		comments, _ = f.ListIssueComments(org, repo, number)
 	}
@@ -585,11 +590,21 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
-	return f.AddLabels(owner, repo, number, label)
+	return f.AddLabelsWithContext(context.Background(), owner, repo, number, label)
+}
+
+// AddLabelWithContext adds a label with a provided context
+func (f *FakeClient) AddLabelWithContext(ctx context.Context, owner, repo string, number int, label string) error {
+	return f.AddLabelsWithContext(context.Background(), owner, repo, number, label)
 }
 
 // AddLabels adds a list of labels
 func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string) error {
+	return f.AddLabelsWithContext(context.Background(), owner, repo, number, labels...)
+}
+
+// AddLabelsWithContext adds a list of labels with a provided context
+func (f *FakeClient) AddLabelsWithContext(ctx context.Context, owner, repo string, number int, labels ...string) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	for _, label := range labels {
@@ -619,6 +634,11 @@ func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string)
 
 // RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
+	return f.RemoveLabelWithContext(context.Background(), owner, repo, number, label)
+}
+
+// RemoveLabelWithContext removes a label with a provided context
+func (f *FakeClient) RemoveLabelWithContext(ctx context.Context, owner, repo string, number int, label string) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
