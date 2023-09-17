@@ -396,7 +396,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/apps/perfdash" href="#area/apps/perfdash">`area/apps/perfdash`</a> | perfdash.k8s.io, code in apps/perdash/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/apps/prow" href="#area/apps/prow">`area/apps/prow`</a> | k8s-infra-prow.k8s.io, code in apps/prow/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/apps/publishing-bot" href="#area/apps/publishing-bot">`area/apps/publishing-bot`</a> | publishing-bot, code in apps/publishing-bot/ <br><br> This was previously `area/infra/publishing-bot`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="area/apps/sippy" href="#area/apps/sippy">`area/apps/sippy`</a> | sippy.k8s.io, code in apps/sippy/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/apps/slack-infra" href="#area/apps/slack-infra">`area/apps/slack-infra`</a> | slack.k8s.io, slack-infra, code in apps/slack-infra| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/apps/triageparty-release" href="#area/apps/triageparty-release">`area/apps/triageparty-release`</a> | release.triage.k8s.io, triage-party, code in apps/triageparty-release| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts for subprojects| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
