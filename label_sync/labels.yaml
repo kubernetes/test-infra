@@ -959,12 +959,6 @@ repos:
         previously:
           - name: area/infra/publishing-bot
       - color: 0052cc
-        description: sippy.k8s.io, code in apps/sippy/
-        name: area/apps/sippy
-        target: both
-        prowPlugin: label
-        addedBy: anyone
-      - color: 0052cc
         description: slack.k8s.io, slack-infra, code in apps/slack-infra
         name: area/apps/slack-infra
         target: both
