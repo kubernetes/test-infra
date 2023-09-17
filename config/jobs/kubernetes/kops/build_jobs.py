@@ -845,7 +845,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-105-lts/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-156-49",
                        "--set=spec.kubeDNS.provider=KubeDNS",
                        "--gce-service-account=default", # Workaround for test-infra#24747
                    ],
