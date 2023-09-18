@@ -185,7 +185,7 @@ def build_test(cloud='aws',
         'networking': networking,
         'distro': distro,
         'k8s_version': k8s_version,
-        'kops_version': kops_version,
+        'kops_version': f"{kops_version or 'latest'}",
         'kops_channel': kops_channel,
     }
     if feature_flags:
@@ -197,7 +197,7 @@ def build_test(cloud='aws',
     dashboards = [
         'sig-cluster-lifecycle-kops',
         f"kops-distro-{distro.removesuffix('arm64')}",
-        f"kops-k8s-{k8s_version or 'latest'}",
+        f"kops-k8s-{k8s_version}",
         f"kops-{kops_version or 'latest'}",
     ]
     if cloud == 'aws':
@@ -424,6 +424,9 @@ def generate_grid():
                     extra_flags = []
                     if networking == 'cilium-eni':
                         extra_flags = ['--node-size=t3.large']
+                    # remove flannel from list of tested CNIs after k8s version < 1.28 is not tested
+                    if networking == 'flannel' and k8s_version in ['1.28', '1.29']:
+                        break
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro,
@@ -851,7 +854,7 @@ def generate_misc():
                    ],
                    skip_regex=r'\[Driver:.nfs\]|\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
-                   runs_per_day=3),
+                   runs_per_day=8),
 
     ]
     return results

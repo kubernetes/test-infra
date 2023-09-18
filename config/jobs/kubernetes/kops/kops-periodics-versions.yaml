@@ -2,7 +2,7 @@
 # 6 jobs, total of 336 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-k8s-latest
   cron: '35 1-23/3 * * *'
   labels:
@@ -64,13 +64,13 @@ periodics:
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-k8s-latest
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-k8s-1-28
   cron: '17 2-23/3 * * *'
   labels:
@@ -129,13 +129,13 @@ periodics:
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.28, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-k8s-1-28
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-k8s-1-27
   cron: '32 1-23/3 * * *'
   labels:
@@ -194,13 +194,13 @@ periodics:
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.27, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-k8s-1-27
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-k8s-1-26
   cron: '6 1-23/3 * * *'
   labels:
@@ -259,13 +259,13 @@ periodics:
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.26, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-k8s-1-26
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-k8s-1-25
   cron: '44 1-23/3 * * *'
   labels:
@@ -324,13 +324,13 @@ periodics:
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.25, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-k8s-1-25
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-k8s-1-24
   cron: '26 1-23/3 * * *'
   labels:
@@ -389,7 +389,7 @@ periodics:
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.24'
     test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.24, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
