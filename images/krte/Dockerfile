@@ -37,9 +37,6 @@ ENV KRTE_IMAGE=${IMAGE_ARG} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
     CONTAINER=docker
 
-# copy in image utility scripts
-COPY wrapper.sh /usr/local/bin/
-
 # Install tools needed to:
 # - install docker
 # - build kind
@@ -101,6 +98,9 @@ RUN echo "Installing Packages ..." \
     && echo "Ensuring Legacy Iptables ..." \
         && update-alternatives --set iptables /usr/sbin/iptables-legacy \
         && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+# copy in image utility scripts
+COPY wrapper.sh /usr/local/bin/
 
 # entrypoint is our wrapper script, in Prow you will need to explicitly re-specify this
 ENTRYPOINT ["wrapper.sh"]
