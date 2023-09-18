@@ -32,7 +32,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.10
+      base_ref: release-1.11
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -78,7 +78,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.10
+      base_ref: release-1.11
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: false
     - org: kubernetes-sigs
@@ -134,7 +134,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.10
+        base_ref: release-1.11
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: false
       - org: kubernetes-sigs
@@ -191,7 +191,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.10
+        base_ref: release-1.11
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: false
       - org: kubernetes-sigs
@@ -250,7 +250,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.10
+      base_ref: release-1.11
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: false
     - org: kubernetes-sigs
