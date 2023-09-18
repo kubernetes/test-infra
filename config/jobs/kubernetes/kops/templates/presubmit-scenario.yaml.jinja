@@ -57,10 +57,10 @@
         {%- endfor %}
         resources:
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
           {%- if scenario == 'scalability' %}
           limits:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
           {%- endif %}
