@@ -55,11 +55,11 @@ presubmits:
           value: "true"
         resources:
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
           limits:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204
@@ -138,11 +138,11 @@ presubmits:
           value: "true"
         resources:
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
           limits:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204
@@ -217,11 +217,11 @@ presubmits:
           value: "true"
         resources:
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
           limits:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "6"
+            memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204
