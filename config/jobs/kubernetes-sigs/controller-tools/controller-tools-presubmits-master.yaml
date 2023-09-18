@@ -15,11 +15,11 @@ presubmits:
         - test-all
         resources:
           limits:
-            cpu: 6
-            memory: 8Gi
+            cpu: 10
+            memory: 24Gi
           requests:
-            cpu: 6
-            memory: 8Gi
+            cpu: 10
+            memory: 24Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-tools-master
