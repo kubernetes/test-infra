@@ -720,7 +720,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.26
+        base_ref: release-1.27
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -775,7 +775,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.26
+        base_ref: release-1.25
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -952,7 +952,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.26
+        base_ref: release-1.27
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
