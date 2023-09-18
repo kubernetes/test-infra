@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -43,7 +44,10 @@ const (
 	dependabotUser          = "dependabot[bot]"
 )
 
-var sleep = time.Sleep
+var (
+	needsRebaseRe = regexp.MustCompile(`(?mi)^/check-needs-rebase\s*$`)
+	sleep         = time.Sleep
+)
 
 type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
@@ -62,7 +66,7 @@ type githubClient interface {
 func HelpProvider(_ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The needs-rebase plugin manages the '` + labels.NeedsRebase + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
-The plugin reacts to commit changes on PRs in addition to periodically scanning all open PRs for any changes to mergeability that could have resulted from changes in other PRs.`,
+    The plugin reacts to commit changes on PRs in addition to periodically scanning all open PRs for any changes to mergeability that could have resulted from changes in other PRs.`,
 		},
 		nil
 }
@@ -84,7 +88,13 @@ func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.Is
 		return nil
 	}
 
-	if cache.validTime > 0 && cache.Get(ice.Issue.ID) {
+	needsRebaseComm := false
+
+	if needsRebaseRe.MatchString(ice.Comment.Body) {
+		needsRebaseComm = true
+	}
+
+	if cache.validTime > 0 && cache.Get(ice.Issue.ID) && !needsRebaseComm {
 		return nil
 	}
 
