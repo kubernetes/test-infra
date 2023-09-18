@@ -30,6 +30,26 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+: "${KRTE_SYSTEMD_ROOTLESS:=false}"
+: "${KRTE_SYSTEMD_ROOTLESS_USER:=rootless}"
+: "${KRTE_SYSTEMD:=${KRTE_SYSTEMD_ROOTLESS}}"
+
+if [ "${KRTE_SYSTEMD}" = "true" ] && [ "$$" = "1" ]; then
+  >&2 echo "wrapper.sh] [INFO] Re-executing in systemd: \`$*\`"
+  exec /usr/local/bin/containerized-systemd.sh "$0" "$@"
+fi
+if [ "${KRTE_SYSTEMD_ROOTLESS}" = "true" ] && [ "$(id -u)" = "0" ]; then
+  >&2 echo "wrapper.sh] [INFO] Waiting for the systemd user session to start up"
+  loginctl enable-linger ${KRTE_SYSTEMD_ROOTLESS_USER}
+  sleep 3
+  >&2 echo "wrapper.sh] [INFO] Switching to rootless: \`$*\`"
+  rootless_uid=$(id -u ${KRTE_SYSTEMD_ROOTLESS_USER})
+  exec sudo -E -H -u ${KRTE_SYSTEMD_ROOTLESS_USER} \
+    XDG_RUNTIME_DIR=/run/user/${rootless_uid} \
+    DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${rootless_uid}/bus \
+    "$0" "$@"
+fi
+
 >&2 echo "wrapper.sh] [INFO] Wrapping Test Command: \`$*\`"
 >&2 echo "wrapper.sh] [INFO] Running in: ${KRTE_IMAGE}"
 >&2 echo "wrapper.sh] [INFO] See: https://github.com/kubernetes/test-infra/blob/master/images/krte/wrapper.sh"
@@ -40,7 +60,11 @@ cleanup(){
   if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
     >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after Docker in Docker ..."
     docker ps -aq | xargs -r docker rm -f || true
-    service docker stop || true
+    if [ "$(id -u)" = "0" ]; then
+      service docker stop || true
+    else
+      systemctl --user stop docker || true
+    fi
     >&2 echo "wrapper.sh] [CLEANUP] Done cleaning up after Docker in Docker."
   fi
 }
@@ -93,7 +117,11 @@ export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
   >&2 echo "wrapper.sh] [SETUP] Docker in Docker enabled, initializing ..."
   # If we have opted in to docker in docker, start the docker daemon,
-  service docker start
+  if [ "$(id -u)" = "0" ]; then
+    service docker start
+  else
+    dockerd-rootless-setuptool.sh install
+  fi
   # the service can be started but the docker socket not ready, wait for ready
   WAIT_N=0
   while true; do

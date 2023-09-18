@@ -25,6 +25,12 @@ ARG IMAGE_ARG
 # empty value specifies the latest version.
 ARG GO_VERSION
 
+# args for the user to run rootless docker (for KRTE_SYSTEMD_ROOTLESS mode)
+ARG ROOTLESS_USER=rootless
+ARG ROOTLESS_UID=5000
+ARG ROOTLESS_SUBUID_BEGIN=100000
+ARG ROOTLESS_SUBUID_COUNT=1048576
+
 # add envs:
 # - so we can debug with the image name:tag
 # - adding gsutil etc. to path (where we will install them)
@@ -54,6 +60,8 @@ RUN echo "Installing Packages ..." \
             build-essential \
             ca-certificates \
             curl \
+            dbus \
+            dbus-user-session \
             file \
             git \
             gnupg2 \
@@ -65,7 +73,11 @@ RUN echo "Installing Packages ..." \
             procps \
             python3 \
             rsync \
+            slirp4netns \
             software-properties-common \
+            sudo \
+            systemd \
+            uidmap \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
@@ -92,17 +104,30 @@ RUN echo "Installing Packages ..." \
             "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
             tee /etc/apt/sources.list.d/docker.list > /dev/null \
         && apt-get update \
-        && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin \
+        && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin docker-ce-rootless-extras \
+        && systemctl disable docker \
         && rm -rf /var/lib/apt/lists/* \
         && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && echo "Ensuring Legacy Iptables ..." \
         && update-alternatives --set iptables /usr/sbin/iptables-legacy \
-        && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+        && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
+    && echo "Setting up the systemd delegation for rootless" \
+        && mkdir -p /etc/systemd/system/user@.service.d \
+        && echo "[Service]" > /etc/systemd/system/user@.service.d/delegate.conf \
+        && echo "Delegate=yes" >> /etc/systemd/system/user@.service.d/delegate.conf \
+    && echo "Setting up the rootless user" \
+        && useradd --create-home --home-dir /home/${ROOTLESS_USER} --uid ${ROOTLESS_UID} -G systemd-journal ${ROOTLESS_USER} \
+        && echo "${ROOTLESS_UID}:${ROOTLESS_SUBUID_BEGIN}:${ROOTLESS_SUBUID_COUNT}" >/etc/subuid \
+        && cp -f /etc/subuid /etc/subgid \
+        && mkdir -p /home/${ROOTLESS_USER}/.local/share/docker \
+        && chown -R ${ROOTLESS_USER} /home/${ROOTLESS_USER}
 
 # copy in image utility scripts
+COPY containerized-systemd.sh /usr/local/bin/
 COPY wrapper.sh /usr/local/bin/
 
 # entrypoint is our wrapper script, in Prow you will need to explicitly re-specify this
 ENTRYPOINT ["wrapper.sh"]
 # volume for docker in docker, use an emptyDir in Prow
 VOLUME ["/var/lib/docker"]
+VOLUME ["/home/${ROOTLESS_USER}/.local/share/docker"]
