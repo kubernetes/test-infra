@@ -13,9 +13,10 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest
         command:
-        - make
+        - /buildx-entrypoint
         args:
         - build
+        - .
         resources:
           limits:
             cpu: 2
