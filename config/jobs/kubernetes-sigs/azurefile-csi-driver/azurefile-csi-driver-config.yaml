@@ -791,6 +791,11 @@ presubmits:
         base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.26
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -808,6 +813,8 @@ presubmits:
           env:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.26"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz
