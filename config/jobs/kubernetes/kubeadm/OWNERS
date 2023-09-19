@@ -1,6 +1,5 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
-- fabriziopandini
 - neolit123
 - SataQiu
 - pacoxu
@@ -9,8 +8,8 @@ reviewers:
 - neolit123
 - SataQiu
 - pacoxu
-- RA489
 emeritus_approvers:
+- fabriziopandini
 - luxas
 - timothysc
 labels:
