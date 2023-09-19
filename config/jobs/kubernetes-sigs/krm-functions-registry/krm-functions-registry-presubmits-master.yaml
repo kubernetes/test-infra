@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/krm-functions-registry:
   - name: pull-krm-functions-registry-test-master
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     labels:
@@ -22,8 +23,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: "4000m"
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: krm-functions-registry-presubmit-master
