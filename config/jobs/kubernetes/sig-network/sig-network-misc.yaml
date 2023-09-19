@@ -235,6 +235,7 @@ presubmits:
 periodics:
 - interval: 6h
   name: ci-kubernetes-e2e-gce-alpha-api
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -259,12 +260,20 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=60m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: google-gce, sig-network-gce
     testgrid-tab-name: gce-alpha-api
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -287,11 +296,19 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-coredns-performance
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -314,11 +331,19 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-kubedns-performance
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-coredns
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -339,9 +364,17 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -365,11 +398,19 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-coredns-performance-nodecache
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -393,11 +434,19 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-kubedns-performance-nodecache
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -419,6 +468,13 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ingress
@@ -495,6 +551,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -515,6 +572,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gci-gce-ingress-manual-network
@@ -522,6 +586,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ip-alias
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -545,11 +610,19 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: google-gce, google-gci
     testgrid-tab-name: ip-alias
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ipvs
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -572,11 +645,19 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '24'
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-kube-dns
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -597,9 +678,17 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -621,9 +710,17 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -645,9 +742,17 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -670,9 +775,17 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|LoadBalancer --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
 - interval: 6h
   name: ci-kubernetes-e2e-ubuntu-gce-network-policies
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -710,7 +823,11 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
         requests:
+          cpu: 2
           memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-network-gce
