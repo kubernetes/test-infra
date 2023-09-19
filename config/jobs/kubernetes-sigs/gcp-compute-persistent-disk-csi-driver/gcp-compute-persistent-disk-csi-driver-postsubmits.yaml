@@ -1,5 +1,6 @@
 periodics:
 - name: ci-gcp-compute-persistent-disk-csi-driver-release-staging-k8s-master-integration
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -25,18 +26,19 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Release Candidate
     testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest Release Candidate, and Stable Sidecars. Used to test release candidates when a new release is being cut.
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -62,18 +64,19 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest
     testgrid-alert-email: gke-managed-storage-alerts@google.com
     description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest build, and Stable Sidecars
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration-canary-sidecars
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -99,12 +102,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 2
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Canary Sidecars
