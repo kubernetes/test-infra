@@ -72,3 +72,31 @@ func TestFakeClient_SearchWithContext(t *testing.T) {
 		t.Fatal("expected invalid query to fail, but got no error")
 	}
 }
+
+func TestFakeClient_GetProjectVersions(t *testing.T) {
+	fakeClient := &FakeClient{
+		ProjectVersions: map[string][]*jira.Version{
+			"ABC": {
+				{
+					Name: "Version1",
+				},
+				{
+					Name: "Version2",
+				},
+				{
+					Name: "Version3",
+				},
+			},
+		},
+	}
+
+	for _, project := range []string{"ABC", "FOO"} {
+		versions, err := fakeClient.GetProjectVersions(project)
+		if len(versions) != len(fakeClient.ProjectVersions[project]) {
+			t.Fatalf("expected: %d results, but got: %d", len(fakeClient.ProjectVersions[project]), len(versions))
+		}
+		if err != nil {
+			t.Fatalf("Error: %v", err)
+		}
+	}
+}

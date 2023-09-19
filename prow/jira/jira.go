@@ -94,6 +94,7 @@ type Client interface {
 	JiraURL() string
 	Used() bool
 	WithFields(fields logrus.Fields) Client
+	GetProjectVersions(project string) ([]*jira.Version, error)
 }
 
 type BasicAuthGenerator func() (username, password string)
@@ -845,4 +846,21 @@ func GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
 
 func (jc *client) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
 	return GetIssueTargetVersion(issue)
+}
+
+// GetProjectVersions returns the list of all the Versions defined in a Project
+func (jc *client) GetProjectVersions(project string) ([]*jira.Version, error) {
+	req, err := jc.upstream.NewRequest("GET", "rest/api/2/project/"+project+"/versions", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct request: %w", err)
+	}
+	versions := []*jira.Version{}
+	resp, err := jc.upstream.Do(req, &versions)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return nil, HandleJiraError(resp, err)
+	}
+	return versions, nil
 }
