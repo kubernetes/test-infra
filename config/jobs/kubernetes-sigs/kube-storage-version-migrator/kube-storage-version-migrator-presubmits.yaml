@@ -119,10 +119,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: 9Gi
+            memory: 6Gi
             cpu: 2
           limits:
-            memory: 9Gi
+            memory: 6Gi
             cpu: 2
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
