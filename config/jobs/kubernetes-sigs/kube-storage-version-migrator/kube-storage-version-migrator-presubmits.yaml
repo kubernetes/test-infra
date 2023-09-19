@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kube-storage-version-migrator:
   - name: pull-kube-storage-version-migrator-test
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     spec:
@@ -9,6 +10,13 @@ presubmits:
         command:
         - make
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
@@ -79,6 +87,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-fully-automated
   - name: pull-kube-storage-version-migrator-ha-master
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/kube-storage-version-migrator"
     decorate: true
     decoration_config:
@@ -110,8 +119,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "9000Mi"
-            cpu: 2000m
+            memory: 6Gi
+            cpu: 2
+          limits:
+            memory: 6Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-ha-master
