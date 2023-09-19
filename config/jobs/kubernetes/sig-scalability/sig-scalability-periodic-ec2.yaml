@@ -82,11 +82,15 @@ periodics:
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
-        value: "1000"
+        value: "4200"
       - name: RUN_CL2_TEST
         value: "true"
-      - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-        value: "20"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_DELETE_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
@@ -101,8 +105,8 @@ periodics:
         value: "true"
       resources:
         requests:
-          cpu: "2"
-          memory: "6Gi"
+          cpu: "6"
+          memory: "16Gi"
         limits:
-          cpu: "2"
-          memory: "6Gi"
+          cpu: "6"
+          memory: "16Gi"
