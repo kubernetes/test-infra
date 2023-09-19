@@ -589,7 +589,7 @@ def node():
             # metadata server.
             os.environ[NODE_ENV] = urllib.request.urlopen(urllib.request.Request(
                 'http://169.254.169.254/computeMetadata/v1/instance/name',
-                headers={'Metadata-Flavor': 'Google'})).read()
+                headers={'Metadata-Flavor': 'Google'})).read().decode('utf-8')
             os.environ[POD_ENV] = host  # We also want to log this.
         except IOError:  # Fallback.
             os.environ[NODE_ENV] = host
