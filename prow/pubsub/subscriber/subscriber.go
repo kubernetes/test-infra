@@ -29,6 +29,7 @@ import (
 	prowcrd "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gangway"
+	"k8s.io/test-infra/prow/kube"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -265,6 +266,13 @@ func (s *Subscriber) peToCjer(l *logrus.Entry, pe *ProwJobEvent, eType, subscrip
 		cjer.Refs, err = gangway.FromCrdRefs(pe.Refs)
 		if err != nil {
 			return nil, err
+		}
+
+		// Add "https://" prefix to orgRepo if this is a gerrit job.
+		// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+		prefix := "https://"
+		if pso.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(cjer.Refs.Org, prefix) {
+			cjer.Refs.Org = prefix + cjer.Refs.Org
 		}
 	}
 

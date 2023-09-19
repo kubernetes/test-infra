@@ -668,12 +668,6 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 	var presubmitJob *config.Presubmit
 	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
 	orgRepo := org + "/" + repo
-	// Add "https://" prefix to orgRepo if this is a gerrit job.
-	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
-	prefix := "https://"
-	if cjer.GetPodSpecOptions() != nil && cjer.GetPodSpecOptions().Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
-		orgRepo = prefix + orgRepo
-	}
 	baseSHAGetter := func() (string, error) {
 		return refs.BaseSHA, nil
 	}
