@@ -101,3 +101,33 @@ func (c *Client) GetProwYAML(refs *prowapi.Refs) (*config.ProwYAML, error) {
 
 	return &prowYAML, nil
 }
+
+// GetInRepoConfig just wraps around GetProwYAML(), converting the input
+// parameters into a prowapi.Refs{} type.
+func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) (*config.ProwYAML, error) {
+	refs := prowapi.Refs{}
+
+	orgRepo := config.NewOrgRepo(identifier)
+	refs.Org = orgRepo.Org
+	refs.Repo = orgRepo.Repo
+
+	var err error
+	refs.BaseSHA, err = baseSHAGetter()
+	if err != nil {
+		return nil, err
+	}
+
+	pulls := []prowapi.Pull{}
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return nil, err
+		}
+		pulls = append(pulls, prowapi.Pull{
+			SHA: headSHA,
+		})
+	}
+	refs.Pulls = pulls
+
+	return c.GetProwYAML(&refs)
+}

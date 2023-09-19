@@ -115,6 +115,17 @@ type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA st
 var _ ProwYAMLGetter = prowYAMLGetterWithDefaults
 var _ ProwYAMLGetter = prowYAMLGetter
 
+// InRepoConfigGetter defines a common interface that both the Moonraker client
+// and raw InRepoConfigCache can implement. This way, Prow components like Sub
+// and Gerrit can choose either one (based on runtime flags), but regardless of
+// the choice the surrounding code can still just call this GetProwYAML()
+// interface method (without being aware whether the underlying implementation
+// is going over the network to Moonraker or is done locally with the local
+// InRepoConfigCache (LRU cache)).
+type InRepoConfigGetter interface {
+	GetInRepoConfig(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error)
+}
+
 // prowYAMLGetter is like prowYAMLGetterWithDefaults, but without default values
 // (it does not call DefaultAndValidateProwYAML()). Its sole purpose is to allow
 // caching of ProwYAMLs that are retrieved purely from the inrepoconfig's repo,
