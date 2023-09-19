@@ -31,7 +31,7 @@ spec:
     - name: JOB_NAME
       value: job-name
     - name: JOB_SPEC
-      value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","head_ref":"pull-branch-name"}]}}'
+      value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","title":"pull-title","head_ref":"pull-branch-name"}]}}'
     - name: JOB_TYPE
       value: presubmit
     - name: PROW_JOB_ID
@@ -48,6 +48,8 @@ spec:
       value: pull-sha
     - name: PULL_REFS
       value: base-ref:base-sha,1:pull-sha
+    - name: PULL_TITLE
+      value: pull-title
     - name: REPO_NAME
       value: repo-name
     - name: REPO_OWNER

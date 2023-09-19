@@ -948,6 +948,7 @@ func TestMakeResourcesBeta1(t *testing.T) {
 					pipelinev1beta1.Param{Name: "PULL_NUMBER", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: "1"}},
 					pipelinev1beta1.Param{Name: "PULL_PULL_SHA", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
 					pipelinev1beta1.Param{Name: "PULL_REFS", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: "feature-branch,1:"}},
+					pipelinev1beta1.Param{Name: "PULL_TITLE", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
 					pipelinev1beta1.Param{Name: "REPO_NAME", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
 					pipelinev1beta1.Param{Name: "REPO_OWNER", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
 				)
