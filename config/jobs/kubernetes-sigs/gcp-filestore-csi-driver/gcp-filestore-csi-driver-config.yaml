@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/gcp-filestore-csi-driver:
   - name: pull-gcp-filestore-csi-driver-e2e
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
@@ -20,7 +21,15 @@ presubmits:
         env:
         - name: ZONE
           value: us-central1-c
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
   - name: pull-gcp-filestore-csi-driver-sanity
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
@@ -36,7 +45,15 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_sanity.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
   - name: pull-gcp-filestore-csi-driver-unit
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
@@ -52,7 +69,15 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_unit.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
   - name: pull-gcp-filestore-csi-driver-verify
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
@@ -68,7 +93,15 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify_all.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
   - name: pull-gcp-filestore-csi-driver-kubernetes-integration
+    cluster: k8s-infra-prow-build
     always_run: false
     run_if_changed: '^(pkg\/|cmd\/|test\/|hack\/|vendor\/)'
     labels:
@@ -90,9 +123,9 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 2
+            memory: "6Gi"
