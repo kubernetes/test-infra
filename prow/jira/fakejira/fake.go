@@ -41,6 +41,7 @@ type FakeClient struct {
 	Transitions      []jira.Transition
 	Users            []*jira.User
 	SearchResponses  map[SearchRequest]SearchResponse
+	ProjectVersions  map[string][]*jira.Version
 }
 
 func (f *FakeClient) ListProjects() (*jira.ProjectList, error) {
@@ -369,4 +370,11 @@ func (f *FakeClient) SearchWithContext(ctx context.Context, jql string, options 
 		return nil, nil, fmt.Errorf("the query: %s is not registered", jql)
 	}
 	return resp.issues, resp.response, resp.error
+}
+
+func (f *FakeClient) GetProjectVersions(project string) ([]*jira.Version, error) {
+	if versions, ok := f.ProjectVersions[project]; ok {
+		return versions, nil
+	}
+	return []*jira.Version{}, nil
 }
