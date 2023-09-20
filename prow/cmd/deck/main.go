@@ -745,7 +745,6 @@ func setHeadersNoCaching(w http.ResponseWriter) {
 	// IE "no-store". for good measure to cover older browsers we also set
 	// expires and pragma: https://stackoverflow.com/a/2068407
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 }
 
