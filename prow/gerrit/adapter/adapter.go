@@ -170,7 +170,7 @@ type Controller struct {
 	lock                        sync.RWMutex
 	cookieFilePath              string
 	configAgent                 *config.Agent
-	inRepoConfigCache           *config.InRepoConfigCache
+	inRepoConfigGetter          config.InRepoConfigGetter
 	inRepoConfigFailuresTracker map[string]bool
 	projectsWithWorker          map[string]bool
 	latestMux                   sync.Mutex
@@ -184,7 +184,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, maxQPS, maxBurst int, inRepoConfigCache *config.InRepoConfigCache) *Controller {
+	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, maxQPS, maxBurst int, ircg config.InRepoConfigGetter) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.Set[string]{}
@@ -208,7 +208,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		projectsOptOutHelp:          projectsOptOutHelpMap,
 		cookieFilePath:              cookiefilePath,
 		configAgent:                 ca,
-		inRepoConfigCache:           inRepoConfigCache,
+		inRepoConfigGetter:          ircg,
 		inRepoConfigFailuresTracker: map[string]bool{},
 		projectsWithWorker:          make(map[string]bool),
 		workerPoolSize:              workerPoolSize,
@@ -625,7 +625,7 @@ func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, cha
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = c.inRepoConfigCache.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
+			postsubmits, err = c.inRepoConfigGetter.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil {
 				gerritMetrics.inrepoconfigResults.WithLabelValues(instance, change.Project, client.ResultSuccess).Inc()
@@ -671,7 +671,7 @@ func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, cha
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = c.inRepoConfigCache.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
+			presubmits, err = c.inRepoConfigGetter.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			if err == nil {
 				break
 			}

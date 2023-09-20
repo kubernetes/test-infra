@@ -26,8 +26,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --last-sync-fallback=/etc/last-sync-fallback/last-sync-fallback
-        - --cache-dir-base=/etc/cache
-        - --cookiefile=/etc/cookies/cookies
+        - --moonraker-address=http://moonraker.default
         ports:
         - name: metrics
           containerPort: 9090
@@ -42,9 +41,6 @@ spec:
           mountPath: /etc/last-sync-fallback
         - name: cache
           mountPath: /etc/cache
-        - name: cookies
-          mountPath: /etc/cookies
-          readOnly: true
         resources:
           requests:
             cpu: "1"
@@ -64,10 +60,6 @@ spec:
         emptyDir: {}
       - name: cache
         emptyDir: {}
-      - name: cookies
-        secret:
-          defaultMode: 420
-          secretName: http-cookiefile
 ---
 apiVersion: v1
 kind: ServiceAccount

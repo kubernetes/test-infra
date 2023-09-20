@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/moonraker"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -178,20 +179,30 @@ func main() {
 		persist = true
 	}
 
-	gitClient, err := (&prowflagutil.GitHubOptions{}).GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, persist)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating git client.")
-	}
+	var ircg config.InRepoConfigGetter
+	if o.config.MoonrakerAddress != "" {
+		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second, ca)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Moonraker client.")
+		}
+		ircg = moonrakerClient
+	} else {
+		gitClient, err := (&prowflagutil.GitHubOptions{}).GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, persist)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating git client.")
+		}
 
-	if o.config.InRepoConfigCacheDirBase != "" {
-		go diskMonitor(o.pushGatewayInterval, o.config.InRepoConfigCacheDirBase)
-	}
+		if o.config.InRepoConfigCacheDirBase != "" {
+			go diskMonitor(o.pushGatewayInterval, o.config.InRepoConfigCacheDirBase)
+		}
 
-	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, ca, gitClient)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
+		ircc, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, ca, gitClient)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating InRepoConfigCache.")
+		}
+		ircg = ircc
 	}
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.gerrit.MaxQPS, o.gerrit.MaxBurst, cacheGetter)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.gerrit.MaxQPS, o.gerrit.MaxBurst, ircg)
 
 	logrus.Infof("Starting gerrit fetcher")
 
