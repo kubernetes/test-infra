@@ -11,12 +11,12 @@ presets:
     valueFrom:
       secretKeyRef:
         name: cluster-api-provider-vsphere-ci
-        key: vmc-vcenter-user
+        key: vmc-vcenter-cluster-api-provider-vsphere-user
   - name: GOVC_PASSWORD
     valueFrom:
       secretKeyRef:
         name: cluster-api-provider-vsphere-ci
-        key: vmc-vcenter-password
+        key: vmc-vcenter-cluster-api-provider-vsphere-password
   - name: VSPHERE_TLS_THUMBPRINT
     valueFrom:
       secretKeyRef:
