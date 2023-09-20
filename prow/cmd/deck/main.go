@@ -740,11 +740,10 @@ func handleCached(next http.Handler) http.Handler {
 }
 
 func setHeadersNoCaching(w http.ResponseWriter) {
-	// Note that we need to set both no-cache and no-store because only some
-	// browsers decided to (incorrectly) treat no-cache as "never store"
-	// IE "no-store". for good measure to cover older browsers we also set
-	// expires and pragma: https://stackoverflow.com/a/2068407
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	// This follows the "ignore IE6, but allow prehistoric HTTP/1.0-only proxies"
+	// recommendation from https://stackoverflow.com/a/2068407 to prevent clients
+	// from caching the HTTP response.
+	w.Header().Set("Cache-Control", "no-store, must-revalidate")
 	w.Header().Set("Expires", "0")
 }
 
