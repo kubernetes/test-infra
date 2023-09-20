@@ -90,10 +90,10 @@ presubmits:
         - ci/prow/lint
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
   - name: pull-kernel-module-management-unit-tests
     cluster: eks-prow-build-cluster
@@ -110,8 +110,8 @@ presubmits:
         - ci/prow/unit-tests
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
