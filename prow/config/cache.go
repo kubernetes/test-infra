@@ -354,6 +354,11 @@ func (cache *InRepoConfigCache) GetProwYAML(identifier string, baseSHAGetter Ref
 	return newProwYAML, nil
 }
 
+// GetInRepoConfig just wraps around GetProwYAML().
+func (cache *InRepoConfigCache) GetInRepoConfig(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	return cache.GetProwYAML(identifier, baseSHAGetter, headSHAGetters...)
+}
+
 // getProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
 // 'valConstructorHelper' is used in two ways. First it is used by the caching
 // mechanism to lazily generate the value only when it is required (otherwise,

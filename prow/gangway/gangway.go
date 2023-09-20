@@ -46,7 +46,7 @@ type Gangway struct {
 	UnimplementedProwServer
 	ConfigAgent       *config.Agent
 	ProwJobClient     ProwJobClient
-	InRepoConfigCache *config.InRepoConfigCache
+	InRepoConfigGetter config.InRepoConfigGetter
 }
 
 // ProwJobClient describes a Kubernetes client for the Prow Job CR. Unlike a
@@ -95,7 +95,7 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 	var reporterFunc ReporterFunc = nil
 	requireTenantID := true
 
-	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigCache, allowedApiClient, requireTenantID, allowedClusters)
+	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigGetter, allowedApiClient, requireTenantID, allowedClusters)
 	if err != nil {
 		logrus.WithError(err).Debugf("failed to create job %q", cjer.GetJobName())
 		return nil, err
@@ -450,7 +450,7 @@ func HandleProwJob(l *logrus.Entry,
 	cjer *CreateJobExecutionRequest,
 	pjc ProwJobClient,
 	mainConfig prowCfgClient,
-	pc *config.InRepoConfigCache,
+	ircg config.InRepoConfigGetter,
 	allowedApiClient *config.AllowedApiClient,
 	requireTenantID bool,
 	allowedClusters []string) (*JobExecution, error) {
@@ -463,7 +463,7 @@ func HandleProwJob(l *logrus.Entry,
 	if err != nil {
 		return nil, err
 	}
-	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(mainConfig, pc, cjer)
+	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(mainConfig, ircg, cjer)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
@@ -587,13 +587,13 @@ func HandleProwJob(l *logrus.Entry,
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
+	getProwJobSpec(mainConfig prowCfgClient, ircg config.InRepoConfigGetter, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, ircg config.InRepoConfigGetter, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -655,7 +655,7 @@ func validateRefs(jobType JobExecutionType, refs *prowcrd.Refs) error {
 	return nil
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, ircg config.InRepoConfigGetter, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs, err := ToCrdRefs(cjer.GetRefs())
 	if err != nil {
@@ -668,12 +668,6 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 	var presubmitJob *config.Presubmit
 	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
 	orgRepo := org + "/" + repo
-	// Add "https://" prefix to orgRepo if this is a gerrit job.
-	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
-	prefix := "https://"
-	if cjer.GetPodSpecOptions() != nil && cjer.GetPodSpecOptions().Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
-		orgRepo = prefix + orgRepo
-	}
 	baseSHAGetter := func() (string, error) {
 		return refs.BaseSHA, nil
 	}
@@ -688,21 +682,18 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	// Get presubmits from Config alone.
 	presubmits := mainConfig.GetPresubmitsStatic(orgRepo)
-	// If InRepoConfigCache is provided, then it means that we also want to fetch
+	// If InRepoConfigGetter is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	if pc != nil {
+	if ircg != nil {
 		logger.Debug("Getting prow jobs.")
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
-		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
+		prowYAML, err := ircg.GetInRepoConfig(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get presubmits")
 		} else {
 			logger.WithField("static-jobs", len(presubmits)).WithField("jobs-with-inrepoconfig", len(presubmitsWithInrepoconfig)).Debug("Jobs found.")
-			// Overwrite presubmits. This is safe because pc.GetPresubmits()
-			// itself calls mainConfig.GetPresubmitsStatic() and adds to it all the
-			// presubmits found in the inrepoconfig.
-			presubmits = presubmitsWithInrepoconfig
+			presubmits = append(presubmits, prowYAML.Presubmits...)
 		}
 	}
 
@@ -735,7 +726,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 type postsubmitJobHandler struct {
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, ircg config.InRepoConfigGetter, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// postsubmit jobs require Refs to be set
 	refs, err := ToCrdRefs(cjer.GetRefs())
 	if err != nil {
@@ -761,16 +752,16 @@ func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *co
 
 	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	postsubmits := mainConfig.GetPostsubmitsStatic(orgRepo)
-	if pc != nil {
+	if ircg != nil {
 		logger.Debug("Getting prow jobs.")
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
-		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
+		prowYAML, err := ircg.GetInRepoConfig(orgRepo, baseSHAGetter)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get postsubmits from inrepoconfig")
 		} else {
 			logger.WithField("static-jobs", len(postsubmits)).WithField("jobs-with-inrepoconfig", len(postsubmitsWithInrepoconfig)).Debug("Jobs found.")
-			postsubmits = postsubmitsWithInrepoconfig
+			postsubmits = append(postsubmits, prowYAML.Postsubmits...)
 		}
 	}
 

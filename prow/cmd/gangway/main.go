@@ -42,6 +42,7 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/moonraker"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -156,25 +157,34 @@ func main() {
 		}
 	}
 
-	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Git client.")
+	gw := gangway.Gangway{
+		ConfigAgent:   configAgent,
+		ProwJobClient: prowjobClient,
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
+	// InRepoConfig getter.
+	if o.config.MoonrakerAddress != "" {
+		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Moonraker client.")
+		}
+		gw.InRepoConfigGetter = moonrakerClient
+	} else {
+		gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+		ircc, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating InRepoConfigCache.")
+		}
+		gw.InRepoConfigGetter = ircc
 	}
+
 	metrics.ExposeMetrics("gangway", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// Start serving liveness endpoint /healthz.
 	healthHTTP := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
-
-	gw := gangway.Gangway{
-		ConfigAgent:       configAgent,
-		ProwJobClient:     prowjobClient,
-		InRepoConfigCache: cacheGetter,
-	}
 
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(o.port))
 	if err != nil {
