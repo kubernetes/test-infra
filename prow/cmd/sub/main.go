@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/moonraker"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
@@ -114,22 +115,29 @@ func main() {
 		}
 	}
 
-	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Git client.")
-	}
-
-	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
-	}
-
 	s := &subscriber.Subscriber{
-		ConfigAgent:       configAgent,
-		Metrics:           promMetrics,
-		ProwJobClient:     prowjobClient,
-		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		InRepoConfigCache: cacheGetter,
+		ConfigAgent:   configAgent,
+		Metrics:       promMetrics,
+		ProwJobClient: prowjobClient,
+		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+	}
+
+	if o.config.MoonrakerAddress != "" {
+		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second, configAgent)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Moonraker client.")
+		}
+		s.InRepoConfigGetter = moonrakerClient
+	} else {
+		gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+		ircc, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
+		}
+		s.InRepoConfigGetter = ircc
 	}
 
 	subMux := http.NewServeMux()
