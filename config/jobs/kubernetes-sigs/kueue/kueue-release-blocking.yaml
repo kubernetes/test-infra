@@ -33,10 +33,10 @@ periodics:
           resources:
             requests:
               cpu: "2"
-              memory: "8Gi"
+              memory: "6Gi"
             limits:
               cpu: "2"
-              memory: "8Gi"
+              memory: "6Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-main
     cluster: eks-prow-build-cluster
@@ -69,10 +69,10 @@ periodics:
           resources:
             requests:
               cpu: "4"
-              memory: "16Gi"
+              memory: "6Gi"
             limits:
               cpu: "4"
-              memory: "16Gi"
+              memory: "6Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-25
     cluster: eks-prow-build-cluster
@@ -113,10 +113,10 @@ periodics:
           resources:
             requests:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
             limits:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-26
     cluster: eks-prow-build-cluster
@@ -157,10 +157,10 @@ periodics:
           resources:
             requests:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
             limits:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-27
     cluster: eks-prow-build-cluster
@@ -201,10 +201,10 @@ periodics:
           resources:
             requests:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
             limits:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-28
     cluster: eks-prow-build-cluster
@@ -245,7 +245,7 @@ periodics:
           resources:
             requests:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
             limits:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
