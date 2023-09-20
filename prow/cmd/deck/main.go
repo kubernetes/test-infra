@@ -731,14 +731,10 @@ func loadToken(file string) ([]byte, error) {
 
 func handleCached(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// This looks ridiculous but actually no-cache means "revalidate" and
-		// "max-age=0" just means there is no time in which it can skip
-		// revalidation. We also need to set must-revalidate because no-cache
-		// doesn't imply must-revalidate when using the back button
-		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1
-		// TODO: consider setting a longer max-age
-		// setting it this way means the content is always revalidated
-		w.Header().Set("Cache-Control", "public, max-age=0, no-cache, must-revalidate")
+		// Since all static assets have a cache busting parameter
+		// attached, which forces a reload whenever Deck is updated,
+		// we can send strong cache headers.
+		w.Header().Set("Cache-Control", "public, max-age=315360000") // 315360000 is 10 years, i.e. forever
 		next.ServeHTTP(w, r)
 	})
 }

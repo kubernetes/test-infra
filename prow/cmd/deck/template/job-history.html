@@ -1,6 +1,6 @@
 {{define "title"}}Job History: {{.Name}}{{end}}
 {{define "scripts"}}
-<script type="text/javascript" src="/static/job_history_bundle.min.js"></script>
+<script type="text/javascript" src="/static/job_history_bundle.min.js?v={{deckVersion}}"></script>
 <script type="text/javascript">
   var allBuilds = {{.Builds}};
 </script>
