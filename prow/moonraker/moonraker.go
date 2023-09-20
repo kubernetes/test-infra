@@ -30,6 +30,7 @@ import (
 
 const (
 	PathGetInrepoconfig = "inrepoconfig"
+	PathPing            = "ping"
 )
 
 type Moonraker struct {
@@ -45,6 +46,12 @@ type payload struct {
 
 type ProwYAMLGetter interface {
 	GetProwYAML(payload *payload) (*config.ProwYAML, error)
+}
+
+// ServePing responds with "pong". It's meant to be used by clients to check if
+// the service is up.
+func (mr *Moonraker) ServePing(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "pong")
 }
 
 // serveGetInrepoconfig returns a ProwYAML object marshaled into JSON.

@@ -170,6 +170,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc(fmt.Sprintf("/%s", moonraker.PathPing), mr.ServePing)
 	mux.HandleFunc(fmt.Sprintf("/%s", moonraker.PathGetInrepoconfig), mr.ServeGetInrepoconfig)
 	server := &http.Server{
 		Addr:    ":" + strconv.Itoa(o.port),

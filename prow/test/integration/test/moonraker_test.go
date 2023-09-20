@@ -173,7 +173,10 @@ git commit -m "add inrepoconfig for my-presubmit"
 	// address here uses localhost, because we're initiating the request from
 	// outside the KIND cluster (this file you are reading is executed outside
 	// the cluster).
-	moonrakerClient := moonraker.NewClient("http://localhost/moonraker", 5*time.Second)
+	moonrakerClient, err := moonraker.NewClient("http://localhost/moonraker", 5*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var want = config.Presubmit{
 		JobBase: config.JobBase{

@@ -164,7 +164,11 @@ func main() {
 
 	// InRepoConfig getter.
 	if o.config.MoonrakerAddress != "" {
-		gw.InRepoConfigGetter = moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second)
+		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Moonraker client.")
+		}
+		gw.InRepoConfigGetter = moonrakerClient
 	} else {
 		gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, false)
 		if err != nil {

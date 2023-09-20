@@ -19,6 +19,7 @@ package moonraker
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/wait"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/version"
@@ -37,13 +39,31 @@ type Client struct {
 	httpClient *http.Client
 }
 
-func NewClient(host string, timeout time.Duration) *Client {
-	return &Client{
+func NewClient(host string, timeout time.Duration) (*Client, error) {
+	c := Client{
 		host: host,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
 	}
+
+	// isMoonrakerUp is a ConditionFunc (see
+	// https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait#ConditionFunc).
+	isMoonrakerUp := func() (bool, error) {
+		if err := c.Ping(); err != nil {
+			return false, nil
+		} else {
+			return true, nil
+		}
+	}
+
+	pollLoopTimeout := 15 * time.Second
+	pollInterval := 500 * time.Millisecond
+	if err := wait.Poll(pollInterval, pollLoopTimeout, isMoonrakerUp); err != nil {
+		return nil, errors.New("timed out waiting for Moonraker to be available")
+	}
+
+	return &c, nil
 }
 
 func (c *Client) do(method, path string, payload []byte, params map[string]string) (*http.Response, error) {
@@ -64,6 +84,18 @@ func (c *Client) do(method, path string, payload []byte, params map[string]strin
 	}
 	req.URL.RawQuery = q.Encode()
 	return c.httpClient.Do(req)
+}
+
+func (c *Client) Ping() error {
+	resp, err := c.do(http.MethodGet, PathPing, nil, nil)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode == 200 {
+		return nil
+	}
+
+	return fmt.Errorf("invalid status code %d", resp.StatusCode)
 }
 
 // GetProwYAML returns the inrepoconfig contents for a repo, based on the Refs
