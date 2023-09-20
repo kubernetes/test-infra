@@ -18,6 +18,7 @@ images:
   - dir: prow/cmd/jenkins-operator
   - dir: prow/cmd/mkpj
   - dir: prow/cmd/mkpod
+  - dir: prow/cmd/moonraker
   - dir: prow/cmd/peribolos
   - dir: prow/cmd/sinker
   - dir: prow/cmd/status-reconciler
