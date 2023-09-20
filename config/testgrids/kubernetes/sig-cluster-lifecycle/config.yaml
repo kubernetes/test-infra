@@ -28,6 +28,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-system-validators
     - sig-cluster-lifecycle-kubespray
     - sig-cluster-lifecycle-image-builder
+    - sig-cluster-lifecycle-kubeup-to-kops
 
 dashboards:
 - name: sig-cluster-lifecycle-all
@@ -72,6 +73,7 @@ dashboards:
 - name: sig-cluster-lifecycle-system-validators
 - name: sig-cluster-lifecycle-kubespray
 - name: sig-cluster-lifecycle-image-builder
+- name: sig-cluster-lifecycle-kubeup-to-kops
 
 test_groups:
 - name: periodic-cluster-api-provider-azure-coverage
