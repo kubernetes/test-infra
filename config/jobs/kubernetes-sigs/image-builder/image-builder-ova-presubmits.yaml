@@ -4,7 +4,7 @@ presubmits:
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
-        preset-cluster-api-provider-vsphere-e2e-config: "true"
+        preset-image-builder-vsphere-e2e-config: "true"
       decorate: true
       decoration_config:
         timeout: 1h

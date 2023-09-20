@@ -81,3 +81,40 @@ presets:
       - key: capv-gcs-keyfile.json
         path: keyfile.json
         mode: 288
+- labels:
+    preset-image-builder-vsphere-e2e-config: "true"
+  env:
+  - name: GOVC_URL
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-url
+  - name: GOVC_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-image-builder-user
+  - name: GOVC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-image-builder-password
+  volumeMounts:
+  - name: vmc-vpn
+    mountPath: /root/.openvpn
+  volumes:
+  - name: vmc-vpn
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      defaultMode: 256
+      items:
+      - key: vmc-vpn-config.ovpn
+        path: prow.ovpn
+      - key: vmc-vpn-client.crt
+        path: client.crt
+      - key: vmc-vpn-client.key
+        path: client.key
+      - key: vmc-vpn-ca.crt
+        path: ca.crt
+      - key: vmc-vpn-tls.key
+        path: tls.key
