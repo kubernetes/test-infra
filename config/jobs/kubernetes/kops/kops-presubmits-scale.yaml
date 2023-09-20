@@ -124,6 +124,10 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: ENABLE_SYSTEM_POD_METRICS
+          value: "false"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
@@ -207,6 +211,16 @@ presubmits:
           value: "3"
         - name: CONTROL_PLANE_SIZE
           value: "c6g.16xlarge"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: NODE_MODE
+          value: "master"
+        - name: ENABLE_SYSTEM_POD_METRICS
+          value: "false"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-infra-kops-scale-tests"
         - name: CLOUD_PROVIDER
