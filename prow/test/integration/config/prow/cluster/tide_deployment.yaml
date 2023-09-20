@@ -43,6 +43,7 @@ spec:
         - --job-config-path=/etc/job-config
         - --history-uri=/tmp/tide-history.json
         - --status-path=/tmp/tide-status-checkpoint.yaml
+        - --moonraker-address=http://moonraker.default
         ports:
         - name: http
           containerPort: 8888
