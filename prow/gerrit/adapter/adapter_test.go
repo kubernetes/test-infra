@@ -3170,7 +3170,7 @@ func TestTriggerJobs(t *testing.T) {
 				prowJobClient:               fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 				gc:                          &gc,
 				tracker:                     &fakeSync{val: fakeLastSync},
-				inRepoConfigCache:           cache,
+				inRepoConfigGetter:          cache,
 				inRepoConfigFailuresTracker: make(map[string]bool),
 			}
 

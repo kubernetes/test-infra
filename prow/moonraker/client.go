@@ -34,17 +34,29 @@ import (
 	"k8s.io/test-infra/prow/version"
 )
 
-type Client struct {
-	host       string
-	httpClient *http.Client
+// The the Client needs a Config agent client. Here we require that the Agent
+// type fits the prowConfigAgentClient interface, which requires a Config()
+// method to retrieve the current Config. Tests can use a fake Config agent
+// instead of the real one.
+var _ prowConfigAgentClient = (*config.Agent)(nil)
+
+type prowConfigAgentClient interface {
+	Config() *config.Config
 }
 
-func NewClient(host string, timeout time.Duration) (*Client, error) {
+type Client struct {
+	host        string
+	httpClient  *http.Client
+	configAgent prowConfigAgentClient
+}
+
+func NewClient(host string, timeout time.Duration, configAgent prowConfigAgentClient) (*Client, error) {
 	c := Client{
 		host: host,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
+		configAgent: configAgent,
 	}
 
 	// isMoonrakerUp is a ConditionFunc (see
@@ -162,4 +174,24 @@ func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGett
 	refs.Pulls = pulls
 
 	return c.GetProwYAML(&refs)
+}
+
+func (c *Client) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	prowYAML, err := c.GetInRepoConfig(identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	config := c.configAgent.Config()
+	return append(config.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
+}
+
+func (c *Client) GetPostsubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error) {
+	prowYAML, err := c.GetInRepoConfig(identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	config := c.configAgent.Config()
+	return append(config.GetPostsubmitsStatic(identifier), prowYAML.Postsubmits...), nil
 }

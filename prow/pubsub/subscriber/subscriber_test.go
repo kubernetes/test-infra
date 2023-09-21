@@ -340,11 +340,11 @@ func TestHandleMessage(t *testing.T) {
 			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true, false)
 			cache, _ := config.NewInRepoConfigCache(100, ca, gitClient)
 			s := Subscriber{
-				Metrics:           NewMetrics(),
-				ProwJobClient:     fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
-				ConfigAgent:       ca,
-				Reporter:          &fr,
-				InRepoConfigCache: cache,
+				Metrics:            NewMetrics(),
+				ProwJobClient:      fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
+				ConfigAgent:        ca,
+				Reporter:           &fr,
+				InRepoConfigGetter: cache,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)
@@ -586,11 +586,11 @@ func TestHandlePeriodicJob(t *testing.T) {
 			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true, false)
 			cache, _ := config.NewInRepoConfigCache(100, ca, gitClient)
 			s := Subscriber{
-				Metrics:           NewMetrics(),
-				ProwJobClient:     fakeProwJobClient.ProwV1().ProwJobs(ca.Config().ProwJobNamespace),
-				ConfigAgent:       ca,
-				InRepoConfigCache: cache,
-				Reporter:          &fr,
+				Metrics:            NewMetrics(),
+				ProwJobClient:      fakeProwJobClient.ProwV1().ProwJobs(ca.Config().ProwJobNamespace),
+				ConfigAgent:        ca,
+				InRepoConfigGetter: cache,
+				Reporter:           &fr,
 			}
 			l := logrus.NewEntry(logrus.New())
 
@@ -599,7 +599,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t1.Error("programmer error: could not convert ProwJobEvent to CreateJobExecutionRequest")
 			}
 
-			_, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCache, nil, false, tc.allowedClusters)
+			_, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigGetter, nil, false, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())

@@ -124,6 +124,8 @@ var _ ProwYAMLGetter = prowYAMLGetter
 // InRepoConfigCache (LRU cache)).
 type InRepoConfigGetter interface {
 	GetInRepoConfig(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error)
+	GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error)
+	GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error)
 }
 
 // prowYAMLGetter is like prowYAMLGetterWithDefaults, but without default values
