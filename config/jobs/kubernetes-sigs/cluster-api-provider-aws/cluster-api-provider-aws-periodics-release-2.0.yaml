@@ -153,7 +153,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     - org: kubernetes-sigs
       repo: image-builder
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/image-builder"
     - org: kubernetes
       repo: kubernetes
