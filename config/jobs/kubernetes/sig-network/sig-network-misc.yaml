@@ -253,7 +253,6 @@ periodics:
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-project=k8s-e2e-gce-alpha-api-access
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
@@ -566,7 +565,6 @@ periodics:
       - --env=CREATE_CUSTOM_NETWORK=true
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-project-type=ingress-project
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
@@ -603,7 +601,6 @@ periodics:
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-project=k8s-jenkins-gce-gci-ip-aliases
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
