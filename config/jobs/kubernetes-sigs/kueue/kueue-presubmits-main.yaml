@@ -26,10 +26,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "8Gi"
+            memory: "6Gi"
           limits:
             cpu: "2"
-            memory: "8Gi"
+            memory: "6Gi"
   - name: pull-kueue-test-integration-main
     cluster: eks-prow-build-cluster
     branches:
@@ -54,10 +54,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "16Gi"
+            memory: "6Gi"
           limits:
             cpu: "4"
-            memory: "16Gi"
+            memory: "6Gi"
   - name: pull-kueue-test-e2e-main-1-25
     cluster: eks-prow-build-cluster
     branches:
@@ -92,10 +92,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "10Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "10Gi"
   - name: pull-kueue-test-e2e-main-1-26
     cluster: eks-prow-build-cluster
     branches:
@@ -130,10 +130,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "10Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "10Gi"
   - name: pull-kueue-test-e2e-main-1-27
     cluster: eks-prow-build-cluster
     branches:
@@ -168,10 +168,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "10Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "10Gi"
   - name: pull-kueue-test-e2e-main-1-28
     cluster: eks-prow-build-cluster
     branches:
@@ -206,10 +206,10 @@ presubmits:
           resources:
             requests:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
             limits:
               cpu: "10"
-              memory: "40Gi"
+              memory: "10Gi"
   - name: pull-kueue-verify-main
     cluster: eks-prow-build-cluster
     branches:
@@ -234,10 +234,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "8Gi"
+            memory: "6Gi"
           limits:
             cpu: "2"
-            memory: "8Gi"
+            memory: "6Gi"
   - name: pull-kueue-build-image-main
     cluster: eks-prow-build-cluster
     branches:
@@ -269,7 +269,7 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "8Gi"
+            memory: "6Gi"
           limits:
             cpu: "2"
-            memory: "8Gi"
+            memory: "6Gi"
