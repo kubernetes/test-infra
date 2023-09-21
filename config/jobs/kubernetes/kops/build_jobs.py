@@ -1143,9 +1143,6 @@ def generate_presubmits_scale():
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
-                'ENABLE_SYSTEM_POD_METRICS': "false",
-                'ENABLE_CLUSTER_OOMS_TRACKER': "false",
-                'ENABLE_RESTART_COUNT_CHECK': "false",
                 'CONTROL_PLANE_COUNT': "3",
                 'CONTROL_PLANE_SIZE': "c6g.16xlarge",
                 'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
@@ -1172,9 +1169,6 @@ def generate_presubmits_scale():
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
-                'ENABLE_SYSTEM_POD_METRICS': "false",
-                'ENABLE_CLUSTER_OOMS_TRACKER': "false",
-                'ENABLE_RESTART_COUNT_CHECK': "false",
                 'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
             }
         )
