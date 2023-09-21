@@ -441,7 +441,6 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-azure-cred-only: "true"
         preset-azure-anonymous-pull: "true"
-        preset-azure-capz-sa-cred: "true"
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
