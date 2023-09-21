@@ -19,6 +19,7 @@ package integration
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -32,6 +33,17 @@ import (
 	"k8s.io/test-infra/prow/moonraker"
 	"k8s.io/test-infra/prow/test/integration/internal/fakegitserver"
 )
+
+type fakeConfigAgent struct {
+	sync.Mutex
+	c *config.Config
+}
+
+func (fca *fakeConfigAgent) Config() *config.Config {
+	fca.Lock()
+	defer fca.Unlock()
+	return fca.c
+}
 
 // TestMoonrakerBurst tests Moonraker by flooding it with a burst of 100
 // requests at once. Each request will have the same base SHA, but a different
@@ -173,7 +185,8 @@ git commit -m "add inrepoconfig for my-presubmit"
 	// address here uses localhost, because we're initiating the request from
 	// outside the KIND cluster (this file you are reading is executed outside
 	// the cluster).
-	moonrakerClient, err := moonraker.NewClient("http://localhost/moonraker", 5*time.Second)
+	fca := &fakeConfigAgent{}
+	moonrakerClient, err := moonraker.NewClient("http://localhost/moonraker", 5*time.Second, fca)
 	if err != nil {
 		t.Fatal(err)
 	}
