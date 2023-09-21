@@ -24,6 +24,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -46,8 +47,10 @@ type prowConfigAgentClient interface {
 
 type Client struct {
 	host        string
-	httpClient  *http.Client
 	configAgent prowConfigAgentClient
+
+	sync.Mutex // protects below
+	httpClient *http.Client
 }
 
 func NewClient(host string, configAgent prowConfigAgentClient) (*Client, error) {
@@ -95,7 +98,22 @@ func (c *Client) do(method, path string, payload []byte, params map[string]strin
 		q.Set(key, val)
 	}
 	req.URL.RawQuery = q.Encode()
-	return c.httpClient.Do(req)
+	return c.maybeUpdatedHttpClient().Do(req)
+}
+
+// maybeUpdatedHttpClient returns a new HTTP client with a new one (with
+// a new timeout) if the provided timeout does not match the value already used
+// for the current HTTP client.
+func (c *Client) maybeUpdatedHttpClient() *http.Client {
+	c.Lock()
+	defer c.Unlock()
+	timeout := c.configAgent.Config().Moonraker.ClientTimeout.Duration
+
+	if c.httpClient.Timeout != timeout {
+		c.httpClient = &http.Client{Timeout: timeout}
+	}
+
+	return c.httpClient
 }
 
 func (c *Client) Ping() error {
