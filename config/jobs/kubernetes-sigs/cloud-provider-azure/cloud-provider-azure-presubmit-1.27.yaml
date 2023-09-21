@@ -468,7 +468,7 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
               - name: KUBERNETES_VERSION # CAPZ config
-                value: "v1.27.1"
+                value: "latest-1.27"
               - name: CLUSTER_TEMPLATE # CAPZ config
                 value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
