@@ -64,11 +64,11 @@ presubmits:
         - "./scripts/ci-build.sh"
         resources:
           requests:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "4"
+            memory: "8Gi"
           limits:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build
