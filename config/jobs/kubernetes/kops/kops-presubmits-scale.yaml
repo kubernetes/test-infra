@@ -128,6 +128,10 @@ presubmits:
           value: "master"
         - name: ENABLE_SYSTEM_POD_METRICS
           value: "false"
+        - name: ENABLE_CLUSTER_OOMS_TRACKER
+          value: "false"
+        - name: ENABLE_RESTART_COUNT_CHECK
+          value: "false"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
@@ -220,6 +224,10 @@ presubmits:
         - name: NODE_MODE
           value: "master"
         - name: ENABLE_SYSTEM_POD_METRICS
+          value: "false"
+        - name: ENABLE_CLUSTER_OOMS_TRACKER
+          value: "false"
+        - name: ENABLE_RESTART_COUNT_CHECK
           value: "false"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-infra-kops-scale-tests"
