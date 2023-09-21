@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -185,8 +186,16 @@ git commit -m "add inrepoconfig for my-presubmit"
 	// address here uses localhost, because we're initiating the request from
 	// outside the KIND cluster (this file you are reading is executed outside
 	// the cluster).
-	fca := &fakeConfigAgent{}
-	moonrakerClient, err := moonraker.NewClient("http://localhost/moonraker", 5*time.Second, fca)
+	fca := &fakeConfigAgent{
+		c: &config.Config{
+			ProwConfig: config.ProwConfig{
+				Moonraker: config.Moonraker{
+					ClientTimeout: &metav1.Duration{Duration: 5 * time.Second},
+				},
+			},
+		},
+	}
+	moonrakerClient, err := moonraker.NewClient("http://localhost/moonraker", fca)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -124,7 +124,7 @@ func NewGerritController(
 
 	var ircg config.InRepoConfigGetter
 	if configOptions.MoonrakerAddress != "" {
-		moonrakerClient, err := moonraker.NewClient(configOptions.MoonrakerAddress, 10*time.Second, cfgAgent)
+		moonrakerClient, err := moonraker.NewClient(configOptions.MoonrakerAddress, cfgAgent)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Moonraker client.")
 		}

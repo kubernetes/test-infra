@@ -50,11 +50,11 @@ type Client struct {
 	configAgent prowConfigAgentClient
 }
 
-func NewClient(host string, timeout time.Duration, configAgent prowConfigAgentClient) (*Client, error) {
+func NewClient(host string, configAgent prowConfigAgentClient) (*Client, error) {
 	c := Client{
 		host: host,
 		httpClient: &http.Client{
-			Timeout: timeout,
+			Timeout: configAgent.Config().Moonraker.ClientTimeout.Duration,
 		},
 		configAgent: configAgent,
 	}
