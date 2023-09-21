@@ -82,7 +82,7 @@ periodics:
       - name: CNI_PLUGIN
         value: "amazonvpc"
       - name: KUBE_NODE_COUNT
-        value: "4200"
+        value: "5000"
       - name: RUN_CL2_TEST
         value: "true"
       - name: CL2_LOAD_TEST_THROUGHPUT
