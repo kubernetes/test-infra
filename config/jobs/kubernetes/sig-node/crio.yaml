@@ -1,5 +1,6 @@
 periodics:
 - name: ci-crio-cgroupv1-node-e2e-conformance
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -77,6 +78,7 @@ periodics:
 #     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
 #     description: "OWNER: sig-node; runs NodeConformance and alpha e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-features
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -120,6 +122,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-flaky
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -206,6 +209,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - name: ci-crio-cgroupv1-node-e2e-eviction
+  cluster: k8s-infra-prow-build
   interval: 4h30m
   labels:
     preset-service-account: "true"
@@ -249,6 +253,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv2-node-e2e-conformance
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -292,6 +297,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
 - name: ci-crio-cgroupv1-node-e2e-resource-managers
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -335,6 +341,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes CPU, Memory and Topology manager e2e tests"
 - name: ci-crio-cgroupv1-node-e2e-hugepages
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -378,6 +385,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes hugepages e2e tests"
 - name: ci-crio-cgroupv1-evented-pleg
+  cluster: k8s-infra-prow-build
   interval: 3h
   labels:
     preset-service-account: "true"
