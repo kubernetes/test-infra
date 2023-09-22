@@ -93,6 +93,7 @@ func TestPubSubSubscriptions(t *testing.T) {
 		Repo3HEADsha       = "97b866610ecdee8b90a7808b176c1fb3a859fa00"
 		Repo4HEADsha       = "4c028549d727a9deebf69b68b640837844222632"
 		Repo5HEADsha       = "c0ea4b30f3d9dc0bf1d3391d8e3a6bee39ad4de6"
+		Repo6HEADsha       = "907254e19d6138e3c62e4da1a23318aae6869f46"
 		CreateRepoRepo1    = `
 echo this-is-from-repo1 > README.txt
 git add README.txt
@@ -113,6 +114,32 @@ presubmits:
         - |
           set -eu
           echo "hello from trigger-inrepoconfig-presubmit-via-pubsub-repo%s"
+          cat README.txt
+`
+
+		// The Brancher field in the job config has an unexported 're' field.
+		// This job will fail if we are (1) fetching jobs through moonraker and (2)
+		// we are not defaulting the jobs. This is because some of the exported
+		// fields for Brancher will still come through to us client-side, which
+		// will trigger a "ShouldRun" check which will in turn try to use the
+		// unexported 're' field.
+		ProwJobDecoratedBrancher = `
+postsubmits:
+  - name: trigger-inrepoconfig-postsubmit-via-pubsub-repo%s
+    always_run: false
+    decorate: true
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: localhost:5001/alpine
+        command:
+        - sh
+        args:
+        - -c
+        - |
+          set -eu
+          echo "hello from trigger-inrepoconfig-postsubmit-via-pubsub-repo%s"
           cat README.txt
 `
 		ProwJobDecoratedCloneURI = `
@@ -140,6 +167,7 @@ presubmits:
 	CreateRepo3 := createGerritRepo("3", fmt.Sprintf(ProwJobDecorated, "3", "3"))
 	CreateRepo4 := createGerritRepo("4", fmt.Sprintf(ProwJobDecorated, "4", "4"))
 	CreateRepo5 := createGerritRepo("5", fmt.Sprintf(ProwJobDecoratedCloneURI, "5", "https://fakegitserver.default/repo/org1/repo5", "5"))
+	CreateRepo6 := createGerritRepo("6", fmt.Sprintf(ProwJobDecoratedBrancher, "6", "6"))
 
 	tests := []struct {
 		name       string
@@ -393,6 +421,39 @@ this-is-from-repo4
 			},
 			expected: `hello from trigger-inrepoconfig-presubmit-via-pubsub-repo5
 this-is-from-repo5
+`,
+		},
+		{
+			name: "inrepoconfig-postsubmit6-with-branch-regex",
+			repoSetups: []fakegitserver.RepoSetup{
+				{
+					Name:      "org1/repo6",
+					Script:    CreateRepo6,
+					Overwrite: true,
+				},
+			},
+			msg: fakepubsub.PubSubMessageForSub{
+				Attributes: map[string]string{
+					subscriber.ProwEventType: subscriber.PostsubmitProwJobEvent,
+				},
+				Data: subscriber.ProwJobEvent{
+					Name: "trigger-inrepoconfig-postsubmit-via-pubsub-repo6",
+					Refs: &prowjobv1.Refs{
+						Org:      "https://fakegitserver.default/repo/org1",
+						Repo:     "repo6",
+						RepoLink: "https://fakegitserver.default/repo/org1/repo6",
+						BaseSHA:  Repo6HEADsha,
+						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/org1/repo6",
+						Pulls:    []prowjobv1.Pull{},
+					},
+					Labels: map[string]string{
+						kube.GerritRevision: "123",
+					},
+				},
+			},
+			expected: `hello from trigger-inrepoconfig-postsubmit-via-pubsub-repo6
+this-is-from-repo6
 `,
 		},
 	}
