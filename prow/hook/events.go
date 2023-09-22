@@ -100,7 +100,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
-	action := GenericCommentAction(string(re.Action))
+	action := github.GeneralizeCommentAction(string(re.Action))
 	if action == "" {
 		l.Errorf(FailedCommentCoerceFmt, "pull_request_review", string(re.Action))
 		return
@@ -158,7 +158,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
-	action := GenericCommentAction(string(rce.Action))
+	action := github.GeneralizeCommentAction(string(rce.Action))
 	if action == "" {
 		l.Errorf(FailedCommentCoerceFmt, "pull_request_review_comment", string(rce.Action))
 		return
@@ -216,7 +216,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
-	action := GenericCommentAction(string(pr.Action))
+	action := github.GeneralizeCommentAction(string(pr.Action))
 	if action == "" {
 		if !nonCommentPullRequestActions[pr.Action] {
 			l.Infof(FailedCommentCoerceFmt, "pull_request", string(pr.Action))
@@ -302,7 +302,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
-	action := GenericCommentAction(string(i.Action))
+	action := github.GeneralizeCommentAction(string(i.Action))
 	if action == "" {
 		if !nonCommentIssueActions[i.Action] {
 			l.Errorf(FailedCommentCoerceFmt, "issues", string(i.Action))
@@ -362,7 +362,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
-	action := GenericCommentAction(string(ic.Action))
+	action := github.GeneralizeCommentAction(string(ic.Action))
 	if action == "" {
 		l.Errorf(FailedCommentCoerceFmt, "issue_comment", string(ic.Action))
 		return
@@ -417,21 +417,6 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
-}
-
-// GenericCommentAction normalizes the action string to a GenericCommentEventAction or returns ""
-// if the action is unrelated to the comment text. (For example a PR 'label' action.)
-func GenericCommentAction(action string) github.GenericCommentEventAction {
-	switch action {
-	case "created", "opened", "submitted":
-		return github.GenericCommentActionCreated
-	case "edited":
-		return github.GenericCommentActionEdited
-	case "deleted", "dismissed":
-		return github.GenericCommentActionDeleted
-	}
-	// The action is not related to the text body.
-	return ""
 }
 
 func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericCommentEvent) {

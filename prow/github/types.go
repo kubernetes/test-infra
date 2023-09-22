@@ -1261,6 +1261,21 @@ const (
 	GenericCommentActionDeleted GenericCommentEventAction = "deleted" // "dismissed"
 )
 
+// GeneralizeCommentAction normalizes the action string to a GenericCommentEventAction or returns ""
+// if the action is unrelated to the comment text. (For example a PR 'label' action.)
+func GeneralizeCommentAction(action string) GenericCommentEventAction {
+	switch action {
+	case "created", "opened", "submitted":
+		return GenericCommentActionCreated
+	case "edited":
+		return GenericCommentActionEdited
+	case "deleted", "dismissed":
+		return GenericCommentActionDeleted
+	}
+	// The action is not related to the text body.
+	return ""
+}
+
 // GenericCommentEvent is a fake event type that is instantiated for any github event that contains
 // comment like content.
 // The specific events that are also handled as GenericCommentEvents are:
