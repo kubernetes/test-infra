@@ -378,11 +378,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -437,10 +432,6 @@ presubmits:
       repo: containerd
       base_ref: main
       path_alias: github.com/containerd/containerd
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
     decoration_config:
       timeout: 65m
     labels:
@@ -496,11 +487,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -552,11 +538,6 @@ presubmits:
       timeout: 260m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -601,11 +582,6 @@ presubmits:
     decoration_config:
       timeout: 260m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -653,11 +629,6 @@ presubmits:
     decoration_config:
       timeout: 260m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -755,11 +726,6 @@ presubmits:
     decoration_config:
       timeout: 240m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: release
       base_ref: master
@@ -867,11 +833,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: release
       base_ref: master
       path_alias: k8s.io/release
@@ -977,11 +938,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: release
       base_ref: master
       path_alias: k8s.io/release
@@ -1034,11 +990,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -1087,11 +1038,6 @@ presubmits:
     decoration_config:
       timeout: 240m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -1193,11 +1139,6 @@ presubmits:
       timeout: 440m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -1252,11 +1193,6 @@ presubmits:
       timeout: 440m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -1305,11 +1241,6 @@ presubmits:
     decoration_config:
       timeout: 440m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -1361,11 +1292,6 @@ presubmits:
     decoration_config:
       timeout: 240m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -1470,11 +1396,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: release
       base_ref: master
       path_alias: k8s.io/release
@@ -1529,11 +1450,6 @@ presubmits:
     decoration_config:
       timeout: 240m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: release
       base_ref: master
@@ -1590,11 +1506,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: release
       base_ref: master
       path_alias: k8s.io/release
@@ -1647,11 +1558,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -1700,11 +1606,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -1751,11 +1652,6 @@ presubmits:
     decoration_config:
       timeout: 240m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -1809,11 +1705,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -1864,11 +1755,6 @@ presubmits:
     decoration_config:
       timeout: 240m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -1968,11 +1854,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: release
       base_ref: master
       path_alias: k8s.io/release
@@ -2025,11 +1906,6 @@ presubmits:
     decoration_config:
       timeout: 200m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2080,11 +1956,6 @@ presubmits:
     decoration_config:
       timeout: 200m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2135,11 +2006,6 @@ presubmits:
     decoration_config:
       timeout: 260m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2190,11 +2056,6 @@ presubmits:
     decoration_config:
       timeout: 320m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2242,11 +2103,6 @@ presubmits:
     decoration_config:
       timeout: 320m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -2300,11 +2156,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2355,11 +2206,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2420,11 +2266,6 @@ presubmits:
     decoration_config:
       timeout: 180m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2487,11 +2328,6 @@ presubmits:
       timeout: 240m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -2541,11 +2377,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2600,11 +2431,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: containerd
       repo: containerd
       base_ref: main
@@ -2662,11 +2488,6 @@ presubmits:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -2717,11 +2538,6 @@ presubmits:
       timeout: 90m
     extra_refs:
     - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
@@ -2770,11 +2586,6 @@ presubmits:
     decoration_config:
       timeout: 90m
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
