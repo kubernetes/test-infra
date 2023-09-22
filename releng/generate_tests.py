@@ -40,10 +40,14 @@ PROW_CONFIG_TEMPLATE = """
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 180m
     name:
     spec:
       containers:
-      - args:
+      - command:
+        args:
         env:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         resources:
@@ -169,7 +173,7 @@ class E2ENodeTest:
         if not container['env']:
             container['env'] = []
         # Prow timeout = job timeout + 20min
-        container['args'].append('--timeout=%d' % (timeout + 20))
+        prow_config['decoration_config']['timeout'] = '{}m'.format(timeout + 20)
         container['args'].extend(k8s_version.get('args', []))
         container['args'].append('--root=/go/src')
         container['env'].extend([{'name':'GOPATH', 'value': '/go'}])
@@ -286,9 +290,8 @@ class E2ETest:
         container = prow_config['spec']['containers'][0]
         if not container['args']:
             container['args'] = []
-        container['args'].append('--bare')
         # Prow timeout = job timeout + 20min
-        container['args'].append('--timeout=%d' % (timeout + 20))
+        prow_config['decoration_config']['timeout'] = '{}m'.format(timeout + 20)
         return prow_config
 
     def __get_testgrid_config(self):
@@ -370,9 +373,9 @@ def for_each_job(output_dir, job_name, job, yaml_config):
 
     # merge job_config into prow_config
     args = prow_config['spec']['containers'][0]['args']
-    args.append('--scenario=' + job_config['scenario'])
-    args.append('--')
     args.extend(job_config['args'])
+    prow_config['spec']['containers'][0]['command'] = \
+        ['runner.sh', '/workspace/scenarios/{}.py'.format(job_config['scenario'])]
 
     return prow_config, testgrid_config
 

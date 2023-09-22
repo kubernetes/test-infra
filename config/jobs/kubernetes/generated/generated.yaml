@@ -5,14 +5,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-86ab064463
       - --check-leaked-resources
       - --provider=gce
@@ -46,14 +48,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 140m
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-359c739436
       - --check-leaked-resources
       - --provider=gce
@@ -85,14 +89,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-519f5e2df7
       - --check-leaked-resources
       - --provider=gce
@@ -121,14 +127,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-c2db0160cf
       - --check-leaked-resources
       - --provider=gce
@@ -157,14 +165,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 680m
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-ef6e185752
       - --check-leaked-resources
       - --provider=gce
@@ -195,14 +205,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-7d3ed76582
       - --check-leaked-resources
       - --provider=gce
@@ -233,14 +245,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-a8a0b221b9
       - --check-leaked-resources
       - --provider=gce
@@ -274,14 +288,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 140m
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-5881f7ab7e
       - --check-leaked-resources
       - --provider=gce
@@ -306,14 +322,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-df7ff40165
       - --check-leaked-resources
       - --provider=gce
@@ -342,14 +360,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-c8c4b0ff1c
       - --check-leaked-resources
       - --provider=gce
@@ -378,14 +398,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 680m
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-9b5ed62f1f
       - --check-leaked-resources
       - --provider=gce
@@ -416,14 +438,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-96f446fc82
       - --check-leaked-resources
       - --provider=gce
@@ -448,14 +472,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-1d30227e33
       - --check-leaked-resources
       - --provider=gce
@@ -489,14 +515,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 140m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-betaapis
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-8b8c8e7dba
       - --check-leaked-resources
       - --provider=gce
@@ -530,14 +558,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 140m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-183d8deac8
       - --check-leaked-resources
       - --provider=gce
@@ -562,14 +592,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-df914a9cd5
       - --check-leaked-resources
       - --provider=gce
@@ -598,14 +630,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-4b7fa88c7e
       - --check-leaked-resources
       - --provider=gce
@@ -634,14 +668,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 680m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-3154607d16
       - --check-leaked-resources
       - --provider=gce
@@ -672,14 +708,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-694be857a6
       - --check-leaked-resources
       - --provider=gce
@@ -704,14 +742,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-9a6fdea1ad
       - --check-leaked-resources
       - --provider=gce
@@ -745,14 +785,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 140m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-4ed1ec6200
       - --check-leaked-resources
       - --provider=gce
@@ -780,14 +822,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 140m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-default
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-cfaf497db7
       - --check-leaked-resources
       - --provider=gce
@@ -812,14 +856,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-ingress
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-b823102a67
       - --check-leaked-resources
       - --provider=gce
@@ -848,14 +894,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 200m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-reboot
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-6da82f3feb
       - --check-leaked-resources
       - --provider=gce
@@ -884,14 +932,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 680m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-serial
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=680
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-a528a0f447
       - --check-leaked-resources
       - --provider=gce
@@ -922,14 +972,16 @@ periodics:
   labels:
     preset-service-account: 'true'
     preset-k8s-ssh: 'true'
+  decorate: true
+  decoration_config:
+    timeout: 170m
   name: ci-kubernetes-e2e-gce-cos-k8sstable4-slow
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=170
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=test-6a78248a5f
       - --check-leaked-resources
       - --provider=gce
