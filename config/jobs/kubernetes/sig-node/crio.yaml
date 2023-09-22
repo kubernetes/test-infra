@@ -38,6 +38,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o, sig-release-master-informing, sig-node-release-blocking
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-conformance
@@ -116,6 +123,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-features
@@ -160,6 +174,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-flaky
@@ -203,6 +224,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-unlabelled
@@ -247,6 +275,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-eviction
@@ -291,6 +326,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o, sig-node-release-blocking
     testgrid-tab-name: ci-crio-cgroupv2-node-e2e-conformance
@@ -335,6 +377,13 @@ periodics:
         env:
           - name: GOPATH
             value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-resource-managers
@@ -379,6 +428,13 @@ periodics:
         env:
           - name: GOPATH
             value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-hugepages
@@ -433,6 +489,13 @@ periodics:
             value: /go
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-evented-pleg
