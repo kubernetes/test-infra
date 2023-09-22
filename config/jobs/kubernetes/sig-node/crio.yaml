@@ -4,15 +4,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - "--timeout=240"
-      - --scenario=kubernetes_e2e
-      - -- # end bootstrap args, scenario args below
       - --deployment=node
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
@@ -22,7 +33,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -70,15 +81,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - "--timeout=240"
-      - --scenario=kubernetes_e2e
-      - -- # end bootstrap args, scenario args below
       - --deployment=node
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
@@ -88,7 +110,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -102,15 +124,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - "--timeout=90"
-      - --scenario=kubernetes_e2e
-      - -- # end bootstrap args, scenario args below
       - --deployment=node
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
@@ -120,7 +153,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Flaky\]"
       - --timeout=60m
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -134,15 +167,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 400m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - "--timeout=400"
-      - --scenario=kubernetes_e2e
-      - -- # end bootstrap args, scenario args below
       - --deployment=node
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
@@ -152,7 +196,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -166,15 +210,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 320m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - "--timeout=320"
-      - --scenario=kubernetes_e2e
-      - -- # end bootstrap args, scenario args below
       - --deployment=node
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
@@ -184,7 +239,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
       - --timeout=300m
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -198,15 +253,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - "--timeout=240"
-      - --scenario=kubernetes_e2e
-      - -- # end bootstrap args, scenario args below
       - --deployment=node
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
@@ -216,7 +282,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
       env:
       - name: GOPATH
         value: /go
@@ -230,15 +296,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-          - --repo=k8s.io/kubernetes=master
-          - --timeout=120
-          - --root=/go/src
-          - --scenario=kubernetes_e2e
-          - -- # end bootstrap args, scenario args below
           - --deployment=node
           - --env=KUBE_SSH_USER=core
           - --gcp-project-type=node-e2e-project
@@ -248,7 +325,7 @@ periodics:
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]"
           - --timeout=90m
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-resource-managers.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-resource-managers.yaml
         env:
           - name: GOPATH
             value: /go
@@ -262,15 +339,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-          - --repo=k8s.io/kubernetes=master
-          - --timeout=120
-          - --root=/go/src
-          - --scenario=kubernetes_e2e
-          - -- # end bootstrap args, scenario args below
           - --deployment=node
           - --env=KUBE_SSH_USER=core
           - --gcp-project-type=node-e2e-project
@@ -280,7 +368,7 @@ periodics:
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
           - --timeout=90m
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-hugepages.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-hugepages.yaml
         env:
           - name: GOPATH
             value: /go
@@ -294,15 +382,26 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-          - --root=/go/src
-          - --repo=k8s.io/kubernetes
-          - --timeout=240
-          - --scenario=kubernetes_e2e
-          - --
           - --deployment=node
           - --env=KUBE_SSH_USER=core
           - --gcp-project-type=node-e2e-project
@@ -320,7 +419,7 @@ periodics:
           - --test_args=--nodes=8 --focus="\[NodeConformance\]"
             --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
           - --timeout=180m
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-evented-pleg.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-evented-pleg.yaml
         env:
           - name: GOPATH
             value: /go
