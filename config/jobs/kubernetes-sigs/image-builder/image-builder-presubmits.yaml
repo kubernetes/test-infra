@@ -94,6 +94,30 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-packer-validate
+  - name: pull-lint
+    cluster: eks-prow-build-cluster
+    decorate: true
+    run_if_changed: 'images/capi/Makefile|images/capi/ansible/.*|images/capi/scripts/ci-lint\.sh|images/capi/scripts/ensure-ansible-lint\.sh|images/capi/.ansible-lint-ignore'
+    decoration_config:
+      timeout: 20m
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          args:
+          - runner.sh
+          - "./images/capi/scripts/ci-lint.sh"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 4Gi
+            limits:
+              cpu: 1000m
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-lint
   - name: pull-image-builder-gcp-all
     path_alias: sigs.k8s.io/image-builder
     always_run: false
