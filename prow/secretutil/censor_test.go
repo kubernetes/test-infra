@@ -88,3 +88,65 @@ func TestReloadingCensorer(t *testing.T) {
 		})
 	}
 }
+
+func TestBooleanNotHidden(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		mutation func(c *ReloadingCensorer)
+		text     func() []byte
+		expected []byte
+	}{
+		{
+			name: "true skipped",
+			mutation: func(c *ReloadingCensorer) {
+				c.Refresh("true", "True", "TRUE", " TRUE", "tRue")
+			},
+			text: func() []byte {
+				return []byte("true True TRUE tRUE should stay")
+			},
+			expected: []byte("true True TRUE tRUE should stay"),
+		},
+		{
+			name: "false skipped",
+			mutation: func(c *ReloadingCensorer) {
+				c.Refresh("false", "False", "FALSE", " FALSE", "fAlse")
+			},
+			text: func() []byte {
+				return []byte("false False FALSE fALse should stay")
+			},
+			expected: []byte("false False FALSE fALse should stay"),
+		},
+		{
+			name: "true bytes skipped",
+			mutation: func(c *ReloadingCensorer) {
+				c.RefreshBytes([]byte("true"), []byte("True"), []byte("TRUE"), []byte(" TRUE"), []byte("tRue"))
+			},
+			text: func() []byte {
+				return []byte("true True TRUE tRUE should stay")
+			},
+			expected: []byte("true True TRUE tRUE should stay"),
+		},
+		{
+			name: "false bytes skipped",
+			mutation: func(c *ReloadingCensorer) {
+				c.RefreshBytes([]byte("false"), []byte("False"), []byte("FALSE"), []byte(" FALSE"), []byte("fAlse"))
+			},
+			text: func() []byte {
+				return []byte("false False FALSE fALse should stay")
+			},
+			expected: []byte("false False FALSE fALse should stay"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			censorer := NewCensorer()
+			testCase.mutation(censorer)
+			input := testCase.text()
+			censorer.Censor(&input)
+			if diff := cmp.Diff(string(testCase.expected), string(input)); diff != "" {
+				t.Errorf("%s: got incorrect text after censor: %v", testCase.name, diff)
+			}
+		})
+	}
+}

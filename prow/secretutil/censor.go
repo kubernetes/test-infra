@@ -101,6 +101,14 @@ func (c *ReloadingCensorer) Refresh(secrets ...string) {
 		if secret == "" {
 			continue
 		}
+		if strings.EqualFold(secret, "true") || strings.EqualFold(secret, "false") {
+			// true and false appear in secrets when there is configuration that gets changed at the same time actual secrets.
+			// this happens when storing credentials to servers where capabilities are different.
+			// while every other type could reasonably be secret (through secret floats would be weird), it's difficult
+			// to justify secret booleans, since all values are known and replacing them carries a high price.
+			continue
+		}
+
 		addReplacement(secret)
 		for _, item := range toEncode {
 			encoded := base64.StdEncoding.EncodeToString([]byte(item))
