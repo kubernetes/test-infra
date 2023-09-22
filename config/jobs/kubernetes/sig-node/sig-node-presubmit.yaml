@@ -466,8 +466,7 @@ presubmits:
         - --focus-regex=\[NodeFeature:.+\]
         - --skip-regex=\[Flaky\]|\[Serial\]
         - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
-        - --image-config-file=/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
-        - --image-config-dir=/home/prow
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
   - name: pull-kubernetes-node-e2e-containerd-alpha-features
     cluster: k8s-infra-prow-build
     branches:
@@ -1979,6 +1978,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 200m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: containerd
       repo: containerd
