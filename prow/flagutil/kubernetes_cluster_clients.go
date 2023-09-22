@@ -60,6 +60,7 @@ type KubernetesOptions struct {
 	kubeconfig               string
 	kubeconfigDir            string
 	kubeconfigSuffix         string
+	kubeconfigIgnoredFile    Strings
 	projectedTokenFile       string
 	noInClusterConfig        bool
 	NOInClusterConfigDefault bool
@@ -181,6 +182,7 @@ func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.kubeconfigSuffix, "kubeconfig-suffix", "", "The files without the suffix will be ignored when loading kubeconfig files from --kubeconfig-dir. It must be used together with --kubeconfig-dir.")
+	fs.Var(&o.kubeconfigIgnoredFile, "kubeconfig-ignored-file", "Name of the file to ignore when loading kubeconfig files from --kubeconfig-dir. It must be used together with --kubeconfig-dir. Can be passed multiple times. Useful when the API servers of a build cluster are temporarily not accessible")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
 	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", o.NOInClusterConfigDefault, "Not resolving InCluster Config if set.")
 }
@@ -205,6 +207,10 @@ func (o *KubernetesOptions) Validate(_ bool) error {
 		return fmt.Errorf("--kubeconfig-dir must be set if --kubeconfig-suffix is set")
 	}
 
+	if o.kubeconfigIgnoredFile.StringSet().Len() > 0 && o.kubeconfigDir == "" {
+		return fmt.Errorf("--kubeconfig-dir must be set if --kubeconfig-ignored-file is set")
+	}
+
 	return nil
 }
 
@@ -218,7 +224,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
 		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
-		kube.NoInClusterConfig(o.noInClusterConfig), kube.ConfigSuffix(o.kubeconfigSuffix)))
+		kube.NoInClusterConfig(o.noInClusterConfig), kube.ConfigSuffix(o.kubeconfigSuffix),
+		kube.IgnoredFiles(o.kubeconfigIgnoredFile.StringSet())))
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %w", o.kubeconfig, err)
 	}

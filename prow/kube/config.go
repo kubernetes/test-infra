@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -110,6 +111,10 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 				logrus.WithField("filename", filename).WithField("suffix", opts.suffix).Info("Ignored file without suffix")
 				continue
 			}
+			if opts.ignoredFiles.Has(filename) {
+				logrus.WithField("filename", filename).Info("Ignored file")
+				continue
+			}
 			candidates = append(candidates, filepath.Join(opts.dir, filename))
 		}
 	}
@@ -149,6 +154,7 @@ type Options struct {
 	file               string
 	dir                string
 	suffix             string
+	ignoredFiles       sets.Set[string]
 	projectedTokenFile string
 	noInClusterConfig  bool
 }
@@ -159,6 +165,13 @@ type ConfigOptions func(*Options)
 func ConfigDir(dir string) ConfigOptions {
 	return func(kc *Options) {
 		kc.dir = dir
+	}
+}
+
+// IgnoredFiles configure the names of the files to ignore in directory containing kubeconfig files
+func IgnoredFiles(ignoredFiles sets.Set[string]) ConfigOptions {
+	return func(kc *Options) {
+		kc.ignoredFiles = ignoredFiles
 	}
 }
 

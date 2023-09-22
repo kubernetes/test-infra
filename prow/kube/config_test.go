@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 )
 
@@ -120,6 +121,7 @@ func TestLoadClusterConfigs(t *testing.T) {
 		kubeconfig         string
 		kubeconfigDir      string
 		suffix             string
+		ignoredFiles       sets.Set[string]
 		projectedTokenFile string
 		noInClusterConfig  bool
 		expected           map[string]rest.Config
@@ -178,6 +180,54 @@ func TestLoadClusterConfigs(t *testing.T) {
 				},
 				"default": {
 					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"hive": {
+					Host:        "https://api.hive.9xw5.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+		{
+			name:          "load from kubeconfigDir and ignore 1.yaml",
+			kubeconfigDir: filepath.Join("testdata", "load_from_kubeconfigDir"),
+			suffix:        "yaml",
+			ignoredFiles:  sets.New[string]("1.yaml"),
+			expected: map[string]rest.Config{
+				"": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"app.ci": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build02": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"default": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+		{
+			name:          "load from kubeconfigDir and ignore 2.yaml",
+			kubeconfigDir: filepath.Join("testdata", "load_from_kubeconfigDir"),
+			suffix:        "yaml",
+			ignoredFiles:  sets.New[string]("2.yaml"),
+			expected: map[string]rest.Config{
+				"": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build01": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"default": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
 					BearerToken: "REDACTED",
 				},
 				"hive": {
@@ -252,7 +302,7 @@ func TestLoadClusterConfigs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, actualErr := LoadClusterConfigs(NewConfig(ConfigFile(tc.kubeconfig),
 				ConfigDir(tc.kubeconfigDir), ConfigProjectedTokenFile(tc.projectedTokenFile),
-				NoInClusterConfig(tc.noInClusterConfig), ConfigSuffix(tc.suffix)))
+				NoInClusterConfig(tc.noInClusterConfig), ConfigSuffix(tc.suffix), IgnoredFiles(tc.ignoredFiles)))
 			if tc.expectedErr != (actualErr != nil) {
 				t.Errorf("%s: actualErr %v does not match expectedErr %v", tc.name, actualErr, tc.expectedErr)
 				return
