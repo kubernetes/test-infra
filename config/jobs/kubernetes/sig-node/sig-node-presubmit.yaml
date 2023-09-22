@@ -538,6 +538,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 260m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: test-infra
@@ -2293,6 +2294,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 180m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: containerd
       repo: containerd
@@ -2460,6 +2462,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 90m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: containerd
       repo: containerd
