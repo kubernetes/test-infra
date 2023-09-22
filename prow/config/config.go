@@ -65,6 +65,12 @@ const (
 	// DefaultJobTimeout represents the default deadline for a prow job.
 	DefaultJobTimeout = 24 * time.Hour
 
+	// DefaultMoonrakerClientTimeout is the default timeout for all Moonraker
+	// clients. Note that this is a client-side timeout, and does not affect
+	// whether Moonraker itself will finish doing the Git fetch/parsing in the
+	// background (esp. for new repos that need the extra cloning time).
+	DefaultMoonrakerClientTimeout = 10 * time.Minute
+
 	ProwImplicitGitResource = "PROW_IMPLICIT_GIT_REF"
 
 	// ConfigVersionFileName is the name of a file that will be added to
@@ -150,6 +156,11 @@ type ProwConfig struct {
 	// same name. It encodes an allowlist of API clients and what kinds of Prow
 	// Jobs they are authorized to trigger.
 	Gangway Gangway `json:"gangway,omitempty"`
+
+	// Moonraker contains configurations for Moonraker, such as the client
+	// timeout to use for all Prow services that need to send requests to
+	// Moonraker.
+	Moonraker Moonraker `json:"moonraker,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -2152,6 +2163,10 @@ func (c *Config) validateComponentConfig() error {
 		return err
 	}
 
+	if err := c.Moonraker.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -2730,6 +2745,12 @@ func parseProwConfig(c *Config) error {
 	// Ensure Policy.Include and Policy.Exclude are mutually exclusive.
 	if len(c.BranchProtection.Include) > 0 && len(c.BranchProtection.Exclude) > 0 {
 		return fmt.Errorf("Forbidden to set both Policy.Include and Policy.Exclude, Please use either Include or Exclude!")
+	}
+
+	// Avoid using a Moonraker client timeout of infinity (default behavior of
+	// https://pkg.go.dev/net/http#Client) by setting a default value.
+	if c.Moonraker.ClientTimeout == nil {
+		c.Moonraker.ClientTimeout = &metav1.Duration{Duration: DefaultMoonrakerClientTimeout}
 	}
 
 	return nil

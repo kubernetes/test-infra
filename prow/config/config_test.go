@@ -8201,6 +8201,8 @@ log_level: info
 managed_webhooks:
   auto_accept_invitation: false
   respect_legacy_global_token: false
+moonraker:
+  client_timeout: 10m0s
 plank:
   max_goroutines: 20
   pod_pending_timeout: 10m0s
@@ -8282,6 +8284,8 @@ log_level: info
 managed_webhooks:
   auto_accept_invitation: false
   respect_legacy_global_token: false
+moonraker:
+  client_timeout: 10m0s
 plank:
   max_goroutines: 20
   pod_pending_timeout: 10m0s
@@ -8356,6 +8360,8 @@ log_level: info
 managed_webhooks:
   auto_accept_invitation: false
   respect_legacy_global_token: false
+moonraker:
+  client_timeout: 10m0s
 plank:
   max_goroutines: 20
   pod_pending_timeout: 10m0s
@@ -8435,6 +8441,8 @@ log_level: info
 managed_webhooks:
   auto_accept_invitation: false
   respect_legacy_global_token: false
+moonraker:
+  client_timeout: 10m0s
 plank:
   max_goroutines: 20
   pod_pending_timeout: 10m0s

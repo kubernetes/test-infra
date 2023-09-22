@@ -534,6 +534,11 @@ managed_webhooks:
         "":
             token_created_after: "0001-01-01T00:00:00Z"
     respect_legacy_global_token: false
+# Moonraker contains configurations for Moonraker, such as the client
+# timeout to use for all Prow services that need to send requests to
+# Moonraker.
+moonraker:
+    client_timeout: 0s
 # OwnersDirDenylist is used to configure regular expressions matching directories
 # to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 owners_dir_denylist:

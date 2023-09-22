@@ -123,7 +123,7 @@ func main() {
 	}
 
 	if o.config.MoonrakerAddress != "" {
-		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second, configAgent)
+		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, configAgent)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Moonraker client.")
 		}

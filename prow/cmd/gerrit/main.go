@@ -181,7 +181,7 @@ func main() {
 
 	var ircg config.InRepoConfigGetter
 	if o.config.MoonrakerAddress != "" {
-		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, 10*time.Second, ca)
+		moonrakerClient, err := moonraker.NewClient(o.config.MoonrakerAddress, ca)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Moonraker client.")
 		}
