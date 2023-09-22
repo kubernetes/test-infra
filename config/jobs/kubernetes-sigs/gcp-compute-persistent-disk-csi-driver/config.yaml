@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
-    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
