@@ -13,7 +13,7 @@ presubmits:
       description: "Run kueue unit tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -43,7 +43,7 @@ presubmits:
       description: "Run kueue test-integration"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - make
         args:
@@ -223,7 +223,7 @@ presubmits:
       description: "Run kueue verify checks"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - make
         args:

@@ -20,7 +20,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.20
+        - image: public.ecr.aws/docker/library/golang:1.21
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
@@ -58,7 +58,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: public.ecr.aws/docker/library/golang:1.20
+        - image: public.ecr.aws/docker/library/golang:1.21
           command:
             - make
           args:
