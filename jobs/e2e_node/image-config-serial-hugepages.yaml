@@ -5,6 +5,6 @@ images:
   ubuntu:
     image: ubuntu-gke-2204-1-24-v20220623
     project: ubuntu-os-gke-cloud
-    metadata: "user-data</workspace/test-infra/jobs/e2e_node/ubuntu-hugepages-1G-allocation.yaml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/ubuntu-hugepages-1G-allocation.yaml"
     # Using `n1-standard-2` to have enough memory for 1Gb huge pages allocation
     machine: n1-standard-2
