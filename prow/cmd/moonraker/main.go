@@ -23,6 +23,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -168,6 +169,18 @@ func main() {
 		ConfigAgent:       configAgent,
 		InRepoConfigCache: cacheGetter,
 	}
+
+	// If the main config changes (an update to the ConfigMap holding the main
+	// config), we have to reload it because the "in_repo_config" setting which
+	// allowlists repositories may have changed (a repository may have been
+	// enabled or disabled from inrepoconfig). We have to check this setting
+	// before we do the clone or fetch.
+	logrus.Info("Setting up ConfigWatcher")
+	interrupts.Run(func(ctx context.Context) {
+		if err := mr.RunConfigWatcher(ctx); err != nil {
+			logrus.WithError(err).Fatal("Failed to run ConfigWatcher")
+		}
+	})
 
 	mux := http.NewServeMux()
 	mux.HandleFunc(fmt.Sprintf("/%s", moonraker.PathPing), mr.ServePing)

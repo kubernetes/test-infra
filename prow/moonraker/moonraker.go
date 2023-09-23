@@ -17,10 +17,12 @@ limitations under the License.
 package moonraker
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 
 	"github.com/sirupsen/logrus"
 
@@ -36,6 +38,10 @@ const (
 type Moonraker struct {
 	ConfigAgent       *config.Agent
 	InRepoConfigCache *config.InRepoConfigCache
+}
+
+type configSectionsToWatch struct {
+	config.InRepoConfig // Map of allowlisted inrepoconfig URLs to clone from
 }
 
 // payload is the message payload we use for Moonraker. For
@@ -83,7 +89,7 @@ func (mr *Moonraker) ServeGetInrepoconfig(w http.ResponseWriter, r *http.Request
 	}
 	identifier := payload.Refs.Org + "/" + payload.Refs.Repo
 
-	prowYAML, err := mr.InRepoConfigCache.GetProwYAML(identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := mr.InRepoConfigCache.GetProwYAMLWithoutDefaults(identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		logrus.WithError(err).Error("unable to retrieve inrepoconfig ProwYAML")
 		http.Error(w, fmt.Sprintf("unable to retrieve inrepoconfig ProwYAML: %v", err), http.StatusBadRequest)
@@ -95,5 +101,40 @@ func (mr *Moonraker) ServeGetInrepoconfig(w http.ResponseWriter, r *http.Request
 		logrus.WithError(err).Error("unable to encode inrepoconfig ProwYAML into JSON")
 		http.Error(w, fmt.Sprintf("unable to encode inrepoconfig ProwYAML into JSON: %v", err), http.StatusBadRequest)
 		return
+	}
+}
+
+func (mr *Moonraker) RunConfigWatcher(ctx context.Context) error {
+	configEvent := make(chan config.Delta, 2)
+	mr.ConfigAgent.Subscribe(configEvent)
+
+	var err error
+	defer func() {
+		if err != nil {
+			logrus.WithError(ctx.Err()).Error("ConfigWatcher shutting down.")
+		}
+		logrus.Debug("Pull server shutting down.")
+	}()
+	currentConfig := configSectionsToWatch{
+		mr.ConfigAgent.Config().InRepoConfig,
+	}
+
+	for {
+		select {
+		// Parent context. Shutdown
+		case <-ctx.Done():
+			return nil
+		// Checking for update config
+		case event := <-configEvent:
+			newConfig := configSectionsToWatch{
+				event.After.InRepoConfig,
+			}
+			logrus.Info("Received new config")
+			if !reflect.DeepEqual(currentConfig, newConfig) {
+				logrus.Info("New config found, resetting Config in ConfigAgent")
+				mr.ConfigAgent.SetWithoutBroadcast(&event.After)
+				currentConfig = newConfig
+			}
+		}
 	}
 }
