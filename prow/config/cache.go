@@ -327,18 +327,12 @@ func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter 
 
 // GetProwYAML returns the ProwYAML value stored in the InRepoConfigCache.
 func (cache *InRepoConfigCache) GetProwYAML(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
-	timeGetProwYAML := time.Now()
-	defer func() {
-		orgRepo := NewOrgRepo(identifier)
-		inRepoConfigCacheMetrics.getProwYAMLDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeGetProwYAML).Seconds())))
-	}()
-
-	c := cache.configAgent.Config()
-
-	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := cache.GetProwYAMLWithoutDefaults(identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
+
+	c := cache.configAgent.Config()
 
 	// Create a new ProwYAML object based on what we retrieved from the cache.
 	// This way, the act of defaulting values does not modify the elements in
@@ -352,6 +346,23 @@ func (cache *InRepoConfigCache) GetProwYAML(identifier string, baseSHAGetter Ref
 	}
 
 	return newProwYAML, nil
+}
+
+func (cache *InRepoConfigCache) GetProwYAMLWithoutDefaults(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	timeGetProwYAML := time.Now()
+	defer func() {
+		orgRepo := NewOrgRepo(identifier)
+		inRepoConfigCacheMetrics.getProwYAMLDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeGetProwYAML).Seconds())))
+	}()
+
+	c := cache.configAgent.Config()
+
+	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	return prowYAML, nil
 }
 
 // GetInRepoConfig just wraps around GetProwYAML().

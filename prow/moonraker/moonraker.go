@@ -83,7 +83,7 @@ func (mr *Moonraker) ServeGetInrepoconfig(w http.ResponseWriter, r *http.Request
 	}
 	identifier := payload.Refs.Org + "/" + payload.Refs.Repo
 
-	prowYAML, err := mr.InRepoConfigCache.GetProwYAML(identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := mr.InRepoConfigCache.GetProwYAMLWithoutDefaults(identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		logrus.WithError(err).Error("unable to retrieve inrepoconfig ProwYAML")
 		http.Error(w, fmt.Sprintf("unable to retrieve inrepoconfig ProwYAML: %v", err), http.StatusBadRequest)
