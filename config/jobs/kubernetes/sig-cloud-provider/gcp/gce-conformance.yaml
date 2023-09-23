@@ -11,13 +11,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 220m
   spec:
     containers:
-    - args:
-      - --timeout=220
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci

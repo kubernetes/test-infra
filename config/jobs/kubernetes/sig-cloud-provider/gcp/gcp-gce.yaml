@@ -28,16 +28,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --extract=local
@@ -72,16 +77,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --gcp-node-image=gci
@@ -168,16 +178,21 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --extract=local
@@ -222,16 +237,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=105
-            - --scenario=kubernetes_e2e
-            - --
+        - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+          args:
             - --build=quick
             - --cluster=
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
@@ -283,16 +303,21 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=105
-            - --scenario=kubernetes_e2e
-            - --
+        - command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
             - --build=quick
             - --cluster=
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
@@ -338,16 +363,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 200m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=200
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --ginkgo-parallel=1
         - --build=quick
         - --cluster=
@@ -390,16 +420,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 520m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=520
-            - --scenario=kubernetes_e2e
-            - --
+        - command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
             - --build=quick
             - --cluster=
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
@@ -450,16 +485,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=120
-            - --scenario=kubernetes_e2e
-            - --
+        - command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
             - --build=quick
             - --cluster=
             - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
@@ -496,13 +536,15 @@ periodics:
     preset-dind-enabled: "true"
     preset-pull-kubernetes-e2e: "true"
     preset-pull-kubernetes-e2e-gce: "true"
+  decorate: true
+  decoration_config:
+    timeout: 100m
   spec:
     containers:
-    - args:
-      - --timeout=100
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
       - --env=CLOUD_PROVIDER_FLAG=external
@@ -540,13 +582,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 70m
   spec:
     containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
@@ -579,13 +623,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 70m
   spec:
     containers:
-      - args:
-          - --timeout=70
-          - --bare
-          - --scenario=kubernetes_e2e
-          - --
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
           - --check-leaked-resources
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
@@ -628,13 +674,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 100m
   spec:
     containers:
-    - args:
-      - --timeout=100
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
       - --env=KUBE_PROXY_DAEMONSET=true
@@ -666,13 +714,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
   spec:
     containers:
-    - args:
-      - --timeout=200
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
       - --env=KUBE_PROXY_DAEMONSET=true
@@ -705,13 +755,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 70m
   spec:
     containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-master-image=gci
@@ -740,13 +792,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
   spec:
     containers:
-    - args:
-      - --timeout=200
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -765,13 +819,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
   spec:
     containers:
-    - args:
-      - --timeout=200
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=err-e2e
       - --extract=ci/latest-fast
@@ -802,13 +858,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 520m
   spec:
     containers:
-    - args:
-      - --timeout=520
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --extract=ci/latest
@@ -839,13 +897,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-master-image=gci
@@ -876,13 +936,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1420m
   spec:
     containers:
-    - args:
-      - --timeout=1420
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/latest
@@ -914,13 +976,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1420m
   spec:
     containers:
-    - args:
-      - --timeout=1420
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-beta
@@ -952,13 +1016,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1420m
   spec:
     containers:
-    - args:
-      - --timeout=1420
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable1
@@ -989,13 +1055,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1420m
   spec:
     containers:
-    - args:
-      - --timeout=1420
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable2
@@ -1026,13 +1094,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 1420m
   spec:
     containers:
-    - args:
-      - --timeout=1420
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable3
