@@ -94,6 +94,7 @@ func TestPubSubSubscriptions(t *testing.T) {
 		Repo4HEADsha       = "4c028549d727a9deebf69b68b640837844222632"
 		Repo5HEADsha       = "c0ea4b30f3d9dc0bf1d3391d8e3a6bee39ad4de6"
 		Repo6HEADsha       = "907254e19d6138e3c62e4da1a23318aae6869f46"
+		Repo7HEADsha       = "aab56bb6515ea410ffff909a391c84e0ee849567"
 		CreateRepoRepo1    = `
 echo this-is-from-repo1 > README.txt
 git add README.txt
@@ -142,6 +143,27 @@ postsubmits:
           echo "hello from trigger-inrepoconfig-postsubmit-via-pubsub-repo%s"
           cat README.txt
 `
+		ProwJobDecoratedPreset = `
+postsubmits:
+  - name: trigger-inrepoconfig-postsubmit-via-pubsub-repo%s
+    always_run: false
+    decorate: true
+    branches:
+    - ^master$
+    labels:
+      preset-foo: "true"
+    spec:
+      containers:
+      - image: localhost:5001/alpine
+        command:
+        - sh
+        args:
+        - -c
+        - |
+          set -eu
+          echo "hello from trigger-inrepoconfig-postsubmit-via-pubsub-repo%s"
+          cat README.txt
+`
 		ProwJobDecoratedCloneURI = `
 presubmits:
   - name: trigger-inrepoconfig-presubmit-via-pubsub-repo%s
@@ -168,6 +190,7 @@ presubmits:
 	CreateRepo4 := createGerritRepo("4", fmt.Sprintf(ProwJobDecorated, "4", "4"))
 	CreateRepo5 := createGerritRepo("5", fmt.Sprintf(ProwJobDecoratedCloneURI, "5", "https://fakegitserver.default/repo/org1/repo5", "5"))
 	CreateRepo6 := createGerritRepo("6", fmt.Sprintf(ProwJobDecoratedBrancher, "6", "6"))
+	CreateRepo7 := createGerritRepo("7", fmt.Sprintf(ProwJobDecoratedPreset, "7", "7"))
 
 	tests := []struct {
 		name       string
@@ -454,6 +477,39 @@ this-is-from-repo5
 			},
 			expected: `hello from trigger-inrepoconfig-postsubmit-via-pubsub-repo6
 this-is-from-repo6
+`,
+		},
+		{
+			name: "inrepoconfig-postsubmit7-with-env-var",
+			repoSetups: []fakegitserver.RepoSetup{
+				{
+					Name:      "org1/repo7",
+					Script:    CreateRepo7,
+					Overwrite: true,
+				},
+			},
+			msg: fakepubsub.PubSubMessageForSub{
+				Attributes: map[string]string{
+					subscriber.ProwEventType: subscriber.PostsubmitProwJobEvent,
+				},
+				Data: subscriber.ProwJobEvent{
+					Name: "trigger-inrepoconfig-postsubmit-via-pubsub-repo7",
+					Refs: &prowjobv1.Refs{
+						Org:      "https://fakegitserver.default/repo/org1",
+						Repo:     "repo7",
+						RepoLink: "https://fakegitserver.default/repo/org1/repo7",
+						BaseSHA:  Repo7HEADsha,
+						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/org1/repo7",
+						Pulls:    []prowjobv1.Pull{},
+					},
+					Labels: map[string]string{
+						kube.GerritRevision: "123",
+					},
+				},
+			},
+			expected: `hello from trigger-inrepoconfig-postsubmit-via-pubsub-repo7
+this-is-from-repo7
 `,
 		},
 	}
