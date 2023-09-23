@@ -1328,6 +1328,9 @@ def generate_presubmits_network_plugins():
         networking_arg = plugin
         optional = False
         distro = 'u2204arm64'
+        focus_regex = None
+        if plugin == 'cilium-eni':
+            focus_regex = r'\[Conformance\]|\[NodeConformance\]'
         if plugin == 'amazonvpc':
             distro = 'u2004'
             optional = True
@@ -1348,6 +1351,7 @@ def generate_presubmits_network_plugins():
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
                 extra_flags=extra_flags,
+                focus_regex=focus_regex,
                 run_if_changed=run_if_changed,
                 optional=optional,
             )

@@ -571,6 +571,7 @@ presubmits:
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
+            --focus-regex="\[Conformance\]|\[NodeConformance\]" \
             --parallel=25
         securityContext:
           privileged: true
