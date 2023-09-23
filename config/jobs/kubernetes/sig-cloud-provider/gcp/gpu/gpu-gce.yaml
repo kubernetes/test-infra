@@ -23,13 +23,15 @@ periodics:
     description: "Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '24'
+  decorate: true
+  decoration_config:
+    timeout: 300m
   spec:
     containers:
-    - args:
-      - --timeout=300
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
@@ -64,13 +66,15 @@ periodics:
     testgrid-tab-name: gce-device-plugin-gpu
     description: Duplicate of ci-kubernetes-e2e-gce-device-plugin-gpu pinned to a k8s-infra project to verify quota
     testgrid-alert-stale-results-hours: '24'
+  decorate: true
+  decoration_config:
+    timeout: 300m
   spec:
     containers:
-    - args:
-      - --timeout=300
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev

@@ -23,19 +23,19 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-gce-device-plugin-gpu: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=quick
         - --cluster=
         - --extract=local
