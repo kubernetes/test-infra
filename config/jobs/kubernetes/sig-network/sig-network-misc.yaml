@@ -239,13 +239,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
   spec:
     containers:
-    - args:
-      - --timeout=80
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       # List GCE Alpha features we want to enable, separated by commas.
       - --env=GCE_ALPHA_FEATURES=NetworkTiers
@@ -276,13 +278,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
   spec:
     containers:
-    - args:
-      - --timeout=80
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=gce-coredns-perf
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --extract=ci/latest
@@ -311,13 +315,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
   spec:
     containers:
-    - args:
-      - --timeout=80
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=gce-kubedns-perf
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --extract=ci/latest
@@ -346,13 +352,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
@@ -377,13 +385,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
   spec:
     containers:
-    - args:
-      - --timeout=80
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=gce-coredns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
@@ -413,13 +423,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
   spec:
     containers:
-    - args:
-      - --timeout=80
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=gce-kubedns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
@@ -449,13 +461,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
@@ -481,13 +495,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 340m
   spec:
     containers:
-    - args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
@@ -518,13 +534,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 340m
   spec:
     containers:
-    - args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
@@ -554,13 +572,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
   spec:
     containers:
-    - args:
-      - --timeout=200
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=CREATE_CUSTOM_NETWORK=true
       - --extract=ci/latest
@@ -588,13 +608,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 70m
   spec:
     containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
@@ -623,13 +645,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=KUBE_PROXY_MODE=ipvs
       - --extract=ci/latest
@@ -658,13 +682,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
@@ -689,13 +715,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
@@ -721,13 +749,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 520m
   spec:
     containers:
-    - args:
-      - --timeout=520
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --env=CLUSTER_DNS_CORE_DNS=false,
@@ -753,13 +783,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 520m
   spec:
     containers:
-    - args:
-      - --timeout=520
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --env=CLUSTER_DNS_CORE_DNS=false,
@@ -786,13 +818,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
   spec:
     containers:
-    - args:
-      - --timeout=170
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=ALLOW_PRIVILEGED=true
       - --env=NETWORK_POLICY_PROVIDER=calico
