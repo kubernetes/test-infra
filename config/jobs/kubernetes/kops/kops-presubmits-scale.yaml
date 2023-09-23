@@ -219,6 +219,16 @@ presubmits:
           value: "master"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-infra-kops-scale-tests"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
