@@ -1731,7 +1731,7 @@ def generate_presubmits_e2e():
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-127-ko127-to-klatest-kolatest-many-addons",
+            name="pull-kops-e2e-aws-upgrade-k127-ko127-to-klatest-kolatest-many-addons",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1765,8 +1765,7 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             env={
-                'KOPS_FEATURE_FLAGS': "Karpenter",
-                'KOPS_VERSION_A': "1.27.0",
+                'KOPS_VERSION_A': "1.27",
                 'K8S_VERSION_A': "v1.27.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "v1.28.0",
