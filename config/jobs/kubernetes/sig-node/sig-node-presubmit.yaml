@@ -1398,7 +1398,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-crio-cgroupv1-node-e2e-hugepages
-    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -1447,7 +1446,6 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-crio-cgroupv1-node-e2e-resource-managers
-    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -2123,7 +2121,6 @@ presubmits:
       preset-k8s-ssh: "true"
     optional: true
     always_run: false
-    cluster: k8s-infra-prow-build
     max_concurrency: 12
     decorate: true
     decoration_config:
