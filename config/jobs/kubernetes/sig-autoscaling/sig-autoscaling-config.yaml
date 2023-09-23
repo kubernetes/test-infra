@@ -5,15 +5,22 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/autoscaler=master
-      - --root=/go/src
-      - --timeout=200
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -36,15 +43,22 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/autoscaler=master
-      - --root=/go/src
-      - --timeout=80
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -67,15 +81,22 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/autoscaler=master
-      - --root=/go/src
-      - --timeout=120
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -98,15 +119,22 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/autoscaler=master
-      - --root=/go/src
-      - --timeout=150
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -129,15 +157,22 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  extra_refs:
+  - org: kubernetes
+    repo: autoscaler
+    base_ref: master
+    path_alias: k8s.io/autoscaler
+    workdir: true
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/autoscaler=master
-      - --root=/go/src
-      - --timeout=80
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -159,13 +194,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 350m
   spec:
     containers:
-    - args:
-      - --timeout=350
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=ca
       # Override GCE default for cluster size autoscaling purposes.
       - --env=ENABLE_CUSTOM_METRICS=true
@@ -194,13 +231,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 350m
   spec:
     containers:
-    - args:
-      - --timeout=350
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=hpa
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -221,13 +260,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 350m
   spec:
     containers:
-    - args:
-      - --timeout=350
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=ca
       # Override GCE default for cluster size autoscaling purposes.
       - --env=KUBE_ENABLE_CLUSTER_AUTOSCALER=true
@@ -256,13 +297,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 350m
   spec:
     containers:
-    - args:
-      - --timeout=350
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=hpa
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -283,13 +326,15 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 260m
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=260
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
