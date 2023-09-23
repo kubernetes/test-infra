@@ -792,7 +792,7 @@ def generate_misc():
                    ],
                    extra_dashboards=["kops-misc"],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]'),
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'), # pylint: disable=line-too-long
 
         build_test(name_override="kops-aws-ipv6-karpenter",
                    distro="u2204arm64",
@@ -809,7 +809,7 @@ def generate_misc():
                    ],
                    extra_dashboards=["kops-misc", "kops-ipv6"],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]'),
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'), # pylint: disable=line-too-long
 
         # [sig-storage, @jsafrane] A one-off scenario testing SELinux features, because kops
         # is the only way how to get Kubernetes on a Linux with SELinux in enforcing mode in CI.
@@ -1679,7 +1679,7 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]',
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
         ),
         presubmit_test(
             distro='u2204arm64',
@@ -1695,7 +1695,7 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]',
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest",

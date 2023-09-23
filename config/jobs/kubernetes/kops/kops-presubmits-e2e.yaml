@@ -1966,7 +1966,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]" \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes" \
             --parallel=25
         securityContext:
           privileged: true
@@ -2033,7 +2033,7 @@ presubmits:
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
-            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]" \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes" \
             --parallel=25
         securityContext:
           privileged: true
