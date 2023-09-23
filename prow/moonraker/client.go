@@ -166,6 +166,11 @@ func (c *Client) GetProwYAML(refs *prowapi.Refs) (*config.ProwYAML, error) {
 
 // GetInRepoConfig just wraps around GetProwYAML(), converting the input
 // parameters into a prowapi.Refs{} type.
+//
+// Importantly, it also does defaulting of the retrieved jobs. Defaulting is
+// required because the Presubmit and Postsubmit job types have private fields
+// in them that would not be serialized into JSON when sent over from the
+// server. So the defaulting has to be done client-side.
 func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) (*config.ProwYAML, error) {
 	refs := prowapi.Refs{}
 
@@ -191,7 +196,17 @@ func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGett
 	}
 	refs.Pulls = pulls
 
-	return c.GetProwYAML(&refs)
+	prowYAML, err := c.GetProwYAML(&refs)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := c.configAgent.Config()
+	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, identifier); err != nil {
+		return nil, err
+	}
+
+	return prowYAML, nil
 }
 
 func (c *Client) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
