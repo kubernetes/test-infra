@@ -1076,26 +1076,24 @@ def generate_upgrades():
         ((kops27, 'v1.27.2'), ('1.27', 'v1.27.3')),
         # 1.28 release branch
         ((kops26, 'v1.22.17'), ('1.28', 'v1.23.17')),
-        ((kops26, 'v1.27.3'), ('1.28', 'v1.27.3')),
+        ((kops26, 'v1.26.6'), ('1.28', 'v1.27.3')),
         ((kops27, 'v1.22.17'), ('1.28', 'v1.23.17')),
         ((kops27, 'v1.27.3'), ('1.28', 'v1.28.1')),
         ((kops28, 'v1.23.17'), ('1.28', 'v1.24.17')),
         ((kops28, 'v1.28.0'), ('1.28', 'v1.28.1')),
         # 1.26 upgrade to latest
         ((kops26, 'v1.26.0'), ('latest', 'v1.27.0')),
-        ((kops26, 'v1.26.0'), ('latest', 'v1.28.0')),
         # 1.27 upgrade to latest
         ((kops27, 'v1.23.0'), ('latest', 'v1.24.0')),
         ((kops27, 'v1.24.0'), ('latest', 'v1.25.0')),
         ((kops27, 'v1.25.0'), ('latest', 'v1.26.0')),
         ((kops27, 'v1.26.0'), ('latest', 'v1.27.0')),
-        ((kops27, 'v1.27.0'), ('latest', 'v1.27.0')),
+        ((kops27, 'v1.27.0'), ('latest', 'v1.28.0')),
         # 1.28 upgrade to latest
         ((kops28, 'v1.24.0'), ('latest', 'v1.25.0')),
         ((kops28, 'v1.25.0'), ('latest', 'v1.26.0')),
         ((kops28, 'v1.26.0'), ('latest', 'v1.27.0')),
         ((kops28, 'v1.27.0'), ('latest', 'v1.28.0')),
-        ((kops28, 'v1.28.0'), ('latest', 'v1.28.0')),
         # we should have an upgrade test for every supported K8s version
         (('latest', 'v1.28.0'), ('latest', 'latest')),
         (('latest', 'v1.27.0'), ('latest', 'v1.28.0')),
