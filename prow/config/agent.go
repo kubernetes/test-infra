@@ -422,3 +422,16 @@ func (ca *Agent) Set(c *Config) {
 		}(subscription)
 	}
 }
+
+// SetWithoutBroadcast sets the config, but does not broadcast the event to
+// those listening for config reload changes. This is useful if you want to
+// modify the Config in the Agent, from the point of view of the subscriber to
+// the new one that was detected from the DeltaChan; if you just used Set()
+// instead of this in such a situation, you would end up clogging the DeltaChan
+// because you would be acting as both the consumer and producer of the
+// DeltaChan.
+func (ca *Agent) SetWithoutBroadcast(c *Config) {
+	ca.mut.Lock()
+	defer ca.mut.Unlock()
+	ca.c = c
+}
