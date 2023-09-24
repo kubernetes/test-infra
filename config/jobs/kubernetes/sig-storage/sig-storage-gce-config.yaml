@@ -23,16 +23,20 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 150m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --extract=local
@@ -74,16 +78,20 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 150m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --extract=local
@@ -124,16 +132,20 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 170m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=170
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --extract=local
@@ -164,16 +176,20 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 300m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=300
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --extract=local
         - --gcp-master-image=gci
@@ -197,13 +213,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
   spec:
     containers:
-    - args:
-      - --timeout=150
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
@@ -231,13 +249,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
   spec:
     containers:
-    - args:
-      - --timeout=150
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
