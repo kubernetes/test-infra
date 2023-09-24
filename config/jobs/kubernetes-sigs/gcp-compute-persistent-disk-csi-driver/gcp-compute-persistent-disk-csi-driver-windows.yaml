@@ -6,6 +6,7 @@ periodics:
     repo: gcp-compute-persistent-disk-csi-driver
     base_ref: master
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    workdir: true
   interval: 4h
   labels:
     preset-k8s-ssh: "true"
@@ -16,17 +17,15 @@ periodics:
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 360m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
       args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=360" # Minutes (120m runs consistently time out)
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
       - "test/run-windows-k8s-integration.sh"
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
@@ -61,17 +60,15 @@ presubmits:
       preset-dind-enabled: "true"
     always_run: false
     optional: true
+    decorate: true
+    decoration_config:
+      timeout: 180m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - "--timeout=180" # Minutes (120m runs consistently time out)
-        - "--scenario=execute"
-        - "--" # end bootstrap args, scenario args below
         - "test/run-windows-k8s-integration.sh"
         env:
         - name: WINDOWS_NODE_OS_DISTRIBUTION

@@ -5,17 +5,20 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 180m # Minutes (120m runs consistently time out)
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
       args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=180" # Minutes (120m runs consistently time out)
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
@@ -43,17 +46,20 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 180m # Minutes (120m runs consistently time out)
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
       args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=180" # Minutes (120m times out)
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME
@@ -81,17 +87,21 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: gcp-compute-persistent-disk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    workdir: true
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
       args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=180" # Minutes (120m times out)
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration-ci.sh"
       env:
       - name: GCE_PD_OVERLAY_NAME

@@ -7,15 +7,13 @@ presubmits:
     - gh-pages
     labels:
       preset-service-account: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
         - make
         - check
         resources:
@@ -33,15 +31,13 @@ presubmits:
     - gh-pages
     labels:
       preset-service-account: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
         - make
         - test
         resources:
