@@ -129,6 +129,47 @@ presubmits:
           limits:
             cpu: "1"
             memory: "2Gi"
+  - name: pull-test-infra-prow-checkconfig-deprecated-job-configs
+    cluster: eks-prow-build-cluster
+    optional: true
+    decorate: true
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20230919-a4926a4d02
+        command:
+        - sh
+        args:
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          set -o xtrace
+
+          HEAD_CHECK=$(checkconfig \
+            --config-path=config/prow/config.yaml \
+            --job-config-path=config/jobs \
+            --plugin-config=config/prow/plugins.yaml \
+            --warnings=non-decorated-jobs
+
+          git checkout master
+          MASTER_CHECK=$(checkconfig \
+            --config-path=config/prow/config.yaml \
+            --job-config-path=config/jobs \
+            --plugin-config=config/prow/plugins.yaml \
+            --warnings=non-decorated-jobs
+           
+          echo $MASTER_CHECK > /tmp/master
+          echo $HEAD_CHECK > /tmp/head
+          diff /tmp/master /tmp/head
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
