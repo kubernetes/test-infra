@@ -15,6 +15,9 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 240m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -23,15 +26,10 @@ presubmits:
           value: "true"
         - name: CONTAINER_RUNTIME_ENDPOINT
           value: "/var/run/docker/containerd/containerd.sock"
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=240"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=quick
         - --deployment=local
         - --ginkgo-parallel=1
@@ -61,6 +59,9 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 240m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -69,11 +70,10 @@ periodics:
         value: "true"
       - name: CONTAINER_RUNTIME_ENDPOINT
         value: "/var/run/docker/containerd/containerd.sock"
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - "--bare"
-      - "--timeout=240"
-      - --scenario=kubernetes_e2e
-      - --
       - --deployment=local
       - --extract=ci/latest
       - --extract-source
