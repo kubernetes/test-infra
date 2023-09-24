@@ -1554,7 +1554,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 		log := c.logger.WithField("base-sha", sp.sha).WithFields(pr.logFields())
 		presubmitsForPull, err := c.provider.GetPresubmits(sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
 		if err != nil {
-			c.logger.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
+			log.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
 			continue
 		}
 		filteredPRs = append(filteredPRs, pr)
