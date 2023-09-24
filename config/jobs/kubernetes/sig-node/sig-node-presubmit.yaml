@@ -657,11 +657,11 @@ presubmits:
             value: /go
           resources:
             limits:
-              cpu: 4
-              memory: 6Gi
+              cpu: 8
+              memory: 10Gi
             requests:
-              cpu: 4
-              memory: 6Gi
+              cpu: 8
+              memory: 10Gi
   - name: pull-kubernetes-node-kubelet-serial-containerd-kubetest2
     # explicitly needs /test pull-kubernetes-node-kubelet-serial-containerd-kubetest2 to run
     always_run: false
