@@ -166,14 +166,16 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ingress-master-yaml: "true"
+  decorate: true
+  decoration_config:
+    timeout: 340m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
