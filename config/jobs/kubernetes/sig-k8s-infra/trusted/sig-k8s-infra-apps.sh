@@ -34,7 +34,6 @@ readonly APPS=(
     prow
     publishing-bot
     slack-infra
-    triageparty-release
 )
 
 cat >"${OUTPUT}" <<EOF
