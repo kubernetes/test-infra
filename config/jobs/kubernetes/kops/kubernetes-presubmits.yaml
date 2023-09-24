@@ -17,19 +17,21 @@ presubmits:
       preset-aws-credential: "true"
       preset-e2e-platform-aws: "true"
       preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 75m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=quick
