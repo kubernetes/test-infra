@@ -5,17 +5,15 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 30m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - "--timeout=30" # Minutes
-        - "--scenario=execute"
-        - "--" # end bootstrap args, scenario args below
         - "test/run-e2e.sh"
         env:
         - name: ZONE
@@ -36,17 +34,15 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - "--timeout=10" # Minutes
-        - "--scenario=execute"
-        - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
         resources:
           limits:
@@ -64,17 +60,15 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - "--timeout=10" # Minutes
-        - "--scenario=execute"
-        - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
         resources:
           limits:
@@ -92,17 +86,15 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - "--timeout=10" # Minutes
-        - "--scenario=execute"
-        - "--" # end bootstrap args, scenario args below
         - "hack/verify-all.sh"
         # docker-in-docker needs privileged mode
         # hack/verify-all.sh runs docker to validate the built docker images
@@ -125,17 +117,15 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - "--timeout=90" # Minutes
-        - "--scenario=execute"
-        - "--" # end bootstrap args, scenario args below
         - "test/run-k8s-integration.sh"
         env:
         - name: GCE_PD_OVERLAY_NAME

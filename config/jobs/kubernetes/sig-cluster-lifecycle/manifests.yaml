@@ -6,13 +6,20 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: main
+    path_alias: k8s.io/kubeadm
+    workdir: true
   spec:
     containers:
-    - args:
-      - --timeout=60
-      - --repo=k8s.io/kubeadm=main
-      - --scenario=execute
-      - --
+    - command:
+      - runner.sh
+      args:
       - ./tests/e2e/manifests/verify_manifest_lists.sh
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       resources:
