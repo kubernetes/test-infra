@@ -191,13 +191,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 70m
   spec:
     containers:
-      - args:
-          - --timeout=70
-          - --bare
-          - --scenario=kubernetes_e2e
-          - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
           - --check-leaked-resources
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
