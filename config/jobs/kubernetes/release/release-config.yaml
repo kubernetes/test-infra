@@ -7,16 +7,20 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes
-        - --repo=k8s.io/release=$(PULL_REFS)
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
         - --cluster=
         - --down=false
