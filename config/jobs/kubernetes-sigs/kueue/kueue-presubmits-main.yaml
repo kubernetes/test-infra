@@ -78,7 +78,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.25.11
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.20
+          value: public.ecr.aws/docker/library/golang:1.21
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -116,7 +116,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.26.6
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.20
+          value: public.ecr.aws/docker/library/golang:1.21
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -154,7 +154,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.20
+          value: public.ecr.aws/docker/library/golang:1.21
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -192,7 +192,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.28.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.20
+              value: public.ecr.aws/docker/library/golang:1.21
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -265,7 +265,7 @@ presubmits:
         - name: GOMAXPROCS
           value: "2"
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.20
+          value: public.ecr.aws/docker/library/golang:1.21
         resources:
           requests:
             cpu: "2"
