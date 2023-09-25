@@ -85,11 +85,17 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 30m
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+    workdir: true
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_janitor.py
+      - /home/prow/go/src/k8s.io/test-infra/scenarios/kubernetes_janitor.py
       args:
       - --mode=pr
       env:
