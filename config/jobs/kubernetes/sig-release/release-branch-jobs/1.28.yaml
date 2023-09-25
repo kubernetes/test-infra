@@ -54,6 +54,7 @@ periodics:
     containers:
     - command:
       - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
       - --extract=ci/latest-1.28
