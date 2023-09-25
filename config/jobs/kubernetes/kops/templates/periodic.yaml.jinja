@@ -47,6 +47,9 @@
           {%- if kops_feature_flags %}
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
           {%- endif %}
+          {%- if kubernetes_feature_gates %}
+          --kubernetes-feature-gates={{ kubernetes_feature_gates }} \
+          {%- endif %}
           --kops-version-marker={{kops_deploy_url}} \
           {%- if publish_version_marker %}
           --publish-version-marker={{publish_version_marker}} \
@@ -63,8 +66,11 @@
           {%- endif %}
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \
+          {%- if test_args %}
+          --test-args="-test.timeout={{test_timeout}} {{ test_args }}" \
+          {%- else %}
+          --test-args="-test.timeout={{test_timeout}}" \
+          {%- endif %}
           {%- if test_package_bucket %}
           --test-package-bucket={{test_package_bucket}} \
           {%- endif %}

@@ -38,8 +38,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=latest.txt \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
           --skip-regex="\[Slow\]|\[Serial\]" \
@@ -106,8 +105,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.28.txt \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
           --skip-regex="\[Slow\]|\[Serial\]" \
@@ -174,8 +172,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.27.txt \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
           --skip-regex="\[Slow\]|\[Serial\]" \

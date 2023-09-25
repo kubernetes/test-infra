@@ -41,8 +41,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -106,8 +105,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -172,8 +170,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -238,8 +235,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -304,8 +300,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable-1.27.txt \
             --parallel=25
         securityContext:
@@ -370,8 +365,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -436,8 +430,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -502,8 +495,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
@@ -568,8 +560,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
             --parallel=25
@@ -635,8 +626,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable-1.27.txt \
             --parallel=25
         securityContext:
@@ -701,8 +691,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
+            --test-args="-test.timeout=60m" \
             --test-package-marker=stable-1.27.txt \
             --parallel=25
         securityContext:

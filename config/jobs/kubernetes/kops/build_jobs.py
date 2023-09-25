@@ -57,11 +57,13 @@ def build_test(cloud='aws',
                terraform_version=None,
                test_parallelism=25,
                test_timeout_minutes=60,
+               test_args=None,
                skip_regex='',
                focus_regex=None,
                runs_per_day=0,
                scenario=None,
                env=None,
+               kubernetes_feature_gates=None,
                build_cluster="default",
                template_path=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
@@ -178,6 +180,8 @@ def build_test(cloud='aws',
         scenario=scenario,
         env=env,
         build_cluster=build_cluster,
+        kubernetes_feature_gates=kubernetes_feature_gates,
+        test_args=test_args,
     )
 
     spec = {
@@ -821,8 +825,8 @@ def generate_misc():
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
+                   kubernetes_feature_gates="SELinuxMountReadWriteOncePod,ReadWriteOncePod",
                    extra_flags=[
-                       "--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod",
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
                    ],
                    focus_regex=r"\[Feature:SELinux\]",
@@ -856,6 +860,7 @@ def generate_misc():
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
+                   test_args="--num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
 
@@ -873,6 +878,7 @@ def generate_misc():
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=150,
+                   test_args="--num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
 
@@ -889,9 +895,30 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
+                   test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    test_timeout_minutes=200,
+                   test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
+
+        build_test(name_override="ci-kubernetes-e2e-cos-gce-conformance-concurrrency-canary",
+                   cloud="gce",
+                   distro="cos105",
+                   networking="kubenet",
+                   k8s_version="ci",
+                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_channel="alpha",
+                   build_cluster="k8s-infra-prow-build",
+                   extra_flags=[
+                       "--image=cos-cloud/cos-105-17412-156-49",
+                   ],
+                   focus_regex=r'\[Conformance\]',
+                   skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
+                   test_timeout_minutes=100,
+                   test_parallelism=8,
+                   test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
+                   runs_per_day=9),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-serial-canary",
                    cloud="gce",
@@ -907,6 +934,8 @@ def generate_misc():
                    focus_regex=r'\[Serial\]|\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=500,
+                   test_parallelism=1, # serial tests
+                   test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=4),
 
@@ -920,11 +949,13 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
-                       "--kubernetes-feature-gates=AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders" # pylint: disable=line-too-long
                    ],
+                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,-DisableCloudProviders,-DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
                    focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
                    test_timeout_minutes=180,
+                   test_parallelism=1,
+                   test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
     ]
