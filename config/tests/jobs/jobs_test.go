@@ -791,6 +791,13 @@ func hasArg(wanted string, args []string) bool {
 	return false
 }
 
+func checkBootstrapImage(jobName, imageName string) error {
+	if strings.Contains(imageName, "bootstrap") {
+		return fmt.Errorf("job %s: image %s has been decommissioned", jobName, imageName)
+	}
+	return nil
+}
+
 func checkScenarioArgs(jobName, imageName string, args []string) error {
 	// env files/scenarios validation
 	scenarioArgs := false
@@ -964,6 +971,9 @@ func TestValidScenarioArgs(t *testing.T) {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
+		if err := checkBootstrapImage(job.Name, job.Spec.Containers[0].Image); err != nil {
+			t.Errorf("Invalid image : %s", err)
+		}
 	}
 
 	for _, job := range c.AllStaticPostsubmits(nil) {
@@ -972,6 +982,9 @@ func TestValidScenarioArgs(t *testing.T) {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
+		if err := checkBootstrapImage(job.Name, job.Spec.Containers[0].Image); err != nil {
+			t.Errorf("Invalid image : %s", err)
+		}
 	}
 
 	for _, job := range c.AllPeriodics() {
@@ -979,6 +992,9 @@ func TestValidScenarioArgs(t *testing.T) {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
+		}
+		if err := checkBootstrapImage(job.Name, job.Spec.Containers[0].Image); err != nil {
+			t.Errorf("Invalid image : %s", err)
 		}
 	}
 }
