@@ -15,6 +15,7 @@ periodics:
     containers:
     - command:
       - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --extract=ci/latest-1.25
       - --extract-ci-bucket=k8s-release-dev
@@ -46,10 +47,16 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 300m
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-25
   spec:
     containers:
-    - args:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --extract=ci/latest-1.25
       - --extract-ci-bucket=k8s-release-dev
