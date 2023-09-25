@@ -53,11 +53,11 @@ var (
 		Help: "Used gb on gerrit-cache disk.",
 	})
 	diskTotal = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "ghcache_disk_total",
+		Name: "gerrit_disk_total",
 		Help: "Total gb on gerrit-cache disk.",
 	})
 	diskInodeFree = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "ghcache_disk_inode_free",
+		Name: "gerrit_disk_inode_free",
 		Help: "Free inodes on gerrit-cache disk.",
 	})
 	diskInodeUsed = prometheus.NewGauge(prometheus.GaugeOpts{
