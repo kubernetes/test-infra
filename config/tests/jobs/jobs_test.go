@@ -816,24 +816,12 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		}
 	}
 
-	if scenario == "" {
-		if !scenarioArgs {
-			if strings.Contains(imageName, "kubekins-e2e") ||
-				strings.Contains(imageName, "bootstrap") ||
-				strings.Contains(imageName, "gcloud-in-go") {
-				return fmt.Errorf("job %s: image %s uses bootstrap.py and need scenario args", jobName, imageName)
-			}
-			return nil
-		}
-
-	} else {
-		if _, err := os.Stat(fmt.Sprintf("../../../scenarios/%s.py", scenario)); err != nil {
-			return fmt.Errorf("job %s: scenario %s does not exist: %s", jobName, scenario, err)
-		}
-
-		if !scenarioArgs {
-			return fmt.Errorf("job %s: set --scenario=%s and will need scenario args", jobName, scenario)
-		}
+	if scenario != "" {
+		return fmt.Errorf("job %s: scenario (%s) based bootstrap.py jobs are not supported",
+			jobName, scenario)
+	}
+	if scenarioArgs {
+		return fmt.Errorf("job %s: scenario based bootstrap.py jobs are not supported", jobName)
 	}
 
 	// shared build args
