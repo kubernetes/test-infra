@@ -64,6 +64,9 @@ type KubernetesOptions struct {
 	noInClusterConfig        bool
 	NOInClusterConfigDefault bool
 
+	// from the setter SetDisabledClusters
+	disabledClusters sets.Set[string]
+
 	// from resolution
 	resolved                    bool
 	dryRun                      bool
@@ -218,7 +221,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
 		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
-		kube.NoInClusterConfig(o.noInClusterConfig), kube.ConfigSuffix(o.kubeconfigSuffix)))
+		kube.NoInClusterConfig(o.noInClusterConfig), kube.ConfigSuffix(o.kubeconfigSuffix),
+		kube.DisabledClusters(o.disabledClusters)))
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %w", o.kubeconfig, err)
 	}
@@ -532,4 +536,14 @@ func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.Set[string], error)
 		return nil, err
 	}
 	return sets.KeySet[string](o.clusterConfigs), nil
+}
+
+// SetDisabledClusters sets disabledClusters
+// It has no effects if the options have been resolved.
+func (o *KubernetesOptions) SetDisabledClusters(disabledClusters sets.Set[string]) {
+	if o.resolved {
+		logrus.WithField("disabledClusters", o.disabledClusters).Warn("SetDisabledClusters has to be called before it is resolved")
+		return
+	}
+	o.disabledClusters = disabledClusters
 }

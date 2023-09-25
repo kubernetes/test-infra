@@ -791,35 +791,83 @@ func TestHandleConfig(t *testing.T) {
 			},
 		},
 	}
-	configGetter := func() *config.Config {
-		return &c
+	cWithDisabledCluster := config.Config{
+		ProwConfig: config.ProwConfig{
+			DisabledClusters: []string{"build08", "build08", "build01"},
+		},
 	}
-	handler := handleConfig(configGetter, logrus.WithField("handler", "/config"))
-	req, err := http.NewRequest(http.MethodGet, "/config", nil)
+	dataC, err := yaml.Marshal(c)
 	if err != nil {
-		t.Fatalf("Error making request: %v", err)
-	}
-	rr := httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusOK {
-		t.Fatalf("Bad error code: %d", rr.Code)
-	}
-	if h := rr.Header().Get("Content-Type"); h != "text/plain" {
-		t.Fatalf("Bad Content-Type, expected: 'text/plain', got: %v", h)
-	}
-	resp := rr.Result()
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Error reading response body: %v", err)
-	}
-	var res config.Config
-	if err := yaml.Unmarshal(body, &res); err != nil {
 		t.Fatalf("Error unmarshaling: %v", err)
 	}
-	if !reflect.DeepEqual(c, res) {
-		t.Errorf("Invalid config. Got %v, expected %v", res, c)
+
+	testcases := []struct {
+		name                string
+		config              config.Config
+		url                 string
+		expectedBody        []byte
+		expectedStatus      int
+		expectedContentType string
+	}{
+		{
+			name:                "general case",
+			config:              c,
+			url:                 "/config",
+			expectedBody:        dataC,
+			expectedStatus:      http.StatusOK,
+			expectedContentType: "text/plain",
+		},
+		{
+			name:                "unsupported key",
+			config:              c,
+			url:                 "/config?key=some",
+			expectedBody:        []byte("getting config for key some is not supported\n"),
+			expectedStatus:      http.StatusInternalServerError,
+			expectedContentType: `text/plain; charset=utf-8`,
+		},
+		{
+			name:   "disabled clusters",
+			config: cWithDisabledCluster,
+			url:    "/config?key=disabled-clusters",
+			expectedBody: []byte(`- build01
+- build08
+`),
+			expectedStatus:      http.StatusOK,
+			expectedContentType: `text/plain`,
+		},
 	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			configGetter := func() *config.Config {
+				return &tc.config
+			}
+			handler := handleConfig(configGetter, logrus.WithField("handler", "/config"))
+			req, err := http.NewRequest(http.MethodGet, tc.url, nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+
+			if rr.Code != tc.expectedStatus {
+				t.Fatalf("Bad error code: %d", rr.Code)
+			}
+			if h := rr.Header().Get("Content-Type"); h != tc.expectedContentType {
+				t.Fatalf("Bad Content-Type, expected: 'text/plain', got: %v", h)
+			}
+			resp := rr.Result()
+			defer resp.Body.Close()
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("Error reading response body: %v", err)
+			}
+			if diff := cmp.Diff(string(tc.expectedBody), string(body)); diff != "" {
+				t.Errorf("Error differs from expected:\n%s", diff)
+			}
+		})
+	}
+
 }
 
 func TestHandlePluginConfig(t *testing.T) {

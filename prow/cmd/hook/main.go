@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -115,6 +116,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	o.kubernetes.SetDisabledClusters(sets.New[string](configAgent.Config().DisabledClusters...))
 
 	var tokens []string
 

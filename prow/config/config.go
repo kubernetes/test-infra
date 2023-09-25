@@ -222,6 +222,10 @@ type ProwConfig struct {
 	// match a job are used. Later matching entries override the fields of earlier
 	// matching entires.
 	ProwJobDefaultEntries []*ProwJobDefaultEntry `json:"prowjob_default_entries,omitempty"`
+
+	// DisabledClusters holds a list of disabled build cluster names. The same context names will be ignored while
+	// Prow components load the kubeconfig files.
+	DisabledClusters []string `json:"disabled_clusters,omitempty"`
 }
 
 type InRepoConfig struct {

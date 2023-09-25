@@ -108,6 +108,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+	o.kubernetes.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
 
 	metrics.ExposeMetrics("sinker", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 

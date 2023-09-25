@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 )
 
@@ -124,6 +125,7 @@ func TestLoadClusterConfigs(t *testing.T) {
 		noInClusterConfig  bool
 		expected           map[string]rest.Config
 		expectedErr        bool
+		disabledClusters   sets.Set[string]
 	}{
 		{
 			name:       "load from kubeconfig",
@@ -178,6 +180,34 @@ func TestLoadClusterConfigs(t *testing.T) {
 				},
 				"default": {
 					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"hive": {
+					Host:        "https://api.hive.9xw5.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+		{
+			name:             "load from kubeconfigDir with build02 disabled",
+			kubeconfigDir:    filepath.Join("testdata", "load_from_kubeconfigDir"),
+			suffix:           "yaml",
+			disabledClusters: sets.New[string]("build02"),
+			expected: map[string]rest.Config{
+				"": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"app.ci": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build01": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"default": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
 					BearerToken: "REDACTED",
 				},
 				"hive": {
@@ -252,7 +282,8 @@ func TestLoadClusterConfigs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, actualErr := LoadClusterConfigs(NewConfig(ConfigFile(tc.kubeconfig),
 				ConfigDir(tc.kubeconfigDir), ConfigProjectedTokenFile(tc.projectedTokenFile),
-				NoInClusterConfig(tc.noInClusterConfig), ConfigSuffix(tc.suffix)))
+				NoInClusterConfig(tc.noInClusterConfig), ConfigSuffix(tc.suffix),
+				DisabledClusters(tc.disabledClusters)))
 			if tc.expectedErr != (actualErr != nil) {
 				t.Errorf("%s: actualErr %v does not match expectedErr %v", tc.name, actualErr, tc.expectedErr)
 				return
