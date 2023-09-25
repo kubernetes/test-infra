@@ -567,10 +567,6 @@ branch-protection:
             contexts:
               - e2e
               - e2e-hub
-        kube-batch:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
         kubectl-validate:
           required_status_checks:
             contexts:

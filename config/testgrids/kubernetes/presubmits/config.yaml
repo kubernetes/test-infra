@@ -6,7 +6,6 @@ dashboard_groups:
   - presubmits-cloud-provider-vsphere-blocking
   - presubmits-ec2
   - presubmits-kops
-  - presubmits-kube-batch
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-kubernetes-scalability
@@ -19,7 +18,6 @@ dashboards:
 - name: presubmits-cloud-provider-alibaba
 - name: presubmits-cloud-provider-vsphere-blocking
 - name: presubmits-kops
-- name: presubmits-kube-batch
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
   - name: pull-kubernetes-e2e-kind
