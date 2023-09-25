@@ -15,6 +15,7 @@ periodics:
     containers:
     - command:
       - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --extract=ci/latest-1.28
       - --extract-ci-bucket=k8s-release-dev
