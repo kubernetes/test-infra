@@ -862,6 +862,9 @@ periodics:
       - --warnings=validate-urls
       - --warnings=unknown-fields
       - --warnings=duplicate-job-refs
+      - --warnings=unknown-fields-all
+      - --warnings=non-decorated-jobs
+      - --warnings=valid-decoration-config
       resources:
         requests:
           cpu: "1"
@@ -871,5 +874,5 @@ periodics:
           memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-testing-misc
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-prow-oncall@kubernetes.io
     testgrid-num-failures-to-alert: '10'
