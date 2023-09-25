@@ -6,6 +6,7 @@ presubmits:
     run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
     cluster: eks-prow-build-cluster
     decorate: true
+    path_alias: k8s.io/kubernetes
     labels:
       preset-dind-enabled: "true"
     spec:

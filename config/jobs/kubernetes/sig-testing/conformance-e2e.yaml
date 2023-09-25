@@ -17,6 +17,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 60m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: test-infra

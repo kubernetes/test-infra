@@ -18,6 +18,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 240m
+    path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
