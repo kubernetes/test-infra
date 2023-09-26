@@ -38,8 +38,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
@@ -105,8 +104,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.28.txt \
           --parallel=25
       env:
@@ -170,8 +168,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.27.txt \
           --parallel=25
       env:
@@ -235,8 +232,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.26.txt \
           --parallel=25
       env:
@@ -300,8 +296,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.25.txt \
           --parallel=25
       env:
@@ -365,8 +360,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.24.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.24.txt \
           --parallel=25
       env:

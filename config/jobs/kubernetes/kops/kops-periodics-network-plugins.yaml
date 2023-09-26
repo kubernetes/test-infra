@@ -37,8 +37,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -102,8 +101,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -167,8 +165,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.27.txt \
           --parallel=25
       env:
@@ -232,8 +229,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -297,8 +293,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -362,8 +357,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
           --parallel=25
@@ -428,8 +422,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.27.txt \
           --parallel=25
       env:
@@ -493,8 +486,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:
@@ -558,8 +550,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=60m" \
           --test-package-marker=stable-1.27.txt \
           --parallel=25
       env:
