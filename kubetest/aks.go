@@ -189,7 +189,7 @@ func (a *aksDeployer) Up() error {
 		return fmt.Errorf("failed long async cluster creation: %w", err)
 	}
 
-	credentialList, err := a.azureClient.managedClustersClient.ListClusterAdminCredentials(context.Background(), a.resourceGroup, a.resourceName)
+	credentialList, err := a.azureClient.managedClustersClient.ListClusterAdminCredentials(context.Background(), a.resourceGroup, a.resourceName, "")
 	if err != nil {
 		return fmt.Errorf("failed to list kubeconfigs: %w", err)
 	}

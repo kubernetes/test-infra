@@ -249,7 +249,7 @@ type AzureStackMetadataAuthentication struct {
 	Audiences     []string `json:"audiences,omitempty"`
 }
 
-func (az *AzureClient) ValidateDeployment(ctx context.Context, resourceGroupName, deploymentName string, template, params *map[string]interface{}) (valid resources.DeploymentValidateResult, err error) {
+func (az *AzureClient) ValidateDeployment(ctx context.Context, resourceGroupName, deploymentName string, template, params *map[string]interface{}) (valid resources.DeploymentsValidateFuture, err error) {
 	return az.deploymentsClient.Validate(ctx,
 		resourceGroupName,
 		deploymentName,
@@ -315,7 +315,7 @@ func (az *AzureClient) EnsureResourceGroup(ctx context.Context, name, location s
 func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string) error {
 	_, err := az.groupsClient.Get(ctx, groupName)
 	if err == nil {
-		future, err := az.groupsClient.Delete(ctx, groupName)
+		future, err := az.groupsClient.Delete(ctx, groupName, "")
 		if err != nil {
 			return fmt.Errorf("cannot delete resource group %v: %w", groupName, err)
 		}
