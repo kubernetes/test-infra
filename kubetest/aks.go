@@ -33,7 +33,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-10-01/containerservice"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/containerservice/mgmt/containerservice"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"golang.org/x/crypto/ssh"
 )
@@ -189,7 +189,7 @@ func (a *aksDeployer) Up() error {
 		return fmt.Errorf("failed long async cluster creation: %w", err)
 	}
 
-	credentialList, err := a.azureClient.managedClustersClient.ListClusterAdminCredentials(context.Background(), a.resourceGroup, a.resourceName)
+	credentialList, err := a.azureClient.managedClustersClient.ListClusterAdminCredentials(context.Background(), a.resourceGroup, a.resourceName, "")
 	if err != nil {
 		return fmt.Errorf("failed to list kubeconfigs: %w", err)
 	}

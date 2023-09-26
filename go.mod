@@ -2,7 +2,9 @@
 
 module k8s.io/test-infra
 
-replace github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v63.3.0+incompatible
+// Please DO NOT add any "replace" directives to go.mod files in this repo.
+// See the following for an explanation of why this is problematic for published
+// packages: https://github.com/golang/go/issues/44840#issuecomment-1651863470
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.9
@@ -11,7 +13,7 @@ require (
 	cloud.google.com/go/pubsub v1.30.0
 	cloud.google.com/go/secretmanager v1.10.0
 	cloud.google.com/go/storage v1.28.1
-	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v67.3.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.11.29
 	github.com/Azure/go-autorest/autorest/adal v0.9.22
@@ -24,7 +26,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/bwmarrin/snowflake v0.0.0
 	// Upstream is unmaintained. This fork introduces two important changes:
-	// * We log an error if writing a cache key fails (e.G. because disk is full)
+	// * We log an error if writing a cache key fails (e.g. because disk is full)
 	// * We inject a header that allows ghproxy to detect if the response was revalidated or a cache miss
 	github.com/cjwagner/httpcache v0.0.0-20230907212505-d4841bbad466
 	github.com/clarketm/json v1.13.4
