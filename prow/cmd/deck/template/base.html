@@ -26,16 +26,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
   {{end}}
   <title>{{block "title" .Arguments}}Prow{{ end }}</title>
-  <link rel="stylesheet" type="text/css" href="/static/style.css">
-  <link rel="stylesheet" type="text/css" href="/static/extensions/style.css">
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/static/style.css?v={{deckVersion}}">
+  <link rel="stylesheet" type="text/css" href="/static/extensions/style.css?v={{deckVersion}}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-  <script type="text/javascript" src="/static/extensions/script.js"></script>
+  <script type="text/javascript" src="/static/extensions/script.js?v={{deckVersion}}"></script>
   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   {{block "scripts" .Arguments}}{{end}}
 </head>
-{{$defaultLogo := "/static/logo-light.png"}}
+{{ $defaultLogo := "/static/logo-light.png" }}
 {{- if .DarkMode -}}
 {{- $defaultLogo = "/static/logo-dark.png" -}}
 {{- end -}}
@@ -45,7 +45,7 @@
   <header class="mdl-layout__header"{{if branding.HeaderColor}} style="background-color: {{branding.HeaderColor}};"{{end}}>
     <div id="header-title" class="mdl-layout__header-row">
       <a href="/"
-         class="logo"><img src="{{or branding.Logo $defaultLogo}}" alt="kubernetes logo" class="logo"/></a>
+         class="logo"><img src="{{or branding.Logo $defaultLogo}}?v={{deckVersion}}" alt="kubernetes logo" class="logo"/></a>
       <span class="mdl-layout-title header-title">{{block "pageTitle" .Arguments}}{{template "title" .}}{{end}}</span>
     </div>
   </header>

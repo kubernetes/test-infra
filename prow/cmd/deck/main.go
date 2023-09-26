@@ -731,25 +731,19 @@ func loadToken(file string) ([]byte, error) {
 
 func handleCached(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// This looks ridiculous but actually no-cache means "revalidate" and
-		// "max-age=0" just means there is no time in which it can skip
-		// revalidation. We also need to set must-revalidate because no-cache
-		// doesn't imply must-revalidate when using the back button
-		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1
-		// TODO: consider setting a longer max-age
-		// setting it this way means the content is always revalidated
-		w.Header().Set("Cache-Control", "public, max-age=0, no-cache, must-revalidate")
+		// Since all static assets have a cache busting parameter
+		// attached, which forces a reload whenever Deck is updated,
+		// we can send strong cache headers.
+		w.Header().Set("Cache-Control", "public, max-age=315360000") // 315360000 is 10 years, i.e. forever
 		next.ServeHTTP(w, r)
 	})
 }
 
 func setHeadersNoCaching(w http.ResponseWriter) {
-	// Note that we need to set both no-cache and no-store because only some
-	// browsers decided to (incorrectly) treat no-cache as "never store"
-	// IE "no-store". for good measure to cover older browsers we also set
-	// expires and pragma: https://stackoverflow.com/a/2068407
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Pragma", "no-cache")
+	// This follows the "ignore IE6, but allow prehistoric HTTP/1.0-only proxies"
+	// recommendation from https://stackoverflow.com/a/2068407 to prevent clients
+	// from caching the HTTP response.
+	w.Header().Set("Cache-Control", "no-store, must-revalidate")
 	w.Header().Set("Expires", "0")
 }
 
