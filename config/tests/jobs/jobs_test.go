@@ -951,6 +951,14 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	return nil
 }
 
+func TestPreSubmitPathAlias(t *testing.T) {
+	for _, job := range c.AllStaticPresubmits([]string{"kubernetes/kubernetes"}) {
+		if job.PathAlias != "k8s.io/kubernetes" {
+			t.Errorf("Invalid PathAlias (%s) in job %s for kubernetes/kubernetes repository", job.Name, job.PathAlias)
+		}
+	}
+}
+
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
 	for _, job := range c.AllStaticPresubmits(nil) {

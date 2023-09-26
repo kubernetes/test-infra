@@ -124,6 +124,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 80m # hard cap, based on original pre-kubetest2 job but moved to a prow-level timeout
+    path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

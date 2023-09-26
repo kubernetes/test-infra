@@ -556,6 +556,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 75m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -606,6 +607,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 105m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -657,6 +659,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 105m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -708,6 +711,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 105m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -765,6 +769,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 105m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -824,6 +829,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 520m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -883,6 +889,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 90m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -970,6 +977,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 105m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
@@ -1012,6 +1020,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 90m
+    path_alias: k8s.io/kubernetes
     spec:
       containers:
       - command:

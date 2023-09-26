@@ -1811,6 +1811,7 @@ presubmits:
       testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-crio-dra
     decorate: true
+    path_alias: k8s.io/kubernetes
     # Not relevant for most PRs.
     always_run: false
     # This covers most of the code related to dynamic resource allocation.

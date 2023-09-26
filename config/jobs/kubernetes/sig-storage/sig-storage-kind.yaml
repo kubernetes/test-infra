@@ -4,6 +4,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    path_alias: k8s.io/kubernetes
     cluster: eks-prow-build-cluster
     # All the files owned by sig-storage. Keep in sync across
     # all sig-storage-jobs
