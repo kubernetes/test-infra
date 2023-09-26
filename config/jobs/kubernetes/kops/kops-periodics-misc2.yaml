@@ -2290,6 +2290,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49" \
+          --cluster-name="ci-kubernetes-e2e-cos-gce-conformance-concurrrency.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \

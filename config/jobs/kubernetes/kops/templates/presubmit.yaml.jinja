@@ -47,6 +47,9 @@
             --up --build --down \
             --cloud-provider={{cloud}} \
             --create-args="{{create_args}}" \
+            {%- if cluster_name %}
+            --cluster-name="{{ cluster_name }}" \
+            {%- endif %}
             {%- if kops_feature_flags %}
             --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
             {%- endif %}
