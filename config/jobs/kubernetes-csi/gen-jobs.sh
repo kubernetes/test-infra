@@ -140,7 +140,7 @@ job_cluster() {
   local repo=$1
 
   case "$repo" in
-   # Add any jobs that should be excluded from the community clusters here 
+   # Add any jobs that should be excluded from the community clusters here
    "")
      echo "default"
      ;;
@@ -665,6 +665,7 @@ for deployment_suffix in "" "-test"; do
                 cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "$deployment$deployment_suffix" "$kubernetes")
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi

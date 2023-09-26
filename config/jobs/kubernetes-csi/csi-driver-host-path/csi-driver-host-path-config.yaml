@@ -725,6 +725,7 @@ presubmits:
 periodics:
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-1-24
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -772,6 +773,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-1-25
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -819,6 +821,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -866,6 +869,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-master
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -913,6 +917,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-1-25
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -960,6 +965,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1007,6 +1013,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-master
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1054,6 +1061,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-on-kubernetes-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1101,6 +1109,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-on-kubernetes-master
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1148,6 +1157,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-24
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1195,6 +1205,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-25
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1242,6 +1253,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1289,6 +1301,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-master
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1336,6 +1349,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-1-25
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1383,6 +1397,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1430,6 +1445,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-master
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1477,6 +1493,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-test-on-kubernetes-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1524,6 +1541,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-test-on-kubernetes-master
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi
