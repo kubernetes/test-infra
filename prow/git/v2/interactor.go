@@ -84,7 +84,7 @@ type cacher interface {
 	// RemoteUpdate fetches all updates from the remote.
 	RemoteUpdate() error
 	// FetchCommits fetches only the given commits.
-	FetchCommits(bool, []string) error
+	FetchCommits([]string) error
 }
 
 // cloner knows how to clone repositories from a central cache
@@ -152,7 +152,7 @@ func (i *interactor) CloneWithRepoOpts(from string, repoOpts RepoOpts) error {
 	i.logger.Infof("Creating a clone of the repo at %s from %s", i.dir, from)
 	cloneArgs := []string{"clone"}
 
-	if repoOpts.ShareObjectsWithSourceRepo {
+	if repoOpts.ShareObjectsWithPrimaryClone {
 		cloneArgs = append(cloneArgs, "--shared")
 	}
 
@@ -161,7 +161,7 @@ func (i *interactor) CloneWithRepoOpts(from string, repoOpts RepoOpts) error {
 		cloneArgs = append(cloneArgs, "--sparse")
 	}
 
-	cloneArgs = append(cloneArgs, []string{from, i.dir}...)
+	cloneArgs = append(cloneArgs, from, i.dir)
 
 	if out, err := i.executor.Run(cloneArgs...); err != nil {
 		return fmt.Errorf("error creating a clone: %w %v", err, string(out))
@@ -428,12 +428,8 @@ func (i *interactor) Am(path string) error {
 
 // FetchCommits only fetches those commits which we want, and only if they are
 // missing.
-func (i *interactor) FetchCommits(noFetchTags bool, commitSHAs []string) error {
-	fetchArgs := []string{"--no-write-fetch-head"}
-
-	if noFetchTags {
-		fetchArgs = append(fetchArgs, "--no-tags")
-	}
+func (i *interactor) FetchCommits(commitSHAs []string) error {
+	fetchArgs := []string{"--no-write-fetch-head", "--no-tags"}
 
 	// For each commit SHA, check if it already exists. If so, don't bother
 	// fetching it.

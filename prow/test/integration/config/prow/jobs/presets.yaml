@@ -1,0 +1,6 @@
+presets:
+  - labels:
+      preset-foo: "true"
+    env:
+      - name: FOO_FILE
+        value: /etc/foo
