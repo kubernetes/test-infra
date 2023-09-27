@@ -65,6 +65,7 @@ def build_test(cloud='aws',
                env=None,
                kubernetes_feature_gates=None,
                build_cluster="default",
+               cluster_name=None,
                template_path=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
@@ -182,6 +183,7 @@ def build_test(cloud='aws',
         build_cluster=build_cluster,
         kubernetes_feature_gates=kubernetes_feature_gates,
         test_args=test_args,
+        cluster_name=cluster_name,
     )
 
     spec = {
@@ -259,6 +261,7 @@ def presubmit_test(branch='master',
                    template_path=None,
                    use_boskos=False,
                    build_cluster="default",
+                   cluster_name=None,
                    use_preset_for_account_creds=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
@@ -339,6 +342,7 @@ def presubmit_test(branch='master',
         boskos_resource_type=boskos_resource_type,
         use_preset_for_account_creds=use_preset_for_account_creds,
         build_cluster=build_cluster,
+        cluster_name=cluster_name,
     )
 
     spec = {
@@ -912,6 +916,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                    ],
+                   cluster_name="ci-kubernetes-e2e-cos-gce-conformance-concurrrency.k8s.local",
                    focus_regex=r'\[Conformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
                    test_timeout_minutes=100,

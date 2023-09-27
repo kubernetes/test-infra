@@ -41,6 +41,9 @@
           {%- if cp_ig_overrides %}
           --control-plane-instance-group-overrides="{{ cp_ig_overrides }}" \
           {%- endif %}
+          {%- if cluster_name %}
+          --cluster-name="{{ cluster_name }}" \
+          {%- endif %}
           {%- if node_ig_overrides %}
           --node-instance-group-overrides="{{ node_ig_overrides }}" \
           {%- endif %}
