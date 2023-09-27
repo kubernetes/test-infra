@@ -826,6 +826,15 @@ func TestHandleConfig(t *testing.T) {
 			expectedContentType: `text/plain; charset=utf-8`,
 		},
 		{
+			name:   "no disabled clusters",
+			config: c,
+			url:    "/config?key=disabled-clusters",
+			expectedBody: []byte(`[]
+`),
+			expectedStatus:      http.StatusOK,
+			expectedContentType: `text/plain`,
+		},
+		{
 			name:   "disabled clusters",
 			config: cWithDisabledCluster,
 			url:    "/config?key=disabled-clusters",
