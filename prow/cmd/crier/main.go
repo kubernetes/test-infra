@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -163,6 +164,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+	o.client.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
 
 	restCfg, err := o.client.InfrastructureClusterConfig(o.dryrun)
 	if err != nil {

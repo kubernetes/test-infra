@@ -32,6 +32,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"sort"
 	"strings"
 	"time"
 
@@ -284,6 +285,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+	disableClustersSet := sets.New[string](cfg().DisabledClusters...)
+	o.kubernetes.SetDisabledClusters(disableClustersSet)
 
 	var pluginAgent *plugins.ConfigAgent
 	if o.pluginsConfig.PluginConfigPath != "" {
@@ -1445,8 +1448,21 @@ func handleSerialize(w http.ResponseWriter, name string, data interface{}, l *lo
 
 func handleConfig(cfg config.Getter, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: add the ability to query for portions of the config?
-		handleSerialize(w, "config.yaml", cfg(), log)
+		// TODO: add the ability to query for any portions of the config?
+		k := r.URL.Query().Get("key")
+		switch k {
+		case "disabled-clusters":
+			l := sets.New[string](cfg().DisabledClusters...).UnsortedList()
+			sort.Strings(l)
+			handleSerialize(w, "disabled-clusters.yaml", l, log)
+		case "":
+			handleSerialize(w, "config.yaml", cfg(), log)
+		default:
+			msg := fmt.Sprintf("getting config for key %s is not supported", k)
+			log.Error(msg)
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
