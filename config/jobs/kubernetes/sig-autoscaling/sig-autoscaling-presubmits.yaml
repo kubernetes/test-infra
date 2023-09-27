@@ -150,10 +150,3 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         securityContext:
           privileged: true
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
