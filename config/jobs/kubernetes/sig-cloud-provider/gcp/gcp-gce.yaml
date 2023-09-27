@@ -951,7 +951,6 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gce-gci-soak
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gce-gci
@@ -991,7 +990,6 @@ periodics:
       - --extract=ci/k8s-beta
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gce-soak-1-6
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-beta
@@ -1030,7 +1028,6 @@ periodics:
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gci-gce-soak-1-4
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable1
@@ -1069,7 +1066,6 @@ periodics:
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gci-gce-soak-1-7
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable2
@@ -1108,7 +1104,6 @@ periodics:
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gci-gce-soak-1-6
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable3
