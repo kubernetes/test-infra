@@ -229,6 +229,10 @@ presubmits:
           value: "99.5"
         - name: CL2_ALLOWED_SLOW_API_CALLS
           value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "gp2"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME

@@ -1283,7 +1283,9 @@ def generate_presubmits_scale():
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
-                'CL2_ALLOWED_SLOW_API_CALLS': "1"
+                'CL2_ALLOWED_SLOW_API_CALLS': "1",
+                'ENABLE_PROMETHEUS_SERVER': "true",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2"
             }
         )
     ]
