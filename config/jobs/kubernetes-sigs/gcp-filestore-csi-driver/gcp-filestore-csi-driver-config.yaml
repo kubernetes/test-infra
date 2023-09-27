@@ -11,7 +11,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - runner.sh
         args:
@@ -58,7 +58,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - runner.sh
         args:
@@ -80,7 +80,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - runner.sh
         args:
