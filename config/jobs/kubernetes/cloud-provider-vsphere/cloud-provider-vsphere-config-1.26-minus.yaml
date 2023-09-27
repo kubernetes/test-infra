@@ -257,7 +257,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       # Borrows CAPV credentials for cloud provider e2e testing
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cloud-provider-vsphere-e2e-config-capv: "true"
       preset-cloud-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     branches:
