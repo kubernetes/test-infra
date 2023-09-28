@@ -37,6 +37,9 @@
           -v 2 \
           --up --down \
           --cloud-provider={{cloud}} \
+          {%- if cloud == "gce" %}
+          --admin-access=0.0.0.0/0 \
+          {%- endif %}
           --create-args="{{create_args}}" \
           {%- if cp_ig_overrides %}
           --control-plane-instance-group-overrides="{{ cp_ig_overrides }}" \

@@ -46,6 +46,9 @@
             -v 2 \
             --up --build --down \
             --cloud-provider={{cloud}} \
+            {%- if cloud == "gce" %}
+            --admin-access=0.0.0.0/0 \
+            {%- endif %}
             --create-args="{{create_args}}" \
             {%- if cluster_name %}
             --cluster-name="{{ cluster_name }}" \
@@ -106,6 +109,9 @@
           value: "{{ val }}"
         {%- endfor %}
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi

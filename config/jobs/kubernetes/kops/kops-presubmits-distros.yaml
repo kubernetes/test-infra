@@ -53,9 +53,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: deb10
@@ -117,9 +120,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: deb11
@@ -181,9 +187,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: deb12
@@ -245,9 +254,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2004
@@ -309,9 +321,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2004arm64
@@ -373,9 +388,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204
@@ -437,9 +455,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204arm64
@@ -501,9 +522,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: amzn2
@@ -565,9 +589,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: al2023
@@ -629,9 +656,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rhel8
@@ -693,9 +723,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rhel9
@@ -757,9 +790,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: rocky8
@@ -821,9 +857,12 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: flatcar
