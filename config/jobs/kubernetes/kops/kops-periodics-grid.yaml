@@ -30890,6 +30890,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.24.txt \
@@ -30953,6 +30954,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
@@ -31016,6 +31018,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
@@ -31079,6 +31082,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
@@ -31142,6 +31146,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
@@ -31205,6 +31210,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=calico --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.24.txt \
@@ -31268,6 +31274,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=calico --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
@@ -31331,6 +31338,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=calico --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
@@ -31394,6 +31402,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=calico --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
@@ -31457,6 +31466,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=calico --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
@@ -31520,6 +31530,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.24.txt \
@@ -31583,6 +31594,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
@@ -31646,6 +31658,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
@@ -31709,6 +31722,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
@@ -31772,6 +31786,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
@@ -31835,6 +31850,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.24.txt \
@@ -31898,6 +31914,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
@@ -31961,6 +31978,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
@@ -32024,6 +32042,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
@@ -32087,6 +32106,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=gce --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \

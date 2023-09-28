@@ -229,6 +229,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2060,7 +2061,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-selinux
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-canary
   cron: '16 1-23/3 * * *'
   labels:
@@ -2089,7 +2090,8 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --gce-service-account=default" \
+          --admin-access=0.0.0.0/0 \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2117,7 +2119,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2155,6 +2157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2222,6 +2225,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2289,6 +2293,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49" \
           --cluster-name="ci-kubernetes-e2e-cos-gce-conformance-concurrrency.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
@@ -2328,7 +2333,7 @@ periodics:
     testgrid-days-of-results: '31'
     testgrid-tab-name: ci-kubernetes-e2e-cos-gce-conformance-concurrrency-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-serial-canary
   cron: '31 4-23/6 * * *'
   labels:
@@ -2357,7 +2362,8 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49" \
+          --admin-access=0.0.0.0/0 \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2386,7 +2392,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2424,6 +2430,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
+          --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49" \
           --kubernetes-feature-gates=AllAlpha,-InTreePluginGCEUnregister,-DisableCloudProviders,-DisableKubeletCloudCredentialProviders \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \

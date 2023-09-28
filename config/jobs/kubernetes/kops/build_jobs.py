@@ -249,6 +249,7 @@ def presubmit_test(branch='master',
                    terraform_version=None,
                    test_parallelism=25,
                    test_timeout_minutes=60,
+                   test_args=None,
                    skip_regex='',
                    focus_regex=None,
                    run_if_changed=None,
@@ -342,6 +343,7 @@ def presubmit_test(branch='master',
         boskos_resource_type=boskos_resource_type,
         use_preset_for_account_creds=use_preset_for_account_creds,
         build_cluster=build_cluster,
+        test_args=test_args,
         cluster_name=cluster_name,
     )
 
@@ -860,7 +862,7 @@ def generate_misc():
                    build_cluster="default",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
-                       "--gce-service-account=default", # Workaround for test-infra#24747
+                       "--set=spec.nodeProblemDetector.enabled=true",
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
@@ -935,6 +937,7 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
+                       "--node-volume-size=100",
                    ],
                    focus_regex=r'\[Serial\]|\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
@@ -1821,6 +1824,60 @@ def generate_presubmits_e2e():
             name='presubmit-kops-aws-boskos-kubetest2',
             always_run=False,
             use_boskos=True,
+        ),
+
+        presubmit_test(
+            name="pull-kops-kubernetes-e2e-cos-gce-serial",
+            cloud="gce",
+            distro="cos105",
+            networking="kubenet",
+            k8s_version="ci",
+            kops_channel="alpha",
+            extra_flags=[
+                "--image=cos-cloud/cos-105-17412-156-49",
+                "--node-volume-size=100",
+            ],
+            focus_regex=r'\[Serial\]|\[Disruptive\]',
+            skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            test_timeout_minutes=500,
+            always_run=False,
+            test_parallelism=1, # serial tests
+            test_args="--master-os-distro=gci --node-os-distro=gci",
+        ),
+
+        presubmit_test(
+            name="pull-kops-kubernetes-e2e-cos-gce",
+            cloud="gce",
+            distro="cos105",
+            networking="kubenet",
+            k8s_version="ci",
+            kops_channel="alpha",
+            extra_flags=[
+                "--image=cos-cloud/cos-105-17412-156-49",
+                "--set=spec.nodeProblemDetector.enabled=true",
+                "--node-volume-size=100",
+            ],
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            test_timeout_minutes=40,
+            always_run=False,
+            test_args="--master-os-distro=gci --node-os-distro=gci",
+        ),
+
+        presubmit_test(
+            name="pull-kops-kubernetes-e2e-cos-gce-slow",
+            cloud="gce",
+            distro="cos105",
+            networking="kubenet",
+            k8s_version="ci",
+            kops_channel="alpha",
+            extra_flags=[
+                "--image=cos-cloud/cos-105-17412-156-49",
+            ],
+            focus_regex=r'\[Slow\]',
+            skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            test_timeout_minutes=70,
+            always_run=False,
+            test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
     ]
 
