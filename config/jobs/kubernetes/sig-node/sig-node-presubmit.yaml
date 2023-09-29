@@ -1168,7 +1168,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=180m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-k8s-infra-prow-build.yaml
         resources:
           limits:
             cpu: 4
@@ -1550,13 +1550,13 @@ presubmits:
           env:
             - name: GOPATH
               value: /go
-  - name: pull-kubernetes-node-memoryqos-cgrpv2
+  - name: pull-kubernetes-crio-node-memoryqos-cgrpv2
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-node-memoryqos-cgrpv2
+      testgrid-tab-name: pr-crio-node-memoryqos-cgrpv2
     always_run: false
     optional: true
     max_concurrency: 12
@@ -1589,7 +1589,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=180m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-k8s-infra-prow-build.yaml
         resources:
           limits:
             cpu: 4
@@ -1597,6 +1597,9 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+        env:
+          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+            value: "1"
 
   - name: pull-kubernetes-node-swap-fedora
     cluster: k8s-infra-prow-build
