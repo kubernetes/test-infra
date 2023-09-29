@@ -133,10 +133,28 @@ func (fr fakeRepo) Filenames() ownersconfig.Filenames {
 }
 
 func (fr fakeRepo) Approvers(path string) layeredsets.String {
-	return fr.approvers[path]
+	ret := fr.approvers[path]
+	if ret.Len() > 0 || path == "" {
+		return ret
+	}
+
+	p := filepath.Dir(path)
+	if p == "." {
+		p = ""
+	}
+	return fr.Approvers(p)
 }
 func (fr fakeRepo) LeafApprovers(path string) sets.Set[string] {
-	return fr.leafApprovers[path]
+	ret := fr.leafApprovers[path]
+	if ret.Len() > 0 || path == "" {
+		return ret
+	}
+
+	p := filepath.Dir(path)
+	if p == "." {
+		p = ""
+	}
+	return fr.LeafApprovers(p)
 }
 func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
 	return fr.approverOwners[path]
