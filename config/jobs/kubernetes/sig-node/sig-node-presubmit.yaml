@@ -1028,7 +1028,8 @@ presubmits:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
   - name: pull-kubernetes-node-crio-cgrpv1-evented-pleg-e2e
-    cluster: k8s-infra-prow-build
+# Need to add an ignition file with k8s-infra and evented-pleg
+#    cluster: k8s-infra-prow-build
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
@@ -1216,14 +1217,13 @@ presubmits:
         args:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --env=KUBE_SSH_KEY_PATH=/etc/ssh-key-secret/ssh-private
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
         - --timeout=420m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-k8s-infra-prow-build.yaml
         resources:
           limits:
             cpu: 4
@@ -1235,7 +1235,7 @@ presubmits:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
   - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv2
-    cluster: k8s-infra-prow-build
+#    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1600,9 +1600,9 @@ presubmits:
         env:
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
-
   - name: pull-kubernetes-node-swap-fedora
-    cluster: k8s-infra-prow-build
+# We need an ignition file for swap and k8s-infra-build
+#    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1707,7 +1707,8 @@ presubmits:
               memory: 6Gi
 
   - name: pull-kubernetes-node-swap-fedora-serial
-    cluster: k8s-infra-prow-build
+# Need a swap ignition file and k8s-infra-build.
+#    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -2554,7 +2555,8 @@ presubmits:
             memory: 6Gi
 
   - name: pull-kubernetes-node-e2e-crio-dra
-    cluster: k8s-infra-prow-build
+# Need to add a serial k8s infra build ignition file.
+#    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
