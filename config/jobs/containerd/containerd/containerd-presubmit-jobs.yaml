@@ -178,7 +178,7 @@ presubmits:
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.6-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
-  - name: pull-containerd-sandboxed-node-e2e
+  - name: pull-containerd-legacy-cri-node-e2e
     always_run: false
     max_concurrency: 8
     decorate: true
@@ -209,8 +209,8 @@ presubmits:
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
-        - name: ENABLE_CRI_SANDBOXES
-          value: "sandboxed"
+        - name: DISABLE_CRI_SANDBOXES
+          value: "1"
         command:
         - sh
         - -c
