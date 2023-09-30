@@ -143,6 +143,7 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 
 	for _, disabledCluster := range opts.disabledClusters.UnsortedList() {
 		delete(allKubeCfgs, disabledCluster)
+		logrus.WithField("disabledCluster", disabledCluster).Info("Removed kubeconfig for disabled cluster")
 	}
 
 	if opts.noInClusterConfig {
