@@ -625,10 +625,6 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 	}
 }
 
-func TestDefaultProwYAMLGetter_RejectsJustOrg(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.New, t)
-}
-
 func TestDefaultProwYAMLGetter_RejectsJustOrgV2(t *testing.T) {
 	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.NewV2, t)
 }
