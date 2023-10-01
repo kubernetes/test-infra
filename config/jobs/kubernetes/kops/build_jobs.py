@@ -907,7 +907,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-conformance-concurrrency-canary",
+        build_test(name_override="ci-kubernetes-e2e-cos-gce-disruptive-canary",
                    cloud="gce",
                    distro="cos105",
                    networking="kubenet",
@@ -918,14 +918,13 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                    ],
-                   cluster_name="ci-kubernetes-e2e-cos-gce-conformance-concurrrency.k8s.local",
-                   focus_regex=r'\[Conformance\]',
-                   skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_timeout_minutes=100,
-                   test_parallelism=8,
+                   focus_regex=r'\[Disruptive\]',
+                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   test_timeout_minutes=300,
+                   test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=9),
+                   runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-serial-canary",
                    cloud="gce",
@@ -939,13 +938,13 @@ def generate_misc():
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-volume-size=100",
                    ],
-                   focus_regex=r'\[Serial\]|\[Disruptive\]',
+                   focus_regex=r'\[Serial\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=500,
                    test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=4),
+                   runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-alpha-features",
                    cloud="gce",
@@ -1837,7 +1836,8 @@ def generate_presubmits_e2e():
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--node-volume-size=100",
             ],
-            focus_regex=r'\[Serial\]|\[Disruptive\]',
+            build_cluster="k8s-infra-prow-build",
+            focus_regex=r'\[Serial\]',
             skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=500,
             always_run=False,
@@ -1854,7 +1854,6 @@ def generate_presubmits_e2e():
             kops_channel="alpha",
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
-                "--set=spec.nodeProblemDetector.enabled=true",
                 "--node-volume-size=100",
             ],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
