@@ -120,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 90m
+      timeout: 120m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
