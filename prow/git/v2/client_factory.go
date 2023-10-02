@@ -241,7 +241,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	} else {
 		remote = &httpResolverFactory{
 			host:     o.Host,
-			http:     *o.UseInsecureHTTP,
+			http:     o.UseInsecureHTTP != nil && *o.UseInsecureHTTP,
 			username: o.Username,
 			token:    o.Token,
 		}
