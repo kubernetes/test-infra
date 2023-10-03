@@ -9,7 +9,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 60m
-    path_alias: sigs.k8s.io/gcp-filestore-csi-driver
+    path_alias: github.com/kubernetes-sigs/gcp-filestore-csi-driver
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
