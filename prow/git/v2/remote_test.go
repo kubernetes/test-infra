@@ -47,8 +47,8 @@ func TestHTTPResolver(t *testing.T) {
 			username: func() (string, error) {
 				return "gitUser", nil
 			},
-			token: func() []byte {
-				return []byte("pass")
+			token: func(_ string) (string, error) {
+				return "pass", nil
 			},
 			expected:    "https://gitUser:pass@github.com/org/repo",
 			expectedErr: false,
@@ -74,7 +74,7 @@ func TestHTTPResolver(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			actual, actualErr := HttpResolver(testCase.remote, testCase.username, testCase.token)()
+			actual, actualErr := HttpResolver(testCase.remote, testCase.username, testCase.token, "org")()
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -103,13 +103,13 @@ func usernameVendor(logins []stringWithError) func() (string, error) {
 	}
 }
 
-// tokenVendor returns a func that vends tokens from the provided slice, in order
-func tokenVendor(tokens [][]byte) func() []byte {
+// fakeTokenGetter returns a func that vends tokens from the provided slice, in order
+func fakeTokenGetter(tokens []string) func(org string) (string, error) {
 	index := 0
-	return func() []byte {
+	return func(_ string) (string, error) {
 		token := tokens[index%len(tokens)]
 		index++
-		return token
+		return token, nil
 	}
 }
 
@@ -191,7 +191,7 @@ func TestHTTPResolverFactory(t *testing.T) {
 			{str: "fourth", err: nil},
 			{str: "fourth", err: errors.New("oops")},
 		}),
-		token: tokenVendor([][]byte{[]byte("one"), []byte("three")}), // only called when username succeeds
+		token: fakeTokenGetter([]string{"one", "three"}), // only called when username succeeds
 	}
 
 	central := factory.CentralRemote("org", "repo")

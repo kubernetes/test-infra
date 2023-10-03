@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/test-infra/prow/git"
 	v2 "k8s.io/test-infra/prow/git/v2"
 )
 
@@ -50,35 +49,6 @@ type LocalGit struct {
 	Git string
 	// InitialBranch is sent to git init
 	InitialBranch string
-}
-
-// New creates a LocalGit and a client factory from a git.Client pointing at it.
-func New() (*LocalGit, v2.ClientFactory, error) {
-	g, err := exec.LookPath("git")
-	if err != nil {
-		return nil, nil, err
-	}
-	t, err := os.MkdirTemp("", "localgit")
-	if err != nil {
-		return nil, nil, err
-	}
-	c, err := git.NewClient()
-	if err != nil {
-		os.RemoveAll(t)
-		return nil, nil, err
-	}
-
-	getSecret := func(_ string) (string, error) {
-		return "", nil
-	}
-
-	c.SetCredentials("", getSecret)
-
-	c.SetRemote(t)
-	return &LocalGit{
-		Dir: t,
-		Git: g,
-	}, v2.ClientFactoryFrom(c), nil
 }
 
 // Clean deletes the local git dir.

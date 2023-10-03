@@ -137,10 +137,6 @@ func TestMinConfidence(t *testing.T) {
 	}
 }
 
-func TestLint(t *testing.T) {
-	testLint(localgit.New, t)
-}
-
 func TestLintV2(t *testing.T) {
 	testLint(localgit.NewV2, t)
 }
@@ -224,10 +220,6 @@ func testLint(clients localgit.Clients, t *testing.T) {
 	if len(gh.comment.Comments) != maxComments {
 		t.Fatalf("Expected %d comments, got %d: %v", maxComments, len(gh.comment.Comments), gh.comment.Comments)
 	}
-}
-
-func TestLintCodeSuggestion(t *testing.T) {
-	testLintCodeSuggestion(localgit.New, t)
 }
 
 func TestLintCodeSuggestionV2(t *testing.T) {
@@ -415,10 +407,6 @@ func testLintCodeSuggestion(clients localgit.Clients, t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestLintError(t *testing.T) {
-	testLintError(localgit.New, t)
 }
 
 func TestLintErrorV2(t *testing.T) {
@@ -641,10 +629,6 @@ func TestAddedLines(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestModifiedGoFiles(t *testing.T) {
-	testModifiedGoFiles(localgit.New, t)
 }
 
 func TestModifiedGoFilesV2(t *testing.T) {

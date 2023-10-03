@@ -90,10 +90,6 @@ var e = &github.GenericCommentEvent{
 	},
 }
 
-func TestBuildify(t *testing.T) {
-	testBuildify(localgit.New, t)
-}
-
 func TestBuildifyV2(t *testing.T) {
 	testBuildify(localgit.NewV2, t)
 }
@@ -151,10 +147,6 @@ func testBuildify(clients localgit.Clients, t *testing.T) {
 			Body:     c.Body,
 		})
 	}
-}
-
-func TestModifiedBazelFiles(t *testing.T) {
-	testModifiedBazelFiles(localgit.New, t)
 }
 
 func TestModifiedBazelFilesV2(t *testing.T) {
