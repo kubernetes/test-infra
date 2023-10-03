@@ -27,6 +27,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
     distros_ssh_user,
     k8s_version_info,
     should_skip_newer_k8s,
+    append_api_server_parameters,
 )
 
 # These are job tab names of unsupported grid combinations
@@ -121,6 +122,8 @@ def build_test(cloud='aws',
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
+    if scenario is None:
+        extra_flags.extend(append_api_server_parameters())
     args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     node_ig_overrides = ""
@@ -197,7 +200,7 @@ def build_test(cloud='aws',
     if feature_flags:
         spec['feature_flags'] = ','.join(feature_flags)
     if extra_flags:
-        spec['extra_flags'] = ' '.join(extra_flags)
+        spec['extra_flags'] = ' '.join(map(str, extra_flags))
     jsonspec = json.dumps(spec, sort_keys=True)
 
     dashboards = [
@@ -286,8 +289,8 @@ def presubmit_test(branch='master',
         else:
             raise Exception(f"use_boskos not supported on cloud {cloud}")
 
-    if extra_flags is None:
-        extra_flags = []
+    if scenario is None:
+        extra_flags.extend(append_api_server_parameters())
 
     if irsa and cloud == "aws" and scenario is None:
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
@@ -308,7 +311,7 @@ def presubmit_test(branch='master',
         if 'KOPS_STATE_STORE' not in env:
             env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         if extra_flags:
-            env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
+            env['KOPS_EXTRA_FLAGS'] = " ".join(map(str, extra_flags))
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
@@ -357,7 +360,7 @@ def presubmit_test(branch='master',
     if feature_flags:
         spec['feature_flags'] = ','.join(feature_flags)
     if extra_flags:
-        spec['extra_flags'] = ' '.join(extra_flags)
+        spec['extra_flags'] = ' '.join(map(str, extra_flags))
     jsonspec = json.dumps(spec, sort_keys=True)
 
     dashboards = [
@@ -1183,6 +1186,7 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
+                       extra_flags=[],
                        runs_per_day=runs_per_day,
                        test_timeout_minutes=120,
                        scenario='upgrade-ab',
@@ -1197,6 +1201,7 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades-many-addons'],
+                       extra_flags=[],
                        test_timeout_minutes=120,
                        runs_per_day=runs_per_day,
                        scenario='upgrade-ab',
@@ -1214,6 +1219,7 @@ def generate_scale():
             name_override='kops-aws-scale-amazonvpc',
             extra_dashboards=[],
             runs_per_day=1,
+            extra_flags=[],
             networking='amazonvpc',
             scenario='scalability',
         )
@@ -1232,6 +1238,7 @@ def generate_presubmits_scale():
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
+            extra_flags=[],
             env={
                 'CNI_PLUGIN': "amazonvpc",
             }
@@ -1243,6 +1250,7 @@ def generate_presubmits_scale():
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
+            extra_flags=[],
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
@@ -1266,6 +1274,7 @@ def generate_presubmits_scale():
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
+            extra_flags=[],
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
@@ -1304,6 +1313,7 @@ def generate_versions():
             name_override='kops-aws-k8s-latest',
             networking='calico',
             extra_dashboards=['kops-versions'],
+            extra_flags=[],
             runs_per_day=8,
             # This version marker is only used by the k/k presubmit job
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
@@ -1315,6 +1325,7 @@ def generate_versions():
                 k8s_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
+                extra_flags=[],
                 networking='calico',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=8,
