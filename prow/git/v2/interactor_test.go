@@ -124,7 +124,7 @@ func TestInteractor_CloneWithRepoOpts(t *testing.T) {
 			dir:  "/secondaryclone",
 			from: "/mirrorclone",
 			repoOpts: RepoOpts{
-				SparseCheckoutDirs:         nil,
+				SparseCheckoutDirs:           nil,
 				ShareObjectsWithPrimaryClone: true,
 			},
 			responses: map[string]execResponse{
@@ -142,7 +142,7 @@ func TestInteractor_CloneWithRepoOpts(t *testing.T) {
 			dir:  "/secondaryclone",
 			from: "/mirrorclone",
 			repoOpts: RepoOpts{
-				SparseCheckoutDirs:         []string{},
+				SparseCheckoutDirs:           []string{},
 				ShareObjectsWithPrimaryClone: true,
 			},
 			responses: map[string]execResponse{
@@ -160,7 +160,7 @@ func TestInteractor_CloneWithRepoOpts(t *testing.T) {
 			dir:  "/secondaryclone",
 			from: "/mirrorclone",
 			repoOpts: RepoOpts{
-				SparseCheckoutDirs:         []string{"a", "b"},
+				SparseCheckoutDirs:           []string{"a", "b"},
 				ShareObjectsWithPrimaryClone: true,
 			},
 			responses: map[string]execResponse{

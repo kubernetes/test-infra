@@ -21,10 +21,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
-
-	"github.com/sirupsen/logrus"
+	"time"
 )
 
 // Interactor knows how to operate on a git repository cloned from GitHub
@@ -179,9 +179,12 @@ func (i *interactor) CloneWithRepoOpts(from string, repoOpts RepoOpts) error {
 		}
 		sparseCheckoutArgs := []string{"-C", i.dir, "sparse-checkout", "set"}
 		sparseCheckoutArgs = append(sparseCheckoutArgs, repoOpts.SparseCheckoutDirs...)
+
+		timeBeforeSparseCheckout := time.Now()
 		if out, err := i.executor.Run(sparseCheckoutArgs...); err != nil {
 			return fmt.Errorf("error setting it to a sparse checkout: %w %v", err, string(out))
 		}
+		gitMetrics.sparseCheckoutDuration.Observe(time.Since(timeBeforeSparseCheckout).Seconds())
 	}
 	return nil
 }
