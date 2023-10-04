@@ -136,7 +136,7 @@ type PullRequestClient interface {
 	CreatePullRequestReviewComment(org, repo string, number int, rc ReviewComment) error
 	ListReviews(org, repo string, number int) ([]Review, error)
 	ClosePullRequest(org, repo string, number int) error
-	ReopenPR(org, repo string, number int) error
+	ReopenPullRequest(org, repo string, number int) error
 	CreateReview(org, repo string, number int, r DraftReview) error
 	RequestReview(org, repo string, number int, logins []string) error
 	UnrequestReview(org, repo string, number int, logins []string) error
@@ -3243,12 +3243,11 @@ func (c *client) ClosePullRequest(org, repo string, number int) error {
 	return err
 }
 
-// ReopenPR re-opens the existing, closed PR provided
-// TODO: Rename to ReopenPullRequest
+// ReopenPullRequest re-opens the existing, closed PR provided
 //
 // See https://developer.github.com/v3/pulls/#update-a-pull-request
-func (c *client) ReopenPR(org, repo string, number int) error {
-	durationLogger := c.log("ReopenPR", org, repo, number)
+func (c *client) ReopenPullRequest(org, repo string, number int) error {
+	durationLogger := c.log("ReopenPullRequest", org, repo, number)
 	defer durationLogger()
 
 	_, err := c.request(&request{

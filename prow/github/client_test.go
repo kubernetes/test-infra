@@ -1618,7 +1618,7 @@ func TestClosePullRequest(t *testing.T) {
 	}
 }
 
-func TestReopenPR(t *testing.T) {
+func TestReopenPullRequest(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
@@ -1641,7 +1641,7 @@ func TestReopenPR(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if err := c.ReopenPR("k8s", "kuber", 5); err != nil {
+	if err := c.ReopenPullRequest("k8s", "kuber", 5); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
