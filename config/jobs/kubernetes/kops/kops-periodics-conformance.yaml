@@ -2,7 +2,7 @@
 # 4 jobs, total of 28 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
 - name: e2e-kops-aws-conformance-1-28
   cron: '5 11-23/24 * * *'
   labels:
@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230919' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230919' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -59,7 +59,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
@@ -68,7 +68,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-28
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-28
   cron: '11 0-23/24 * * *'
   labels:
@@ -98,7 +98,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230919' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230919' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -125,7 +125,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
@@ -134,7 +134,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-28
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
 - name: e2e-kops-aws-conformance-1-27
   cron: '56 2-23/24 * * *'
   labels:
@@ -164,7 +164,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230919' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230919' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -191,7 +191,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
@@ -200,7 +200,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-27
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-27
   cron: '42 9-23/24 * * *'
   labels:
@@ -230,7 +230,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230919' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230919' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -257,7 +257,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'

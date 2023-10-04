@@ -104,7 +104,7 @@ def create_args(kops_channel, networking, extra_flags, kops_image):
         for arg in extra_flags:
             if "--image=" in arg:
                 image_overridden = True
-            args = args + " " + arg
+            args = args + " " + "".join(map(str, arg))
     if kops_image and not image_overridden:
         args = f"--image='{kops_image}' {args}"
     return args.strip()
@@ -169,3 +169,12 @@ distros_ssh_user = {
     'u2204': 'ubuntu',
     'u2204arm64': 'ubuntu',
 }
+
+def append_api_server_parameters():
+    extra_flags = [
+        "--set=spec.kubeAPIServer.logLevel=4",
+        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
+        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
+        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
+    ]
+    return extra_flags
