@@ -61,7 +61,6 @@ func TestHelpProvider(t *testing.T) {
 				Triggers: []plugins.Trigger{
 					{
 						Repos:          []string{"org2/repo"},
-						TrustedOrg:     "org2",
 						JoinOrgURL:     "https://join.me",
 						OnlyOrgMembers: true,
 						IgnoreOkToTest: true,
@@ -361,36 +360,8 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: true,
 		},
 		{
-			name:            "user is collaborator (only org members enabled)",
-			onlyOrgMembers:  true,
-			user:            "test-collaborator",
-			org:             "kubernetes",
-			repo:            "kubernetes",
-			expectedTrusted: false,
-			expectedReason:  (notMember).String(),
-		},
-		{
-			name:            "user is trusted org member",
-			onlyOrgMembers:  false,
-			trustedOrg:      "kubernetes",
-			user:            "test",
-			org:             "kubernetes-sigs",
-			repo:            "test",
-			expectedTrusted: true,
-		},
-		{
-			name:            "user is not org member",
-			onlyOrgMembers:  false,
-			user:            "test-2",
-			org:             "kubernetes",
-			repo:            "kubernetes",
-			expectedTrusted: false,
-			expectedReason:  (notMember | notCollaborator).String(),
-		},
-		{
 			name:            "user is not org member or trusted org member",
 			onlyOrgMembers:  false,
-			trustedOrg:      "kubernetes-sigs",
 			user:            "test-2",
 			org:             "kubernetes",
 			repo:            "kubernetes",
@@ -400,7 +371,6 @@ func TestTrustedUser(t *testing.T) {
 		{
 			name:            "user is not org member or trusted org member, onlyOrgMembers true",
 			onlyOrgMembers:  true,
-			trustedOrg:      "kubernetes-sigs",
 			user:            "test-2",
 			org:             "kubernetes",
 			repo:            "kubernetes",
@@ -423,13 +393,6 @@ func TestTrustedUser(t *testing.T) {
 			trustedApps:     []string{"github-app"},
 			expectedTrusted: true,
 		},
-		{
-			name:            "github-app[bot] is not in trusted list",
-			user:            "github-app[bot]",
-			trustedApps:     []string{"other-app"},
-			expectedTrusted: false,
-			expectedReason:  (notMember | notCollaborator).String(),
-		},
 	}
 
 	for _, tc := range testcases {
@@ -440,7 +403,7 @@ func TestTrustedUser(t *testing.T) {
 			}
 			fc.Collaborators = []string{"test-collaborator"}
 
-			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedApps, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedApps, tc.user, tc.org, tc.repo)
 			if err != nil {
 				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
 			}

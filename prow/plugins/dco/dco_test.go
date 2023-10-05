@@ -231,102 +231,9 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedStatus: github.StatusSuccess,
 		},
 		{
-			name: "should add label and update status context if an user is member of the trusted org (commit non-signed)",
-			config: plugins.Dco{
-				SkipDCOCheckForMembers: true,
-				TrustedOrg:             "kubernetes",
-			},
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
-			},
-			commits: []github.RepositoryCommit{
-				{
-					SHA:    "sha",
-					Commit: github.GitCommit{Message: "not signed off"},
-					Author: github.User{
-						Login: "test",
-					},
-				},
-			},
-			issueState: "open",
-			hasDCONo:   false,
-			hasDCOYes:  false,
-
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
-			expectedStatus: github.StatusSuccess,
-		},
-		{
-			name: "should add label and update status context if an user is member of the trusted org (one commit signed, one non-signed)",
-			config: plugins.Dco{
-				SkipDCOCheckForMembers: true,
-				TrustedOrg:             "kubernetes",
-			},
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
-			},
-			commits: []github.RepositoryCommit{
-				{
-					SHA:    "sha",
-					Commit: github.GitCommit{Message: "not signed off"},
-					Author: github.User{
-						Login: "test",
-					},
-				},
-				{
-					SHA:    "sha2",
-					Commit: github.GitCommit{Message: "Signed-off-by: someone"},
-					Author: github.User{
-						Login: "test",
-					},
-				},
-			},
-			issueState: "open",
-			hasDCONo:   false,
-			hasDCOYes:  false,
-
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
-			expectedStatus: github.StatusSuccess,
-		},
-		{
-			name: "should add label and update status context if one commit is signed-off and another is from a trusted user",
-			config: plugins.Dco{
-				SkipDCOCheckForMembers: true,
-				TrustedOrg:             "kubernetes",
-			},
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
-			},
-			commits: []github.RepositoryCommit{
-				{
-					SHA:    "sha",
-					Commit: github.GitCommit{Message: "not signed off"},
-					Author: github.User{
-						Login: "test",
-					},
-				},
-				{
-					SHA:    "sha2",
-					Commit: github.GitCommit{Message: "Signed-off-by: someone"},
-					Author: github.User{
-						Login: "contributor",
-					},
-				},
-			},
-			issueState: "open",
-			hasDCONo:   false,
-			hasDCOYes:  false,
-
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
-			expectedStatus: github.StatusSuccess,
-		},
-		{
 			name: "should fail dco check as one unsigned commit is from member not from the trusted org",
 			config: plugins.Dco{
 				SkipDCOCheckForMembers: true,
-				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
@@ -374,7 +281,6 @@ Instructions for interacting with me using PR comments are available [here](http
 			name: "should add label and update status context as one unsigned commit is from member not from the trusted org",
 			config: plugins.Dco{
 				SkipDCOCheckForMembers: true,
-				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
@@ -423,7 +329,6 @@ Instructions for interacting with me using PR comments are available [here](http
 			name: "should fail dco check as skip feature is disabled",
 			config: plugins.Dco{
 				SkipDCOCheckForMembers: false,
-				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
@@ -465,7 +370,6 @@ Instructions for interacting with me using PR comments are available [here](http
 			config: plugins.Dco{
 				SkipDCOCheckForMembers:       true,
 				SkipDCOCheckForCollaborators: true,
-				TrustedOrg:                   "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
@@ -491,7 +395,6 @@ Instructions for interacting with me using PR comments are available [here](http
 			name: "should fail dco check for a collaborator as skip dco for collaborators is disabled",
 			config: plugins.Dco{
 				SkipDCOCheckForCollaborators: false,
-				TrustedOrg:                   "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
@@ -743,35 +646,6 @@ Full details of the Developer Certificate of Origin can be found at [developerce
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
 </details>
 `,
-		},
-		{
-			name: "should succeed as skip dco is enabled",
-			config: plugins.Dco{
-				SkipDCOCheckForMembers: true,
-				TrustedOrg:             "kubernetes",
-			},
-			commentEvent: github.GenericCommentEvent{
-				IssueState: "open",
-				Action:     github.GenericCommentActionCreated,
-				Body:       "/check-dco",
-				IsPR:       true,
-				Number:     3,
-			},
-			pullRequests: map[int]*github.PullRequest{
-				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
-			},
-			commits: []github.RepositoryCommit{
-				{
-					SHA:    "sha",
-					Commit: github.GitCommit{Message: "not a sign off"},
-					Author: github.User{
-						Login: "test",
-					},
-				},
-			},
-			issueState: "open",
-
-			expectedStatus: github.StatusSuccess,
 		},
 	}
 	for _, tc := range testcases {

@@ -445,12 +445,6 @@ type Trigger struct {
 	// considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
 	// By default, trigger will ignore this list.
 	TrustedApps []string `json:"trusted_apps,omitempty"`
-	// TrustedOrg is the org whose members' PRs will be automatically built for
-	// PRs to the above repos. The default is the PR's org.
-	//
-	// Deprecated: TrustedOrg functionality is deprecated and will be removed in
-	// January 2020.
-	TrustedOrg string `json:"trusted_org,omitempty"`
 	// JoinOrgURL is a link that redirects users to a location where they
 	// should be able to read more about joining the organization in order
 	// to become trusted members. Defaults to the GitHub link of TrustedOrg.
@@ -691,9 +685,6 @@ type Dco struct {
 	// The list should contain usernames of each GitHub App without [bot] suffix.
 	// By default, this option is ignored.
 	TrustedApps []string `json:"trusted_apps,omitempty"`
-	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
-	// if the skip DCO option is enabled. The default is the PR's org.
-	TrustedOrg string `json:"trusted_org,omitempty"`
 	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
 	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
 	// ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
@@ -891,14 +882,8 @@ func (c *Configuration) TriggerFor(org, repo string) Trigger {
 		}
 	}
 	var tr Trigger
-	tr.SetDefaults()
+	// tr.SetDefaults()
 	return tr
-}
-
-func (t *Trigger) SetDefaults() {
-	if t.TrustedOrg != "" && t.JoinOrgURL == "" {
-		t.JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", t.TrustedOrg)
-	}
 }
 
 // DcoFor finds the Dco for a repo, if one exists
@@ -1034,9 +1019,6 @@ func (c *Configuration) setDefaults() {
 	if c.Blunderbuss.ReviewerCount == nil {
 		c.Blunderbuss.ReviewerCount = new(int)
 		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
-	}
-	for i := range c.Triggers {
-		c.Triggers[i].SetDefaults()
 	}
 	if c.SigMention.Regexp == "" {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
@@ -1268,17 +1250,6 @@ func validateProjectManager(pm ProjectManager) error {
 	return nil
 }
 
-var warnTriggerTrustedOrg time.Time
-
-func validateTrigger(triggers []Trigger) error {
-	for _, trigger := range triggers {
-		if trigger.TrustedOrg != "" {
-			logrusutil.ThrottledWarnf(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
-		}
-	}
-	return nil
-}
-
 var warnRepoMilestone time.Time
 
 func validateRepoMilestone(milestones map[string]Milestone) {
@@ -1368,9 +1339,6 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 	if err := validateProjectManager(c.ProjectManager); err != nil {
-		return err
-	}
-	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
 	validateRepoMilestone(c.RepoMilestone)

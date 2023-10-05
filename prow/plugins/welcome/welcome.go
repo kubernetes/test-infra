@@ -125,7 +125,7 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 		return nil
 	}
 
-	trustedResponse, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedApps, t.TrustedOrg, user, org, repo)
+	trustedResponse, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedApps, user, org, repo)
 	if err != nil {
 		return fmt.Errorf("check if user %s is trusted: %w", user, err)
 	}

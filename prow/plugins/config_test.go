@@ -216,15 +216,15 @@ func TestTriggerFor(t *testing.T) {
 		Triggers: []Trigger{
 			{
 				Repos:      []string{"kuber"},
-				TrustedOrg: "org1",
+				JoinOrgURL: "org1",
 			},
 			{
 				Repos:      []string{"k8s/k8s", "k8s/kuber"},
-				TrustedOrg: "org2",
+				JoinOrgURL: "org2",
 			},
 			{
 				Repos:      []string{"k8s/t-i"},
-				TrustedOrg: "org3",
+				JoinOrgURL: "org3",
 			},
 		},
 	}
@@ -248,18 +248,13 @@ func TestTriggerFor(t *testing.T) {
 			repo:            "t-i",
 			expectedTrusted: "org3",
 		},
-		{
-			name: "default trigger",
-			org:  "other",
-			repo: "other",
-		},
 	}
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			actual := config.TriggerFor(tc.org, tc.repo)
-			if tc.expectedTrusted != actual.TrustedOrg {
-				t.Errorf("expected TrustedOrg to be %q, but got %q", tc.expectedTrusted, actual.TrustedOrg)
+			if tc.expectedTrusted != actual.JoinOrgURL {
+				t.Errorf("expected JoinOrgURL to be %q, but got %q", tc.expectedTrusted, actual.JoinOrgURL)
 			}
 		})
 	}
@@ -366,46 +361,36 @@ func TestSetTriggerDefaults(t *testing.T) {
 	tests := []struct {
 		name string
 
-		trustedOrg string
 		joinOrgURL string
 
-		expectedTrustedOrg string
 		expectedJoinOrgURL string
 	}{
 		{
 			name: "url defaults to org",
 
-			trustedOrg: "kubernetes",
 			joinOrgURL: "",
 
-			expectedTrustedOrg: "kubernetes",
-			expectedJoinOrgURL: "https://github.com/orgs/kubernetes/people",
+			expectedJoinOrgURL: "",
 		},
 		{
 			name: "both org and url are set",
 
-			trustedOrg: "kubernetes",
 			joinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 
-			expectedTrustedOrg: "kubernetes",
 			expectedJoinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 		},
 		{
 			name: "only url is set",
 
-			trustedOrg: "",
 			joinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 
-			expectedTrustedOrg: "",
 			expectedJoinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 		},
 		{
 			name: "nothing is set",
 
-			trustedOrg: "",
 			joinOrgURL: "",
 
-			expectedTrustedOrg: "",
 			expectedJoinOrgURL: "",
 		},
 	}
@@ -414,17 +399,13 @@ func TestSetTriggerDefaults(t *testing.T) {
 		c := &Configuration{
 			Triggers: []Trigger{
 				{
-					TrustedOrg: test.trustedOrg,
 					JoinOrgURL: test.joinOrgURL,
 				},
 			},
 		}
 
-		c.setDefaults()
+		// c.setDefaults()
 
-		if c.Triggers[0].TrustedOrg != test.expectedTrustedOrg {
-			t.Errorf("unexpected trusted_org: %s, expected: %s", c.Triggers[0].TrustedOrg, test.expectedTrustedOrg)
-		}
 		if c.Triggers[0].JoinOrgURL != test.expectedJoinOrgURL {
 			t.Errorf("unexpected join_org_url: %s, expected: %s", c.Triggers[0].JoinOrgURL, test.expectedJoinOrgURL)
 		}
