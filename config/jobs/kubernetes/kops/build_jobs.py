@@ -1301,7 +1301,7 @@ def generate_presubmits_scale():
                 'RUN_CL2_TEST': "true",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c6g.16xlarge",
+                'CONTROL_PLANE_SIZE': "c7a.16xlarge",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
