@@ -310,7 +310,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true"}'
         - name: FOCUS
-          value: \[Alpha\]
+          value: "."
         - name: SKIP
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
