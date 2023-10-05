@@ -880,6 +880,7 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
+                       "--set=spec.networking.networkID=default",
                    ],
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
@@ -898,6 +899,10 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
+                       "--set=spec.kubeAPIServer.logLevel=4",
+                       "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
+                       "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
+                       "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
@@ -920,7 +925,7 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
-                   test_timeout_minutes=300,
+                   test_timeout_minutes=400,
                    test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -940,7 +945,7 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Serial\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
-                   test_timeout_minutes=500,
+                   test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -956,6 +961,11 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
+                       "--set=spec.kubeAPIServer.logLevel=4",
+                       "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
+                       "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
+                       "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
+                       "--spec.kubeAPIServer.runtimeConfig=api/all=true"
                    ],
                    kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,-DisableCloudProviders,-DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
                    focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
@@ -1871,6 +1881,7 @@ def generate_presubmits_e2e():
             kops_channel="alpha",
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
+                "--set=spec.networking.networkID=default",
             ],
             focus_regex=r'\[Slow\]',
             skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
