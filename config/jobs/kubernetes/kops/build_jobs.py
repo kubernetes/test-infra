@@ -870,6 +870,22 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
 
+        build_test(name_override="ci-kubernetes-e2e-ubuntu-aws-canary",
+                   cloud="aws",
+                   distro="u2204",
+                   networking="kubenet",
+                   k8s_version="ci",
+                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_channel="alpha",
+                   extra_flags=[
+                       "--set=spec.nodeProblemDetector.enabled=true",
+                   ],
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   test_timeout_minutes=60,
+                   test_args="--num-nodes=3 --master-os-distro=ubuntu --node-os-distro=ubuntu",
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
+                   runs_per_day=8),
+
         build_test(name_override="ci-kubernetes-e2e-cos-gce-slow-canary",
                    cloud="gce",
                    distro="cos105",
@@ -925,11 +941,11 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
-                   test_timeout_minutes=400,
+                   test_timeout_minutes=500,
                    test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=6),
+                   runs_per_day=3),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-serial-canary",
                    cloud="gce",
@@ -949,7 +965,7 @@ def generate_misc():
                    test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=6),
+                   runs_per_day=4),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-alpha-features",
                    cloud="gce",
@@ -965,7 +981,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
-                       "--spec.kubeAPIServer.runtimeConfig=api/all=true"
+                       "--set=spec.kubeAPIServer.runtimeConfig=api/all=true"
                    ],
                    kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,-DisableCloudProviders,-DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
                    focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
