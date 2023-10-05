@@ -49,7 +49,7 @@ periodics:
   - name: ci-node-e2e-crio-dra
     interval: 6h
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation
+      testgrid-dashboards: sig-node-cri-o, sig-node-dynamic-resource-allocation
       testgrid-tab-name: ci-node-e2e-crio-dra
       testgrid-alert-email: eduard.bartosh@intel.com
     labels:

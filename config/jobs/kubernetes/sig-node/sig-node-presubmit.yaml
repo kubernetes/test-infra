@@ -982,7 +982,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgrpv2-gce-e2e
     always_run: false
     optional: true
@@ -1032,7 +1032,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgrpv1-evented-pleg-gce-e2e
     always_run: false
     optional: true
@@ -1102,7 +1102,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgrpv2-gce-e2e-kubetest2
     spec:
       containers:
@@ -1182,14 +1182,14 @@ presubmits:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-node-crio-cgroupv1-node-e2e-features
   - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv1
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1
     always_run: false
     optional: true
@@ -1239,7 +1239,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2
     always_run: false
     optional: true
@@ -1289,7 +1289,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-gce-e2e
     always_run: false
     skip_report: false
@@ -1360,7 +1360,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-gce-e2e-kubetest2
     spec:
       containers:
@@ -1396,7 +1396,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-kubelet-crio-cgroupv1-node-e2e-hugepages
     always_run: false
     optional: true
@@ -1451,7 +1451,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgroupv1-node-e2e-resource-managers
       description: "Executes CPU, Memory and Topology manager e2e tests for crio"
     labels:
@@ -1555,7 +1555,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-node-memoryqos-cgrpv2
     always_run: false
     optional: true
@@ -1816,7 +1816,7 @@ presubmits:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-crio-dra
+      testgrid-tab-name: pr-kind-dra
     decorate: true
     path_alias: k8s.io/kubernetes
     # Not relevant for most PRs.
@@ -2166,7 +2166,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgroupv1-node-e2e-eviction
   - name: pull-kubernetes-cos-cgroupv1-containerd-node-e2e
     skip_branches:
@@ -2567,7 +2567,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
-      testgrid-dashboards: sig-node-presubmits
+      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-crio-dra
     decorate: true
     decoration_config:
