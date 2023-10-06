@@ -208,7 +208,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c7a.16xlarge"
+          value: "c6g.4xlarge"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
