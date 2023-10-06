@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -97,7 +97,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -131,7 +131,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -180,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -228,7 +228,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-master
       imagePullPolicy: Always
       command:
       - runner.sh
