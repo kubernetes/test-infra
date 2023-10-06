@@ -296,7 +296,7 @@ periodics:
     workdir: true
   - org: containerd
     repo: containerd
-    base_ref: release-1.7
+    base_ref: release/1.7
     path_alias: github.com/containerd/containerd
   - org: kubernetes
     repo: test-infra

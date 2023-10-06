@@ -35,6 +35,7 @@ var gitMetrics = struct {
 	ensureFreshPrimaryDuration *prometheus.HistogramVec
 	fetchByShaDuration         *prometheus.HistogramVec
 	secondaryCloneDuration     *prometheus.HistogramVec
+	sparseCheckoutDuration     prometheus.Histogram
 }{
 	ensureFreshPrimaryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "git_ensure_fresh_primary_duration",
@@ -53,9 +54,14 @@ var gitMetrics = struct {
 	secondaryCloneDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "git_secondary_clone_duration",
 		Help:    "Histogram of seconds spent creating the secondary clone, by org and repo.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90},
 	}, []string{
 		"org", "repo",
+	}),
+	sparseCheckoutDuration: prometheus.NewHistogram(prometheus.HistogramOpts{
+		Name:    "sparse_checkout_duration",
+		Help:    "Histogram of seconds spent performing sparse checkout for a repository",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90},
 	}),
 }
 
@@ -63,6 +69,7 @@ func init() {
 	prometheus.MustRegister(gitMetrics.ensureFreshPrimaryDuration)
 	prometheus.MustRegister(gitMetrics.fetchByShaDuration)
 	prometheus.MustRegister(gitMetrics.secondaryCloneDuration)
+	prometheus.MustRegister(gitMetrics.sparseCheckoutDuration)
 }
 
 // ClientFactory knows how to create clientFactory for repos
@@ -241,7 +248,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	} else {
 		remote = &httpResolverFactory{
 			host:     o.Host,
-			http:     *o.UseInsecureHTTP,
+			http:     o.UseInsecureHTTP != nil && *o.UseInsecureHTTP,
 			username: o.Username,
 			token:    o.Token,
 		}

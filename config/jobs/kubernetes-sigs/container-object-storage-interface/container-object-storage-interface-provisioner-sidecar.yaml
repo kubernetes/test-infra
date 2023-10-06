@@ -1,5 +1,6 @@
 presubmits:
   kubernetes-sigs/container-object-storage-interface-provisioner-sidecar:
+
   - name: pull-container-object-storage-interface-provisioner-sidecar-build
     cluster: eks-prow-build-cluster
     always_run: true
@@ -9,12 +10,22 @@ presubmits:
       testgrid-dashboards: sig-storage-container-object-storage-interface-provisioner-sidecar
       testgrid-tab-name: build
       description: Build test in container-object-storage-interface-provisioner-sidecar repo.
+    labels:
+      # running a docker-based build requires docker-in-docker (DinD)
+      preset-dind-enabled: "true"  # see config/prow/config.yaml - 'presets' section
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.18.4
+      # specified tags are periodically updated in bulk for all prow jobs
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
-        # Plain make runs also verify
-        - make
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          make build
+        securityContext:
+          privileged: true # docker-in-docker needs privileged mode
         resources:
           limits:
             cpu: 2
@@ -34,7 +45,7 @@ presubmits:
       description: Unit tests in container-object-storage-interface-provisioner-sidecar repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.18.4
+      - image: public.ecr.aws/docker/library/golang:latest
         command:
         - make
         args:

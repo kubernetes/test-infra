@@ -12,7 +12,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery-operator: check formatting, lint etc."
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - scripts/test-infra/verify.sh
         resources:

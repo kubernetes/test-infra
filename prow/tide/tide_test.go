@@ -1005,10 +1005,6 @@ func TestDividePool(t *testing.T) {
 	}
 }
 
-func TestPickBatch(t *testing.T) {
-	testPickBatch(localgit.New, t)
-}
-
 func TestPickBatchV2(t *testing.T) {
 	testPickBatch(localgit.NewV2, t)
 }
@@ -1409,10 +1405,6 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestTakeAction(t *testing.T) {
-	testTakeAction(localgit.New, t)
 }
 
 func TestTakeActionV2(t *testing.T) {

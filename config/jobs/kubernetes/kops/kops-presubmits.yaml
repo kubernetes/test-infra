@@ -106,10 +106,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            memory: "3Gi"
+            cpu: "4"
+            memory: "6Gi"
           requests:
-            cpu: "2"
-            memory: "3Gi"
+            cpu: "4"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-do-gossip
@@ -157,10 +158,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            memory: "3Gi"
+            cpu: "4"
+            memory: "6Gi"
           requests:
-            cpu: "2"
-            memory: "3Gi"
+            cpu: "4"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-do-dns-none
@@ -208,10 +210,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            memory: "3Gi"
+            cpu: "4"
+            memory: "6Gi"
           requests:
-            cpu: "2"
-            memory: "3Gi"
+            cpu: "4"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-do-kubetest2

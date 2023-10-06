@@ -32,7 +32,7 @@ periodics:
           kind build node-image --image=dra/node:latest . &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
           kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation -ginkgo.skip=\[Serial\]
 
         # docker-in-docker needs privileged mode
         securityContext:

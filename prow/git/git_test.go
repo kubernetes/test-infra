@@ -35,10 +35,6 @@ import (
 
 var defaultBranch = localgit.DefaultBranch("")
 
-func TestClone(t *testing.T) {
-	testClone(localgit.New, t)
-}
-
 func TestCloneV2(t *testing.T) {
 	testClone(localgit.NewV2, t)
 }
@@ -110,10 +106,6 @@ func testClone(clients localgit.Clients, t *testing.T) {
 	}
 }
 
-func TestCheckoutPR(t *testing.T) {
-	testCheckoutPR(localgit.New, t)
-}
-
 func TestCheckoutPRV2(t *testing.T) {
 	testCheckoutPR(localgit.NewV2, t)
 }
@@ -157,10 +149,6 @@ func testCheckoutPR(clients localgit.Clients, t *testing.T) {
 	if _, err := os.Stat(filepath.Join(r.Directory(), "wow")); err != nil {
 		t.Errorf("Didn't find file in PR after checking out: %v", err)
 	}
-}
-
-func TestMergeCommitsExistBetween(t *testing.T) {
-	testMergeCommitsExistBetween(localgit.New, t)
 }
 
 func TestMergeCommitsExistBetweenV2(t *testing.T) {
@@ -285,10 +273,6 @@ func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
 			t.Errorf("Case: %v. Expect MergeCommitsExistBetween()=%v, but got %v", key, tt.want, got)
 		}
 	}
-}
-
-func TestMergeAndCheckout(t *testing.T) {
-	testMergeAndCheckout(localgit.New, t)
 }
 
 func TestMergeAndCheckoutV2(t *testing.T) {
@@ -429,10 +413,6 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 
 }
 
-func TestMerging(t *testing.T) {
-	testMerging(localgit.New, t)
-}
-
 func TestMergingV2(t *testing.T) {
 	testMerging(localgit.NewV2, t)
 }
@@ -538,10 +518,6 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestShowRef(t *testing.T) {
-	testShowRef(localgit.New, t)
 }
 
 func TestShowRefV2(t *testing.T) {

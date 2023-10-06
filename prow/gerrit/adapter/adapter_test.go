@@ -244,6 +244,13 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 			latest: lastUpdateTime,
 			result: true,
 		},
+		{
+			name:     "should not skip change processing for postsubmit jobs",
+			instance: instance,
+			change:   gerrit.ChangeInfo{Status: client.Merged},
+			latest:   lastUpdateTime,
+			result:   false,
+		},
 	}
 
 	for _, tc := range cases {
