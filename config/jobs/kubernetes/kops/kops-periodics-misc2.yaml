@@ -360,7 +360,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3602.1.6-arm64-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3732.1.0-arm64-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -553,7 +553,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3602.1.6-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3732.1.0-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -618,7 +618,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3602.1.6-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3732.1.0-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -2498,7 +2498,7 @@ periodics:
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
           --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true" \
-          --kubernetes-feature-gates=AllAlpha,-InTreePluginGCEUnregister,-DisableCloudProviders,-DisableKubeletCloudCredentialProviders \
+          --kubernetes-feature-gates=AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
