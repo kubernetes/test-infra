@@ -19,74 +19,9 @@ package git
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"reflect"
 	"testing"
-
-	"k8s.io/apimachinery/pkg/util/diff"
 )
-
-func TestHTTPResolver(t *testing.T) {
-	var testCases = []struct {
-		name        string
-		remote      func() (*url.URL, error)
-		username    LoginGetter
-		token       TokenGetter
-		expected    string
-		expectedErr bool
-	}{
-		{
-			name: "happy case works",
-			remote: func() (*url.URL, error) {
-				return &url.URL{
-					Scheme: "https",
-					Host:   "github.com",
-					Path:   "org/repo",
-				}, nil
-			},
-			username: func() (string, error) {
-				return "gitUser", nil
-			},
-			token: func(_ string) (string, error) {
-				return "pass", nil
-			},
-			expected:    "https://gitUser:pass@github.com/org/repo",
-			expectedErr: false,
-		},
-		{
-			name: "failure to resolve remote URL creates error",
-			remote: func() (*url.URL, error) {
-				return nil, errors.New("oops")
-			},
-			expectedErr: true,
-		},
-		{
-			name: "failure to get username creates error",
-			remote: func() (*url.URL, error) {
-				return nil, nil
-			},
-			username: func() (string, error) {
-				return "", errors.New("oops")
-			},
-			expectedErr: true,
-		},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			actual, actualErr := HttpResolver(testCase.remote, testCase.username, testCase.token, "org")()
-			if testCase.expectedErr && actualErr == nil {
-				t.Errorf("%s: expected an error but got none", testCase.name)
-			}
-			if !testCase.expectedErr && actualErr != nil {
-				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
-			}
-			if actual != testCase.expected {
-				t.Errorf("%s: got incorrect remote URL: %v", testCase.name, diff.StringDiff(actual, testCase.expected))
-			}
-		})
-	}
-}
 
 type stringWithError struct {
 	str string
@@ -120,6 +55,8 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 			{str: "first", err: nil},
 			{str: "second", err: errors.New("oops")},
 			{str: "third", err: nil},
+			// For publish remote test with unique fork name
+			{str: "fourth", err: nil},
 		}),
 	}
 
@@ -144,13 +81,22 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 		{str: "", err: errors.New("oops")},
 		{str: "git@ssh.host.com:third/repo.git", err: nil},
 	} {
-		actualRemote, actualErr := publish()
+		actualRemote, actualErr := publish("")
 		if actualRemote != expected.str {
 			t.Errorf("publish remote test %d returned incorrect remote, expected %v got %v", i, expected.str, actualRemote)
 		}
 		if !reflect.DeepEqual(actualErr, expected.err) {
 			t.Errorf("publish remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
 		}
+	}
+	// Test with unique fork name
+	expected := "git@ssh.host.com:fourth/fork-repo.git"
+	actualRemote, actualErr := publish("fork-repo")
+	if actualRemote != expected {
+		t.Errorf("publish remote test with different fork name returned incorrect remote, expected %v got %v", expected, actualRemote)
+	}
+	if actualErr != nil {
+		t.Errorf("publish remote test with different fork name returned an unexpected error: %v", actualErr)
 	}
 }
 
@@ -167,8 +113,8 @@ func TestHTTPResolverFactory_NoAuth(t *testing.T) {
 	})
 
 	t.Run("PublishRemote", func(t *testing.T) {
-		expectedErr := "could not resolve remote: username not configured, no publish repo available"
-		_, err := (&httpResolverFactory{host: "some-host.com"}).PublishRemote("org", "repo")()
+		expectedErr := "username not configured, no publish repo available"
+		_, err := (&httpResolverFactory{host: "some-host.com"}).PublishRemote("org", "repo")("")
 		if err == nil || err.Error() != expectedErr {
 			t.Errorf("expectedErr to be %s, was %v", expectedErr, err)
 		}
@@ -190,6 +136,9 @@ func TestHTTPResolverFactory(t *testing.T) {
 			{str: "third", err: nil},
 			{str: "fourth", err: nil},
 			{str: "fourth", err: errors.New("oops")},
+			// For testing publish remote with a unique forkName
+			{str: "fifth", err: nil},
+			{str: "fifth", err: nil},
 		}),
 		token: fakeTokenGetter([]string{"one", "three"}), // only called when username succeeds
 	}
@@ -212,16 +161,25 @@ func TestHTTPResolverFactory(t *testing.T) {
 	publish := factory.PublishRemote("org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "https://first:one@host.com/first/repo", err: nil},
-		{str: "", err: fmt.Errorf("could not resolve remote: %w", errors.New("oops"))},
-		{str: "https://third:three@host.com/third/repo", err: nil},
 		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
+		{str: "https://third:three@host.com/third/repo", err: nil},
+		{str: "", err: fmt.Errorf("could not resolve remote: %w", fmt.Errorf("could not resolve username: %w", errors.New("oops")))},
 	} {
-		actualRemote, actualErr := publish()
+		actualRemote, actualErr := publish("")
 		if actualRemote != expected.str {
 			t.Errorf("publish remote test %d returned incorrect remote, expected %v got %v", i, expected.str, actualRemote)
 		}
 		if !reflect.DeepEqual(actualErr, expected.err) {
 			t.Errorf("publish remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
 		}
+	}
+	// test publish with a different fork name
+	expected := "https://fifth:one@host.com/fifth/fork-repo"
+	actualRemote, actualErr := publish("fork-repo")
+	if actualRemote != expected {
+		t.Errorf("publish remote with a different fork name returned incorrect remote, expected %v got %v", expected, actualRemote)
+	}
+	if actualErr != nil {
+		t.Errorf("publish remote with a different fork name returned an unexpected error: %v", actualErr)
 	}
 }

@@ -31,6 +31,10 @@ func (r *fakeResolver) Resolve() (string, error) {
 	return r.out, r.err
 }
 
+func (r *fakeResolver) ForkResolver(_ string) (string, error) {
+	return r.out, r.err
+}
+
 type execResponse struct {
 	out []byte
 	err error
