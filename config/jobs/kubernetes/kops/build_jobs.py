@@ -983,7 +983,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                        "--set=spec.kubeAPIServer.runtimeConfig=api/all=true"
                    ],
-                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,-DisableCloudProviders,-DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
+                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
                    focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
                    test_timeout_minutes=180,
@@ -1488,6 +1488,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-cilium',
             networking='cilium',
             tab_name='e2e-gce-cilium',
+            build_cluster="k8s-infra-prow-build",
             always_run=True,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1498,6 +1499,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-cilium-etcd',
             networking='cilium-etcd',
             tab_name='e2e-gce-cilium-etcd',
+            build_cluster="k8s-infra-prow-build",
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1508,6 +1510,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-ipalias',
             networking='gce',
             tab_name='e2e-gce',
+            build_cluster="k8s-infra-prow-build",
             always_run=True,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1518,6 +1521,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-long-cluster-name',
             networking='cilium',
             tab_name='e2e-gce-long-name',
+            build_cluster="k8s-infra-prow-build",
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1528,6 +1532,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-ci',
             networking='cilium',
             tab_name='e2e-gce-ci',
+            build_cluster="k8s-infra-prow-build",
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1538,6 +1543,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
             networking='calico',
             tab_name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
+            build_cluster="k8s-infra-prow-build",
             always_run=False,
             feature_flags=['GoogleCloudBucketACL'],
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
@@ -1643,6 +1649,7 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-gce-dns-none",
             cloud="gce",
             networking="calico",
+            build_cluster="k8s-infra-prow-build",
             extra_flags=["--dns=none", "--gce-service-account=default"],
         ),
 
@@ -1878,6 +1885,7 @@ def generate_presubmits_e2e():
             networking="kubenet",
             k8s_version="ci",
             kops_channel="alpha",
+            build_cluster="k8s-infra-prow-build",
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--node-volume-size=100",
@@ -1895,6 +1903,7 @@ def generate_presubmits_e2e():
             networking="kubenet",
             k8s_version="ci",
             kops_channel="alpha",
+            build_cluster="k8s-infra-prow-build",
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--set=spec.networking.networkID=default",
