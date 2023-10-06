@@ -1112,7 +1112,7 @@ func TestClusterName(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		// Useful for identifiying how many jobs are running a specific cluster by omitting from this list
-		validClusters := []string{"default", "test-infra-trusted", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster"}
+		validClusters := []string{"default", "test-infra-trusted", "k8s-infra-kops-prow-build", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster"}
 		if !slices.Contains(validClusters, job.Cluster) || job.Cluster == "" {
 			err := fmt.Errorf("must run in one of these clusters: %v, found: %v", validClusters, job.Cluster)
 			t.Errorf("%v: %v", job.Name, err)
