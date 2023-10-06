@@ -346,8 +346,6 @@ presubmits:
               value: "-kubetest.use-ci-artifacts"
             - name: IP_FAMILY
               value: "IPv6"
-            - name: KUBERNETES_VERSION
-              value: "latest-1.27" # workaround for https://github.com/kubernetes/kubernetes/issues/120999
           securityContext:
             privileged: true
           resources:
