@@ -63,47 +63,6 @@ presubmits:
       testgrid-dashboards: presubmits-misc
       testgrid-tab-name: cadvisor
 
-  kubernetes/kubernetes: # Temporary test for https://github.com/kubernetes/kubernetes/pull/116517
-  - name: pull-cadvisor-e2e-kubernetes
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231010-50b212c4fa-master
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        command:
-          - runner.sh
-          - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --deployment=node
-        - --gcp-project=cadvisor-e2e
-        - --gcp-zone=us-central1-f
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-cadvisor.yaml --test-suite=cadvisor
-        - --node-tests=true
-        - --provider=gce
-        - --test_args=--nodes=1
-        - --timeout=10m
-
-    annotations:
-      testgrid-dashboards: presubmits-misc
-      testgrid-tab-name: cadvisor-temp
 periodics:
 - name: ci-cadvisor-e2e
   interval: 8h
