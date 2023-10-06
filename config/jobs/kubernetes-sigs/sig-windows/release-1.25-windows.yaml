@@ -51,7 +51,7 @@ periodics:
       - env
       - KUBERNETES_VERSION=latest-1.25
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-1.25
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       name: ""
       resources:
         requests:
@@ -101,7 +101,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230926-f045ae1296-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         command:
           - "runner.sh"
           - "env"
