@@ -35,9 +35,9 @@ type RemoteResolverFactory interface {
 	// is useful for fetching refs and cloning.
 	CentralRemote(org, repo string) RemoteResolver
 	// PublishRemote returns a resolver for a remote server with a
-	// personal fork of the repository. This type of remote is most
+	// personal fork of the central repository. This type of remote is most
 	// useful for publishing local changes.
-	PublishRemote(org, repo string) ForkRemoteResolver
+	PublishRemote(org, centralRepo string) ForkRemoteResolver
 }
 
 // RemoteResolver knows how to construct a remote URL for git calls
@@ -70,8 +70,9 @@ func (f *sshRemoteResolverFactory) CentralRemote(org, repo string) RemoteResolve
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *sshRemoteResolverFactory) PublishRemote(_, repo string) ForkRemoteResolver {
+func (f *sshRemoteResolverFactory) PublishRemote(_, centralRepo string) ForkRemoteResolver {
 	return func(forkName string) (string, error) {
+		repo := centralRepo
 		if forkName != "" {
 			repo = forkName
 		}
@@ -102,11 +103,12 @@ func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *httpResolverFactory) PublishRemote(_, repo string) ForkRemoteResolver {
+func (f *httpResolverFactory) PublishRemote(_, centralRepo string) ForkRemoteResolver {
 	return func(forkName string) (string, error) {
 		// For the publsh remote we use:
-		// - the user login rather than the upstream org
-		// - the forkName rather than the upstream repo name, if specified.
+		// - the user login rather than the central org
+		// - the forkName rather than the central repo name, if specified.
+		repo := centralRepo
 		if forkName != "" {
 			repo = forkName
 		}
@@ -165,9 +167,9 @@ func (f *pathResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *pathResolverFactory) PublishRemote(org, repo string) ForkRemoteResolver {
+func (f *pathResolverFactory) PublishRemote(org, centralRepo string) ForkRemoteResolver {
 	return func(_ string) (string, error) {
-		return path.Join(f.baseDir, org, repo), nil
+		return path.Join(f.baseDir, org, centralRepo), nil
 	}
 }
 

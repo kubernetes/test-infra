@@ -52,6 +52,7 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 	factory := sshRemoteResolverFactory{
 		host: "ssh.host.com",
 		username: usernameVendor([]stringWithError{
+			{str: "zero", err: nil},
 			{str: "first", err: nil},
 			{str: "second", err: errors.New("oops")},
 			{str: "third", err: nil},
@@ -74,8 +75,18 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 			t.Errorf("central remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
 		}
 	}
-
 	publish := factory.PublishRemote("org", "repo")
+
+	// Test with unique fork name before
+	expected := "git@ssh.host.com:zero/fork-repo.git"
+	actualRemote, actualErr := publish("fork-repo")
+	if actualRemote != expected {
+		t.Errorf("publish remote test with different fork name returned incorrect remote, expected %v got %v", expected, actualRemote)
+	}
+	if actualErr != nil {
+		t.Errorf("publish remote test with different fork name returned an unexpected error: %v", actualErr)
+	}
+	// Test with default fork name
 	for i, expected := range []stringWithError{
 		{str: "git@ssh.host.com:first/repo.git", err: nil},
 		{str: "", err: errors.New("oops")},
@@ -89,9 +100,9 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 			t.Errorf("publish remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
 		}
 	}
-	// Test with unique fork name
-	expected := "git@ssh.host.com:fourth/fork-repo.git"
-	actualRemote, actualErr := publish("fork-repo")
+	// Test with unique fork name after
+	expected = "git@ssh.host.com:fourth/fork-repo.git"
+	actualRemote, actualErr = publish("fork-repo")
 	if actualRemote != expected {
 		t.Errorf("publish remote test with different fork name returned incorrect remote, expected %v got %v", expected, actualRemote)
 	}
@@ -129,6 +140,10 @@ func TestHTTPResolverFactory(t *testing.T) {
 			{str: "second", err: errors.New("oops")},
 			{str: "third", err: nil},
 			// this is called twice for publish remote resolution
+			// For testing publish remote with a unique forkName
+			{str: "zero", err: nil},
+			{str: "zero", err: nil},
+			// testing publish remote with default forkName
 			{str: "first", err: nil},
 			{str: "first", err: nil},
 			{str: "second", err: errors.New("oops")},
@@ -159,10 +174,21 @@ func TestHTTPResolverFactory(t *testing.T) {
 	}
 
 	publish := factory.PublishRemote("org", "repo")
+	// test publish with a different fork name before
+	expected := "https://zero:one@host.com/zero/fork-repo"
+	actualRemote, actualErr := publish("fork-repo")
+	if actualRemote != expected {
+		t.Errorf("publish remote with a different fork name returned incorrect remote, expected %v got %v", expected, actualRemote)
+	}
+	if actualErr != nil {
+		t.Errorf("publish remote with a different fork name returned an unexpected error: %v", actualErr)
+	}
+
+	// Test with default fork name
 	for i, expected := range []stringWithError{
-		{str: "https://first:one@host.com/first/repo", err: nil},
+		{str: "https://first:three@host.com/first/repo", err: nil},
 		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
-		{str: "https://third:three@host.com/third/repo", err: nil},
+		{str: "https://third:one@host.com/third/repo", err: nil},
 		{str: "", err: fmt.Errorf("could not resolve remote: %w", fmt.Errorf("could not resolve username: %w", errors.New("oops")))},
 	} {
 		actualRemote, actualErr := publish("")
@@ -173,9 +199,9 @@ func TestHTTPResolverFactory(t *testing.T) {
 			t.Errorf("publish remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
 		}
 	}
-	// test publish with a different fork name
-	expected := "https://fifth:one@host.com/fifth/fork-repo"
-	actualRemote, actualErr := publish("fork-repo")
+	// test publish with a different fork name after
+	expected = "https://fifth:three@host.com/fifth/fork-repo"
+	actualRemote, actualErr = publish("fork-repo")
 	if actualRemote != expected {
 		t.Errorf("publish remote with a different fork name returned incorrect remote, expected %v got %v", expected, actualRemote)
 	}
