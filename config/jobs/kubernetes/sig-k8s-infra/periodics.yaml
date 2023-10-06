@@ -185,53 +185,27 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- name: ci-kubernetes-e2e-ubuntu-gce-containerd-cdn-canary
-  interval: 1h
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
+- name: ci-aws-kops-eks-sandbox
+  interval: 5m
+  cluster: k8s-infra-kops-prow-build
+  max_concurrency: 1
   decorate: true
-  decoration_config:
-    timeout: 70m
   spec:
     containers:
       - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-          - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
-          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
-          - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-          - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
-          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
-          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
-          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
-          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-          - --env=KUBERNETES_RELEASE_URL=https://cdn.dl.k8s.io/release
-          - --env=KUBE_RELEASE_BUCKET_URL=https://cdn.dl.k8s.io/release
-          - --extract=ci/latest-fast
-          - --extract-ci-bucket=k8s-release-dev
-          - --gcp-master-image=ubuntu
-          - --gcp-node-image=ubuntu
-          - --gcp-nodes=4
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --provider=gce
-          - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-          - --timeout=50m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        - curl
+        - -v
+        - -L
+        - https://dl.k8s.io/release/stable.txt
+        image: cgr.dev/chainguard/curl:latest
         resources:
           limits:
             cpu: 2
-            memory: 6Gi
+            memory: 2Gi
           requests:
             cpu: 2
-            memory: 6Gi
+            memory: 2Gi
   annotations:
     testgrid-dashboards: sig-k8s-infra-canaries
-    testgrid-tab-name: gce-ubuntu-master-containerd-cdn-canary
-    description: Uses kubetest to run e2e tests against a cluster created with cluster/kube-up using Fastly endpoint
+    testgrid-tab-name: ci-aws-kops-eks-sandbox
+    description: Uses to test scheduling on an EKS cluster and Boskos features development

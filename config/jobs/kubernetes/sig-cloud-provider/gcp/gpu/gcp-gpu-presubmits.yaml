@@ -10,6 +10,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+
     annotations:
@@ -49,15 +50,18 @@ presubmits:
         - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
         - --gcp-node-image=gci
         - --gcp-nodes=4
-        - --gcp-project=k8s-jkns-pr-gce-gpus
+        - --gcp-project-type=gpu-project
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
           requests:
+            cpu: 2
             memory: "6Gi"
         securityContext:
           privileged: true

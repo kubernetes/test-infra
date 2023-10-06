@@ -47,7 +47,7 @@ type RemoteResolver func() (string, error)
 type LoginGetter func() (login string, err error)
 
 // TokenGetter fetches a GitHub OAuth token on-demand
-type TokenGetter func() []byte
+type TokenGetter func(org string) (string, error)
 
 type sshRemoteResolverFactory struct {
 	host     string
@@ -93,12 +93,12 @@ func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 			scheme = "http"
 		}
 		return &url.URL{Scheme: scheme, Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
-	}, f.username, f.token)
+	}, f.username, f.token, org)
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
+func (f *httpResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	return HttpResolver(func() (*url.URL, error) {
 		scheme := "https"
 		if f.http {
@@ -112,11 +112,11 @@ func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
 			return nil, err
 		}
 		return &url.URL{Scheme: scheme, Host: f.host, Path: fmt.Sprintf("%s/%s", o, repo)}, nil
-	}, f.username, f.token)
+	}, f.username, f.token, org)
 }
 
 // HttpResolver builds http URLs that may optionally contain simple auth credentials, resolved dynamically.
-func HttpResolver(remote func() (*url.URL, error), username LoginGetter, token TokenGetter) RemoteResolver {
+func HttpResolver(remote func() (*url.URL, error), username LoginGetter, tokenGetter TokenGetter, org string) RemoteResolver {
 	return func() (string, error) {
 		remote, err := remote()
 		if err != nil {
@@ -128,7 +128,11 @@ func HttpResolver(remote func() (*url.URL, error), username LoginGetter, token T
 			if err != nil {
 				return "", fmt.Errorf("could not resolve username: %w", err)
 			}
-			remote.User = url.UserPassword(name, string(token()))
+			token, err := tokenGetter(org)
+			if err != nil {
+				return "", fmt.Errorf("could not resolve token: %w", err)
+			}
+			remote.User = url.UserPassword(name, token)
 		}
 
 		return remote.String(), nil

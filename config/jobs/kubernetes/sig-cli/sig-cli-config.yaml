@@ -76,6 +76,7 @@ periodics:
 
 - interval: 12h
   name: ci-kubernetes-e2e-kops-aws-sig-cli
+  cluster: eks-prow-build-cluster
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -98,6 +99,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 8Gi
+        requests:
+          cpu: 2
+          memory: 8Gi
 
   # kubectl skew tests
   annotations:

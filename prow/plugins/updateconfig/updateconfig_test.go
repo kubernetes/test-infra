@@ -142,10 +142,6 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	return c
 }
 
-func TestUpdateConfig(t *testing.T) {
-	testUpdateConfig(localgit.New, t)
-}
-
 func TestUpdateConfigV2(t *testing.T) {
 	testUpdateConfig(localgit.NewV2, t)
 }
@@ -1710,10 +1706,6 @@ func TestHandleDefaultNamespace(t *testing.T) {
 			t.Errorf("%s: incorrect changes: %v", tc.name, diff.ObjectReflectDiff(tc.expected, actual))
 		}
 	}
-}
-
-func TestUpdate(t *testing.T) {
-	testUpdate(localgit.New, t)
 }
 
 func TestUpdateV2(t *testing.T) {

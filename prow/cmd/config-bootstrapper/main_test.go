@@ -39,10 +39,6 @@ var (
 	defaultBranch    = localgit.DefaultBranch("")
 )
 
-func TestRun(t *testing.T) {
-	testRun(localgit.New, t)
-}
-
 func TestRunV2(t *testing.T) {
 	testRun(localgit.NewV2, t)
 }
