@@ -222,7 +222,7 @@ func TestPublisher_PushToFork(t *testing.T) {
 			}
 			p := publisher{
 				executor: &e,
-				remotes:  remotes{publishRemote: r.Resolve},
+				remotes:  remotes{publishRemote: r.ForkResolver},
 				logger:   logrus.WithField("test", testCase.name),
 			}
 			actualErr := p.PushToFork(testCase.branch, testCase.force)
