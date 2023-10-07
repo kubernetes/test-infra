@@ -957,7 +957,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64"
+                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
@@ -999,7 +999,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64"
+                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64",
                    ],
                    focus_regex=r'\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
@@ -1038,6 +1038,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
+                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64",
                        "--node-volume-size=100",
                        "--set=spec.packages=nfs-utils",
                    ],
@@ -1058,7 +1059,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64" # pylint: disable=line-too-long
+                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64", # pylint: disable=line-too-long
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
