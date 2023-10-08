@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pjutil/pprof"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -43,6 +44,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	slackclient "k8s.io/test-infra/prow/slack"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 type options struct {
@@ -170,10 +172,20 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get kubeconfig")
 	}
-	mgr, err := manager.New(restCfg, manager.Options{
-		Namespace:          cfg().ProwJobNamespace,
-		MetricsBindAddress: "0",
-	})
+
+	var watchNamespaces map[string]cache.Config
+	if cfg().ProwJobNamespace != "" {
+		watchNamespaces = map[string]cache.Config{
+			cfg().ProwJobNamespace: {},
+		}
+	}
+	options := manager.Options{
+		Metrics: metricsserver.Options{BindAddress: "0"},
+		Cache: cache.Options{
+			DefaultNamespaces: watchNamespaces,
+		},
+	}
+	mgr, err := manager.New(restCfg, options)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create manager")
 	}

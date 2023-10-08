@@ -53,8 +53,8 @@ func TestNewInRepoConfigCache(t *testing.T) {
 			t.Fatal("Expected non-nil error, got nil")
 		}
 
-		if err.Error() != "Must provide a positive size" {
-			t.Errorf("Expected error 'Must provide a positive size', got '%v'", err.Error())
+		if err.Error() != "must provide a positive size" {
+			t.Errorf("Expected error 'must provide a positive size', got '%v'", err.Error())
 		}
 
 		if cache != nil {
