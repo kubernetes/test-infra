@@ -827,8 +827,8 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 	return milestones, nil
 }
 
-// ListPRCommits lists commits for a given PR.
-func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
+// ListPullRequestCommits lists commits for a given PR.
+func (f *FakeClient) ListPullRequestCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)

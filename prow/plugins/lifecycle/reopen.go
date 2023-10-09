@@ -32,7 +32,7 @@ type githubClient interface {
 	IsCollaborator(owner, repo, login string) (bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	ReopenIssue(owner, repo string, number int) error
-	ReopenPR(owner, repo string, number int) error
+	ReopenPullRequest(owner, repo string, number int) error
 }
 
 func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
@@ -70,7 +70,7 @@ func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEv
 
 	if e.IsPR {
 		log.Info("/reopen PR")
-		if err := gc.ReopenPR(org, repo, number); err != nil {
+		if err := gc.ReopenPullRequest(org, repo, number); err != nil {
 			if scbc, ok := err.(github.StateCannotBeChanged); ok {
 				resp := fmt.Sprintf("Failed to re-open PR: %v", scbc)
 				return gc.CreateComment(

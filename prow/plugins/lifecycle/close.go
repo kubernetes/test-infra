@@ -36,7 +36,7 @@ type closeClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
 	CloseIssueAsNotPlanned(org, repo string, number int) error
-	ClosePR(owner, repo string, number int) error
+	ClosePullRequest(owner, repo string, number int) error
 	GetIssueLabels(owner, repo string, number int) ([]github.Label, error)
 }
 
@@ -111,7 +111,7 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 			)
 		}
 		log.Info("Closing PR.")
-		if err := gc.ClosePR(org, repo, number); err != nil {
+		if err := gc.ClosePullRequest(org, repo, number); err != nil {
 			return fmt.Errorf("Error closing PR: %w", err)
 		}
 		response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closed this PR.")

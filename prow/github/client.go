@@ -142,7 +142,7 @@ type PullRequestClient interface {
 	UnrequestReview(org, repo string, number int, logins []string) error
 	Merge(org, repo string, pr int, details MergeDetails) error
 	IsMergeable(org, repo string, number int, SHA string) (bool, error)
-	ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error)
+	ListPullRequestCommits(org, repo string, number int) ([]RepositoryCommit, error)
 	UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error
 }
 
@@ -4517,11 +4517,11 @@ func (c *client) ListMilestones(org, repo string) ([]Milestone, error) {
 	return milestones, nil
 }
 
-// ListPRCommits lists the commits in a pull request.
+// ListPullRequestCommits lists the commits in a pull request.
 //
 // GitHub API docs: https://developer.github.com/v3/pulls/#list-commits-on-a-pull-request
-func (c *client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error) {
-	durationLogger := c.log("ListPRCommits", org, repo, number)
+func (c *client) ListPullRequestCommits(org, repo string, number int) ([]RepositoryCommit, error) {
+	durationLogger := c.log("ListPullRequestCommits", org, repo, number)
 	defer durationLogger()
 
 	if c.fake {

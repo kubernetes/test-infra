@@ -1613,7 +1613,7 @@ func TestClosePullRequest(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if err := c.ClosePullRequestR("k8s", "kuber", 5); err != nil {
+	if err := c.ClosePullRequest("k8s", "kuber", 5); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
@@ -2523,7 +2523,7 @@ func TestListPRCommits(t *testing.T) {
 	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if commits, err := c.ListPRCommits("theorg", "therepo", 3); err != nil {
+	if commits, err := c.ListPullRequestCommits("theorg", "therepo", 3); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else {
 		if len(commits) != 2 {
