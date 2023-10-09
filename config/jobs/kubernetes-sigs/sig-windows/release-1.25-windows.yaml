@@ -105,7 +105,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest-1.25"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
