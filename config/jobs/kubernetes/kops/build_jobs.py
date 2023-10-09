@@ -888,6 +888,23 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
 
+        build_test(name_override="ci-kubernetes-e2e-ubuntu-aws-canary",
+                   cloud="aws",
+                   distro="u2204",
+                   networking="kubenet",
+                   k8s_version="ci",
+                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_channel="alpha",
+                   extra_flags=[
+                       "--set=spec.nodeProblemDetector.enabled=true",
+                       "--set=spec.packages=nfs-common",
+                   ],
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   test_timeout_minutes=60,
+                   test_args="--master-os-distro=ubuntu --node-os-distro=ubuntu",
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
+                   runs_per_day=8),
+
         build_test(name_override="ci-kubernetes-e2e-cos-gce-slow-canary",
                    cloud="gce",
                    distro="cos105",
@@ -1982,7 +1999,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Serial\]',
             skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=500,
-            always_run=False,
+            optional=True,
             test_parallelism=1, # serial tests
             test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
@@ -2001,7 +2018,7 @@ def generate_presubmits_e2e():
             ],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=40,
-            always_run=False,
+            optional=True,
             test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
 
@@ -2020,7 +2037,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Slow\]',
             skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=70,
-            always_run=False,
+            optional=True,
             test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
     ]
