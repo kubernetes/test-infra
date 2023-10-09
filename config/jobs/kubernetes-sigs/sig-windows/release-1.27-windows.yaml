@@ -50,7 +50,7 @@ periodics:
     - command:
       - runner.sh
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231009-5a9a0d4990-1.27
       name: ""
       resources:
         requests:
@@ -96,7 +96,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231009-5a9a0d4990-master
         command:
           - "runner.sh"
           - "env"
