@@ -39,7 +39,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: cherrypicker
-        image: gcr.io/k8s-prow/cherrypicker:v20231005-383927a788
+        image: gcr.io/k8s-prow/cherrypicker:v20231007-e2f59a2e2c
         imagePullPolicy: Always
         args:
         - --github-token-path=/etc/github/token
