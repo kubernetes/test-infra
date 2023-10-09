@@ -1045,7 +1045,7 @@ def generate_misc():
                    test_parallelism=1, # serial tests
                    test_args="-num-nodes=3 --master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
-                   runs_per_day=4),
+                   runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-serial-canary",
                    cloud="aws",

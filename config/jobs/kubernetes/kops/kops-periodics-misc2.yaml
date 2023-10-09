@@ -2672,7 +2672,7 @@ periodics:
 
 # {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-serial-canary
-  cron: '31 4-23/6 * * *'
+  cron: '31 0-23/4 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -2735,7 +2735,7 @@ periodics:
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: kops-distro-cos105, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
-    testgrid-days-of-results: '71'
+    testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-cos-gce-serial-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64 --node-volume-size=100 --set=spec.packages=nfs-utils --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
