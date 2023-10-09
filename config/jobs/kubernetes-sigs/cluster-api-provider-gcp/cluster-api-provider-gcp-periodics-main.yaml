@@ -150,7 +150,10 @@ periodics:
               # during the tests more like 3-20m is used
               cpu: 2000m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
+      # TODO: promote to sig-release-master-informing, once fix PR is merged
+      # https://github.com/kubernetes-sigs/cluster-api-provider-gcp/pull/1018.
+      # Also, add back release-team@kubernetes.io to testgrid-alert-email
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: capg-conformance-main-ci-artifacts
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io, release-team@kubernetes.io
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
       testgrid-num-failures-to-alert: "2"
