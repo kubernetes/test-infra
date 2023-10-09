@@ -47,16 +47,7 @@ var inrepoconfigRepoOpts = git.RepoOpts{
 	// Technically we only need inRepoConfigDirName (".prow") because the
 	// default "cone mode" of sparse checkouts already include files at the
 	// toplevel (which would include ".prow.yaml").
-	//
-	// TODO (listx): The version of git shipped in kubekins-e2e (itself
-	// derived from the bootstrap image) uses git version 2.30.2, which does
-	// not populate files at the toplevel. So we have to also set a sparse
-	// checkout of ".prow.yaml". Later when that image is updated, we can
-	// remove the use of inRepoConfigFileName (".prow.yaml"), so that the
-	// unit tests in CI can pass. As for the Prow components themselves,
-	// they use a different version of Git based on alpine (see .ko.yaml in
-	// the root).
-	SparseCheckoutDirs: []string{inRepoConfigDirName, inRepoConfigFileName},
+	SparseCheckoutDirs: []string{inRepoConfigDirName},
 	// The sparse checkout would avoid creating another copy of Git objects
 	// from the mirror clone into the secondary clone.
 	ShareObjectsWithPrimaryClone: true,
