@@ -1306,7 +1306,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "latest-1.28"
+          value: "latest"
         - name: CLUSTER_TEMPLATE # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ci-version-oot-credential-provider.yaml
         - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
