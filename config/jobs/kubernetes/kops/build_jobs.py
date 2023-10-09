@@ -878,7 +878,7 @@ def generate_misc():
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64" # pylint: disable=line-too-long
+                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64", # pylint: disable=line-too-long
                        "--set=spec.nodeProblemDetector.enabled=true",
                        "--set=spec.packages=nfs-utils",
                    ],
@@ -916,7 +916,8 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64"
+                       "--image=137112412989/al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64",
+                       "--set=spec.packages=nfs-utils",
                    ],
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
