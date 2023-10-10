@@ -68,7 +68,7 @@ periodics:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/cmd/janitor/gcp_janitor.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231009-5a9a0d4990-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231010-50b212c4fa-master
       resources:
         requests:
           cpu: 5
@@ -99,7 +99,7 @@ periodics:
       args:
       - --mode=pr
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231009-5a9a0d4990-experimental
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231010-50b212c4fa-experimental
       resources:
         requests:
           cpu: 5
