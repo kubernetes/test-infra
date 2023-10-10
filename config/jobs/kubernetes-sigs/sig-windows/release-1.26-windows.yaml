@@ -100,11 +100,11 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231009-5a9a0d4990-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231009-5a9a0d4990-1.26
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest-1.26"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
