@@ -63,6 +63,7 @@ type githubClient interface {
 	BotUser() (*github.UserData, error)
 	MutateWithGitHubAppsSupport(context.Context, interface{}, githubql.Input, map[string]interface{}, string) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
+	GetOrg(name string) (*github.Organization, error)
 }
 
 type ownersClient interface {
@@ -71,6 +72,7 @@ type ownersClient interface {
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
@@ -84,8 +86,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Topic: []plugins.Topic{
 			{
 				Repos: []string{
-					"org/repo1",
-					"org/repo2",
+					"org",
+					"org/repo",
 				},
 				IntegrateRepo: defaultIntegrationRepo,
 			},
@@ -101,11 +103,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/[remove-|integr]topic",
+		Usage:       "/[remove-|integr]topic topicName",
 		Description: "Manager associated PRs with topic",
 		Featured:    true,
 		WhoCanUse:   "Users listed as 'approvers' in appropriate OWNERS files.",
-		Examples:    []string{"/topic", "/integr-topic", "/remove-topic"},
+		Examples:    []string{"/topic testTopic", "/integr-topic testTopic", "/remove-topic testTopic"},
 	})
 
 	return pluginHelp, nil
@@ -129,7 +131,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient,
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleGenericComment")
 	}()
-	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
+	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
 		log.Debug("Event is not a creation of a comment on an open PR, skipping.")
 		return nil
 	}
@@ -143,18 +145,68 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient,
 	switch cmd {
 	case topicCommand:
 		log.Infof("Add to topic %s", topic)
-		// AddOrCreateTopic()
+		if err := AddOrCreateTopic(log, ghc, config, topic, ce, gc); err != nil {
+			//log.Errorf("Add topic[%s] failed: %v", topic, err)
+			ghc.CreateComment(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number,
+				fmt.Sprintf("Add topic: %s failed: %v", topic, err))
+			return err
+		} else {
+			return ghc.CreateComment(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number,
+				fmt.Sprintf("Add topic: %s successed.", topic))
+		}
 	case cleanTopicCommand:
 		log.Infof("Clean association topic %s", topic)
 		// CleanTopic()
 	case integrTopicCommand:
 		log.Infof("Integrate to topic %s", topic)
 		if err := integrateTopic(log, ghc, config, topic, ce, gc); err != nil {
-			log.Errorf("Integrate with topic[%s] failed: %v", topic, err)
+			// log.Errorf("Integrate with topic[%s] failed: %v", topic, err)
+			ghc.CreateComment(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number,
+				fmt.Sprintf("Integrate topic: %s failed: %v", topic, err))
 			return err
 		}
 	default:
 		log.Warnf("Unknown command %s", cmd)
+	}
+
+	return nil
+}
+
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+	return handlePullRequest(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.Config.GitHubOptions,
+		pc.PluginConfig,
+		&pre,
+		pc.GitClient,
+	)
+}
+
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions,
+	config *plugins.Configuration, pre *github.PullRequestEvent, gc git.ClientFactory) error {
+	funcStart := time.Now()
+	defer func() {
+		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handlePullRequest")
+	}()
+	if pre.Action != github.PullRequestActionOpened &&
+		pre.Action != github.PullRequestActionReopened &&
+		pre.Action != github.PullRequestActionSynchronize {
+		log.Debug("Pull request event action cannot constitute topic, skipping...")
+		return nil
+	}
+
+	if strings.HasPrefix(pre.PullRequest.Head.Ref, "topic-") {
+		//Create topic's project and add this pr to topic
+		topic := strings.ReplaceAll(pre.PullRequest.Head.Ref, "topic-", "")
+		ce := &github.GenericCommentEvent{
+			ID:     pre.PullRequest.ID,
+			Repo:   pre.Repo,
+			IsPR:   true,
+			NodeID: pre.PullRequest.NodeID,
+		}
+		AddOrCreateTopic(log, ghc, config, topic, ce, gc)
 	}
 
 	return nil
@@ -238,6 +290,171 @@ func updateProjectNameToIDMap(projects []github.Project) {
 	}
 }
 
+// CreateProjectV2Mutation is a GraphQL mutation struct compatible with shurcooL/githubql's client
+//
+// See https://docs.github.com/en/graphql/reference/mutations#createprojectv2
+type createProjectV2Mutation struct {
+	CreateProjectV2 struct {
+		ProjectV2 struct {
+			Id githubql.ID
+		}
+	} `graphql:"createProjectV2(input: $input)"`
+}
+
+// AddProjectV2ItemByIdMutation is a GraphQL mutation struct compatible with shurcooL/githubql's client
+//
+// See https://docs.github.com/en/graphql/reference/mutations#addprojectv2itembyid
+type addProjectV2ItemByIdMutation struct {
+	AddProjectV2ItemById struct {
+		Item struct {
+			Id githubql.ID
+		}
+	} `graphql:"addProjectV2ItemById(input: $input)"`
+}
+
+type CreateProjectV2Input struct {
+	// The owner ID to create the project under. (Required.)
+	OwnerID githubql.String `json:"ownerId"`
+	// The title of project. (Required.)
+	Title *githubql.String `json:"title"`
+	// Repository ID to create as linked repositories for the project. (Optional.)
+	RepositoryID githubql.ID `json:"repositoryId,omitempty"`
+	// The team id. (Optional.)
+	TeamID githubql.ID `json:"teamId,omitempty"`
+	// A unique identifier for the client performing the mutation. (Optional.)
+	ClientMutationID *githubql.String `json:"clientMutationId,omitempty"`
+}
+
+type AddProjectV2ItemByIdInput struct {
+	// The content id. (Required.)
+	ContentId githubql.String `json:"contentId,omitempty"`
+	// The project id. (Required.)
+	ProjectId githubql.ID `json:"projectId,omitempty"`
+	// A unique identifier for the client performing the mutation. (Optional.)
+	ClientMutationID *githubql.String `json:"clientMutationId,omitempty"`
+}
+
+// func getProjectsV2Id
+// get projectv2 id with name
+func getProjectsV2Id(log *logrus.Entry, ghc githubClient, org, topic string) githubql.String {
+	projectID := githubql.String("")
+	vars := map[string]interface{}{
+		"org":          githubql.String(org),
+		"searchCursor": (*githubql.String)(nil),
+	}
+
+	requestStart := time.Now()
+	var pageCount int
+	found := false
+	for {
+		pageCount++
+		sq := searchProjectsV2Query{}
+		if err := ghc.QueryWithGitHubAppsSupport(context.Background(), &sq, vars, org); err != nil {
+			log.Warnf("Get org[%s]'s topic[%s] from projectv2 failed with err: %v",
+				org, topic, err)
+		}
+
+		for _, n := range sq.Organization.ProjectsV2.Nodes {
+			if n.Title == githubql.String(topic) {
+				projectID = n.ID
+				found = true
+				break
+			}
+		}
+		if githubql.Boolean(found) || !sq.Organization.ProjectsV2.PageInfo.HasNextPage {
+			break
+		}
+		vars["searchCursor"] = githubql.NewString(sq.Organization.ProjectsV2.PageInfo.EndCursor)
+	}
+
+	log = log.WithFields(logrus.Fields{
+		"page_count": pageCount,
+		"duration":   time.Since(requestStart).String(),
+		"project_id": projectID,
+	})
+	log.Infof("Get org[%s]'s topic[%s] id: %s", org, topic, projectID)
+
+	return projectID
+}
+
+func AddOrCreateTopic(log *logrus.Entry, ghc githubClient, config *plugins.Configuration,
+	topic string, ce *github.GenericCommentEvent, gc git.ClientFactory) error {
+	org := ce.Repo.Owner.Login
+
+	var projects []github.Project
+
+	repoProjects, err := ghc.GetOrgProjects(org)
+	searchProjectV2 := false
+	if err == nil && len(repoProjects) > 0 {
+		projects = append(projects, repoProjects...)
+		updateProjectNameToIDMap(projects)
+		if projectID, ok := projectNameToIDMap[topic]; ok {
+			projectColumns, err := ghc.GetProjectColumns(org, projectID)
+			if err != nil {
+				return err
+			}
+			if len(projectColumns) > 1 {
+				proposedColumnID := projectColumns[0].ID
+				projectCard := github.ProjectCard{}
+				projectCard.ContentID = ce.ID
+				if ce.IsPR {
+					projectCard.ContentType = "PullRequest"
+				} else {
+					projectCard.ContentType = "Issue"
+				}
+
+				if _, err := ghc.CreateProjectCard(org, proposedColumnID, projectCard); err != nil {
+					return err
+				}
+			} else {
+				return fmt.Errorf("topic[%s] hasn't column", topic)
+			}
+		} else {
+			searchProjectV2 = true
+		}
+	} else {
+		searchProjectV2 = true
+	}
+
+	if searchProjectV2 {
+		id := getProjectsV2Id(log, ghc, org, topic)
+		pID := githubql.ID(id)
+		if id == githubql.String("") {
+			// Create a new projectv2
+			m := &createProjectV2Mutation{}
+			title := githubql.String(topic)
+			orgInfo, err := ghc.GetOrg(org)
+			if err != nil {
+				return err
+			}
+
+			input := CreateProjectV2Input{
+				OwnerID: githubql.String(orgInfo.NodeId),
+				Title:   &title,
+			}
+			err = ghc.MutateWithGitHubAppsSupport(context.Background(), m, input, nil, org)
+			if err != nil {
+				return err
+			}
+			log.Infof("Get topic's project id: %v", m.CreateProjectV2.ProjectV2.Id)
+			pID = m.CreateProjectV2.ProjectV2.Id
+		}
+
+		// Add pr to topic's project
+		m := &addProjectV2ItemByIdMutation{}
+		input := AddProjectV2ItemByIdInput{
+			ProjectId: pID,
+			ContentId: githubql.String(ce.NodeID),
+		}
+		err = ghc.MutateWithGitHubAppsSupport(context.Background(), m, input, nil, org)
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
 type integrateRepo struct {
 	Repo string `yaml:"repo"`
 	Sha  string `yaml:"tagsha"`
@@ -255,8 +472,9 @@ func integrateTopic(log *logrus.Entry, ghc githubClient, config *plugins.Configu
 
 	var projects []github.Project
 	var topicInfo integrateTopicInfo
-	topicInfo.Message = fmt.Sprintf("Auto integrate from topic: %s by @%s", topic, ce.User.Login)
+	log.Infof("Topic configuration: %v", config)
 	topicInfo.Milestone = configForMilestone(optionsForRepo(config, org, ""))
+	topicInfo.Message = fmt.Sprintf("Auto integrate from topic: %s by @%s to %s", topic, ce.User.Login, topicInfo.Milestone)
 
 	// see if the project in the same org
 	repoProjects, err := ghc.GetOrgProjects(org)
@@ -512,14 +730,16 @@ func createIntegratePr(log *logrus.Entry, ghc githubClient, integratePrsRepo, to
 		true,
 	)
 	if err != nil {
-		return err
+		if !strings.Contains(err.Error(), "A pull request already exists for") {
+			return err
+		}
 	}
 
 	// Create Comment
-	return ghc.CreateComment(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number, fmt.Sprintf("https://github.com/deepin-community/Repository-Integration/pull/%d", number))
+	return ghc.CreateComment(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number, fmt.Sprintf("Integrated with pr https://github.com/%s/pull/%d", integratePrsRepo, number))
 }
 
-// optionsForRepo gets the plugins.Welcome struct that is applicable to the indicated repo.
+// optionsForRepo gets the plugins.Topic struct that is applicable to the indicated repo.
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Topic {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 
@@ -539,7 +759,7 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.To
 		return &c
 	}
 
-	// Return an empty config, and default to defaultWelcomeMessage
+	// Return an empty config
 	return &plugins.Topic{}
 }
 

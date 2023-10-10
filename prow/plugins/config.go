@@ -694,7 +694,7 @@ type Topic struct {
 	// Repos is either of the form org/repos or just org.
 	Repos              []string `json:"repos,omitempty"`
 	IntegrateRepo      string   `json:"integrate_repo,omitempty"`
-	IntegrateMilestone string   `json:"integrate_milestone`
+	IntegrateMilestone string   `json:"integrate_milestone"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
