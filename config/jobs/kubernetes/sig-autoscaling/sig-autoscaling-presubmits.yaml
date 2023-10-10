@@ -157,3 +157,42 @@ presubmits:
           requests:
             cpu: 2
             memory: 6Gi
+
+  - name: pull-kubernetes-e2e-autoscaling-vpa-full
+    annotations:
+      testgrid-dashboards: sig-autoscaling-vpa
+      testgrid-tab-name: autoscaling-vpa-full-presubmits
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    run_if_changed: '^vertical-pod-autoscaler\/'
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: autoscaler
+      base_ref: master
+      path_alias: k8s.io/autoscaler
+      workdir: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --extract=ci/latest
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+        - --test-cmd-args=full-vpa
+        - --timeout=100m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        securityContext:
+          privileged: true
