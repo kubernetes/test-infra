@@ -36,6 +36,7 @@ import (
 	"time"
 
 	gerritsource "k8s.io/test-infra/prow/gerrit/source"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/tide"
 
@@ -1556,6 +1557,7 @@ type deckGitHubClient interface {
 	GetPullRequest(org, repo string, number int) (*prowgithub.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
 	BotUserChecker() (func(candidate string) bool, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
 func spglassConfigDefaulting(c *config.Config) error {
