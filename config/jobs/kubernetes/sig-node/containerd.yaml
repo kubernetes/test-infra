@@ -67,7 +67,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-97-16919-235-48
+      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-0-47
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
@@ -470,7 +470,7 @@ periodics:
       # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
       - --env=KUBE_NODE_OS_DISTRIBUTION=gci
-      - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
+      - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
       - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
