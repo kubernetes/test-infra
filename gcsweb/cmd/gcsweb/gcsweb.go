@@ -192,17 +192,19 @@ func main() {
 
 	logrus.Info("Starting GCSWeb")
 
+	mux := http.NewServeMux()
+
 	// Canonicalize allowed buckets.
 	for i := range o.allowedBuckets {
 		bucket := joinPath(gcsPath, o.allowedBuckets[i])
 		logrus.WithField("bucket", bucket).Info("allowing bucket")
-		http.HandleFunc(bucket+"/", s.gcsRequest)
-		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc(bucket+"/", s.gcsRequest)
+		mux.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
 		})
 	}
 	// Handle unknown buckets.
-	http.HandleFunc("/gcs/", unknownBucketRequest)
+	mux.HandleFunc("/gcs/", unknownBucketRequest)
 
 	// Serve icons and styles.
 	longCacheServer := func(h http.Handler) http.HandlerFunc {
@@ -217,25 +219,25 @@ func main() {
 	}
 
 	if o.flIcons != "" { // If user specifies custom icons path then read it at runtime
-		http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
+		mux.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
 	} else {
-		http.Handle("/icons/", longCacheServer(http.FileServer(http.FS(embededStatic))))
+		mux.Handle("/icons/", longCacheServer(http.FileServer(http.FS(embededStatic))))
 	}
 	if o.flStyles != "" { // If user specifies custom styles path then read it at runtime
-		http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
+		mux.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
 	} else {
-		http.Handle("/styles/", longCacheServer(http.FileServer(http.FS(embededStatic))))
+		mux.Handle("/styles/", longCacheServer(http.FileServer(http.FS(embededStatic))))
 	}
 
 	// Serve HTTP.
-	http.HandleFunc("/robots.txt", robotsRequest)
-	http.HandleFunc("/", otherRequest)
+	mux.HandleFunc("/robots.txt", robotsRequest)
+	mux.HandleFunc("/", otherRequest)
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	logrus.Infof("serving on port %d", o.flPort)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", o.flPort), mux); err != nil {
 		logrus.WithError(err).Fatal("couldn't start the http server")
 	}
 }
