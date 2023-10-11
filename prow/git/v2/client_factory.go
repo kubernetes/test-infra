@@ -387,16 +387,20 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 
 	// First create or update the primary clone (in "cacheDir").
 	timeBeforeEnsureFreshPrimary := time.Now()
-	c.ensureFreshPrimary(cacheDir, cacheClientCacher, repoOpts, org, repo)
-	gitMetrics.ensureFreshPrimaryDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeEnsureFreshPrimary).Seconds())))
+	err = c.ensureFreshPrimary(cacheDir, cacheClientCacher, repoOpts, org, repo)
+	if err != nil {
+		c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Errorf("Error encountered while refreshing primary clone: %s", err.Error())
+	} else {
+		gitMetrics.ensureFreshPrimaryDuration.WithLabelValues(org, repo).Observe(time.Since(timeBeforeEnsureFreshPrimary).Seconds())
+	}
 
 	// Initialize the new derivative repo (secondary clone) from the primary
 	// clone. This is a local clone operation.
 	timeBeforeSecondaryClone := time.Now()
-	if err := repoClientCloner.CloneWithRepoOpts(cacheDir, repoOpts); err != nil {
+	if err = repoClientCloner.CloneWithRepoOpts(cacheDir, repoOpts); err != nil {
 		return nil, err
 	}
-	gitMetrics.secondaryCloneDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeSecondaryClone).Seconds())))
+	gitMetrics.secondaryCloneDuration.WithLabelValues(org, repo).Observe(time.Since(timeBeforeSecondaryClone).Seconds())
 
 	return repoClient, nil
 }
@@ -424,7 +428,7 @@ func (c *clientFactory) ensureFreshPrimary(
 		if err := cacheClientCacher.FetchCommits(repoOpts.NeededCommits.UnsortedList()); err != nil {
 			return err
 		}
-		gitMetrics.fetchByShaDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeFetchBySha).Seconds())))
+		gitMetrics.fetchByShaDuration.WithLabelValues(org, repo).Observe(time.Since(timeBeforeFetchBySha).Seconds())
 	}
 
 	return nil
