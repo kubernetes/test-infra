@@ -14,7 +14,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - check
+        - gofmt
         resources:
           limits:
             cpu: 2
