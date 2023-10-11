@@ -158,10 +158,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
           limits:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -188,10 +188,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
           limits:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -252,10 +252,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
           limits:
-            cpu: "4"
+            cpu: "8"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
