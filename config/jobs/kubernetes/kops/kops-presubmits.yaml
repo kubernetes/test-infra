@@ -477,6 +477,55 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-terraform
+  - name: pull-kops-kubernetes-e2e-ubuntu-gce-build
+    cluster: k8s-infra-prow-build
+    branches:
+    - master
+    always_run: false
+    optional: true
+    skip_report: false
+    labels:
+      preset-k8s-ssh: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 100m
+    path_alias: k8s.io/kops
+    spec:
+      serviceAccountName: k8s-kops-test
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231010-50b212c4fa-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/build.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: /etc/ssh-key-secret/ssh-private
+        - name: KUBE_SSH_USER
+          value: prow
+        resources:
+          limits:
+            cpu: "4"
+            memory: 6Gi
+          requests:
+            cpu: "4"
+            memory: 6Gi
+    annotations:
+      test.kops.k8s.io/cloud: gce
+      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/k8s_version: ci
+      test.kops.k8s.io/kops_channel: alpha
+      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+      testgrid-days-of-results: '90'
+      testgrid-tab-name: pull-kops-kubernetes-e2e-ubuntu-gce-build
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
