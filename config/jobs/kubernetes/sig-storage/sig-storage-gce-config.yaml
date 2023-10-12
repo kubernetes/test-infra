@@ -81,7 +81,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     decorate: true
     decoration_config:
-      timeout: 150m
+      timeout: 180m
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
@@ -102,7 +102,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
         - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
-        - --timeout=120m
+        - --timeout=150m
         securityContext:
           privileged: true
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231010-50b212c4fa-master
