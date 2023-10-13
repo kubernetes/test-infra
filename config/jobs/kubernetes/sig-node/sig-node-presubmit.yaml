@@ -1392,6 +1392,7 @@ presubmits:
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-k8s-infra-prow-build-kubetest2.yaml
   - name: pull-crio-cgroupv1-node-e2e-hugepages
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1445,6 +1446,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-crio-cgroupv1-node-e2e-resource-managers
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -2120,6 +2122,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-crio-cgroupv1-node-e2e-eviction
+    cluster: k8s-infra-prow-build
     skip_branches:
       - release-\d+\.\d+  # per-release image
     labels:
