@@ -27,7 +27,7 @@ periodics:
         -label:do-not-merge/hold
         -label:needs-rebase
         -label:api-review
-        -project:kubernetes/13
+        -project:kubernetes/169
         NOT "complete the pre-review checklist and request an API review"
       - --updated=5m
       - --token=/etc/github-token/token
@@ -37,7 +37,7 @@ periodics:
 
         If so, when the changes are ready, [complete the pre-review checklist and request an API review](https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics).
 
-        Status of requested reviews is tracked in the [API Review project](https://github.com/orgs/kubernetes/projects/13).
+        Status of requested reviews is tracked in the [API Review project](https://github.com/orgs/kubernetes/projects/169).
       - --ceiling=10
       - --confirm
       volumeMounts:
