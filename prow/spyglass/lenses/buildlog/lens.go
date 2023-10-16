@@ -478,12 +478,12 @@ func logLinesAll(artifact api.Artifact) ([]string, error) {
 func logLines(artifact api.Artifact, offset, length int64) ([]string, error) {
 	b := make([]byte, length)
 	_, err := artifact.ReadAt(b, offset)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		if err != lenses.ErrGzipOffsetRead {
 			return nil, fmt.Errorf("couldn't read requested bytes: %w", err)
 		}
 		moreBytes, err := artifact.ReadAtMost(offset + length)
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return nil, fmt.Errorf("couldn't handle reading gzipped file: %w", err)
 		}
 		b = moreBytes[offset:]
