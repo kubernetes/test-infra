@@ -38,6 +38,7 @@ import (
 	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
 
 	"k8s.io/test-infra/prow/logrusutil"
@@ -85,6 +86,8 @@ type options struct {
 
 	// Only buckets in this list will be served.
 	allowedBuckets strslice
+	// allowedProwPaths is the parsed list of allowedBuckets
+	allowedProwPaths []*prowv1.ProwPath
 
 	instrumentationOptions flagutil.InstrumentationOptions
 }
@@ -106,13 +109,27 @@ func gatherOptions() options {
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
 
-	fs.Var(&o.allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
+	fs.Var(&o.allowedBuckets, "b", "Buckets to serve (may be specified more than once). Can be GCS buckets (gs:// prefix) or S3 buckets (s3:// prefix).\n"+
+		"If the bucket doesn't have a prefix, gs:// is assumed (deprecated, add the gs:// prefix).")
+
 	o.instrumentationOptions.AddFlags(fs)
+
 	fs.Parse(os.Args[1:])
 	return o
 }
 
 func (o *options) validate() error {
+	// validate and parse bucket list
+	for _, bucket := range o.allowedBuckets {
+		// canonicalize buckets: adds the gs:// prefix if omitted
+		prowPath, err := prowv1.ParsePath(bucket)
+		if err != nil {
+			return fmt.Errorf("bucket %q is not a valid bucket: %w", bucket, err)
+		}
+
+		o.allowedProwPaths = append(o.allowedProwPaths, prowPath)
+	}
+
 	if o.flIcons != "" {
 		if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
 			return fmt.Errorf("icons path %q doesn't exist", o.flIcons)
