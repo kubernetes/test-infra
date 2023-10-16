@@ -31,20 +31,13 @@ import (
 // You can mostly easily find your user ID by visiting your Slack profile, clicking "...",
 // and clicking "Copy user ID".
 var githubToSlack = map[string]string{
-	"amwat":          "U9B1P2UGP",
-	"benjaminkazemi": "U03B4SNKVRT",
-	"bentheelder":    "U1P7T516X",
-	"chaodaig":       "U010XUQ9VPE",
+	"airbornepony":   "U057DPPH17U",
 	"chases2":        "UJ9R0FWD6",
 	"cjwagner":       "U4QFZFMCM",
-	"fejta":          "U0E2KHQ13",
-	"juanfescobar":   "U021LQ1C0PJ",
-	"katharine":      "UBTBNJ6GL",
 	"listx":          "UFCU8S8P3",
 	"michelle192837": "U3TRY5WV7",
 	"mpherman2":      "U01AJA1N8NL",
-	"mushuee":        "U013TPFJWC8",
-	"spiffxp":        "U09R2FL93",
+	"timwangmusic":   "U05UKSMCY8H",
 }
 
 // rotationToSlack group maps the rotation in go.k8s.io/oncall to the slack
