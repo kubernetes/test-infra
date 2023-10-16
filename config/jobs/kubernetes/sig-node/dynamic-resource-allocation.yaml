@@ -47,6 +47,7 @@ periodics:
 
   # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   - name: ci-node-e2e-crio-dra
+    cluster: k8s-infra-prow-build
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-dynamic-resource-allocation
@@ -77,7 +78,6 @@ periodics:
         args:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project-type=node-e2e-project
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=resource.k8s.io/v1alpha2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -90,6 +90,13 @@ periodics:
           value: "1"
         - name: GOPATH
           value: /go
+        resources:
+          limits:
+            cpu: 2
+            memory: 9Gi
+          requests:
+            cpu: 2
+            memory: 9Gi
 
   # This job runs the same tests as ci-node-e2e-crio-dra with Containerd 1.7 runtime
   - name: ci-node-e2e-containerd-1-7-dra

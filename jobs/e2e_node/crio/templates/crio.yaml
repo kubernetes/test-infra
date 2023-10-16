@@ -27,6 +27,11 @@ storage:
       contents:
         local: 99-e2e-sysctl.conf
       mode: 0644
+    - path: /etc/ssh-key-secret/ssh-public
+      contents:
+        # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
+        source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
+      mode: 0644
 systemd:
   units:
     - name: configure-sysctl.service
@@ -99,6 +104,25 @@ systemd:
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
         ExecStart=systemctl enable --now crio.service
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: authorized-key.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Copy authorized keys
+        Before=crio-install.service
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c '\
+          /usr/bin/mkdir -m 0700 -p /home/core/.ssh && \
+          /usr/bin/cat /etc/ssh-key-secret/ssh-public \
+            >> /home/core/.ssh/authorized_keys && \
+          /usr/bin/chown -R core:core /home/core/.ssh && \
+          /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
 
         [Install]
         WantedBy=multi-user.target

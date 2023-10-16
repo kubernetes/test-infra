@@ -56,6 +56,13 @@
           "source": "data:;base64,H4sIAAAAAAAC/2SQvU7DQBCEez/FSG7BduKf4Eh0NBR06dH6bo1P8d1F3r3EvD2KCJFQqpW+LWbmy/EezMIkjCMvgefi5OynpxUU7B/SaWGy8nzFGuFpdT75AofJCZwgMFu2GOOS5Tg5Cz47oy4GKIvKEwY2lIQh36LsLS5uniGsoBvCxVnGG4+UZj2QHOWD1izHQMIWMcA7n0LyiCN0YmGcaU4sRZZjXXjcY1I9yb4sv5xOaShM9OUt7X5N9N5pWVM1Vp1pNrTth11XjdyZ2tKu3fZmbPuW25eaqOqyHIeJYX9L3QJBC0NjxBwv18HXNo+Ti+y/zNdm0zd11WSPQu+vnwAAAP//xE8bG4oBAAA="
         },
         "mode": 420
+      },
+      {
+        "path": "/etc/ssh-key-secret/ssh-public",
+        "contents": {
+          "source": "data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA=="
+        },
+        "mode": 420
       }
     ]
   },
@@ -80,6 +87,11 @@
         "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nEnvironment=\"COMMIT=0f501d4a7c33157e9662f2729c72f8c33baffe84\"\n\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=mount -o remount,rw /usr\nExecStartPre=rm -f /usr/bin/runc\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\\\n      bash -s -- -t $COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf\nExecStart=systemctl enable --now crio.service\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "crio-install.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Copy authorized keys\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '\\\n  /usr/bin/mkdir -m 0700 -p /home/core/.ssh \u0026\u0026 \\\n  /usr/bin/cat /etc/ssh-key-secret/ssh-public \\\n    \u003e\u003e /home/core/.ssh/authorized_keys \u0026\u0026 \\\n  /usr/bin/chown -R core:core /home/core/.ssh \u0026\u0026 \\\n  /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "authorized-key.service"
       },
       {
         "contents": "[Unit]\nDescription=Allocate 1G hugepages.\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '/usr/bin/echo 1 \u003e \\\n  /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages'\n\n[Install]\nWantedBy=multi-user.target\n",
