@@ -1760,36 +1760,6 @@ presubmits:
             memory: 12Gi
         securityContext:
           privileged: true
-  - always_run: false
-    branches:
-    - release-1.27
-    cluster: k8s-infra-prow-build
-    context: pull-kubernetes-verify-strict-lint
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-verify-strict-lint
-    optional: true
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - args:
-        - /bin/sh
-        - -c
-        - if [ -x hack/verify-golangci-lint-pr.sh ]; then hack/verify-golangci-lint-pr.sh; fi
-        command:
-        - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231010-50b212c4fa-1.27
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          limits:
-            cpu: "7"
-            memory: 12Gi
-          requests:
-            cpu: "7"
-            memory: 12Gi
   kubernetes/perf-tests:
   - always_run: false
     branches:
