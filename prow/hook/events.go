@@ -377,10 +377,6 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 	}
 }
 
-func intPtr(i int) *int {
-	return &i
-}
-
 func errorOnPanic(f func() error) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
