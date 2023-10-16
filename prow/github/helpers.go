@@ -238,4 +238,6 @@ func GeneralizeComment[E CommentLikeEventTypes](event E) (*GenericCommentEvent, 
 			IssueHTMLURL: t.PullRequest.HTMLURL,
 		}, nil
 	}
+
+	return nil, fmt.Errorf("we were unable to generalize comment, unknown type encountered")
 }
