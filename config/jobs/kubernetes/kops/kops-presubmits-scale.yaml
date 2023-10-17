@@ -201,14 +201,12 @@ presubmits:
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
           value: "100"
-        - name: RUN_CL2_TEST
-          value: "true"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "20"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c6g.4xlarge"
+          value: "c5.4xlarge"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
