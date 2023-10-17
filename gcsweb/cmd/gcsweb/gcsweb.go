@@ -26,6 +26,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,12 +35,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"cloud.google.com/go/storage"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 
 	"k8s.io/test-infra/prow/logrusutil"
@@ -206,7 +207,7 @@ func main() {
 		logrus.WithError(err).Fatal("couldn't get storage client")
 	}
 
-	s := &server{storageClient: storageClient}
+	s := &server{storageClient: pkgio.NewGCSOpener(storageClient)}
 
 	logrus.Info("Starting GCSWeb")
 
@@ -322,7 +323,7 @@ func otherRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 type server struct {
-	storageClient *storage.Client
+	storageClient pkgio.Opener
 }
 
 type objectHeaders struct {
@@ -332,10 +333,8 @@ type objectHeaders struct {
 	contentLanguage    string
 }
 
-func (s *server) handleObject(w http.ResponseWriter, prowPath *prowv1.ProwPath, object string, headers objectHeaders) error {
-	obj := s.storageClient.Bucket(prowPath.Bucket()).Object(object)
-
-	objReader, err := obj.NewReader(context.Background())
+func (s *server) handleObject(w http.ResponseWriter, prowPath *prowv1.ProwPath, headers objectHeaders) error {
+	objReader, err := s.storageClient.Reader(context.Background(), fullObjectPath(prowPath))
 	if err != nil {
 		return fmt.Errorf("couldn't create the object reader: %w", err)
 	}
@@ -366,34 +365,33 @@ func (s *server) handleObject(w http.ResponseWriter, prowPath *prowv1.ProwPath, 
 func (s *server) handleDirectory(w http.ResponseWriter, prowPath *prowv1.ProwPath, object, path string) error {
 	// Get all object that exist in the parent folder only. We can do that by adding a
 	// slash at the end of the prefix and use this as a delimiter in the gcs query.
-	o := s.storageClient.Bucket(prowPath.Bucket()).Objects(context.Background(), &storage.Query{
-		Delimiter: "/",
-		Prefix:    object + "/",
-	})
+	o, err := s.storageClient.Iterator(context.Background(), fullObjectPath(prowPath)+"/", "/")
+	if err != nil {
+		return fmt.Errorf("couldn't create the object iterator: %w", err)
+	}
 
 	var files []Record
 	var dirs []Prefix
 
 	for {
-		objAttrs, err := o.Next()
-		if err == iterator.Done {
+		objAttrs, err := o.Next(context.Background())
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return fmt.Errorf("error while processing object: %w", err)
 		}
 
-		// That means that the object is a file
-		if objAttrs.Name != "" {
+		if !objAttrs.IsDir {
 			files = append(files, Record{
-				Name:  filepath.Base(objAttrs.Name),
+				Name:  objAttrs.ObjName,
 				MTime: objAttrs.Updated,
 				Size:  objAttrs.Size,
 			})
 			continue
 		}
 
-		dirs = append(dirs, Prefix{Prefix: fmt.Sprintf("%s/", filepath.Base(objAttrs.Prefix))})
+		dirs = append(dirs, Prefix{Prefix: fmt.Sprintf("%s/", filepath.Base(objAttrs.Name))})
 	}
 
 	dir := &gcsDir{
@@ -432,10 +430,10 @@ func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 
 	objectLogger.Info("Processing request...")
 	// Getting the object attributes directly will determine if is a folder or a file.
-	objAttrs, _ := s.storageClient.Bucket(prowPath.Bucket()).Object(object).Attrs(context.Background())
+	objAttrs, err := s.storageClient.Attributes(context.Background(), fullObjectPath(prowPath))
 
 	// This means that the object is a file.
-	if objAttrs != nil {
+	if err == nil {
 		headers := objectHeaders{
 			contentType:        objAttrs.ContentType,
 			contentEncoding:    objAttrs.ContentEncoding,
@@ -443,7 +441,7 @@ func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 			contentLanguage:    objAttrs.ContentLanguage,
 		}
 
-		if err := s.handleObject(w, prowPath, object, headers); err != nil {
+		if err := s.handleObject(w, prowPath, headers); err != nil {
 			objectLogger.WithError(err).Error("error while handling object")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Error: %v", err)
@@ -485,6 +483,10 @@ func providerName(provider string) string {
 
 func pathPrefix(prowPath *prowv1.ProwPath) string {
 	return joinPath(providerPrefix(prowPath.StorageProvider()), prowPath.Bucket())
+}
+
+func fullObjectPath(prowPath *prowv1.ProwPath) string {
+	return (*url.URL)(prowPath).String()
 }
 
 func parsePath(path string) (*prowv1.ProwPath, error) {

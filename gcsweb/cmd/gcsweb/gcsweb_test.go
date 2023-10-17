@@ -17,49 +17,89 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
-	"crypto/tls"
-	"encoding/json"
-	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/google/go-cmp/cmp"
-	"github.com/gorilla/mux"
-	"google.golang.org/api/option"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/fakeopener"
 )
 
-type gcsMockServer struct {
-	ts          *httptest.Server
+type fakeOpener struct {
+	fakeopener.FakeOpener
+
 	objects     []gcsObject
 	directories []string
 }
 
-func (s *gcsMockServer) initializeAndStartGCSMockServer(objects []gcsObject, dirs []string) {
-	s.objects = objects
-	s.directories = dirs
+func newFakeOpener(objects []gcsObject, directories []string) *fakeOpener {
+	f := &fakeOpener{
+		FakeOpener: fakeopener.FakeOpener{
+			Buffer: make(map[string]*bytes.Buffer),
+		},
+		objects:     objects,
+		directories: directories,
+	}
 
-	m := mux.NewRouter()
+	for _, object := range objects {
+		f.Buffer[joinPath(object.BucketName, object.Name)] = bytes.NewBuffer(object.Content)
+	}
 
-	// Request all objects from a bucket
-	m.Path("/b/{bucketName}/o").Methods("GET").HandlerFunc(s.listObjects)
+	return f
+}
 
-	// Request a specific object
-	m.Path("/b/{bucketName}/o/{objectName:.+}").Methods("GET").HandlerFunc(s.getObject)
+func (f *fakeOpener) Iterator(ctx context.Context, prefix string, delimiter string) (pkgio.ObjectIterator, error) {
+	prowPath, err := prowv1.ParsePath(prefix)
+	if err != nil {
+		return nil, err
+	}
+	bucket := bucketWithScheme(prowPath)
 
-	// This path represents the request of a raw file
-	m.Host("{host:.+}").Path("/{path:.+}").Methods("GET").HandlerFunc(s.getObjectRaw)
+	var objects []pkgio.ObjectAttributes
 
-	s.ts = httptest.NewUnstartedServer(m)
-	s.ts.StartTLS()
+	for _, object := range f.objects {
+		if object.BucketName == bucket && filepath.Dir(object.Name)+"/" == prowPath.Path {
+			objects = append(objects, pkgio.ObjectAttributes{
+				Name:    joinPath(bucket, object.Name),
+				ObjName: filepath.Base(object.Name),
+				Size:    int64(len(object.Content)),
+				Updated: object.Updated,
+			})
+		}
+	}
+
+	for _, directory := range f.directories {
+		objects = append(objects, pkgio.ObjectAttributes{
+			Name:  joinPath(bucket, directory),
+			IsDir: true,
+		})
+	}
+
+	return &fakeIterator{objects: objects}, nil
+}
+
+type fakeIterator struct {
+	i       int
+	objects []pkgio.ObjectAttributes
+}
+
+func (f *fakeIterator) Next(ctx context.Context) (attr pkgio.ObjectAttributes, err error) {
+	if f.i >= len(f.objects) {
+		return pkgio.ObjectAttributes{}, io.EOF
+	}
+
+	defer func() { f.i++ }()
+	return f.objects[f.i], nil
 }
 
 type gcsObject struct {
@@ -67,81 +107,6 @@ type gcsObject struct {
 	Name       string    `json:"name"`
 	Content    []byte    `json:"-"`
 	Updated    time.Time `json:"updated,omitempty"`
-}
-
-type objectResponse struct {
-	Kind    string `json:"kind"`
-	Name    string `json:"name"`
-	ID      string `json:"id"`
-	Bucket  string `json:"bucket"`
-	Size    int64  `json:"size,string"`
-	Updated string `json:"updated,omitempty"`
-}
-
-func getObjectResponse(obj gcsObject) objectResponse {
-	return objectResponse{
-		Kind:    "storage#object",
-		ID:      obj.BucketName + "/" + obj.Name,
-		Bucket:  obj.BucketName,
-		Name:    obj.Name,
-		Size:    int64(len(obj.Content)),
-		Updated: obj.Updated.Format("2006-01-02T15:04:05.999999Z07:00"),
-	}
-}
-
-func (s *gcsMockServer) getObjectRaw(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	path := vars["path"]
-
-	for _, obj := range s.objects {
-		bucketName, objectName := splitBucketObject(path)
-
-		if bucketName == obj.BucketName && objectName == obj.Name {
-			w.Header().Set("Accept-Ranges", "bytes")
-			w.Header().Set("Content-Length", strconv.Itoa(len(obj.Content)))
-			w.Header().Set("Last-Modified", obj.Updated.Format(http.TimeFormat))
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, string(obj.Content))
-			return
-		}
-	}
-	w.WriteHeader(http.StatusNotFound)
-}
-
-func (s *gcsMockServer) getObject(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	bucketName := vars["bucketName"]
-	objectName := vars["objectName"]
-	encoder := json.NewEncoder(w)
-	w.Header().Set("Accept-Ranges", "bytes")
-	for _, obj := range s.objects {
-		if bucketName == obj.BucketName && objectName == obj.Name {
-			encoder.Encode(getObjectResponse(obj))
-			return
-		}
-	}
-	w.WriteHeader(http.StatusNotFound)
-}
-
-type objectListResponse struct {
-	Kind     string        `json:"kind"`
-	Items    []interface{} `json:"items"`
-	Prefixes []string      `json:"prefixes,omitempty"`
-}
-
-func (s *gcsMockServer) listObjects(w http.ResponseWriter, r *http.Request) {
-	encoder := json.NewEncoder(w)
-
-	resp := objectListResponse{
-		Items:    make([]interface{}, len(s.objects)),
-		Prefixes: s.directories,
-	}
-
-	for i, obj := range s.objects {
-		resp.Items[i] = getObjectResponse(obj)
-	}
-
-	encoder.Encode(resp)
 }
 
 func TestHandleObject(t *testing.T) {
@@ -155,38 +120,34 @@ func TestHandleObject(t *testing.T) {
 		errorExpected   bool
 	}{
 		{
-			id:   "happy case",
+			id:   "happy GCS case",
 			path: "/gcs/test-bucket/path/to/file1",
 			initialObjects: []gcsObject{
 				{
-					BucketName: "test-bucket",
+					BucketName: "gs://test-bucket",
 					Name:       "path/to/file1",
 					Content:    []byte("123456789"),
-				},
-				{
-					BucketName: "test-bucket",
-					Name:       "path/to/file2",
-					Content:    []byte("0000000000"),
 				},
 			},
 			expectedHeaders: http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}},
 			expected:        "123456789",
 		},
 		{
-			id:   "sad case",
-			path: "/gcs/test-bucket/path/to/unknown",
+			id:   "happy S3 case",
+			path: "/s3/test-bucket/path/to/file1",
 			initialObjects: []gcsObject{
 				{
-					BucketName: "test-bucket",
+					BucketName: "s3://test-bucket",
 					Name:       "path/to/file1",
 					Content:    []byte("123456789"),
 				},
-				{
-					BucketName: "test-bucket",
-					Name:       "path/to/file2",
-					Content:    []byte("0000000000"),
-				},
 			},
+			expectedHeaders: http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}},
+			expected:        "123456789",
+		},
+		{
+			id:              "sad case",
+			path:            "/gcs/test-bucket/path/to/unknown",
 			expectedHeaders: http.Header{},
 			errorExpected:   true,
 		},
@@ -195,7 +156,7 @@ func TestHandleObject(t *testing.T) {
 			path: "/gcs/test-bucket/path/to/file1",
 			initialObjects: []gcsObject{
 				{
-					BucketName: "test-bucket",
+					BucketName: "gs://test-bucket",
 					Name:       "path/to/file1",
 					Content: []byte(`
 <!doctype html>
@@ -207,11 +168,6 @@ func TestHandleObject(t *testing.T) {
     My Test Body
   </body>
 </html>`),
-				},
-				{
-					BucketName: "test-bucket",
-					Name:       "path/to/file2",
-					Content:    []byte("0000000000"),
 				},
 			},
 			headers: objectHeaders{
@@ -236,28 +192,15 @@ func TestHandleObject(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-
-			mock := &gcsMockServer{}
-			mock.initializeAndStartGCSMockServer(tc.initialObjects, []string{"/test-dir"})
 			w := httptest.NewRecorder()
-
-			httpClient := &http.Client{Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}}
-
-			client, err := storage.NewClient(context.Background(), option.WithEndpoint(mock.ts.URL), option.WithHTTPClient(httpClient))
-			if err != nil {
-				t.Fatalf("couldn't create storage client: %v", err)
-			}
-
-			s := server{storageClient: client}
+			s := server{storageClient: newFakeOpener(tc.initialObjects, nil)}
 
 			prowPath, err := parsePath(tc.path)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = s.handleObject(w, prowPath, prowPath.Path, tc.headers)
+			err = s.handleObject(w, prowPath, tc.headers)
 			if err != nil && !tc.errorExpected {
 				t.Fatalf("Error not expected: %v", err)
 			}
@@ -288,22 +231,22 @@ func TestHandleDirectory(t *testing.T) {
 		expected       string
 	}{
 		{
-			id:          "happy case",
+			id:          "happy GCS case",
 			path:        "/gcs/test-bucket/pr-logs/12345/",
 			initialDirs: []string{"/1", "/2"},
 			initialObjects: []gcsObject{
 				{
-					BucketName: "test-bucket",
+					BucketName: "gs://test-bucket",
 					Name:       "/pr-logs/12345/file1",
 					Updated:    time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
 				},
 				{
-					BucketName: "test-bucket",
+					BucketName: "gs://test-bucket",
 					Name:       "/pr-logs/12345/file2",
 					Updated:    time.Date(2000, time.January, 1, 22, 0, 0, 0, time.UTC),
 				},
 				{
-					BucketName: "test-bucket",
+					BucketName: "gs://test-bucket",
 					Name:       "/pr-logs/12345/file3",
 					Updated:    time.Date(2000, time.January, 1, 23, 0, 0, 0, time.UTC),
 				},
@@ -408,24 +351,126 @@ func TestHandleDirectory(t *testing.T) {
 </details>
 </body></html>`,
 		},
+		{
+			id:          "happy S3 case",
+			path:        "/s3/test-bucket/pr-logs/12345/",
+			initialDirs: []string{"/1", "/2"},
+			initialObjects: []gcsObject{
+				{
+					BucketName: "s3://test-bucket",
+					Name:       "/pr-logs/12345/file1",
+					Updated:    time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
+				},
+				{
+					BucketName: "s3://test-bucket",
+					Name:       "/pr-logs/12345/file2",
+					Updated:    time.Date(2000, time.January, 1, 22, 0, 0, 0, time.UTC),
+				},
+				{
+					BucketName: "s3://test-bucket",
+					Name:       "/pr-logs/12345/file3",
+					Updated:    time.Date(2000, time.January, 1, 23, 0, 0, 0, time.UTC),
+				},
+			},
+			expected: `
+    <!doctype html>
+   	<html>
+   	<head>
+   	    <link rel="stylesheet" type="text/css" href="/styles/style.css">
+   	    <meta charset="utf-8">
+   	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   	    <title>S3 browser: test-bucket</title>
+		<style>
+		header {
+			margin-left: 10px;
+		}
+
+		.next-button {
+			margin: 10px 0;
+		}
+
+		.grid-head {
+			border-bottom: 1px solid black;
+		}
+
+		.resource-grid {
+			margin-right: 20px;
+		}
+
+		li.grid-row:nth-child(even) {
+			background-color: #ddd;
+		}
+
+		li div {
+			box-sizing: border-box;
+			border-left: 1px solid black;
+			padding-left: 5px;
+			overflow-wrap: break-word;
+		}
+		li div:first-child {
+			border-left: none;
+		}
+
+		</style>
+   	</head>
+   	<body>
+
+    <header>
+        <h1>test-bucket</h1>
+        <h3>/test-bucket/pr-logs/12345/</h3>
+    </header>
+    <ul class="resource-grid">
+
+	<li class="pure-g">
+		<div class="pure-u-2-5 grid-head">Name</div>
+		<div class="pure-u-1-5 grid-head">Size</div>
+		<div class="pure-u-2-5 grid-head">Modified</div>
+	</li>
+
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/"><img src="/icons/back.png"> ..</a></div>
+	    <div class="pure-u-1-5">-</div>
+	    <div class="pure-u-2-5">-</div>
+	</li>
+
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/1/"><img src="/icons/dir.png"> 1/</a></div>
+	    <div class="pure-u-1-5">-</div>
+	    <div class="pure-u-2-5">-</div>
+	</li>
+
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/2/"><img src="/icons/dir.png"> 2/</a></div>
+	    <div class="pure-u-1-5">-</div>
+	    <div class="pure-u-2-5">-</div>
+	</li>
+
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file1"><img src="/icons/file.png"> file1</a></div>
+	    <div class="pure-u-1-5">0</div>
+	    <div class="pure-u-2-5">Sat, 01 Jan 2000 00:00:00 UTC</div>
+	</li>
+
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file2"><img src="/icons/file.png"> file2</a></div>
+	    <div class="pure-u-1-5">0</div>
+	    <div class="pure-u-2-5">Sat, 01 Jan 2000 22:00:00 UTC</div>
+	</li>
+
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="/s3/test-bucket/pr-logs/12345/file3"><img src="/icons/file.png"> file3</a></div>
+	    <div class="pure-u-1-5">0</div>
+	    <div class="pure-u-2-5">Sat, 01 Jan 2000 23:00:00 UTC</div>
+	</li>
+</ul>
+</body></html>`,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.id, func(t *testing.T) {
-			mock := &gcsMockServer{}
-			mock.initializeAndStartGCSMockServer(tc.initialObjects, tc.initialDirs)
-
-			httpClient := &http.Client{Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}}
-
-			client, err := storage.NewClient(context.TODO(), option.WithEndpoint(mock.ts.URL), option.WithHTTPClient(httpClient))
-			if err != nil {
-				t.Fatalf("couldn't create storage client: %v", err)
-			}
-
-			s := server{storageClient: client}
 			w := httptest.NewRecorder()
+			s := server{storageClient: newFakeOpener(tc.initialObjects, tc.initialDirs)}
 
 			prowPath, err := parsePath(tc.path)
 			if err != nil {
@@ -601,18 +646,4 @@ func TestGetParent(t *testing.T) {
 			}
 		})
 	}
-}
-
-// splitBucketObject breaks a path into the first part (the bucket), and
-// everything else (the object).
-func splitBucketObject(path string) (string, string) {
-	path = strings.Trim(path, "/")
-	parts := strings.SplitN(path, "/", 2)
-	if len(parts) == 0 {
-		return "", ""
-	}
-	if len(parts) == 1 {
-		return parts[0], ""
-	}
-	return parts[0], parts[1]
 }
