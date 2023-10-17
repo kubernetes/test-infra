@@ -199,6 +199,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/clusterctl" href="#area/clusterctl">`area/clusterctl`</a> | Issues or PRs related to clusterctl| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/clusterresourceset" href="#area/clusterresourceset">`area/clusterresourceset`</a> | Issues or PRs related to clusterresourcesets| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/control-plane" href="#area/control-plane">`area/control-plane`</a> | Issues or PRs related to control-plane lifecycle management| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/dependency" href="#area/dependency">`area/dependency`</a> | Issues or PRs related to dependency| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/devtools" href="#area/devtools">`area/devtools`</a> | Issues or PRs related to devtools| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/documentation" href="#area/documentation">`area/documentation`</a> | Issues or PRs related to documentation| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/e2e-testing" href="#area/e2e-testing">`area/e2e-testing`</a> | Issues or PRs related to e2e testing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
