@@ -25,15 +25,16 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/mux"
-
-	"cloud.google.com/go/storage"
-
 	"google.golang.org/api/option"
+
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 type gcsMockServer struct {
@@ -147,8 +148,6 @@ func TestHandleObject(t *testing.T) {
 	testCases := []struct {
 		id              string
 		initialObjects  []gcsObject
-		bucket          string
-		object          string
 		path            string
 		headers         objectHeaders
 		expected        string
@@ -156,9 +155,8 @@ func TestHandleObject(t *testing.T) {
 		errorExpected   bool
 	}{
 		{
-			id:     "happy case",
-			bucket: "test-bucket",
-			object: "path/to/file1",
+			id:   "happy case",
+			path: "/gcs/test-bucket/path/to/file1",
 			initialObjects: []gcsObject{
 				{
 					BucketName: "test-bucket",
@@ -175,9 +173,8 @@ func TestHandleObject(t *testing.T) {
 			expected:        "123456789",
 		},
 		{
-			id:     "sad case",
-			bucket: "test-bucket",
-			object: "path/to/unknown",
+			id:   "sad case",
+			path: "/gcs/test-bucket/path/to/unknown",
 			initialObjects: []gcsObject{
 				{
 					BucketName: "test-bucket",
@@ -194,9 +191,8 @@ func TestHandleObject(t *testing.T) {
 			errorExpected:   true,
 		},
 		{
-			id:     "happy html case",
-			bucket: "test-bucket",
-			object: "path/to/file1",
+			id:   "happy html case",
+			path: "/gcs/test-bucket/path/to/file1",
 			initialObjects: []gcsObject{
 				{
 					BucketName: "test-bucket",
@@ -256,7 +252,12 @@ func TestHandleObject(t *testing.T) {
 
 			s := server{storageClient: client}
 
-			err = s.handleObject(w, tc.bucket, tc.object, tc.headers)
+			prowPath, err := parsePath(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = s.handleObject(w, prowPath, prowPath.Path, tc.headers)
 			if err != nil && !tc.errorExpected {
 				t.Fatalf("Error not expected: %v", err)
 			}
@@ -283,16 +284,12 @@ func TestHandleDirectory(t *testing.T) {
 		id             string
 		initialDirs    []string
 		initialObjects []gcsObject
-		bucket         string
-		object         string
 		path           string
 		expected       string
 	}{
 		{
 			id:          "happy case",
-			bucket:      "test-bucket",
-			object:      "pr-logs/12345",
-			path:        "/test-bucket/pr-logs/12345/",
+			path:        "/gcs/test-bucket/pr-logs/12345/",
 			initialDirs: []string{"/1", "/2"},
 			initialObjects: []gcsObject{
 				{
@@ -430,7 +427,12 @@ func TestHandleDirectory(t *testing.T) {
 			s := server{storageClient: client}
 			w := httptest.NewRecorder()
 
-			if err := s.handleDirectory(w, tc.bucket, tc.object, tc.path); err != nil {
+			prowPath, err := parsePath(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if err := s.handleDirectory(w, prowPath, strings.Trim(prowPath.Path, "/"), tc.path); err != nil {
 				t.Fatalf("error not expected: %v", err)
 			}
 
@@ -442,29 +444,123 @@ func TestHandleDirectory(t *testing.T) {
 	}
 }
 
-func TestSplitBucketObject(t *testing.T) {
+func TestParsePath(t *testing.T) {
 	testCases := []struct {
-		id       string
-		path     string
-		expected []string
+		id            string
+		path          string
+		expected      string
+		errorExpected bool
 	}{
 		{
-			id:       "happy case",
-			path:     "/bucket/path/to/object",
-			expected: []string{"bucket", "path/to/object"},
+			id:       "GCS",
+			path:     "/gcs/bucket/",
+			expected: "gs://bucket",
+		},
+		{
+			id:       "GCS without trailing slash",
+			path:     "/gcs/bucket",
+			expected: "gs://bucket",
+		},
+		{
+			id:       "GCS with path",
+			path:     "/gcs/bucket/path/to/object/",
+			expected: "gs://bucket/path/to/object",
+		},
+		{
+			id:       "S3",
+			path:     "/s3/bucket/",
+			expected: "s3://bucket",
+		},
+		{
+			id:       "S3 with path",
+			path:     "/s3/bucket/path/to/object/",
+			expected: "s3://bucket/path/to/object",
+		},
+		{
+			id:            "Only GCS prefix",
+			path:          "/gcs/",
+			errorExpected: true,
+		},
+		{
+			id:            "Only GCS prefix without trailing slash",
+			path:          "/gcs",
+			errorExpected: true,
+		},
+		{
+			id:            "Only S3 prefix",
+			path:          "/s3/",
+			errorExpected: true,
 		},
 	}
 
 	for _, tc := range testCases {
-		bucket, object := splitBucketObject(tc.path)
-		actual := []string{bucket, object}
-		if !reflect.DeepEqual(tc.expected, actual) {
-			t.Fatalf(cmp.Diff(tc.expected, actual))
-		}
+		t.Run(tc.id, func(t *testing.T) {
+			actual, err := parsePath(tc.path)
+			if err != nil && !tc.errorExpected {
+				t.Fatalf("Error not expected: %v", err)
+			}
+			if err == nil && tc.errorExpected {
+				t.Fatalf("Error was expected")
+			}
+
+			if !tc.errorExpected {
+				expected, err := prowv1.ParsePath(tc.expected)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if !reflect.DeepEqual(expected, actual) {
+					t.Fatal(cmp.Diff(expected, actual))
+				}
+			}
+		})
 	}
 }
 
-func TestDirname(t *testing.T) {
+func TestPathPrefix(t *testing.T) {
+	testCases := []struct {
+		id       string
+		prowPath string
+		expected string
+	}{
+		{
+			id:       "GCS",
+			prowPath: "gs://bucket",
+			expected: "/gcs/bucket",
+		},
+		{
+			id:       "GCS without prefix",
+			prowPath: "bucket",
+			expected: "/gcs/bucket",
+		},
+		{
+			id:       "S3",
+			prowPath: "s3://bucket",
+			expected: "/s3/bucket",
+		},
+		{
+			id:       "With object path",
+			prowPath: "gs://bucket/path/to/object",
+			expected: "/gcs/bucket",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			prowPath, err := prowv1.ParsePath(tc.prowPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			actual := pathPrefix(prowPath)
+			if !reflect.DeepEqual(tc.expected, actual) {
+				t.Fatal(cmp.Diff(tc.expected, actual))
+			}
+		})
+	}
+}
+
+func TestGetParent(t *testing.T) {
 	testCases := []struct {
 		id       string
 		path     string
@@ -472,15 +568,51 @@ func TestDirname(t *testing.T) {
 	}{
 		{
 			id:       "happy case",
-			path:     "foo/bar",
-			expected: "foo/",
+			path:     "/gcs/foo/bar",
+			expected: "/gcs/foo/",
+		},
+		{
+			id:       "trailing slash",
+			path:     "/gcs/foo/bar/",
+			expected: "/gcs/foo/",
+		},
+		{
+			id:       "without leading slash",
+			path:     "gcs/foo/bar",
+			expected: "/gcs/foo/",
+		},
+		{
+			id:       "bucket root with trailing slash",
+			path:     "/gcs/foo/",
+			expected: "",
+		},
+		{
+			id:       "bucket root without trailing slash",
+			path:     "/gcs/foo",
+			expected: "",
 		},
 	}
 
 	for _, tc := range testCases {
-		dir := dirname(tc.path)
-		if !reflect.DeepEqual(tc.expected, dir) {
-			t.Fatalf(cmp.Diff(tc.expected, dir))
-		}
+		t.Run(tc.id, func(t *testing.T) {
+			actual := getParent(tc.path)
+			if !reflect.DeepEqual(tc.expected, actual) {
+				t.Fatalf(cmp.Diff(tc.expected, actual))
+			}
+		})
 	}
+}
+
+// splitBucketObject breaks a path into the first part (the bucket), and
+// everything else (the object).
+func splitBucketObject(path string) (string, string) {
+	path = strings.Trim(path, "/")
+	parts := strings.SplitN(path, "/", 2)
+	if len(parts) == 0 {
+		return "", ""
+	}
+	if len(parts) == 1 {
+		return parts[0], ""
+	}
+	return parts[0], parts[1]
 }
