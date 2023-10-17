@@ -1424,10 +1424,9 @@ def generate_presubmits_scale():
             env={
                 'CNI_PLUGIN': "amazonvpc",
                 'KUBE_NODE_COUNT': "100",
-                'RUN_CL2_TEST': "true",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c6g.4xlarge",
+                'CONTROL_PLANE_SIZE': "c5.4xlarge",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
