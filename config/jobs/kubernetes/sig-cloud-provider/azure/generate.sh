@@ -375,7 +375,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${capz_periodic_branch_name}
+    base_ref: main # TODO: switch back to capz_periodic_branch_name once capz release-1.12 exists
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -424,7 +424,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${capz_periodic_branch_name}
+    base_ref: main # TODO: switch back to capz_periodic_branch_name once capz release-1.12 exists
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
