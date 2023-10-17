@@ -219,7 +219,11 @@ presubmits:
               cpu: 2
               memory: "9Gi"
           env:
+            - name: API_SERVER_FEATURE_GATES
+              value: "InPlacePodVerticalScaling=true"
             - name: NODE_FEATURE_GATES
+              value: "InPlacePodVerticalScaling=true"
+            - name: SCHEDULER_FEATURE_GATES
               value: "InPlacePodVerticalScaling=true"
             - name: GINKGO_FOCUS
               value: (\[Feature:InPlacePodVerticalScaling\]|\[sig-windows\]) # run the feature and a few windows related tests
