@@ -44,12 +44,17 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
-  - name: pull-kubernetes-linter-strict
+  - name: pull-kubernetes-verify-lint
     cluster: eks-prow-build-cluster
     decorate: true
-    # This entire job is currently experimental. If it turns out to be useful,
-    # the job can be removed and the same check can run as part of pull-kubernetes-verify
-    # by removing the exclusion of verify-golangci-lint-pr.sh in hack/make-rules/verify.sh.
+    # This job is running all required linter checks:
+    # - baseline for all code
+    # - stricter configuration for new or modified code in a pull request
+    #
+    # Both run in the same job to reuse the build and (to some extend)
+    # golangci-lint cache. Testing the baseline is necessary because,
+    # for example, a linter config change or tool update might cause
+    # failures in existing, unmodified code.
     always_run: true
     optional: true
     skip_branches:
@@ -68,7 +73,7 @@ presubmits:
         - make
         args:
         - verify
-        - WHAT=golangci-lint-pr
+        - WHAT=golangci-lint golangci-lint-pr
         resources:
           # It peaks at around 7 cores of the EKS cluster. We can fit more jobs onto
           # a node without much slowdown by requesting one third of a node

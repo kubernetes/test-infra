@@ -35,11 +35,11 @@ jobs:
   - pull-kubernetes-integration
   - pull-kubernetes-integration-go-compatibility
   - pull-kubernetes-linter-hints
-  - pull-kubernetes-linter-strict
   - pull-kubernetes-node-e2e-containerd
   - pull-kubernetes-typecheck
   - pull-kubernetes-unit
   - pull-kubernetes-unit-go-compatibility
   - pull-kubernetes-verify
   - pull-kubernetes-verify-govet-levee
+  - pull-kubernetes-verify-lint
 recursive_artifacts: false
