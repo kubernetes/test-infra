@@ -1,11 +1,13 @@
 aliases:
   # business hours oncall for prow etc (https://go.k8s.io/oncall)
   test-infra-oncall:
+  - airbornepony
   - chases2
   - cjwagner
   - listx
   - michelle192837
   - mpherman2
+  - timwangmusic
 
   # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
   build-admins:
