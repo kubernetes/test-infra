@@ -74,8 +74,14 @@ dashboards:
   - name: pull-kubernetes-e2e-ec2
     test_group_name: pull-kubernetes-e2e-ec2
     base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-arm64
+    test_group_name: pull-kubernetes-e2e-ec2-arm64
+    base_options: width=10
   - name: pull-kubernetes-e2e-ec2-conformance
     test_group_name: pull-kubernetes-e2e-ec2-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-conformance-arm64
+    test_group_name: pull-kubernetes-e2e-ec2-conformance-arm64
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-cos
     test_group_name: pull-kubernetes-e2e-gce-cos
