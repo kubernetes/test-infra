@@ -105,3 +105,139 @@ func PermissionsFromTeamPermission(permission TeamPermission) RepoPermissions {
 		return RepoPermissions{}
 	}
 }
+
+// CommentLikeEventTypes are various event types that can be coerced into
+// a GenericCommentEvent.
+type CommentLikeEventTypes interface {
+	IssueEvent | IssueCommentEvent | PullRequestEvent | ReviewEvent | ReviewCommentEvent
+}
+
+// GeneralizeComment takes an event that can be coerced into a GenericCommentEvent
+// and returns a populated GenericCommentEvent.
+func GeneralizeComment[E CommentLikeEventTypes](event E) (*GenericCommentEvent, error) {
+	switch t := any(event).(type) {
+
+	case IssueEvent:
+		action := GeneralizeCommentAction(string(t.Action))
+		if action == "" {
+			return nil, fmt.Errorf("failed to determine events action [%v]", string(t.Action))
+		}
+
+		return &GenericCommentEvent{
+			ID:           t.Issue.ID,
+			NodeID:       t.Issue.NodeID,
+			GUID:         t.GUID,
+			IsPR:         t.Issue.IsPullRequest(),
+			Action:       action,
+			Body:         t.Issue.Body,
+			HTMLURL:      t.Issue.HTMLURL,
+			Number:       t.Issue.Number,
+			Repo:         t.Repo,
+			User:         t.Issue.User,
+			IssueAuthor:  t.Issue.User,
+			Assignees:    t.Issue.Assignees,
+			IssueState:   t.Issue.State,
+			IssueTitle:   t.Issue.Title,
+			IssueBody:    t.Issue.Body,
+			IssueHTMLURL: t.Issue.HTMLURL,
+		}, nil
+	case IssueCommentEvent:
+		action := GeneralizeCommentAction(string(t.Action))
+		if action == "" {
+			return nil, fmt.Errorf("failed to determine events action [%v]", string(t.Action))
+		}
+
+		return &GenericCommentEvent{
+			ID:           t.Issue.ID,
+			NodeID:       t.Issue.NodeID,
+			CommentID:    &t.Comment.ID,
+			GUID:         t.GUID,
+			IsPR:         t.Issue.IsPullRequest(),
+			Action:       action,
+			Body:         t.Comment.Body,
+			HTMLURL:      t.Comment.HTMLURL,
+			Number:       t.Issue.Number,
+			Repo:         t.Repo,
+			User:         t.Comment.User,
+			IssueAuthor:  t.Issue.User,
+			Assignees:    t.Issue.Assignees,
+			IssueState:   t.Issue.State,
+			IssueTitle:   t.Issue.Title,
+			IssueBody:    t.Issue.Body,
+			IssueHTMLURL: t.Issue.HTMLURL,
+		}, nil
+	case PullRequestEvent:
+		action := GeneralizeCommentAction(string(t.Action))
+		if action == "" {
+			return nil, fmt.Errorf("failed to determine events action [%v]", string(t.Action))
+		}
+
+		return &GenericCommentEvent{
+			ID:           t.PullRequest.ID,
+			NodeID:       t.PullRequest.NodeID,
+			GUID:         t.GUID,
+			IsPR:         true,
+			Action:       action,
+			Body:         t.PullRequest.Body,
+			HTMLURL:      t.PullRequest.HTMLURL,
+			Number:       t.PullRequest.Number,
+			Repo:         t.Repo,
+			User:         t.PullRequest.User,
+			IssueAuthor:  t.PullRequest.User,
+			Assignees:    t.PullRequest.Assignees,
+			IssueState:   t.PullRequest.State,
+			IssueTitle:   t.PullRequest.Title,
+			IssueBody:    t.PullRequest.Body,
+			IssueHTMLURL: t.PullRequest.HTMLURL,
+		}, nil
+	case ReviewEvent:
+		action := GeneralizeCommentAction(string(t.Action))
+		if action == "" {
+			return nil, fmt.Errorf("failed to determine events action [%v]", string(t.Action))
+		}
+
+		return &GenericCommentEvent{
+			GUID:         t.GUID,
+			NodeID:       t.Review.NodeID,
+			IsPR:         true,
+			Action:       action,
+			Body:         t.Review.Body,
+			HTMLURL:      t.Review.HTMLURL,
+			Number:       t.PullRequest.Number,
+			Repo:         t.Repo,
+			User:         t.Review.User,
+			IssueAuthor:  t.PullRequest.User,
+			Assignees:    t.PullRequest.Assignees,
+			IssueState:   t.PullRequest.State,
+			IssueTitle:   t.PullRequest.Title,
+			IssueBody:    t.PullRequest.Body,
+			IssueHTMLURL: t.PullRequest.HTMLURL,
+		}, nil
+	case ReviewCommentEvent:
+		action := GeneralizeCommentAction(string(t.Action))
+		if action == "" {
+			return nil, fmt.Errorf("failed to determine events action [%v]", string(t.Action))
+		}
+
+		return &GenericCommentEvent{
+			GUID:         t.GUID,
+			NodeID:       t.Comment.NodeID,
+			IsPR:         true,
+			CommentID:    &t.Comment.ID,
+			Action:       action,
+			Body:         t.Comment.Body,
+			HTMLURL:      t.Comment.HTMLURL,
+			Number:       t.PullRequest.Number,
+			Repo:         t.Repo,
+			User:         t.Comment.User,
+			IssueAuthor:  t.PullRequest.User,
+			Assignees:    t.PullRequest.Assignees,
+			IssueState:   t.PullRequest.State,
+			IssueTitle:   t.PullRequest.Title,
+			IssueBody:    t.PullRequest.Body,
+			IssueHTMLURL: t.PullRequest.HTMLURL,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("we were unable to generalize comment, unknown type encountered")
+}
