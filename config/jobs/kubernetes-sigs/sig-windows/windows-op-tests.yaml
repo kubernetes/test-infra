@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/windows-operational-readiness:
   - name: operational-tests-capz-windows-2019
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -40,6 +41,13 @@ presubmits:
               ./hack/run-tests.sh
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
             # CAPZ variables
             - name: NODE_MACHINE_TYPE

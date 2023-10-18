@@ -70,6 +70,7 @@ presets:
       value: "true"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows
+  cluster: k8s-infra-prow-build
   interval: 3h
   decorate: true
   decoration_config:
@@ -114,6 +115,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: IMAGE_VERSION
             value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
@@ -124,6 +128,7 @@ periodics:
     testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -167,6 +172,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -177,6 +185,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow-hpa
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -218,6 +227,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -228,6 +240,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master-serial-slow-hpa
 - name: ci-kubernetes-e2e-capz-master-windows-2022
+  cluster: k8s-infra-prow-build
   interval: 3h
   decorate: true
   decoration_config:
@@ -269,6 +282,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
@@ -277,6 +293,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master
 - name: ci-kubernetes-e2e-capz-master-windows-2022-serial-slow
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -320,6 +337,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
@@ -332,6 +352,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-windows-2022-serial-slow-hpa
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -374,6 +395,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
@@ -386,6 +410,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master-serial-slow-hpa
 - name: ci-kubernetes-e2e-azuredisk-capz-windows-2019
+  cluster: k8s-infra-prow-build
   interval: 48h
   decorate: true
   decoration_config:
@@ -426,6 +451,13 @@ periodics:
             make e2e-test
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-azuredisk-windows-2019
@@ -476,6 +508,7 @@ periodics:
 #     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
 #     description: Run Azure File e2e test in a CAPZ cluster on Windows 2019 nodes
 - name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -520,11 +553,15 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
 - name: ci-kubernetes-e2e-capz-master-windows-alpha
+  cluster: k8s-infra-prow-build
   interval: 3h
   decorate: true
   decoration_config:
@@ -564,6 +601,9 @@ periodics:
           privileged: true
         resources:
           requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
             cpu: 2
             memory: "9Gi"
         env:

@@ -2,6 +2,7 @@
 presubmits:
   kubernetes/perf-tests:
   - name: soak-tests-capz-windows-2019
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -40,6 +41,13 @@ presubmits:
               --v=2
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
             # CAPZ variables
             - name: NODE_MACHINE_TYPE
@@ -81,6 +89,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
 periodics:
   - name: hourly-soak-tests-capz-windows-2019
+    cluster: k8s-infra-prow-build
     cron: "0 * * * MON-SAT"
     decorate: true
     path_alias: k8s.io/perf-tests
@@ -123,6 +132,13 @@ periodics:
               --provider=aks
               --report-dir=${ARTIFACTS}
               --v=2
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
@@ -145,6 +161,7 @@ periodics:
       description: "Run clusterloader2 tests every hour on a capz Windows 2019 cluster"
       testgrid-num-columns-recent: '30'
   - name: delete-win-soak-test-cluster
+    cluster: k8s-infra-prow-build
     cron: "0 0 * * SUN"
     decorate: true
     decoration_config:
@@ -175,6 +192,13 @@ periodics:
               --resource-group
               win-soak-test
               -y
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: delete-win-soak-test-cluster
@@ -182,6 +206,7 @@ periodics:
       testgrid-num-columns-recent: '30'
 
   - name: build-win-soak-test-cluster
+    cluster: k8s-infra-prow-build
     cron: "0 1 * * SUN"
     decorate: true
     decoration_config:
@@ -224,6 +249,13 @@ periodics:
               -n win-soak-test
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
             # CAPZ variables
             - name: CLUSTER_NAME

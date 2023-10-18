@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-capz-windows-1-27
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -45,8 +46,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2
-            memory: "9Gi"
+            cpu: "2"
+            memory: 9Gi
+          limits:
+            cpu: "2"
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1.27

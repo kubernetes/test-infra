@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-aks-engine-gpu-windows-dockershim-1-23
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     decorate: true
@@ -51,6 +52,13 @@ presubmits:
         - --ginkgo-parallel=1
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-aks-engine-gpu-windows-dockershim-1.23

@@ -12,6 +12,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-capz-windows-master
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -52,12 +53,16 @@ presubmits:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
     annotations:
       fork-per-release: "true"
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-serial-slow-hpa
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -105,6 +110,9 @@ presubmits:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -115,6 +123,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-serial-slow-hpa
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-alpha-features
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -161,6 +170,9 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
             - name: NODE_FEATURE_GATES
               value: "PodAndContainerStatsFromCRI=true"
@@ -171,6 +183,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-alpha-features
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-alpha-feature-vpa
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -218,6 +231,9 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
             - name: API_SERVER_FEATURE_GATES
               value: "InPlacePodVerticalScaling=true"
@@ -233,6 +249,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubernetes-sigs/windows-testing:
   - name: pull-e2e-capz-windows-2022-extension
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -276,6 +293,9 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
@@ -285,6 +305,7 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension
   - name: pull-e2e-run-capz-sh-windows-2022-hyperv
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -327,6 +348,9 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
           env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
@@ -340,6 +364,7 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-run-capz-sh-windows-2022-hyperv
   - name: pull-e2e-capz-windows-2022-extension-gmsa
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -380,6 +405,9 @@ presubmits:
             privileged: true
           resources:
             requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
               cpu: 2
               memory: "9Gi"
           env:

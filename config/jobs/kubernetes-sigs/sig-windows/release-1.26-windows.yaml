@@ -14,6 +14,7 @@ presets:
     value: "Standard_D4s_v3"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-1-26
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 4h0m0s
@@ -57,6 +58,9 @@ periodics:
         requests:
           cpu: "2"
           memory: 9Gi
+        limits:
+          cpu: 2
+          memory: "9Gi"
       securityContext:
         privileged: true
       env:
@@ -67,6 +71,7 @@ periodics:
     testgrid-dashboards: sig-release-1.26-informing, sig-windows-signal,  sig-windows-1.26-release
     testgrid-tab-name: capz-windows-containerd-1.26
 - name: ci-kubernetes-e2e-capz-1-26-windows-serial-slow
+  cluster: k8s-infra-prow-build
   interval: 48h
   decorate: true
   decoration_config:
@@ -110,6 +115,9 @@ periodics:
           privileged: true
         resources:
           requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
             cpu: 2
             memory: "9Gi"
         env:
