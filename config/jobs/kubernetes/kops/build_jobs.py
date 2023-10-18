@@ -1401,14 +1401,20 @@ def generate_presubmits_scale():
             env={
                 'CNI_PLUGIN': "amazonvpc",
                 'KUBE_NODE_COUNT': "5000",
-                'RUN_CL2_TEST': "true",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
                 'CONTROL_PLANE_COUNT': "3",
-                'CONTROL_PLANE_SIZE': "c6g.16xlarge",
-                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
+                'CONTROL_PLANE_SIZE': "c5.18xlarge",
+                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests",
+                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
+                'CL2_ENABLE_DNS_PROGRAMMING': "true",
+                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
+                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
+                'CL2_ALLOWED_SLOW_API_CALLS': "1",
+                'ENABLE_PROMETHEUS_SERVER': "true",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2"
             }
         ),
         presubmit_test(

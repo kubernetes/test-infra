@@ -116,8 +116,6 @@ presubmits:
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
           value: "5000"
-        - name: RUN_CL2_TEST
-          value: "true"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -129,9 +127,23 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
-          value: "c6g.16xlarge"
+          value: "c5.18xlarge"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-infra-kops-scale-tests"
+        - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+          value: "true"
+        - name: CL2_ENABLE_DNS_PROGRAMMING
+          value: "true"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
+        - name: CL2_ALLOWED_SLOW_API_CALLS
+          value: "1"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "true"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "gp2"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
