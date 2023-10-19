@@ -95,15 +95,16 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="COMMIT=0f501d4a7c33157e9662f2729c72f8c33baffe84"
+        Environment="CRIO_COMMIT=0f501d4a7c33157e9662f2729c72f8c33baffe84"
+        Environment="PACKAGING_COMMIT=83cb13008fc8206985fe649b1e3c62b8d435af3e"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
         ExecStartPre=mount -o remount,rw /usr
         ExecStartPre=rm -f /usr/bin/runc
         ExecStartPre=bash -c '\
           curl --fail --retry 5 --retry-delay 3 --silent --show-error \
-            https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\
-              bash -s -- -t $COMMIT'
+            https://raw.githubusercontent.com/cri-o/packaging/$PACKAGING_COMMIT/get |\
+              bash -s -- -t $CRIO_COMMIT'
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
         ExecStart=systemctl enable --now crio.service
