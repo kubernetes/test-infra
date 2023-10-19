@@ -29,11 +29,10 @@ presubmits:
         command:
         - runner.sh
         args:
-        # the script must run from kubernetes, but we're checking out kind
         - "bash"
         - "--"
         - "-c"
-        - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+        - "source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -126,11 +125,10 @@ periodics:
       command:
       - runner.sh
       args:
-      # the script must run from kubernetes, but we're checking out kind
       - "bash"
       - "--"
       - "-c"
-      - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+      - "source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
