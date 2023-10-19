@@ -44,7 +44,7 @@ periodics:
         RESULT=$(echo $RESULT_UNFILTERED | jq \
         '{vulnerabilities: .vulnerabilities | map(select((.type != "license") and (.version !=  "0.0.0"))) | select(length > 0) }')
         if [[ ${RESULT} ]]; then
-          CVE_IDs=$(echo $RESULT | jq '.vulnerabilities[].identifiers.CVE')
+          CVE_IDs=$(echo $RESULT | jq '.vulnerabilities[].identifiers.CVE | unique[]' | sort -u)
           #convert string to array
           CVE_IDs_array=(`echo ${CVE_IDs}`)
           #TODO:Implement deduplication of CVE IDs in future
