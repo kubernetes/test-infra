@@ -36,7 +36,7 @@ periodics:
         fi
         echo "Running snyk scan .."
         EXIT_CODE=0
-        RESULT_UNFILTERED=$(snyk test -d --json-file-outout=${ARTIFACTS}/snyk-test-unfiltered.json --json) || EXIT_CODE=$?
+        RESULT_UNFILTERED=$(snyk test -d --json-file-output=${ARTIFACTS}/snyk-test-unfiltered.json --json) || EXIT_CODE=$?
         if [ $EXIT_CODE -gt 1 ]; then
           echo "Failed to run snyk scan with exit code $EXIT_CODE "
           exit 1
