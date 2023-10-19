@@ -88,7 +88,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
           command:
             - runner.sh
           args:
@@ -107,6 +107,7 @@ presubmits:
                -- \
                --use-built-binaries true \
                --parallel=30 \
+               --test-args='--node-os-arch=arm64' \
                --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
             - name: USE_DOCKERIZED_BUILD
@@ -208,7 +209,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
           command:
             - runner.sh
           args:
