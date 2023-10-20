@@ -28,3 +28,19 @@ presets:
     value: latest-ci-updown-green.txt
   - name: KOPS_DEPLOY_LATEST_KUBE
     value: "y"
+
+- labels:
+    preset-storage-e2e-service-account: "true"
+  env:
+  # storage e2e tests borrow this as a preconfigured key instead of creating and
+  # injecting a new key. this allows us to avoid mass key download warnings
+  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
+  volumes:
+  - name: service
+    secret:
+      secretName: service-account
+  volumeMounts:
+  - name: service
+    mountPath: /etc/service-account
+    readOnly: true

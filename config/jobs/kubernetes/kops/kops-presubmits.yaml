@@ -481,9 +481,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
-    always_run: false
-    optional: true
-    skip_report: false
+    run_if_changed: 'tests/e2e'
     labels:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
@@ -504,7 +502,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./tests/e2e/scenarios/build.sh
+        - ./tests/e2e/scenarios/build/run-test.sh
         securityContext:
           privileged: true
         env:
