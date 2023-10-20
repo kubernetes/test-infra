@@ -30,7 +30,6 @@ presubmits:
         - runner.sh
         args:
         - "bash"
-        - "--"
         - "-c"
         - "source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
         # we need privileged mode in order to do docker in docker
@@ -126,7 +125,6 @@ periodics:
       - runner.sh
       args:
       - "bash"
-      - "--"
       - "-c"
       - "source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
       # we need privileged mode in order to do docker in docker
