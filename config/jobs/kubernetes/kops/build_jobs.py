@@ -66,7 +66,8 @@ def build_test(cloud='aws',
                kubernetes_feature_gates=None,
                build_cluster="default",
                cluster_name=None,
-               template_path=None):
+               template_path=None,
+               storage_e2e_cred=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if kops_version is None:
@@ -184,6 +185,7 @@ def build_test(cloud='aws',
         kubernetes_feature_gates=kubernetes_feature_gates,
         test_args=test_args,
         cluster_name=cluster_name,
+        storage_e2e_cred=storage_e2e_cred,
     )
 
     spec = {
@@ -1038,7 +1040,10 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-volume-size=100",
+                       "--set=spec.cloudConfig.manageStorageClasses=false",
+                       "--set=spec.cloudProvider.gce.pdCSIDriver.enabled=false",
                    ],
+                   storage_e2e_cred=True,
                    focus_regex=r'\[Serial\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=600,

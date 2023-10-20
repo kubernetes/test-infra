@@ -11,6 +11,9 @@
     {%- else %}
     preset-k8s-ssh: "true"
     {%- endif %}
+    {%- if storage_e2e_cred %}
+    preset-storage-e2e-service-account: "true"
+    {%- endif %}
   cluster: {{build_cluster}}
   decorate: true
   decoration_config:
