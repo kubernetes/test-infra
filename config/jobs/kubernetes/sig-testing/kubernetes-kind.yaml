@@ -308,7 +308,7 @@ presubmits:
         - name: FEATURE_GATES
           value: '{"AllAlpha":true}'
         - name: RUNTIME_CONFIG
-          value: '{"api/alpha":"true", "api/ga=true"}'
+          value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: FOCUS
           value: "."
         - name: SKIP
@@ -356,7 +356,7 @@ presubmits:
         - name: FEATURE_GATES
           value: '{"AllBeta":true}'
         - name: RUNTIME_CONFIG
-          value: '{"api/beta":"true", "api/ga=true"}'
+          value: '{"api/beta":"true", "api/ga":"true"}'
         - name: FOCUS
           value: "."
         - name: SKIP
@@ -459,7 +459,7 @@ periodics:
       - name: FEATURE_GATES
         value: '{"AllAlpha":true}'
       - name: RUNTIME_CONFIG
-        value: '{"api/alpha":"true", "api/ga=true"}'
+        value: '{"api/alpha":"true", "api/ga":"true"}'
       - name: FOCUS
         value: "."
       - name: SKIP
@@ -511,7 +511,7 @@ periodics:
       - name: FEATURE_GATES
         value: '{"AllBeta":true}'
       - name: RUNTIME_CONFIG
-        value: '{"api/beta":"true", "api/ga=true"}'
+        value: '{"api/beta":"true", "api/ga":"true"}'
       - name: FOCUS
         value: "."
       - name: SKIP
