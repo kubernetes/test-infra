@@ -44,6 +44,55 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
+  - name: pull-release-cluster-up-canary
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    optional: true
+    decoration_config:
+      timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --down=false
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
+        - --test_args=--ginkgo.focus=definitely-not-a-real-focus
+        - --timeout=65m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
+        resources:
+          requests:
+            cpu: 4
+            memory: "6Gi"
+          limits:
+            cpu: 4
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-cluster-up-canary
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
   - name: pull-release-test
     always_run: true
     decorate: true
