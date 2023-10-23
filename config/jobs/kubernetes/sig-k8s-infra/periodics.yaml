@@ -50,7 +50,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -84,7 +84,7 @@ periodics:
     timeout: 2h25m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
