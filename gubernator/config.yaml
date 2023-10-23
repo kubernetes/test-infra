@@ -29,6 +29,7 @@ jobs:
   - pull-kubernetes-e2e-ec2
   - pull-kubernetes-e2e-ec2-conformance
   - pull-kubernetes-e2e-gce
+  - pull-kubernetes-e2e-gce-canary
   - pull-kubernetes-e2e-gce-ubuntu-containerd
   - pull-kubernetes-e2e-kind
   - pull-kubernetes-e2e-kind-ipv6

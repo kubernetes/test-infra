@@ -40,7 +40,6 @@ query: |
             'pr:pull-kubernetes-bazel-test',
             'pr:pull-kubernetes-e2e-gce',
             'pr:pull-kubernetes-e2e-gce-100-performance',
-            'pr:pull-kubernetes-e2e-kops-aws',
             'pr:pull-kubernetes-integration',
             'pr:pull-kubernetes-kubemark-e2e-gce-big',
             'pr:pull-kubernetes-node-e2e',
