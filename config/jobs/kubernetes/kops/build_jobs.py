@@ -1559,6 +1559,7 @@ def generate_presubmits_network_plugins():
             )
         )
         if plugin in supports_ipv6:
+            optional = True
             if plugin == 'amazonvpc':
                 run_if_changed = None
             results.append(
