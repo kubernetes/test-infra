@@ -2,6 +2,11 @@
   "ignition": {
     "version": "3.3.0"
   },
+  "kernelArguments": {
+    "shouldNotExist": [
+      "mitigations=auto,nosmt"
+    ]
+  },
   "storage": {
     "files": [
       {

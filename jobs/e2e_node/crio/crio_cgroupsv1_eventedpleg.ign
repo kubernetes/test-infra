@@ -5,6 +5,9 @@
   "kernelArguments": {
     "shouldExist": [
       "systemd.unified_cgroup_hierarchy=0"
+    ],
+    "shouldNotExist": [
+      "mitigations=auto,nosmt"
     ]
   },
   "storage": {
