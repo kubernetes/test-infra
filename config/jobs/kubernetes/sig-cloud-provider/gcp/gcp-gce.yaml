@@ -113,6 +113,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-kubernetes-e2e-gce-cos-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-e2e-gce to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -352,6 +353,7 @@ presubmits:
             privileged: true
 
   - name: pull-kubernetes-e2e-gce-cos-alpha-features
+    cluster: k8s-infra-prow-build
     optional: true
     run_if_changed: '^.*feature.*\.go'
     branches:
@@ -396,8 +398,12 @@ presubmits:
         - --timeout=180m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-master
         resources:
+          limits:
+            cpu: 4
+            memory: "14Gi"
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: "14Gi"
         securityContext:
           privileged: true
     annotations:
