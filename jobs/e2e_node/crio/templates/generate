@@ -27,7 +27,7 @@ fi
 declare -A CONFIGURATIONS=(
     ["crio_cgroupsv1"]="root cgroups-v1"
     ["crio_cgroupsv1_eventedpleg"]="root cgroups-v1 eventedpleg"
-    ["crio_cgroupsv1_hugepages"]="root cgroups-v1 hugepages"
+    ["crio_cgroupsv1_hugepages"]="root_v2 cgroups-v1 hugepages"
     ["crio_cgroupsv2"]="root"
     ["crio_cgroupsv2_swap1g"]="root swap-1G"
 )
