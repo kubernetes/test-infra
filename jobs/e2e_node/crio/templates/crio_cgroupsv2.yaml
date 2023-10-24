@@ -1,6 +1,9 @@
 ---
 variant: fcos
 version: 1.4.0
+kernel_arguments:
+  should_not_exist:
+    - mitigations=auto,nosmt
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
