@@ -1063,7 +1063,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "standard"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest-1.28"
+        value: "latest"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1125,7 +1125,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "standard"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest-1.28"
+        value: "latest"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[LinuxOnly\] --node-os-distro=windows --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1371,7 +1371,7 @@ periodics:
       - name: TEST_CCM # CAPZ config
         value: "true"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest-1.28"
+        value: "latest"
       - name: GINKGO_ARGS # cloud-provider-azure config
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -1504,7 +1504,7 @@ periodics:
       - name: TEST_CCM # CAPZ config
         value: "true"
       - name: KUBERNETES_VERSION # CAPZ config
-        value: "latest-1.28"
+        value: "latest"
       - name: GINKGO_ARGS # cloud-provider-azure config
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
         value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs --report-dir=/logs/artifacts --disable-log-dump=true
