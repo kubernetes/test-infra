@@ -18,6 +18,7 @@
 - [Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-tweets-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontroller-runtime-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for issues](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-issues)
+- [Labels that apply to kubernetes-sigs/gateway-api, only for PRs](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-prs)
 - [Labels that apply to kubernetes-sigs/kind, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskind-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/promo-tools, for both issues and PRs](#labels-that-apply-to-kubernetes-sigspromo-tools-for-both-issues-and-prs)
@@ -308,6 +309,12 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="kind/user-story" href="#kind/user-story">`kind/user-story`</a> | Categorizes an issue as capturing a user story| humans | |
+
+## Labels that apply to kubernetes-sigs/gateway-api, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="kind/gep" href="#kind/gep">`kind/gep`</a> | PRs related to Gateway Enhancement Proposal(GEP)| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/kind, for both issues and PRs
 
