@@ -272,7 +272,7 @@ presubmits:
             - bash
             - -c
             - |
-              ARGS="--set=spec.containerd.runc.version=1.1.9 --set=spec.containerd.version=1.7.5"
+              ARGS="--set=spec.containerd.runc.version=1.1.9 --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.5"
               make -C $GOPATH/src/k8s.io/kops test-e2e-install
               kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
@@ -443,7 +443,7 @@ presubmits:
     - org: kubernetes
       repo: kops
       base_ref: master
-      path_alias: k8s.io/kps
+      path_alias: k8s.io/kops
     spec:
       serviceAccountName: k8s-kops-test
       containers:
@@ -453,7 +453,7 @@ presubmits:
             - bash
             - -c
             - |
-              ARGS="--set=spec.containerd.runc.version=1.1.9 --set=spec.containerd.version=1.7.5"
+              ARGS="--set=spec.containerd.runc.version=1.1.9  --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.5"
               make -C $GOPATH/src/k8s.io/kops test-e2e-install
               kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
@@ -464,7 +464,67 @@ presubmits:
                 -- \
                 --ginkgo-args="--debug" \
                 --focus-regex="\[Serial\]"
-                --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\]" \
+                --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
+                --timeout=500m \
+                --use-built-binaries=true \
+                --parallel=1
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-master
+          resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
+            requests:
+              cpu: 4
+              memory: "14Gi"
+          securityContext:
+            privileged: true
+
+  - name: pull-kubernetes-e2e-gce-disruptive-canary
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-storage-e2e-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 530m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: k8s.io/kops
+    spec:
+      serviceAccountName: k8s-kops-test
+      containers:
+        - command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              ARGS="--set=spec.containerd.runc.version=1.1.9  --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.5"
+              make -C $GOPATH/src/k8s.io/kops test-e2e-install
+              kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
+                --build-kubernetes=true --target-build-arch=linux/amd64 \
+                --admin-access=0.0.0.0/0 \
+                --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
+                --create-args "$ARGS --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+                --test=kops \
+                -- \
+                --ginkgo-args="--debug" \
+                --focus-regex="\[Disruptive\]"
+                --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
                 --timeout=500m \
                 --use-built-binaries=true \
                 --parallel=1
