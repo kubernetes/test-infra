@@ -219,7 +219,7 @@ postsubmits:
 
   # Deploys the CSI image after all merges to master
   - name: post-vsphere-csi-driver-deploy
-    cluster: k8s-infra-prow-build
+    cluster: default
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -253,7 +253,7 @@ postsubmits:
 
   # Deploys the CSI image for tagged releases
   - name: post-vsphere-csi-driver-release
-    cluster: k8s-infra-prow-build
+    cluster: default
     decorate: true
     labels:
       preset-dind-enabled: "true"
