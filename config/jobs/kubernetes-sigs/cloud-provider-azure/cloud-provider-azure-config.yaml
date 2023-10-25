@@ -302,7 +302,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.28"
             - name: GINKGO_ARGS # cloud-provider-azure config
-              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -1065,7 +1065,7 @@ periodics:
       - name: KUBERNETES_VERSION # CAPZ config
         value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
-        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -1127,7 +1127,7 @@ periodics:
       - name: KUBERNETES_VERSION # CAPZ config
         value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
-        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[LinuxOnly\] --node-os-distro=windows --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[LinuxOnly\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --node-os-distro=windows --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: TEST_WINDOWS # CAPZ config
@@ -1373,7 +1373,7 @@ periodics:
       - name: KUBERNETES_VERSION # CAPZ config
         value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
-        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
@@ -1507,7 +1507,7 @@ periodics:
         value: "latest-1.28"
       - name: GINKGO_ARGS # cloud-provider-azure config
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
