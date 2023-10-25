@@ -57,7 +57,7 @@ systemd:
         [Unit]
         Description=Download and install required tools.
         Before=crio-install.service
-        After=network-online.target
+        After=NetworkManager-wait-online.service
 
         [Service]
         Type=oneshot
@@ -119,7 +119,7 @@ systemd:
         [Unit]
         Description=Copy authorized keys
         Before=crio-install.service
-        After=network-online.target
+        After=NetworkManager-wait-online.service
 
         [Service]
         Type=oneshot
