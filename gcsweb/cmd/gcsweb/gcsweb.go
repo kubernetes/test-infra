@@ -78,10 +78,11 @@ func (ss *strslice) Set(value string) error {
 type options struct {
 	flPort int
 
-	flIcons            string
-	flStyles           string
-	oauthTokenFile     string
-	gcsCredentialsFile string
+	flIcons  string
+	flStyles string
+	flagutil.StorageClientOptions
+	oauthTokenFile string
+	// deprecated and ineffective
 	defaultCredentials bool
 
 	flVersion bool
@@ -104,9 +105,13 @@ func gatherOptions() options {
 
 	fs.StringVar(&o.flIcons, "i", "", "path to the icons directory")
 	fs.StringVar(&o.flStyles, "s", "", "path to the styles directory")
+
+	o.StorageClientOptions.AddFlags(fs)
 	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the file containing the gcs service account credentials.")
-	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials")
+	// StorageClientOptions.StorageClient / io.NewOpener automatically uses application default credentials as a fallback.
+	// Mark this flag as ineffective but don't remove it for backward-compatibility.
+	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials "+
+		"(deprecated and ineffective, is assumed to be true if --gcs-credentials-file is not set)")
 
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
@@ -142,8 +147,11 @@ func (o *options) validate() error {
 			return fmt.Errorf("styles path %q doesn't exist", o.flStyles)
 		}
 	}
-	if o.oauthTokenFile != "" && o.gcsCredentialsFile != "" {
+	if o.oauthTokenFile != "" && o.GCSCredentialsFile != "" {
 		return errors.New("specifying both --oauth-token-file and --gcs-credentials-file is not allowed")
+	}
+	if o.oauthTokenFile != "" && o.S3CredentialsFile != "" {
+		return errors.New("specifying both --oauth-token-file and --s3-credentials-file is not allowed")
 	}
 
 	if o.oauthTokenFile != "" {
@@ -152,41 +160,41 @@ func (o *options) validate() error {
 		}
 	}
 
-	if o.gcsCredentialsFile != "" {
-		if _, err := os.Stat(o.gcsCredentialsFile); os.IsNotExist(err) {
-			return fmt.Errorf("gcs service account crendentials file %q doesn't exist", o.gcsCredentialsFile)
+	if o.GCSCredentialsFile != "" {
+		if _, err := os.Stat(o.GCSCredentialsFile); os.IsNotExist(err) {
+			return fmt.Errorf("gcs crendentials file %q doesn't exist", o.GCSCredentialsFile)
+		}
+	}
+
+	if o.S3CredentialsFile != "" {
+		if _, err := os.Stat(o.S3CredentialsFile); os.IsNotExist(err) {
+			return fmt.Errorf("s3 crendentials file %q doesn't exist", o.S3CredentialsFile)
 		}
 	}
 
 	return nil
 }
 
-func getStorageClient(o options) (*storage.Client, error) {
+func getStorageClient(o options) (pkgio.Opener, error) {
 	ctx := context.Background()
-	clientOption := []option.ClientOption{}
 
-	if !o.defaultCredentials {
-		clientOption = []option.ClientOption{option.WithoutAuthentication()}
-	}
-
+	// prow/io doesn't support oauth token files, gcsweb is the only component supporting this.
+	// If --oauth-token-file is set create a storage client manually and pass it to NewGCSOpener.
 	if o.oauthTokenFile != "" {
 		b, err := os.ReadFile(o.oauthTokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
-		clientOption = []option.ClientOption{option.WithAPIKey(string(bytes.TrimSpace(b)))}
+
+		storageClient, err := storage.NewClient(ctx, option.WithAPIKey(string(bytes.TrimSpace(b))))
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
+		}
+
+		return pkgio.NewGCSOpener(storageClient), nil
 	}
 
-	if o.gcsCredentialsFile != "" {
-		clientOption = []option.ClientOption{option.WithCredentialsFile(o.gcsCredentialsFile)}
-	}
-
-	storageClient, err := storage.NewClient(ctx, clientOption...)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
-	}
-
-	return storageClient, nil
+	return o.StorageClient(ctx)
 }
 
 func main() {
@@ -207,7 +215,7 @@ func main() {
 		logrus.WithError(err).Fatal("couldn't get storage client")
 	}
 
-	s := &server{storageClient: pkgio.NewGCSOpener(storageClient)}
+	s := &server{storageClient: storageClient}
 
 	logrus.Info("Starting GCSWeb")
 
