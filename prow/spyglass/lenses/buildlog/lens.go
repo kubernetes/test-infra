@@ -71,7 +71,7 @@ type parsedConfig struct {
 	highlightRegex     *regexp.Regexp
 	showRawLog         bool
 	highlighter        *highlightConfig
-	highlightLengthMax *int
+	highlightLengthMax int
 }
 
 var _ api.Lens = Lens{}
@@ -192,8 +192,10 @@ func getConfig(rawConfig json.RawMessage) parsedConfig {
 	if len(c.HighlightRegexes) == 0 {
 		return conf
 	}
-	if conf.highlightLengthMax == nil {
-		conf.highlightLengthMax = &defaultHighlightLineLengthMax
+	if c.HighlightLengthMax == nil {
+		conf.highlightLengthMax = defaultHighlightLineLengthMax
+	} else {
+		conf.highlightLengthMax = *c.HighlightLengthMax
 	}
 
 	re, err := regexp.Compile(strings.Join(c.HighlightRegexes, "|"))
@@ -253,7 +255,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 				start, end = resp.Min, resp.Max
 			}
 		}
-		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex, *conf.highlightLengthMax)...)
+		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex, conf.highlightLengthMax)...)
 		av.ViewAll = true
 		av.CanSave = canSave(a.CanonicalLink())
 		av.CanAnalyze = analyze
@@ -433,7 +435,7 @@ func loadLines(request *callbackRequest, artifact api.Artifact, resourceDir stri
 	var skipGroup *LineGroup
 	conf := getConfig(rawConfig)
 	if len(skipLines) > 0 {
-		logLines := highlightLines(skipLines, skipRequest.StartLine, &request.Artifact, conf.highlightRegex, *conf.highlightLengthMax)
+		logLines := highlightLines(skipLines, skipRequest.StartLine, &request.Artifact, conf.highlightRegex, conf.highlightLengthMax)
 		skipGroup = &LineGroup{
 			Skip:         true,
 			Start:        skipRequest.StartLine,
@@ -450,7 +452,7 @@ func loadLines(request *callbackRequest, artifact api.Artifact, resourceDir stri
 		groups = append(groups, skipGroup)
 		skipGroup = nil
 	}
-	logLines := highlightLines(lines, request.StartLine, &request.Artifact, conf.highlightRegex, *conf.highlightLengthMax)
+	logLines := highlightLines(lines, request.StartLine, &request.Artifact, conf.highlightRegex, conf.highlightLengthMax)
 	groups = append(groups, &LineGroup{
 		LogLines:     logLines,
 		ArtifactName: &request.Artifact,
