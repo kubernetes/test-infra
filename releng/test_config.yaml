@@ -419,28 +419,28 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-master
   # beta:
   # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
   #   args:
   #   - --repo=k8s.io/kubernetes=release-1.28
-  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-1.28
+  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-1.28
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.28
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-1.28
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-1.28
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.27
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-1.27
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-1.27
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.26
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-1.26
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-1.26
   stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.25
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231020-23776ee4a3-1.25
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-1.25
 
 nodeTestSuites:
   default:
