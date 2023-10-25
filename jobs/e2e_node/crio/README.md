@@ -4,6 +4,9 @@
 [@kubernetes/sig-node-cri-o-test-maintainers](https://github.com/orgs/kubernetes/teams/sig-node-cri-o-test-maintainers)
 on the related issue or pull request.**
 
+All jobs maintained within this directoy are part of the `sig-node-cri-o`
+testgrid dashboard: https://testgrid.k8s.io/sig-node-cri-o
+
 ---
 
 This directory contains all CRI-O related test infra job ignition files. If you
