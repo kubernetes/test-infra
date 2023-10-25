@@ -319,6 +319,12 @@ function copy-logs-from-node() {
       gcloud compute instances get-serial-port-output --project "${PROJECT}" --zone "${ZONE}" --port 1 "${node}" > "${dir}/serial-1.log" || true
       # FIXME(dims): bug in gcloud prevents multiple source files specified using curly braces, so we just loop through for now
       set +e
+
+      # TODO(argh4k): remove it once https://github.com/kubernetes/kubernetes/issues/121320 is solved
+      for single_file in "${files[@]}"; do
+        gcloud compute scp --dry-run --recurse --project "${PROJECT}" --zone "${ZONE}" "${node}:${single_file}" "${dir}" --verbosity debug 
+      done 
+
       for single_file in "${files[@]}"; do
         gcloud compute scp --recurse --project "${PROJECT}" --zone "${ZONE}" "${node}:${single_file}" "${dir}" --verbosity debug
       done

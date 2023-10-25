@@ -1,6 +1,11 @@
 ---
 variant: fcos
 version: 1.4.0
+kernel_arguments:
+  should_not_exist:
+    - mitigations=auto,nosmt
+  should_exist:
+    - systemd.unified_cgroup_hierarchy=0
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
@@ -52,7 +57,7 @@ systemd:
         [Unit]
         Description=Download and install required tools.
         Before=crio-install.service
-        After=network-online.target
+        After=NetworkManager-wait-online.service
 
         [Service]
         Type=oneshot
@@ -114,7 +119,7 @@ systemd:
         [Unit]
         Description=Copy authorized keys
         Before=crio-install.service
-        After=network-online.target
+        After=NetworkManager-wait-online.service
 
         [Service]
         Type=oneshot
@@ -141,6 +146,3 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
-kernel_arguments:
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0

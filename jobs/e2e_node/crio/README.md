@@ -1,5 +1,11 @@
 # CRI-O test infra jobs
 
+**For any modifications to this directory, please ping
+[@kubernetes/sig-node-cri-o-test-maintainers](https://github.com/orgs/kubernetes/teams/sig-node-cri-o-test-maintainers)
+on the related issue or pull request.**
+
+---
+
 This directory contains all CRI-O related test infra job ignition files. If you
 want to change, add or remove any of those `*.ign` files, then please modify the
 main configuration in [`./templates/generate`](./templates/generate), which
