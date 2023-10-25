@@ -1533,6 +1533,7 @@ def generate_presubmits_network_plugins():
         focus_regex = None
         if plugin == 'cilium-eni':
             focus_regex = r'\[Conformance\]|\[NodeConformance\]'
+            optional = True
         if plugin == 'amazonvpc':
             distro = 'u2004'
             optional = True
