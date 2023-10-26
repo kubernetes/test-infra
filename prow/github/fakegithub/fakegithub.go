@@ -1193,6 +1193,10 @@ func (f *FakeClient) TriggerGitHubWorkflow(org, repo string, id int) error {
 	return nil
 }
 
+func (f *FakeClient) TriggerFailedGitHubWorkflow(org, repo string, id int) error {
+	return nil
+}
+
 func (f *FakeClient) RequestReview(org, repo string, number int, logins []string) error {
 	f.ReviewersRequested = logins
 	return nil
