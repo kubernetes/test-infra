@@ -384,7 +384,71 @@ func TestProwJobIndexer(t *testing.T) {
 // * Verifies that after the other one returns, its state is set to Pending, i.E. it blocked until it observed the state transition it made
 // * Verifies that there is exactly one pod
 func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
-	t.Parallel()
+	testConcurrency := func(pja, pjb *prowv1.ProwJob) func(*testing.T) {
+		return func(t *testing.T) {
+			t.Parallel()
+			pjClient := &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
+
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{
+					Controller: config.Controller{
+						JobURLTemplate: &template.Template{},
+					},
+					JobQueueCapacities: map[string]int{"queue-1": 1},
+				}}}
+			}
+
+			r := newReconciler(context.Background(), pjClient, nil, cfg, nil, "")
+			r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
+
+			wg := &sync.WaitGroup{}
+			wg.Add(2)
+			// Give capacity of two so this doesn't stuck the test if we have a bug that results in two reconcile afters
+			gotReconcileAfter := make(chan struct{}, 2)
+
+			startAsyncReconcile := func(pjName string) {
+				go func() {
+					defer wg.Done()
+					result, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
+					if err != nil {
+						t.Errorf("reconciliation of pj %s failed: %v", pjName, err)
+					}
+					if result.RequeueAfter == time.Second {
+						gotReconcileAfter <- struct{}{}
+						return
+					}
+					pj := &prowv1.ProwJob{}
+					if err := r.pjClient.Get(context.Background(), types.NamespacedName{Name: pjName}, pj); err != nil {
+						t.Errorf("failed to get prowjob %s after reconciliation: %v", pjName, err)
+					}
+					if pj.Status.State != prowv1.PendingState {
+						t.Error("pj wasn't in pending state, reconciliation didn't wait the change to appear in the cache")
+					}
+				}()
+			}
+			startAsyncReconcile(pja.Name)
+			startAsyncReconcile(pjb.Name)
+
+			wg.Wait()
+			close(gotReconcileAfter)
+
+			var numReconcielAfters int
+			for range gotReconcileAfter {
+				numReconcielAfters++
+			}
+			if numReconcielAfters != 1 {
+				t.Errorf("expected to get exactly one reconcileAfter, got %d", numReconcielAfters)
+			}
+
+			pods := &corev1.PodList{}
+			if err := r.buildClients[pja.Spec.Cluster].List(context.Background(), pods); err != nil {
+				t.Fatalf("failed to list pods: %v", err)
+			}
+			if n := len(pods.Items); n != 1 {
+				t.Errorf("expected exactly one pod, got %d", n)
+			}
+		}
+	}
 	pja := &prowv1.ProwJob{
 		ObjectMeta: metav1.ObjectMeta{Name: "a"},
 		Spec: prowv1.ProwJobSpec{
@@ -401,63 +465,15 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 	}
 	pjb := pja.DeepCopy()
 	pjb.Name = "b"
-	pjClient := &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
 
-	cfg := func() *config.Config {
-		return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{Controller: config.Controller{
-			JobURLTemplate: &template.Template{},
-		}}}}
-	}
+	t.Run("job level MaxConcurrency", testConcurrency(pja.DeepCopy(), pjb))
 
-	r := newReconciler(context.Background(), pjClient, nil, cfg, nil, "")
-	r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
-
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
-	// Give capacity of two so this doesn't stuck the test if we have a bug that results in two reconcile afters
-	gotReconcileAfter := make(chan struct{}, 2)
-
-	startAsyncReconcile := func(pjName string) {
-		go func() {
-			defer wg.Done()
-			result, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
-			if err != nil {
-				t.Errorf("reconciliation of pj %s failed: %v", pjName, err)
-			}
-			if result.RequeueAfter == time.Second {
-				gotReconcileAfter <- struct{}{}
-				return
-			}
-			pj := &prowv1.ProwJob{}
-			if err := r.pjClient.Get(context.Background(), types.NamespacedName{Name: pjName}, pj); err != nil {
-				t.Errorf("failed to get prowjob %s after reconciliation: %v", pjName, err)
-			}
-			if pj.Status.State != prowv1.PendingState {
-				t.Error("pj wasn't in pending state, reconciliation didn't wait the change to appear in the cache")
-			}
-		}()
-	}
-	startAsyncReconcile(pja.Name)
-	startAsyncReconcile(pjb.Name)
-
-	wg.Wait()
-	close(gotReconcileAfter)
-
-	var numReconcielAfters int
-	for range gotReconcileAfter {
-		numReconcielAfters++
-	}
-	if numReconcielAfters != 1 {
-		t.Errorf("expected to get exactly one reconcileAfter, got %d", numReconcielAfters)
-	}
-
-	pods := &corev1.PodList{}
-	if err := r.buildClients[pja.Spec.Cluster].List(context.Background(), pods); err != nil {
-		t.Fatalf("failed to list pods: %v", err)
-	}
-	if n := len(pods.Items); n != 1 {
-		t.Errorf("expected exactly one pod, got %d", n)
-	}
+	pja.Spec.MaxConcurrency = 0
+	pja.Spec.JobQueueName = "queue-1"
+	pjb = pja.DeepCopy()
+	pjb.Name = "b"
+	pjb.Spec.Job = "max-1-same-queue"
+	t.Run("queue level JobQueueCapacities", testConcurrency(pja, pjb))
 }
 
 // eventuallyConsistentClient executes patch and create  operations with a delay but instantly returns, before applying the change.
