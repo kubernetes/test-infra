@@ -2127,6 +2127,12 @@ repos:
         name: kind/user-story
         target: issues
         addedBy: humans
+      - color: c7def8
+        description: PRs related to Gateway Enhancement Proposal(GEP)
+        name: kind/gep
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
   kubernetes-sigs/kind:
     labels:
       - color: 19abff
