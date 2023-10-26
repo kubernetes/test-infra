@@ -292,7 +292,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ProxyTerminatingEndpoints)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+        value: \[Feature:(Networking-IPv4|PodHostIPs|Example|Federation|PerformanceDNS|ProxyTerminatingEndpoints)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -456,7 +456,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ProxyTerminatingEndpoints)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+        value: \[Feature:(Networking-IPv4|PodHostIPs|Example|Federation|PerformanceDNS|ProxyTerminatingEndpoints)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
