@@ -49,7 +49,7 @@ PROW_CONFIG_TEMPLATE = """
       - command:
         args:
         env:
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
         resources:
           requests:
             cpu: 1000m
