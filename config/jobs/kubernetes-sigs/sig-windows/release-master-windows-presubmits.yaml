@@ -396,3 +396,60 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension-gmsa
+  - name: pull-e2e-capz-validate-pr-templates
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'capz/templates/pr/.*'
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/windows-testing
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-windows-2022: "true"
+      preset-windows-private-registry-cred: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.11
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231025-98aa77f51a-master
+          command:
+            - "runner.sh"
+            - "env"
+            - "KUBERNETES_VERSION=latest"
+            - "./capz/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+          env:
+          - name: GINKGO_FOCUS
+            value: \[sig-windows\] # run just a subset to speed up testing time
+          - name: TEST_K8S # set to true to trigger the IS_PRESUBMIT workflow in capz_run_e2e.sh
+            value: "true" # https://github.com/kubernetes-sigs/cluster-api-provider-azure/blob/b1c0d6f6d27c602eae98c0fac87974dfda9182ab/hack/util.sh#L32-L42
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-e2e-capz-windows-validate-pr-templates
