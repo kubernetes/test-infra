@@ -146,6 +146,42 @@ func TestOptions(t *testing.T) {
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
+		//DingTalk Reporter
+		{
+			name: "dingTalk workers, sets workers",
+			args: []string{"--dingtalk-workers=13", "--config-path=foo"},
+			expected: &options{
+				dingTalkWorkers: 13,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 200,
+				},
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+			},
+		},
+		{
+			name: "dingTalk with --dry-run, sets",
+			args: []string{"--dingtalk-workers=13", "--config-path=foo", "--dry-run"},
+			expected: &options{
+				dingTalkWorkers: 13,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 200,
+				},
+				dryrun:                 true,
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+			},
+		},
 		{
 			name: "k8s-gcs enables k8s-gcs",
 			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo"},

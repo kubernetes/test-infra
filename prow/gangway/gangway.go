@@ -44,8 +44,8 @@ const (
 
 type Gangway struct {
 	UnimplementedProwServer
-	ConfigAgent       *config.Agent
-	ProwJobClient     ProwJobClient
+	ConfigAgent        *config.Agent
+	ProwJobClient      ProwJobClient
 	InRepoConfigGetter config.InRepoConfigGetter
 }
 

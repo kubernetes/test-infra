@@ -4733,6 +4733,160 @@ func TestSlackReporterValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestDingTalkReporterValidation(t *testing.T) {
+	testCases := []struct {
+		name            string
+		config          func() Config
+		successExpected bool
+	}{
+		{
+			name: "Valid config w/ wildcard dingtalk_reporter_configs - no error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{
+					"*": {
+						DingTalkReporterConfig: prowapi.DingTalkReporterConfig{
+							Token: "my-token",
+						},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: true,
+		},
+		{
+			name: "Valid config w/ org/repo dingtalk_reporter_configs - no error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{
+					"istio/proxy": {
+						DingTalkReporterConfig: prowapi.DingTalkReporterConfig{
+							Token: "my-token",
+						},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: true,
+		},
+		{
+			name: "Valid config w/ repo dingtalk_reporter_configs - no error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{
+					"proxy": {
+						DingTalkReporterConfig: prowapi.DingTalkReporterConfig{
+							Token: "my-token",
+						},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: true,
+		},
+		{
+			name: "No token w/ dingtalk_reporter_configs - error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{
+					"*": {
+						JobTypesToReport: []prowapi.ProwJobType{"presubmit"},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: false,
+		},
+		{
+			name: "Empty config - no error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: true,
+		},
+		{
+			name: "Invalid template - error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{
+					"*": {
+						DingTalkReporterConfig: prowapi.DingTalkReporterConfig{
+							Token:          "my-token",
+							ReportTemplate: "{{ if .Spec.Name}}",
+						},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: false,
+		},
+		{
+			name: "Template accessed invalid property - error",
+			config: func() Config {
+				dingTalkCfg := map[string]DingTalkReporter{
+					"*": {
+						DingTalkReporterConfig: prowapi.DingTalkReporterConfig{
+							Token: "my-token",
+							ReportTemplate: `{{{ $repo := "" }}{{with .Spec.Refs}}{{$repo = .Repo}}{{end}}{{if eq $repo ""}}{{with index .Spec.ExtraRefs 0}}{{$repo = .Repo}}{{end}}{{end}}## Repo: {{ $repo }}
+---
+- Job: {{.Spec.Job}}
+- Type: {{.Spec.Type}}
+- State: {{if eq .Status.State "triggered"}}<font color="orange">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "pending"}}<font color="yellow">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "success"}}<font color="green">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "failure"}}<font color="red">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "aborted"}}<font color="gray">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "error"}}<font color="red">**{{.Status.State}}**</font>{{end}}
+- Log: [View logs]({{.Status.URL}})`,
+						},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						DingTalkReporterConfigs: dingTalkCfg,
+					},
+				}
+			},
+			successExpected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := tc.config()
+			if err := cfg.validateComponentConfig(); (err == nil) != tc.successExpected {
+				t.Errorf("Expected success=%t but got err=%v", tc.successExpected, err)
+			}
+			if tc.successExpected {
+				for _, config := range cfg.DingTalkReporterConfigs {
+					if config.ReportTemplate == "" {
+						t.Errorf("expected default ReportTemplate to be set")
+					}
+					if config.Token == "" {
+						t.Errorf("expected Channel to be required")
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestManagedHmacEntityValidation(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -8551,6 +8705,107 @@ slack_reporter_configs:
 			},
 			expectedErrorSubstr: "config for org or repo my-org passed more than once",
 		},
+		{
+			name:       "Additional dingtalk reporter config gets merged in",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+dingtalk_reporter_configs:
+  my-org:
+    job_states_to_report:
+    - failure
+    - error
+    job_types_to_report:
+    - periodic
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+    token: '#token'
+  my-org/my-repo:
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+    token: '#other-token'
+`,
+			},
+			expectedProwConfig: `branch-protection: {}
+config_version_sha: abc
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    gcs_browser_prefixes_by_bucket:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+dingtalk_reporter_configs:
+  my-org:
+    job_states_to_report:
+    - failure
+    - error
+    job_types_to_report:
+    - periodic
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+    token: '#token'
+  my-org/my-repo:
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+    token: '#other-token'
+gangway: {}
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+horologium: {}
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  auto_accept_invitation: false
+  respect_legacy_global_token: false
+moonraker:
+  client_timeout: 10m0s
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`,
+		},
+		{
+			name:       "Additional dingtalk reporter config with duplication errors",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+dingtalk_reporter_configs:
+  my-org:
+    channel: '#token'`,
+				`
+dingtalk_reporter_configs:
+  my-org:
+    channel: '#other-token'`,
+			},
+			expectedErrorSubstr: "config for org or repo my-org passed more than once",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -8724,6 +8979,7 @@ func TestHasConfigFor(t *testing.T) {
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string]) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
 				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
+				fuzzedConfig.DingTalkReporterConfigs = DingTalkReporterConfigs{}
 				fuzzedConfig.Tide.MergeType = nil
 				fuzzedConfig.Tide.Queries = nil
 				return fuzzedConfig, true, nil, nil
@@ -8808,6 +9064,7 @@ func TestHasConfigFor(t *testing.T) {
 			for i := 0; i < 100; i++ {
 				fuzzedConfig := &ProwConfig{}
 				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
+				fuzzedConfig.DingTalkReporterConfigs = DingTalkReporterConfigs{}
 				fuzzer.Fuzz(fuzzedConfig)
 
 				fuzzedAndManipulatedConfig, expectIsGlobal, expectOrgs, expectRepos := tc.resultGenerator(fuzzedConfig)
@@ -8921,6 +9178,12 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				*pc = ProwConfig{SlackReporterConfigs: pc.SlackReporterConfigs}
 			},
 		},
+		{
+			name: "DingTalkReporter configurations",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{DingTalkReporterConfigs: pc.DingTalkReporterConfigs}
+			},
+		},
 	}
 
 	expectedProperties := []struct {
@@ -9008,6 +9271,11 @@ func TestProwConfigMergingProperties(t *testing.T) {
 					c.Fuzz(reporter)
 				}
 			},
+			func(config *DingTalkReporterConfigs, c fuzz.Continue) {
+				for _, reporter := range *config {
+					c.Fuzz(reporter)
+				}
+			},
 		)
 
 	// Do not parallelize, the PRNG used by the fuzzer is not threadsafe
@@ -9020,6 +9288,7 @@ func TestProwConfigMergingProperties(t *testing.T) {
 					for i := 0; i < 100; i++ {
 						fuzzedConfig := &ProwConfig{}
 						fuzzedConfig.SlackReporterConfigs = map[string]SlackReporter{}
+						fuzzedConfig.DingTalkReporterConfigs = map[string]DingTalkReporter{}
 						fuzzer.Fuzz(fuzzedConfig)
 
 						tc.makeMergeable(fuzzedConfig)
