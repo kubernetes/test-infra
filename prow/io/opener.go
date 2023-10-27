@@ -489,7 +489,8 @@ func (o *opener) Iterator(ctx context.Context, prefix, delimiter string) (Object
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasSuffix(relativePath, "/") {
+	// listing a directory requires the "/" suffix except if we try to list the bucket's root directory
+	if relativePath != "" && !strings.HasSuffix(relativePath, "/") {
 		relativePath += "/"
 	}
 	return openerObjectIterator{
