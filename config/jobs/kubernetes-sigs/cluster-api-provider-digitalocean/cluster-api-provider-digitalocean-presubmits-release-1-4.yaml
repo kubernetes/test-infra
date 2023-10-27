@@ -71,31 +71,6 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
         testgrid-tab-name: capdo-pr-verify-release-1-4
-    - name: pull-cluster-api-provider-digitalocean-lint-release-1-4
-      always_run: true
-      optional: false
-      decorate: true
-      cluster: eks-prow-build-cluster
-      path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
-      branches:
-        - ^release-1.4$
-      spec:
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-1.28
-            command:
-              - make
-            args:
-              - lint
-            resources:
-              limits:
-                cpu: 4
-                memory: 4Gi
-              requests:
-                cpu: 4
-                memory: 4Gi
-      annotations:
-        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-lint-release-1-4
     - name: pull-cluster-api-provider-digitalocean-e2e-release-1-4
       always_run: true
       optional: false
