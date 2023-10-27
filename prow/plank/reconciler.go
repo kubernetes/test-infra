@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -146,9 +145,13 @@ func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overw
 		opener:             opener,
 		totURL:             totURL,
 		clock:              clock.RealClock{},
-		serializationLocks: &shardedLock{
+		maxConcurrencySerializationLocks: &shardedLock{
 			mapLock: &sync.Mutex{},
-			locks:   map[string]*semaphore.Weighted{},
+			locks:   map[string]*sync.Mutex{},
+		},
+		jobQueueSerializationLocks: &shardedLock{
+			mapLock: &sync.Mutex{},
+			locks:   map[string]*sync.Mutex{},
 		},
 	}
 }
@@ -162,19 +165,35 @@ type reconciler struct {
 	opener             io.Opener
 	totURL             string
 	clock              clock.WithTickerAndDelayedExecution
-	serializationLocks *shardedLock
+	/* maxConcurrencySerializationLocks and jobQueueSerializationLocks are used to serialize
+	   reconciliation of ProwJobs that have concurrency limits that might affect eachother.
+
+	   The concurrency management strategy has 3 basic parts. Each part is skipped if the ProwJob
+	   does not specify a MaxConcurrency or JobQueueName.
+
+	   1. Serialize per the job and/or queue name as needed using these locks. This prevents
+	      concurrent reconciliation threads from triggering jobs beyond the concurrency limit.
+	   2. Compare against the ProwJob index to see how many jobs there are for the job and job queue
+	      and only trigger the job if it won't exceed the concurrency limit(s).
+	   3. Once the ProwJob is updated, wait until we see it updated in our cache before completing
+	      processing and releasing the serialization lock(s) acquired in step 1. This is necessary
+	      to prevent reconciliation threads from processing subsequent jobs before the ProwJob index
+	      used in step 2 is up to date.
+	*/
+	maxConcurrencySerializationLocks *shardedLock
+	jobQueueSerializationLocks       *shardedLock
 }
 
 type shardedLock struct {
 	mapLock *sync.Mutex
-	locks   map[string]*semaphore.Weighted
+	locks   map[string]*sync.Mutex
 }
 
-func (s *shardedLock) getLock(key string) *semaphore.Weighted {
+func (s *shardedLock) getLock(key string) *sync.Mutex {
 	s.mapLock.Lock()
 	defer s.mapLock.Unlock()
 	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = semaphore.NewWeighted(1)
+		s.locks[key] = &sync.Mutex{}
 	}
 	return s.locks[key]
 }
@@ -294,19 +313,28 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 	return *res, err
 }
 
-// serializeIfNeeded serializes the reconciliation of Jobs that have a MaxConcurrency setting, otherwise
-// multiple reconciliations of the same job may race and not properly respect that setting.
+// serializeIfNeeded serializes the reconciliation of Jobs that have a MaxConcurrency or a JobQueueName set, otherwise
+// multiple reconciliations of the same job or queue may race and not properly respect that setting.
 func (r *reconciler) serializeIfNeeded(ctx context.Context, pj *prowv1.ProwJob) (*reconcile.Result, error) {
-	if pj.Spec.MaxConcurrency == 0 {
-		return r.reconcile(ctx, pj)
+	if pj.Spec.MaxConcurrency > 0 {
+		// We need to serialize handling of this job name.
+		lock := r.maxConcurrencySerializationLocks.getLock(pj.Spec.Job)
+		// Use TryAcquire to avoid blocking workers waiting for the lock
+		if !lock.TryLock() {
+			return &reconcile.Result{RequeueAfter: time.Second}, nil
+		}
+		defer lock.Unlock()
 	}
 
-	sema := r.serializationLocks.getLock(pj.Spec.Job)
-	// Use TryAcquire to avoid blocking workers waiting for the lock
-	if !sema.TryAcquire(1) {
-		return &reconcile.Result{RequeueAfter: time.Second}, nil
+	if pj.Spec.JobQueueName != "" {
+		// We need to serialize handling of this job queue.
+		lock := r.jobQueueSerializationLocks.getLock(pj.Spec.JobQueueName)
+		// Use TryAcquire to avoid blocking workers waiting for the lock
+		if !lock.TryLock() {
+			return &reconcile.Result{RequeueAfter: time.Second}, nil
+		}
+		defer lock.Unlock()
 	}
-	defer sema.Release(1)
 	return r.reconcile(ctx, pj)
 }
 
@@ -637,10 +665,10 @@ func (r *reconciler) syncTriggeredJob(ctx context.Context, pj *prowv1.ProwJob) (
 		return nil, fmt.Errorf("patch prowjob: %w", err)
 	}
 
-	// If the job has a MaxConcurrency setting, we must block here until we observe the state transition in our cache,
+	// If the job has either MaxConcurrency or JobQueueName configured, we must block here until we observe the state transition in our cache,
 	// otherwise subequent reconciliations for a different run of the same job might incorrectly conclude that they
 	// can run because that decision is made based on the data in the cache.
-	if pj.Spec.MaxConcurrency == 0 {
+	if pj.Spec.MaxConcurrency == 0 && pj.Spec.JobQueueName == "" {
 		return nil, nil
 	}
 	nn := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
