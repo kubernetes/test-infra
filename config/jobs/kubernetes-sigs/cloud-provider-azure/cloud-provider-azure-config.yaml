@@ -31,7 +31,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-capz runs Azure specific e2e tests on vmss.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 4h
@@ -188,7 +188,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific e2e tests on vmssflex.
   - name: pull-cloud-provider-azure-e2e-ccm-vmssflex-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 4h
@@ -255,7 +255,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-capz runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -474,7 +474,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz runs Azure specific e2e tests with cloud controller manager and IP-based load balancer backend pools.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 3h
@@ -541,7 +541,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz runs Azure specific e2e tests with cloud controller manager and multiple standard load balancers.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 3h
@@ -605,7 +605,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
     cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
