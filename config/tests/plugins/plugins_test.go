@@ -1,11 +1,12 @@
 package plugins
 
 import (
-	"k8s.io/test-infra/prow/plugins"
 	"os"
-	"sigs.k8s.io/yaml"
 	"strings"
 	"testing"
+
+	"k8s.io/test-infra/prow/plugins"
+	"sigs.k8s.io/yaml"
 )
 
 // TestApprovePluginConfig validates that there are no duplicate repos in the approve plugin config.
