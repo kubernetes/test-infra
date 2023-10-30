@@ -326,7 +326,7 @@ function copy-logs-from-node() {
       done 
 
       for single_file in "${files[@]}"; do
-        gcloud compute scp --recurse --project "${PROJECT}" --zone "${ZONE}" "${node}:${single_file}" "${dir}" --verbosity debug --scp-flag="-v"
+        strace --trace-path "${dir}/${single_file}" gcloud compute scp --recurse --project "${PROJECT}" --zone "${ZONE}" "${node}:${single_file}" "${dir}" --verbosity debug --scp-flag="-v"
       done
       set -e
     elif  [[ "${KUBERNETES_PROVIDER}" == "aws" ]]; then
