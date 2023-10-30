@@ -333,6 +333,7 @@ presubmits:
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
+        - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
