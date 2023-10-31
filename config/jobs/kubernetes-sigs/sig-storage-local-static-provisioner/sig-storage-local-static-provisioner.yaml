@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
         command:
         - runner.sh
         args:
@@ -32,7 +32,7 @@ presubmits:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
         command:
         - runner.sh
         args:
@@ -55,7 +55,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
         command:
         - runner.sh
         args:
@@ -82,7 +82,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
         command:
         - runner.sh
         args:
@@ -106,7 +106,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
         command:
         - runner.sh
         args:
@@ -150,7 +150,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231026-34e553baa8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
       command:
       - runner.sh
       args:
