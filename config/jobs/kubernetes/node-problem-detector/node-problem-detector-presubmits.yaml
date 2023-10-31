@@ -230,9 +230,7 @@ presubmits:
         - name: ZONE
           value: us-central1-a
         - name: IMAGE_FAMILY
-        # TODO: update to `cos-stable` once NPD dependencies have been upgraded.
-        # See https://github.com/kubernetes/test-infra/issues/29308#issuecomment-1522523412
-          value: cos-97-lts
+          value: cos-stable
         - name: IMAGE_PROJECT
           value: cos-cloud
         - name: BOSKOS_PROJECT_TYPE
