@@ -28,6 +28,10 @@ periodics:
     description: Deletes old AWS resources for scalability jobs
 
 - name: ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2
+  tags:
+  - "perfDashPrefix: aws-5000Nodes"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
   interval: 12h
   labels:
