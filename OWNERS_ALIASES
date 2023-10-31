@@ -22,6 +22,7 @@ aliases:
   - dims
   - spiffxp
   - thockin
+  - upodroid
 
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
@@ -89,8 +90,8 @@ aliases:
   sig-k8s-infra-leads:
     - ameukam
     - dims
-    - spiffxp
-    - thockin
+    - upodroid
+    - bentheelder
   sig-multicluster-leads:
     - jeremyot
     - pmorie
