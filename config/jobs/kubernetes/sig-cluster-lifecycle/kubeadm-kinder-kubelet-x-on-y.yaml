@@ -178,7 +178,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-26-on-1-28
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
@@ -222,7 +222,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-25-on-1-28
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
