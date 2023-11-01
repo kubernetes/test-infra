@@ -270,7 +270,7 @@ func TestGroupLines(t *testing.T) {
 	art := "fake-artifact"
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := groupLines(&art, test.start, test.end, highlightLines(test.lines, 0, &art, defaultErrRE)...)
+			got := groupLines(&art, test.start, test.end, highlightLines(test.lines, 0, &art, defaultErrRE, defaultHighlightLineLengthMax)...)
 			if len(got) != len(test.groups) {
 				t.Fatalf("Expected %d groups, got %d", len(test.groups), len(got))
 			}
@@ -1146,6 +1146,6 @@ func BenchmarkHighlightLines(b *testing.B) {
 	}
 	art := "fake-artifact"
 	b.Run("HighlightLines", func(b *testing.B) {
-		_ = highlightLines(lorem, 0, &art, defaultErrRE)
+		_ = highlightLines(lorem, 0, &art, defaultErrRE, defaultHighlightLineLengthMax)
 	})
 }

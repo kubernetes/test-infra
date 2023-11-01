@@ -40,18 +40,20 @@ import (
 )
 
 const (
-	name               = "buildlog"
-	title              = "Build Log"
-	priority           = 10
-	neighborLines      = 5 // number of "important" lines to be displayed in either direction
-	minLinesSkipped    = 5
-	maxHighlightLength = 10000 // Maximum length of a line worth highlighting
+	name            = "buildlog"
+	title           = "Build Log"
+	priority        = 10
+	neighborLines   = 5 // number of "important" lines to be displayed in either direction
+	minLinesSkipped = 5
 )
 
+var defaultHighlightLineLengthMax = 10000 // Default maximum length of a line worth highlighting
+
 type config struct {
-	HighlightRegexes []string         `json:"highlight_regexes"`
-	HideRawLog       bool             `json:"hide_raw_log,omitempty"`
-	Highlighter      *highlightConfig `json:"highlighter,omitempty"`
+	HighlightRegexes   []string         `json:"highlight_regexes"`
+	HideRawLog         bool             `json:"hide_raw_log,omitempty"`
+	Highlighter        *highlightConfig `json:"highlighter,omitempty"`
+	HighlightLengthMax *int             `json:"highlight_line_length_max,omitempty"`
 }
 
 type highlightConfig struct {
@@ -66,9 +68,10 @@ type highlightConfig struct {
 }
 
 type parsedConfig struct {
-	highlightRegex *regexp.Regexp
-	showRawLog     bool
-	highlighter    *highlightConfig
+	highlightRegex     *regexp.Regexp
+	showRawLog         bool
+	highlighter        *highlightConfig
+	highlightLengthMax int
 }
 
 var _ api.Lens = Lens{}
@@ -189,6 +192,11 @@ func getConfig(rawConfig json.RawMessage) parsedConfig {
 	if len(c.HighlightRegexes) == 0 {
 		return conf
 	}
+	if c.HighlightLengthMax == nil {
+		conf.highlightLengthMax = defaultHighlightLineLengthMax
+	} else {
+		conf.highlightLengthMax = *c.HighlightLengthMax
+	}
 
 	re, err := regexp.Compile(strings.Join(c.HighlightRegexes, "|"))
 	if err != nil {
@@ -247,7 +255,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 				start, end = resp.Min, resp.Max
 			}
 		}
-		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex)...)
+		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex, conf.highlightLengthMax)...)
 		av.ViewAll = true
 		av.CanSave = canSave(a.CanonicalLink())
 		av.CanAnalyze = analyze
@@ -427,7 +435,7 @@ func loadLines(request *callbackRequest, artifact api.Artifact, resourceDir stri
 	var skipGroup *LineGroup
 	conf := getConfig(rawConfig)
 	if len(skipLines) > 0 {
-		logLines := highlightLines(skipLines, skipRequest.StartLine, &request.Artifact, conf.highlightRegex)
+		logLines := highlightLines(skipLines, skipRequest.StartLine, &request.Artifact, conf.highlightRegex, conf.highlightLengthMax)
 		skipGroup = &LineGroup{
 			Skip:         true,
 			Start:        skipRequest.StartLine,
@@ -444,7 +452,7 @@ func loadLines(request *callbackRequest, artifact api.Artifact, resourceDir stri
 		groups = append(groups, skipGroup)
 		skipGroup = nil
 	}
-	logLines := highlightLines(lines, request.StartLine, &request.Artifact, conf.highlightRegex)
+	logLines := highlightLines(lines, request.StartLine, &request.Artifact, conf.highlightRegex, conf.highlightLengthMax)
 	groups = append(groups, &LineGroup{
 		LogLines:     logLines,
 		ArtifactName: &request.Artifact,
@@ -491,13 +499,13 @@ func logLines(artifact api.Artifact, offset, length int64) ([]string, error) {
 	return strings.Split(string(b), "\n"), nil
 }
 
-func highlightLines(lines []string, startLine int, artifact *string, highlightRegex *regexp.Regexp) []LogLine {
+func highlightLines(lines []string, startLine int, artifact *string, highlightRegex *regexp.Regexp, maxLen int) []LogLine {
 	// mark highlighted lines
 	logLines := make([]LogLine, 0, len(lines))
 	for i, text := range lines {
 		length := len(text)
 		subLines := []SubLine{}
-		if length <= maxHighlightLength {
+		if length <= maxLen {
 			loc := highlightRegex.FindStringIndex(text)
 			for loc != nil {
 				subLines = append(subLines, SubLine{false, text[:loc[0]]})
