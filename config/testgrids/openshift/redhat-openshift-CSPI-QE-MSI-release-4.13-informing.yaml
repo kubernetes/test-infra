@@ -19,14 +19,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -46,14 +46,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -73,14 +73,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -100,14 +100,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -127,14 +127,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -154,14 +154,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -181,14 +181,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -208,14 +208,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -235,14 +235,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
+    name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -299,24 +299,24 @@ dashboards:
     test_group_name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.13-stage-co-exist-rosa-rhods-rhoam
   name: redhat-openshift-CSPI-QE-MSI-release-4.13-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
-  name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-aws-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-osd-gcp-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-aws-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-osd-gcp-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-GA-stage-smoke-rosa-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-aws-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-osd-gcp-rhods-addon-baseline-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
+  name: periodic-ci-CSPI-QE-MSI-rhoai-addon-interop-v4.13-IIB-smoke-rosa-rhods-addon-baseline-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.13-production-co-exist-rosa-rhods-rhoam
   name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.13-production-co-exist-rosa-rhods-rhoam
 - gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.13-stage-co-exist-rosa-rhods-rhoam
