@@ -10,7 +10,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile)'
+    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
@@ -119,7 +119,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/|Dockerfile)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
@@ -156,7 +156,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/|Dockerfile)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
@@ -186,7 +186,7 @@ presubmits:
   - name: openstack-cloud-csi-cinder-sanity-test
     cluster: eks-prow-build-cluster
     always_run: false
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/|Dockerfile)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/|Dockerfile|tests\/playbooks)'
     decorate: true
     branches:
       - ^master$
@@ -213,7 +213,7 @@ presubmits:
   - name: openstack-cloud-csi-manila-sanity-test
     cluster: eks-prow-build-cluster
     always_run: false
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/|Dockerfile)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/|Dockerfile|tests\/playbooks)'
     decorate: true
     branches:
       - ^master$
@@ -247,7 +247,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/|Dockerfile)'
+    run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
