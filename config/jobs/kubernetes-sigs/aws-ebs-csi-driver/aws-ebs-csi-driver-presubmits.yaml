@@ -254,6 +254,8 @@ presubmits:
     always_run: true
     optional: true
     decorate: true
+    branches:
+      - ^release-.*$
     skip_branches:
       - gh-pages
     labels:
