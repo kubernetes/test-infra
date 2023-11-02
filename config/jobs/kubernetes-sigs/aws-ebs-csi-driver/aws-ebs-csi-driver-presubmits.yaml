@@ -254,8 +254,8 @@ presubmits:
     always_run: true
     optional: true
     decorate: true
-    skip_branches:
-      - gh-pages
+    branches:
+      - ^release-.*$
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
