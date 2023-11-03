@@ -461,6 +461,19 @@ func (i *interactor) FetchCommits(commitSHAs []string) error {
 
 // RemoteUpdate fetches all updates from the remote.
 func (i *interactor) RemoteUpdate() error {
+	// We might need to refresh the token for accessing remotes in case of GitHub App auth (ghs tokens are only valid for
+	// 1 hour, see https://github.com/kubernetes/test-infra/issues/31182).
+	// Therefore, we resolve the remote again and update the clone's remote URL with a fresh token.
+	remote, err := i.remote()
+	if err != nil {
+		return fmt.Errorf("could not resolve remote for updating: %w", err)
+	}
+
+	i.logger.Info("Setting remote URL")
+	if out, err := i.executor.Run("remote", "set-url", "origin", remote); err != nil {
+		return fmt.Errorf("error setting remote URL: %w %v", err, string(out))
+	}
+
 	i.logger.Info("Updating from remote")
 	if out, err := i.executor.Run("remote", "update", "--prune"); err != nil {
 		return fmt.Errorf("error updating: %w %v", err, string(out))

@@ -1196,30 +1196,69 @@ func TestInteractor_Am(t *testing.T) {
 func TestInteractor_RemoteUpdate(t *testing.T) {
 	var testCases = []struct {
 		name          string
+		remote        RemoteResolver
 		responses     map[string]execResponse
 		expectedCalls [][]string
 		expectedErr   bool
 	}{
 		{
 			name: "happy case",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
 			responses: map[string]execResponse{
+				"remote set-url origin someone.com": {
+					out: []byte(`ok`),
+				},
 				"remote update --prune": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
+				{"remote", "set-url", "origin", "someone.com"},
 				{"remote", "update", "--prune"},
 			},
 			expectedErr: false,
 		},
 		{
-			name: "update fails",
+			name: "remote resolution fails",
+			remote: func() (string, error) {
+				return "", errors.New("oops")
+			},
+			responses:     map[string]execResponse{},
+			expectedCalls: [][]string{},
+			expectedErr:   true,
+		},
+		{
+			name: "setting remote URL fails",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
 			responses: map[string]execResponse{
+				"remote set-url origin someone.com": {
+					err: errors.New("oops"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"remote", "set-url", "origin", "someone.com"},
+			},
+			expectedErr: true,
+		},
+		{
+			name: "update fails",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
+			responses: map[string]execResponse{
+				"remote set-url origin someone.com": {
+					out: []byte(`ok`),
+				},
 				"remote update --prune": {
 					err: errors.New("oops"),
 				},
 			},
 			expectedCalls: [][]string{
+				{"remote", "set-url", "origin", "someone.com"},
 				{"remote", "update", "--prune"},
 			},
 			expectedErr: true,
@@ -1234,6 +1273,7 @@ func TestInteractor_RemoteUpdate(t *testing.T) {
 			}
 			i := interactor{
 				executor: &e,
+				remote:   testCase.remote,
 				logger:   logrus.WithField("test", testCase.name),
 			}
 			actualErr := i.RemoteUpdate()
