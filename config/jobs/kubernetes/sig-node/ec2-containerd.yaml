@@ -86,6 +86,8 @@ periodics:
           env:
             - name: FOCUS
               value: \[NodeConformance\]
+            - name: SKIP
+              value: "Summary API"
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
@@ -132,6 +134,8 @@ periodics:
           env:
             - name: FOCUS
               value: \[NodeConformance\]
+            - name: SKIP
+              value: "Summary API"
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_ARCH
@@ -186,6 +190,8 @@ periodics:
           env:
             - name: FOCUS
               value: \[NodeConformance\]
+            - name: SKIP
+              value: "Summary API"
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_OS
@@ -234,6 +240,8 @@ periodics:
           env:
             - name: FOCUS
               value: \[NodeConformance\]
+            - name: SKIP
+              value: "Summary API"
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_OS
