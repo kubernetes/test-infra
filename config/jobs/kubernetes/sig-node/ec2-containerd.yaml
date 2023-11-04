@@ -308,7 +308,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=cgroupfs"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
