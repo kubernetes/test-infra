@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:v20230718-8d3170488d
+FROM gcr.io/k8s-prow/alpine:v20231107-7fb7c64d33
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
