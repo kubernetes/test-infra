@@ -135,14 +135,14 @@ type PullRequestClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error)
 	CreatePullRequestReviewComment(org, repo string, number int, rc ReviewComment) error
 	ListReviews(org, repo string, number int) ([]Review, error)
-	ClosePR(org, repo string, number int) error
-	ReopenPR(org, repo string, number int) error
+	ClosePullRequest(org, repo string, number int) error
+	ReopenPullRequest(org, repo string, number int) error
 	CreateReview(org, repo string, number int, r DraftReview) error
 	RequestReview(org, repo string, number int, logins []string) error
 	UnrequestReview(org, repo string, number int, logins []string) error
 	Merge(org, repo string, pr int, details MergeDetails) error
 	IsMergeable(org, repo string, number int, SHA string) (bool, error)
-	ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error)
+	ListPullRequestCommits(org, repo string, number int) ([]RepositoryCommit, error)
 	UpdatePullRequestBranch(org, repo string, number int, expectedHeadSha *string) error
 }
 
@@ -3226,12 +3226,11 @@ func (c *client) ReopenIssue(org, repo string, number int) error {
 	return stateCannotBeChangedOrOriginalError(err)
 }
 
-// ClosePR closes the existing, open PR provided
-// TODO: Rename to ClosePullRequest
+// ClosePullRequest closes the existing, open PR provided
 //
 // See https://developer.github.com/v3/pulls/#update-a-pull-request
-func (c *client) ClosePR(org, repo string, number int) error {
-	durationLogger := c.log("ClosePR", org, repo, number)
+func (c *client) ClosePullRequest(org, repo string, number int) error {
+	durationLogger := c.log("ClosePullRequest", org, repo, number)
 	defer durationLogger()
 
 	_, err := c.request(&request{
@@ -3244,12 +3243,11 @@ func (c *client) ClosePR(org, repo string, number int) error {
 	return err
 }
 
-// ReopenPR re-opens the existing, closed PR provided
-// TODO: Rename to ReopenPullRequest
+// ReopenPullRequest re-opens the existing, closed PR provided
 //
 // See https://developer.github.com/v3/pulls/#update-a-pull-request
-func (c *client) ReopenPR(org, repo string, number int) error {
-	durationLogger := c.log("ReopenPR", org, repo, number)
+func (c *client) ReopenPullRequest(org, repo string, number int) error {
+	durationLogger := c.log("ReopenPullRequest", org, repo, number)
 	defer durationLogger()
 
 	_, err := c.request(&request{
@@ -4519,11 +4517,11 @@ func (c *client) ListMilestones(org, repo string) ([]Milestone, error) {
 	return milestones, nil
 }
 
-// ListPRCommits lists the commits in a pull request.
+// ListPullRequestCommits lists the commits in a pull request.
 //
 // GitHub API docs: https://developer.github.com/v3/pulls/#list-commits-on-a-pull-request
-func (c *client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error) {
-	durationLogger := c.log("ListPRCommits", org, repo, number)
+func (c *client) ListPullRequestCommits(org, repo string, number int) ([]RepositoryCommit, error) {
+	durationLogger := c.log("ListPullRequestCommits", org, repo, number)
 	defer durationLogger()
 
 	if c.fake {
