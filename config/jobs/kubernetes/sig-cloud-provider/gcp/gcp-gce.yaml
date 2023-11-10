@@ -460,11 +460,11 @@ presubmits:
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
                 --admin-access=0.0.0.0/0 \
                 --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
-                --create-args "$ARGS --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+                --create-args "$ARGS --node-count=3 --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
                 --test=kops \
                 -- \
-                --ginkgo-args="--debug" \
-                --focus-regex="\[Serial\]"
+                --test-args="-test.timeout=800m --num-nodes=3 --master-os-distro=ubuntu --node-os-distro=ubuntu" \
+                --focus-regex="\[Serial\]" \
                 --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
                 --timeout=500m \
                 --use-built-binaries=true \
@@ -498,7 +498,7 @@ presubmits:
       preset-storage-e2e-service-account: "true"
     decorate: true
     decoration_config:
-      timeout: 530m
+      timeout: 630m
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
@@ -520,11 +520,11 @@ presubmits:
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
                 --admin-access=0.0.0.0/0 \
                 --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
-                --create-args "$ARGS --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+                --create-args "$ARGS --node-count=3 --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
                 --test=kops \
                 -- \
-                --ginkgo-args="--debug" \
-                --focus-regex="\[Disruptive\]"
+                --test-args="-test.timeout=600m --num-nodes=3 --master-os-distro=ubuntu --node-os-distro=ubuntu" \
+                --focus-regex="\[Disruptive\]" \
                 --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
                 --timeout=500m \
                 --use-built-binaries=true \
