@@ -120,11 +120,3 @@ func (sl *Client) WriteMessage(msg, token string) error {
 	}
 	return nil
 }
-
-//`{
-//    "msgtype": "markdown",
-//    "markdown": {
-//        "title": "notify",
-//        "text": "## Job {{.Spec.Job}}\n---\n- Type: {{.Spec.Type}}\n- State: {{if eq .Status.State "triggered"}}<font color="orange">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "pending"}}<font color="yellow">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "success"}}<font color="green">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "failure"}}<font color="red">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "aborted"}}<font color="gray">**{{.Status.State}}**</font>{{end}}{{if eq .Status.State "error"}}<font color="red">**{{.Status.State}}**</font>{{end}}\n- Log: [View logs]({{.Status.URL}})"
-//    }
-//}`
