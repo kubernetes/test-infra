@@ -100,6 +100,7 @@ periodics:
 
   # This job runs the same tests as ci-node-e2e-crio-dra with Containerd 1.7 runtime
   - name: ci-node-e2e-containerd-1-7-dra
+    cluster: k8s-infra-prow-build
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
@@ -129,7 +130,6 @@ periodics:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
-        - --gcp-project-type=node-e2e-project
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=resource.k8s.io/v1alpha2=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
@@ -137,3 +137,10 @@ periodics:
         - --test_args=--focus="\[Feature:DynamicResourceAllocation\]" --skip="\[Flaky\]"
         - --timeout=65m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
+        resources:
+          limits:
+            cpu: 2
+            memory: 9Gi
+          requests:
+            cpu: 2
+            memory: 9Gi

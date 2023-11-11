@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-node-release-branch-1-25
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -25,7 +26,6 @@ periodics:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --deployment=node
-          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-central1-a
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.25.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -37,14 +37,19 @@ periodics:
           - name: GOPATH
             value: /go
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.25
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: Node conformance tests in release branch 1.25
 - name: ci-kubernetes-node-release-branch-1-26
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -70,7 +75,6 @@ periodics:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --deployment=node
-          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-central1-a
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.26.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -82,14 +86,19 @@ periodics:
           - name: GOPATH
             value: /go
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.26
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: Node conformance tests in release branch 1.26
 - name: ci-kubernetes-node-release-branch-1-27
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -115,7 +124,6 @@ periodics:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --deployment=node
-          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-central1-a
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.27.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -127,14 +135,19 @@ periodics:
           - name: GOPATH
             value: /go
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.27
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: Node conformance tests in release branch 1.27
 - name: ci-kubernetes-node-release-branch-1-28
+  cluster: k8s-infra-prow-build
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -160,7 +173,6 @@ periodics:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --deployment=node
-          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-central1-a
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/k8s-release-branches/image-config-1.28.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -172,8 +184,12 @@ periodics:
           - name: GOPATH
             value: /go
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.28
