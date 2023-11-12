@@ -73,6 +73,7 @@ presubmits:
             memory: 4Gi
 
   - name: pull-sig-storage-local-static-provisioner-e2e
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -91,7 +92,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-sig-storage-local-static-provisioner-e2e-windows-2019
+    cluster: k8s-infra-prow-build
     always_run: false
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -134,9 +143,17 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
 periodics:
 - name: ci-sig-storage-local-static-provisioner-master-gce-latest
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   labels:
@@ -166,3 +183,10 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
