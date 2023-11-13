@@ -129,8 +129,8 @@ type GitCommand struct {
 }
 
 // Call will execute the Git command and switch the working directory if specified
-func (gc GitCommand) Call(stdout, stderr io.Writer) error {
-	return Call(stdout, stderr, gc.baseCommand, gc.buildCommand())
+func (gc GitCommand) Call(stdout, stderr io.Writer, opts ...CallOption) error {
+	return Call(stdout, stderr, gc.baseCommand, gc.buildCommand(), opts...)
 }
 
 func (gc GitCommand) buildCommand() []string {
@@ -361,20 +361,55 @@ func cdToRootDir() error {
 	return os.Chdir(d)
 }
 
-func Call(stdout, stderr io.Writer, cmd string, args []string) error {
-	(&logrus.Logger{
+type callOptions struct {
+	ctx context.Context
+	dir string
+}
+
+type CallOption func(*callOptions)
+
+func WithContext(ctx context.Context) CallOption {
+	return func(opts *callOptions) {
+		opts.ctx = ctx
+	}
+}
+
+func WithDir(dir string) CallOption {
+	return func(opts *callOptions) {
+		opts.dir = dir
+	}
+}
+
+func Call(stdout, stderr io.Writer, cmd string, args []string, opts ...CallOption) error {
+	var options callOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+	logger := (&logrus.Logger{
 		Out:       stderr,
 		Formatter: logrus.StandardLogger().Formatter,
 		Hooks:     logrus.StandardLogger().Hooks,
 		Level:     logrus.StandardLogger().Level,
 	}).WithField("cmd", cmd).
 		// The default formatting uses a space as separator, which is hard to read if an arg contains a space
-		WithField("args", fmt.Sprintf("['%s']", strings.Join(args, "', '"))).
-		Info("running command")
+		WithField("args", fmt.Sprintf("['%s']", strings.Join(args, "', '")))
 
-	c := exec.Command(cmd, args...)
+	if options.dir != "" {
+		logger = logger.WithField("dir", options.dir)
+	}
+	logger.Info("running command")
+
+	var c *exec.Cmd
+	if options.ctx != nil {
+		c = exec.CommandContext(options.ctx, cmd, args...)
+	} else {
+		c = exec.Command(cmd, args...)
+	}
 	c.Stdout = stdout
 	c.Stderr = stderr
+	if options.dir != "" {
+		c.Dir = options.dir
+	}
 	return c.Run()
 }
 
@@ -489,25 +524,25 @@ func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bo
 // sure that there are real changes that need updating by diffing the tree refs, ensuring that
 // no metadata-only pushes occur, as those re-trigger tests, remove LGTM, and cause churn whithout
 // changing the content being proposed in the PR.
-func MinimalGitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
-	if err := Call(stdout, stderr, gitCmd, []string{"remote", "add", forkRemoteName, remote}); err != nil {
+func MinimalGitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool, opts ...CallOption) error {
+	if err := Call(stdout, stderr, gitCmd, []string{"remote", "add", forkRemoteName, remote}, opts...); err != nil {
 		return fmt.Errorf("add remote: %w", err)
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
-	if err := Call(stdout, fetchStderr, gitCmd, []string{"fetch", forkRemoteName, remoteBranch}); err != nil {
+	if err := Call(stdout, fetchStderr, gitCmd, []string{"fetch", forkRemoteName, remoteBranch}, opts...); err != nil {
 		logrus.Info("fetchStderr is : ", fetchStderr.String())
 		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
 			return fmt.Errorf("fetch from fork: %w", err)
 		}
 	} else {
 		var err error
-		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch))
+		remoteTreeRef, err = getTreeRef(stderr, fmt.Sprintf("refs/remotes/%s/%s", forkRemoteName, remoteBranch), opts...)
 		if err != nil {
 			return fmt.Errorf("get remote tree ref: %w", err)
 		}
 	}
-	localTreeRef, err := getTreeRef(stderr, "HEAD")
+	localTreeRef, err := getTreeRef(stderr, "HEAD", opts...)
 	if err != nil {
 		return fmt.Errorf("get local tree ref: %w", err)
 	}
@@ -519,7 +554,7 @@ func MinimalGitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryru
 	}
 	// Avoid doing metadata-only pushes that re-trigger tests and remove lgtm
 	if localTreeRef != remoteTreeRef {
-		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, ""); err != nil {
+		if err := GitPush(forkRemoteName, remoteBranch, stdout, stderr, "", opts...); err != nil {
 			return err
 		}
 	} else {
@@ -529,14 +564,14 @@ func MinimalGitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryru
 }
 
 // GitPush push the changes to the given remote and branch.
-func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir string) error {
+func GitPush(remote, remoteBranch string, stdout, stderr io.Writer, workingDir string, opts ...CallOption) error {
 	logrus.Info("Pushing to remote...")
 	gc := GitCommand{
 		baseCommand: gitCmd,
 		args:        []string{"push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)},
 		workingDir:  workingDir,
 	}
-	if err := gc.Call(stdout, stderr); err != nil {
+	if err := gc.Call(stdout, stderr, opts...); err != nil {
 		return fmt.Errorf("%s: %w", gc.getCommand(), err)
 	}
 	return nil
@@ -552,9 +587,9 @@ func getAssignment(assignTo string) string {
 	return ""
 }
 
-func getTreeRef(stderr io.Writer, refname string) (string, error) {
+func getTreeRef(stderr io.Writer, refname string, opts ...CallOption) (string, error) {
 	revParseStdout := &bytes.Buffer{}
-	if err := Call(revParseStdout, stderr, gitCmd, []string{"rev-parse", refname + ":"}); err != nil {
+	if err := Call(revParseStdout, stderr, gitCmd, []string{"rev-parse", refname + ":"}, opts...); err != nil {
 		return "", fmt.Errorf("parse ref: %w", err)
 	}
 	fields := strings.Fields(revParseStdout.String())
