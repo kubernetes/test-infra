@@ -381,6 +381,7 @@ presubmits:
             cpu: 4
 
   - name: pull-kubernetes-csi-livenessprobe-canary
+    cluster: eks-prow-build-cluster
     optional: true
     decorate: true
     skip_report: false
