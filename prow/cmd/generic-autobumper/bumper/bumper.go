@@ -130,7 +130,7 @@ type GitCommand struct {
 
 // Call will execute the Git command and switch the working directory if specified
 func (gc GitCommand) Call(stdout, stderr io.Writer) error {
-	return Call(stdout, stderr, gc.baseCommand, gc.buildCommand()...)
+	return Call(stdout, stderr, gc.baseCommand, gc.buildCommand())
 }
 
 func (gc GitCommand) buildCommand() []string {
@@ -280,16 +280,16 @@ func processGerrit(ctx context.Context, o *Options, prh PRHandler) error {
 	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
 
-	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"config", "http.cookiefile", o.Gerrit.CookieFile}); err != nil {
 		return fmt.Errorf("unable to load cookiefile: %w", err)
 	}
-	if err := Call(stdout, stderr, gitCmd, "config", "user.name", o.Gerrit.Author); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"config", "user.name", o.Gerrit.Author}); err != nil {
 		return fmt.Errorf("unable to set username: %w", err)
 	}
-	if err := Call(stdout, stderr, gitCmd, "config", "user.email", o.Gerrit.Email); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"config", "user.email", o.Gerrit.Email}); err != nil {
 		return fmt.Errorf("unable to set password: %w", err)
 	}
-	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", o.Gerrit.HostRepo); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"remote", "add", "upstream", o.Gerrit.HostRepo}); err != nil {
 		return fmt.Errorf("unable to add upstream remote: %w", err)
 	}
 	changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, "")
@@ -325,7 +325,7 @@ func processGerrit(ctx context.Context, o *Options, prh PRHandler) error {
 			if changeId, err = getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, changeId); err != nil {
 				return err
 			}
-			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
+			if err := Call(stdout, stderr, gitCmd, []string{"reset", "HEAD^"}); err != nil {
 				return fmt.Errorf("unable to call git reset: %w", err)
 			}
 			return gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
@@ -361,7 +361,7 @@ func cdToRootDir() error {
 	return os.Chdir(d)
 }
 
-func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
+func Call(stdout, stderr io.Writer, cmd string, args []string) error {
 	(&logrus.Logger{
 		Out:       stderr,
 		Formatter: logrus.StandardLogger().Formatter,
@@ -469,7 +469,7 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	return MinimalGitPush(remote, remoteBranch, stdout, stderr, dryrun)
 }
 func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bool) error {
-	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"add", "-A"}); err != nil {
 		return fmt.Errorf("git add: %w", err)
 	}
 	commitArgs := []string{"commit", "-m", message}
@@ -479,7 +479,7 @@ func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bo
 	if signoff {
 		commitArgs = append(commitArgs, "--signoff")
 	}
-	if err := Call(stdout, stderr, gitCmd, commitArgs...); err != nil {
+	if err := Call(stdout, stderr, gitCmd, commitArgs); err != nil {
 		return fmt.Errorf("git commit: %w", err)
 	}
 	return nil
@@ -490,12 +490,12 @@ func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bo
 // no metadata-only pushes occur, as those re-trigger tests, remove LGTM, and cause churn whithout
 // changing the content being proposed in the PR.
 func MinimalGitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
-	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"remote", "add", forkRemoteName, remote}); err != nil {
 		return fmt.Errorf("add remote: %w", err)
 	}
 	fetchStderr := &bytes.Buffer{}
 	var remoteTreeRef string
-	if err := Call(stdout, fetchStderr, gitCmd, "fetch", forkRemoteName, remoteBranch); err != nil {
+	if err := Call(stdout, fetchStderr, gitCmd, []string{"fetch", forkRemoteName, remoteBranch}); err != nil {
 		logrus.Info("fetchStderr is : ", fetchStderr.String())
 		if !strings.Contains(strings.ToLower(fetchStderr.String()), fmt.Sprintf("couldn't find remote ref %s", remoteBranch)) {
 			return fmt.Errorf("fetch from fork: %w", err)
@@ -554,7 +554,7 @@ func getAssignment(assignTo string) string {
 
 func getTreeRef(stderr io.Writer, refname string) (string, error) {
 	revParseStdout := &bytes.Buffer{}
-	if err := Call(revParseStdout, stderr, gitCmd, "rev-parse", refname+":"); err != nil {
+	if err := Call(revParseStdout, stderr, gitCmd, []string{"rev-parse", refname + ":"}); err != nil {
 		return "", fmt.Errorf("parse ref: %w", err)
 	}
 	fields := strings.Fields(revParseStdout.String())
@@ -582,7 +582,7 @@ func buildPushRef(branch string, reviewers, cc []string) string {
 func getDiff(prevCommit string) (string, error) {
 	var diffBuf bytes.Buffer
 	var errBuf bytes.Buffer
-	if err := Call(&diffBuf, &errBuf, gitCmd, "diff", prevCommit); err != nil {
+	if err := Call(&diffBuf, &errBuf, gitCmd, []string{"diff", prevCommit}); err != nil {
 		return "", fmt.Errorf("diffing previous bump: %v -- %s", err, errBuf.String())
 	}
 	return diffBuf.String(), nil
@@ -592,11 +592,11 @@ func gerritNoOpChange(changeID string) (bool, error) {
 	var garbageBuf bytes.Buffer
 	var outBuf bytes.Buffer
 	// Fetch current pending CRs
-	if err := Call(&garbageBuf, &garbageBuf, gitCmd, "fetch", "upstream", "+refs/changes/*:refs/remotes/upstream/changes/*"); err != nil {
+	if err := Call(&garbageBuf, &garbageBuf, gitCmd, []string{"fetch", "upstream", "+refs/changes/*:refs/remotes/upstream/changes/*"}); err != nil {
 		return false, fmt.Errorf("unable to fetch upstream changes: %v -- \nOUTPUT: %s", err, garbageBuf.String())
 	}
 	// Get PR with same ChangeID for this bump
-	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
+	if err := Call(&outBuf, &garbageBuf, gitCmd, []string{"log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"}); err != nil {
 		return false, fmt.Errorf("getting previous bump: %w", err)
 	}
 	prevCommit := strings.TrimSpace(outBuf.String())
@@ -626,10 +626,10 @@ func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stde
 	}
 
 	pushRef := buildPushRef(branch, reviewers, cc)
-	if err := Call(stdout, stderr, gitCmd, "commit", "-a", "-v", "-m", msg); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"commit", "-a", "-v", "-m", msg}); err != nil {
 		return fmt.Errorf("unable to commit: %w", err)
 	}
-	if err := Call(stdout, stderr, gitCmd, "push", "upstream", pushRef); err != nil {
+	if err := Call(stdout, stderr, gitCmd, []string{"push", "upstream", pushRef}); err != nil {
 		return fmt.Errorf("unable to push: %w", err)
 	}
 	return nil
@@ -639,7 +639,7 @@ func getLastBumpCommit(gerritAuthor, commitTag string) (string, error) {
 	var outBuf bytes.Buffer
 	var errBuf bytes.Buffer
 
-	if err := Call(&outBuf, &errBuf, gitCmd, "log", fmt.Sprintf("--author=%s", gerritAuthor), fmt.Sprintf("--grep=%s", commitTag), "-1", "--format='%H'"); err != nil {
+	if err := Call(&outBuf, &errBuf, gitCmd, []string{"log", fmt.Sprintf("--author=%s", gerritAuthor), fmt.Sprintf("--grep=%s", commitTag), "-1", "--format='%H'"}); err != nil {
 		return "", errors.New("running git command")
 	}
 
@@ -686,7 +686,7 @@ func getFullLog() (string, error) {
 	var outBuf bytes.Buffer
 	var errBuf bytes.Buffer
 
-	if err := Call(&outBuf, &errBuf, gitCmd, "log"); err != nil {
+	if err := Call(&outBuf, &errBuf, gitCmd, []string{"log"}); err != nil {
 		return "", fmt.Errorf("unable to run git log: %w, %s", err, errBuf.String())
 	}
 	return outBuf.String(), nil
