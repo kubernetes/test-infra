@@ -252,7 +252,6 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test-kustomize
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: true
     decorate: true
     branches:
       - ^release-.*$
@@ -281,4 +280,37 @@ presubmits:
       testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: pull-external-test-kustomize
       description: kubernetes/kubernetes external test on pull request via kustomize
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-external-test-arm64
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true
+    decorate: true
+    skip_branches:
+      - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-shared-testing: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-external-arm64
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-external-test-arm64
+      description: kubernetes/kubernetes external test on pull request with arm64 nodes and image
       testgrid-num-columns-recent: '30'
