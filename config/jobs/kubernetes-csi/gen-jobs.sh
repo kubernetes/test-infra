@@ -493,6 +493,7 @@ EOF
       cat >>"$base/$repo/$repo-config.yaml" <<EOF
 
   - name: $(job_name "pull" "$repo" "canary")
+    cluster: $(job_cluster "$repo")
     optional: true
     decorate: true
     skip_report: false
