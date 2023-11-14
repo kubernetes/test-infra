@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-1.28
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-1.28
       command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -47,7 +47,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-1.28
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-1.28
       command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"

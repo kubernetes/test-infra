@@ -66,7 +66,7 @@ periodics:
     testgrid-tab-name: ec2-master-scale-performance
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
       imagePullPolicy: Always
       command:
       - runner.sh
