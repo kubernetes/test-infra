@@ -18,29 +18,36 @@ package resultstore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/wait"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/resultstore"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 // Reporter reports Prow results to ResultStore and satisfies the
 // crier.reportClient interface.
 type Reporter struct {
-	cfg    config.Getter
-	opener io.Opener
+	cfg      config.Getter
+	opener   io.Opener
+	uploader *resultstore.Uploader
 }
 
 // New returns a new Reporter.
-func New(cfg config.Getter, opener io.Opener) *Reporter {
+func New(cfg config.Getter, opener io.Opener, uploader *resultstore.Uploader) *Reporter {
 	return &Reporter{
-		cfg:    cfg,
-		opener: opener,
+		cfg:      cfg,
+		opener:   opener,
+		uploader: uploader,
 	}
 }
 
@@ -88,9 +95,78 @@ func (r *Reporter) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob
 	if err != nil {
 		return nil, nil, err
 	}
-	_, err = providers.StoragePath(bucket, dir)
+	path, err := providers.StoragePath(bucket, dir)
 	if err != nil {
 		return nil, nil, err
 	}
-	return nil, nil, fmt.Errorf("not yet implemented")
+	log = log.WithField("BuildID", pj.Status.BuildID)
+	finished := readFinishedFile(ctx, log, r.opener, path)
+	started := readStartedFile(ctx, log, r.opener, path)
+	files, err := resultstore.ArtifactFiles(ctx, r.opener, path)
+	if err != nil {
+		// Log and continue in case of errors.
+		log.WithError(err).Errorf("error reading artifact files from %q", path)
+	}
+	err = r.uploader.Upload(ctx, log, &resultstore.Payload{
+		Job:       pj,
+		Started:   started,
+		Finished:  finished,
+		Files:     files,
+		ProjectID: projectID(pj),
+	})
+	if err != nil {
+		log.WithError(err).Error("resultstore upload error")
+	}
+	return []*v1.ProwJob{pj}, nil, err
+}
+
+// There is a race between this and the GCS reporter in the case the
+// finished.json file does not exist. This reporter waits for it to
+// be written by the GCS reporter so it is not missed.
+
+var waitFinishedBackoff = func() wait.Backoff {
+	return wait.Backoff{
+		Duration: time.Second,
+		Factor:   2,
+		Cap:      15 * time.Second,
+	}
+}
+
+func readFinishedFile(ctx context.Context, log *logrus.Entry, opener io.Opener, dir string) *metadata.Finished {
+	n := dir + "/" + v1.FinishedStatusFile
+	var finished *metadata.Finished
+	err := wait.ExponentialBackoffWithContext(ctx, waitFinishedBackoff(), func() (bool, error) {
+		bs, err := io.ReadContent(ctx, log, opener, n)
+		if err != nil {
+			if !io.IsNotExist(err) {
+				return false, nil
+			}
+			return false, err
+		}
+		if err := json.Unmarshal(bs, &finished); err != nil {
+			return false, fmt.Errorf("unmarshal: %w", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		log.WithError(err).Errorf("Failed to read %q", n)
+	}
+	return finished
+}
+
+func readStartedFile(ctx context.Context, log *logrus.Entry, opener io.Opener, dir string) *metadata.Started {
+	n := dir + "/" + v1.StartedStatusFile
+	bs, err := io.ReadContent(ctx, log, opener, n)
+	if err != nil {
+		if !io.IsNotExist(err) {
+			log.WithError(err).Warnf("Failed to read %q", v1.StartedStatusFile)
+		}
+		return nil
+	}
+	var started metadata.Started
+	if err := json.Unmarshal(bs, &started); err != nil {
+		log.WithError(err).Warnf("Failed to unmarshal %q", n)
+		return nil
+	}
+	return &started
 }

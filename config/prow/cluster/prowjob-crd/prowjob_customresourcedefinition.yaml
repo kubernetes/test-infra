@@ -29413,6 +29413,13 @@ spec:
               reporter_config:
                 description: ReporterConfig holds reporter-specific configuration
                 properties:
+                  resultstore:
+                    properties:
+                      project_id:
+                        description: Presence of ProjectID is required to report during
+                          alpha.
+                        type: string
+                    type: object
                   slack:
                     properties:
                       channel:

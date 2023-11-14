@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil/pprof"
+	"k8s.io/test-infra/prow/resultstore"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -291,7 +292,12 @@ func main() {
 
 	if o.resultStoreWorkers > 0 {
 		hasReporter = true
-		if err := crier.New(mgr, resultstorereporter.New(cfg, opener), o.resultStoreWorkers, o.githubEnablement.EnablementChecker()); err != nil {
+		conn, err := resultstore.Connect(context.Background())
+		if err != nil {
+			logrus.WithError(err).Fatal("Error connecing to resultstore")
+		}
+		uploader := resultstore.NewUploader(resultstore.NewClient(conn))
+		if err := crier.New(mgr, resultstorereporter.New(cfg, opener, uploader), o.resultStoreWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct resultstorereporter controller")
 		}
 	}

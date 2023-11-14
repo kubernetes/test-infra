@@ -26,6 +26,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io/fakeopener"
+	"k8s.io/test-infra/prow/resultstore"
 )
 
 type fakeConfigGetter struct {
@@ -37,7 +38,7 @@ func (fcg fakeConfigGetter) Config() *config.Config {
 }
 
 func TestGetName(t *testing.T) {
-	gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{})
+	gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{}, &resultstore.Uploader{})
 	want := "resultstorereporter"
 	if got := gr.GetName(); got != want {
 		t.Errorf("GetName() got %v, want %v", got, want)
@@ -266,7 +267,7 @@ func TestShouldReport(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{})
+			gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{}, &resultstore.Uploader{})
 			result := gr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.job)
 			if result != tc.shouldReport {
 				t.Errorf("ShouldReport() got %v, want %v", result, tc.shouldReport)
