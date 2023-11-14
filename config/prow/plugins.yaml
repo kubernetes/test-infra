@@ -28,6 +28,10 @@ triggers:
   join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
   trigger_github_workflows: true
 - repos:
+  - etcd-io
+  join_org_url: "https://github.com/etcd-io/etcd/blob/main/CONTRIBUTING.md"
+  trigger_github_workflows: true
+- repos:
   - bazelbuild
 - repos:
   - kubernetes/utils
@@ -1559,6 +1563,17 @@ plugins:
     - lifecycle
     - size
     - trigger
+
+  etcd-io:
+    plugins:
+    - assign
+    - trigger
+    - label
+    - pony
+    - retitle
+    - skip
+    - wip
+    - yuks
 
   containerd/containerd:
     plugins:
