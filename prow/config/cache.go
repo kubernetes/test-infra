@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/cache"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/utils/lru"
 )
 
 // Overview
@@ -164,7 +165,7 @@ func NewInRepoConfigCache(
 	lookupsCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.lookups)
 	hitsCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.hits)
 	missesCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.misses)
-	forcedEvictionsCallback := func(key interface{}, _ interface{}) {
+	forcedEvictionsCallback := func(key lru.Key, _ interface{}) {
 		org, repo, err := keyToOrgRepo(key)
 		if err != nil {
 			return
@@ -195,7 +196,8 @@ func NewInRepoConfigCache(
 		lruCache.Mutex.Lock()         // Lock the mutex
 		defer lruCache.Mutex.Unlock() // Unlock the mutex when done
 		// Record all unique orgRepo combinations we've seen so far.
-		for _, key := range lruCache.Keys() {
+		for i := lruCache.Len(); i > 0; i-- {
+			key, _ := lruCache.Get(i)
 			org, repo, err := keyToOrgRepo(key)
 			if err != nil {
 				// This should only happen if we are deliberately using things

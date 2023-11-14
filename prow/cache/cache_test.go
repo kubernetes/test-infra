@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+
+	"k8s.io/utils/lru"
 )
 
 // TestGetOrAddSimple is a basic check that the underlying LRU cache
@@ -150,7 +152,7 @@ func TestGetOrAddSimple(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Reset test state.
 			valConstructorCalls = 0
-			simpleCache.Purge()
+			simpleCache.Clear()
 
 			for k, v := range tc.cacheInitialState {
 				if tc.cache != nil {
@@ -282,7 +284,7 @@ func TestGetOrAddBurst(t *testing.T) {
 	}
 
 	valConstructorCalls = 0
-	lruCache.Purge()
+	lruCache.Clear()
 
 	// Consider the case where all threads perform one of 5 different cache lookups.
 	wg.Add(maxConcurrentRequests)
@@ -354,7 +356,7 @@ func TestCallbacks(t *testing.T) {
 	lookupsCallback := mkCallback(&lookupsCounter)
 	hitsCallback := mkCallback(&hitsCounter)
 	missesCallback := mkCallback(&missesCounter)
-	forcedEvictionsCallback := func(key interface{}, _ interface{}) {
+	forcedEvictionsCallback := func(key lru.Key, _ interface{}) {
 		forcedEvictionsCounter++
 	}
 	manualEvictionsCallback := mkCallback(&manualEvictionsCounter)
