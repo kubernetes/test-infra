@@ -42,6 +42,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
@@ -360,9 +361,13 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 	}
 
 	options := manager.Options{
-		LeaderElection:     false,
-		MetricsBindAddress: "0",
-		DryRunClient:       o.dryRun,
+		LeaderElection: false,
+		Metrics: metricsserver.Options{
+			BindAddress: "0",
+		},
+		Client: ctrlruntimeclient.Options{
+			DryRun: &o.dryRun,
+		},
 	}
 	for _, opt := range opts {
 		opt(&options)
@@ -391,7 +396,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 
 			// Check to see if we are able to perform actions against pods in
 			// the build cluster. The actions are given in requiredTestPodVerbs.
-			if err := checkAuthorizations(config, options.Namespace, requiredTestPodVerbs); err != nil {
+			if err := checkAuthorizations(config, "default", requiredTestPodVerbs); err != nil {
 				lock.Lock()
 				errs = append(errs, fmt.Errorf("failed pod resource authorization check: %w", err))
 				lock.Unlock()
@@ -427,7 +432,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}
-					if err := checkAuthorizations(buildClusterConfig, options.Namespace, requiredTestPodVerbs); err != nil {
+					if err := checkAuthorizations(buildClusterConfig, "default", requiredTestPodVerbs); err != nil {
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}

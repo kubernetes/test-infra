@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pjutil/pprof"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 
@@ -99,7 +100,17 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get prowjob kubeconfig")
 	}
-	cluster, err := cluster.New(cfg, func(o *cluster.Options) { o.Namespace = configAgent.Config().ProwJobNamespace })
+	var watchNamespaces map[string]cache.Config
+	if configAgent.Config().ProwJobNamespace != "" {
+		watchNamespaces = map[string]cache.Config{
+			configAgent.Config().ProwJobNamespace: {},
+		}
+	}
+	cluster, err := cluster.New(cfg, func(o *cluster.Options) {
+		o.Cache = cache.Options{
+			DefaultNamespaces: watchNamespaces,
+		}
+	})
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to construct prowjob client")
 	}

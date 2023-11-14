@@ -53,8 +53,10 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -349,11 +351,21 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
 		}
-		mgr, err := manager.New(restCfg, manager.Options{
-			Namespace:          cfg().ProwJobNamespace,
-			MetricsBindAddress: "0",
-			LeaderElection:     false},
-		)
+
+		var watchNamespaces map[string]cache.Config
+		if cfg().ProwJobNamespace != "" {
+			watchNamespaces = map[string]cache.Config{
+				cfg().ProwJobNamespace: {},
+			}
+		}
+		options := manager.Options{
+			Metrics:        metricsserver.Options{BindAddress: "0"},
+			LeaderElection: false,
+			Cache: cache.Options{
+				DefaultNamespaces: watchNamespaces,
+			},
+		}
+		mgr, err := manager.New(restCfg, options)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting manager.")
 		}

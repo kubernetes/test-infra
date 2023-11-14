@@ -27,17 +27,18 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/pjutil/pprof"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"k8s.io/test-infra/prow/tide"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 const (
@@ -156,7 +157,19 @@ func main() {
 	}
 	// Do not activate leader election here, as we do not use the `mgr` to control the lifecylcle of our cotrollers,
 	// this would just be a no-op.
-	mgr, err := manager.New(kubeCfg, manager.Options{Namespace: cfg().ProwJobNamespace, MetricsBindAddress: "0"})
+	var watchNamespaces map[string]cache.Config
+	if cfg().ProwJobNamespace != "" {
+		watchNamespaces = map[string]cache.Config{
+			cfg().ProwJobNamespace: {},
+		}
+	}
+	options := manager.Options{
+		Metrics: metricsserver.Options{BindAddress: "0"},
+		Cache: cache.Options{
+			DefaultNamespaces: watchNamespaces,
+		},
+	}
+	mgr, err := manager.New(kubeCfg, options)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}

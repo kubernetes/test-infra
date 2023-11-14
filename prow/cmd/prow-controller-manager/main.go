@@ -28,12 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/pjutil"
-	"k8s.io/test-infra/prow/pjutil/pprof"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"k8s.io/test-infra/pkg/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -41,7 +35,14 @@ import (
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"k8s.io/test-infra/prow/plank"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	_ "k8s.io/test-infra/prow/version"
 )
@@ -125,7 +126,7 @@ func main() {
 	}
 	cfg := configAgent.Config
 	o.kubernetes.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
-	
+
 	var logOpts []zap.Opts
 	if cfg().LogLevel == "debug" {
 		logOpts = append(logOpts, func(o *zap.Options) {
@@ -139,12 +140,20 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
 	}
+	var watchNamespaces map[string]cache.Config
+	if cfg().ProwJobNamespace != "" {
+		watchNamespaces = map[string]cache.Config{
+			cfg().ProwJobNamespace: {},
+		}
+	}
 	opts := manager.Options{
-		MetricsBindAddress:      "0",
-		Namespace:               cfg().ProwJobNamespace,
+		Metrics:                 metricsserver.Options{BindAddress: "0"},
 		LeaderElection:          true,
 		LeaderElectionNamespace: cfg().ProwJobNamespace,
 		LeaderElectionID:        "prow-controller-manager-leader-lock",
+		Cache: cache.Options{
+			DefaultNamespaces: watchNamespaces,
+		},
 	}
 	mgr, err := manager.New(infrastructureClusterConfig, opts)
 	if err != nil {
@@ -183,7 +192,9 @@ func main() {
 		requiredTestPodVerbs,
 		callBack,
 		func(o *manager.Options) {
-			o.Namespace = cfg().PodNamespace
+			o.Cache = cache.Options{
+				DefaultNamespaces: watchNamespaces,
+			}
 		},
 	)
 	if err != nil {

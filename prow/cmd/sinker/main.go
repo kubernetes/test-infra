@@ -30,12 +30,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/pjutil/pprof"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
@@ -46,7 +40,14 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	_ "k8s.io/test-infra/prow/version"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 type options struct {
@@ -128,13 +129,21 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 	}
 
+	var watchNamespaces map[string]cache.Config
+	if cfg().ProwJobNamespace != "" {
+		watchNamespaces = map[string]cache.Config{
+			cfg().ProwJobNamespace: {},
+		}
+	}
 	opts := manager.Options{
-		MetricsBindAddress:            "0",
-		Namespace:                     cfg().ProwJobNamespace,
+		Metrics:                       metricsserver.Options{BindAddress: "0"},
 		LeaderElection:                true,
 		LeaderElectionNamespace:       configAgent.Config().ProwJobNamespace,
 		LeaderElectionID:              "prow-sinker-leaderlock",
 		LeaderElectionReleaseOnCancel: true,
+		Cache: cache.Options{
+			DefaultNamespaces: watchNamespaces,
+		},
 	}
 	mgr, err := manager.New(infrastructureClusterConfig, opts)
 	if err != nil {
@@ -165,7 +174,9 @@ func main() {
 		// binary if a build cluster can be connected later .
 		callBack,
 		func(o *manager.Options) {
-			o.Namespace = cfg().PodNamespace
+			o.Cache = cache.Options{
+				DefaultNamespaces: watchNamespaces,
+			}
 		},
 	)
 	if err != nil {
