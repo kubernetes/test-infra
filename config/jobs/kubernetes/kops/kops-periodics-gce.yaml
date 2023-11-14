@@ -41,7 +41,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -106,7 +106,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
       imagePullPolicy: Always
       resources:
         limits:

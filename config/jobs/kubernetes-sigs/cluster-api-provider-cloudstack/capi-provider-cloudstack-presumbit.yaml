@@ -66,7 +66,7 @@ presubmits:
       automountServiceAccountToken: false
       containers:
       - name: build-container
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
         command:
         - bash
         - -c
@@ -98,7 +98,7 @@ presubmits:
       automountServiceAccountToken: false
       containers:
       - name: build-container
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
         command:
         - bash
         - -c
@@ -130,7 +130,7 @@ presubmits:
       hostNetwork: true
       containers:
       - name: build-container
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231103-fd8df63b1a-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
         command:
         - runner.sh
         args:
