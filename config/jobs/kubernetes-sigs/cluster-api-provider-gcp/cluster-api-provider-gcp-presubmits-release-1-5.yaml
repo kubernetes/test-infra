@@ -47,6 +47,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-build-release-1-5
   - name: pull-cluster-api-provider-gcp-make-release-1-5
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -107,6 +108,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-verify-release-1-5
   - name: pull-cluster-api-provider-gcp-e2e-test-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -132,16 +134,17 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
             requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
+              cpu: 4
+              memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-test-release-1-5
   - name: pull-cluster-api-provider-gcp-conformance-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -167,16 +170,17 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
             requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
+              cpu: 4
+              memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-release-1-5
   - name: pull-cluster-api-provider-gcp-capi-e2e-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -205,13 +209,17 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
             requests:
-              memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4
+              memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-capi-e2e-test-release-1-5
   - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -239,9 +247,12 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
             requests:
-              memory: "9000Mi"
-              cpu: 2000m
+              cpu: 4
+              memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-upgrade-release-1-5
