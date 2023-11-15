@@ -144,6 +144,16 @@ presubmits:
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "gp2"
+        - name: CL2_NETWORK_LATENCY_THRESHOLD
+          value: "0.5s"
+        - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+          value: "true"
+        - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+          value: "20s"
+        - name: CL2_ENABLE_DNSTESTS
+          value: "true"
+        - name: CL2_USE_ADVANCED_DNSTEST
+          value: "true"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
