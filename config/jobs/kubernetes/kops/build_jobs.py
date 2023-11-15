@@ -1440,7 +1440,12 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2"
+                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2",
+                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
+                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
+                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
+                'CL2_ENABLE_DNSTESTS': "true",
+                'CL2_USE_ADVANCED_DNSTEST': "true"
             }
         ),
         presubmit_test(
