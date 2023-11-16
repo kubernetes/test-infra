@@ -319,7 +319,8 @@ function copy-logs-from-node() {
       gcloud compute instances get-serial-port-output --project "${PROJECT}" --zone "${ZONE}" --port 1 "${node}" > "${dir}/serial-1.log" || true
       # FIXME(dims): bug in gcloud prevents multiple source files specified using curly braces, so we just loop through for now
       for single_file in "${files[@]}"; do
-        gcloud compute scp --recurse --project "${PROJECT}" --zone "${ZONE}" "${node}:${single_file}" "${dir}" > /dev/null || true
+        # gcloud scp doesn't work very well when trying to fetch constantly changing files such as logs, as it blocks forever sometimes.
+        gcloud compute ssh --project "${PROJECT}" --zone "${ZONE}" "${node}" --command "tar -zcvf - ${single_file}" | tar -zxf - --strip-components=2 -C "${dir}" || true
       done
     elif  [[ "${KUBERNETES_PROVIDER}" == "aws" ]]; then
       local ip
