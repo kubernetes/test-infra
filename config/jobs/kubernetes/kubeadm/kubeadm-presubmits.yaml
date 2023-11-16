@@ -10,7 +10,7 @@ presubmits:
     run_if_changed: '^kinder\/.*$'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
         command:
         - "./kinder/hack/verify-all.sh"
 
@@ -32,7 +32,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
         command:
         - runner.sh
         - "../kubeadm/kinder/ci/kinder-run.sh"

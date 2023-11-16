@@ -605,7 +605,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:

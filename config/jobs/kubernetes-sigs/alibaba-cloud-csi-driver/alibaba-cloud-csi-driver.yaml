@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
         command:
         - make
         args:
@@ -21,7 +21,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
         command:
         - make
         args:
@@ -36,7 +36,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
         command:
         - make
         args:
@@ -51,7 +51,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
         command:
         - make
         args:

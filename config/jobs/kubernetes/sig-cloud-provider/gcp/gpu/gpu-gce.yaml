@@ -46,7 +46,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       resources:
         limits:
           cpu: 1
@@ -89,7 +89,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       resources:
         limits:
           cpu: 1
