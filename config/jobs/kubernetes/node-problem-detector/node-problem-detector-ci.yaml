@@ -14,7 +14,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
@@ -49,7 +49,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
@@ -93,7 +93,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
@@ -139,7 +139,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
@@ -185,7 +185,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
@@ -231,7 +231,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
@@ -278,7 +278,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231114-c7aaf965de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231116-481eaca3cb-master
       command:
       - runner.sh
       args:
