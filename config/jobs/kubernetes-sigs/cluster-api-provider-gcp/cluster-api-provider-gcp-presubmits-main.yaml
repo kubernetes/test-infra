@@ -47,7 +47,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-gcp-make
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
