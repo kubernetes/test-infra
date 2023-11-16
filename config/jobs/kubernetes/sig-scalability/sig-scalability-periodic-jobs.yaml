@@ -272,10 +272,10 @@ periodics:
       resources:
         requests:
           cpu: 2
-          memory: "2Gi"
+          memory: "6Gi"
         limits:
           cpu: 2
-          memory: "2Gi"
+          memory: "6Gi"
 
 - name: ci-kubernetes-kubemark-100-gce-scheduler-highqps
   tags:
@@ -349,10 +349,10 @@ periodics:
       resources:
         requests:
           cpu: 2
-          memory: "2Gi"
+          memory: "6Gi"
         limits:
           cpu: 2
-          memory: "2Gi"
+          memory: "6Gi"
 
 - name: ci-kubernetes-kubemark-500-gce
   cluster: k8s-infra-prow-build
