@@ -11,8 +11,6 @@ dashboard_groups:
   - sig-release-1.27-informing
   - sig-release-1.26-blocking
   - sig-release-1.26-informing
-  - sig-release-1.25-blocking
-  - sig-release-1.25-informing
   - sig-release-releng-blocking
   - sig-release-releng-informing
   - sig-release-releng-presubmits
@@ -33,8 +31,6 @@ dashboards:
 - name: sig-release-1.27-informing
 - name: sig-release-1.26-blocking
 - name: sig-release-1.26-informing
-- name: sig-release-1.25-blocking
-- name: sig-release-1.25-informing
 - name: sig-release-releng-blocking
 - name: sig-release-releng-informing
 - name: sig-release-releng-presubmits
