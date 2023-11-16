@@ -582,3 +582,59 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+- interval: 24h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-rootless
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: kind-rootless
+    description: Kubernetes in Rootless Docker (in GCE VM)
+    # GitHub ID: @AkihiroSuda
+    testgrid-alert-email: suda.kyoto@gmail.com
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231015-d38ebb23ab-master
+      command:
+      - runner.sh
+      args:
+      - /bin/bash
+      - -c
+      - |
+        set -eux
+        # kindinv: Kubernetes in (Rootless) Docker in (GCE) VM
+        # See https://github.com/rootless-containers/kubetest2-kindinv
+        (cd ; GO111MODULE=on go install github.com/rootless-containers/kubetest2-kindinv@master)
+        exec kubetest2 kindinv \
+          --gcp-project=k8s-prow-builds \
+          --gcp-zone=us-west1-b \
+          --instance-image=ubuntu-os-cloud/ubuntu-2204-lts \
+          --instance-type=n2-standard-4 \
+          --kind-rootless \
+          --build \
+          --up \
+          --down \
+          --test=ginkgo \
+          -- \
+          --use-built-binaries \
+          --focus-regex='\[NodeConformance\]' \
+          --skip-regex='\[Environment:NotInUserNS\]|\[Slow\]' \
+          --parallel=8
+      resources:
+        limits:
+          memory: 2Gi
+          cpu: 2
+        requests:
+          memory: 2Gi
+          cpu: 2
