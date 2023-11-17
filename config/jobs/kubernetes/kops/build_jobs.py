@@ -623,7 +623,7 @@ def generate_misc():
                    distro="u2204arm64",
                    k8s_version="stable",
                    runs_per_day=1,
-                   terraform_version="1.0.5",
+                   terraform_version="1.3.9",
                    extra_flags=[
                        "--zones=us-west-1a",
                    ],
@@ -632,7 +632,7 @@ def generate_misc():
                    distro="u2204arm64",
                    k8s_version="stable",
                    runs_per_day=1,
-                   terraform_version="1.0.5",
+                   terraform_version="1.3.9",
                    extra_flags=[
                        '--ipv6',
                        '--topology=private',
@@ -1832,13 +1832,13 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-terraform",
             cloud="aws",
             distro="u2204arm64",
-            terraform_version="1.0.5",
+            terraform_version="1.3.9",
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-ipv6-terraform",
             cloud="aws",
             distro="u2204arm64",
-            terraform_version="1.0.5",
+            terraform_version="1.3.9",
             extra_flags=[
                 '--ipv6',
                 '--bastion',
