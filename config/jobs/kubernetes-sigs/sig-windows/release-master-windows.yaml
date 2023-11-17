@@ -445,7 +445,7 @@ periodics:
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
-    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -477,12 +477,16 @@ periodics:
             cpu: 2
             memory: "9Gi"
         env:
+          - name: API_SERVER_FEATURE_GATES
+            value: "InPlacePodVerticalScaling=true"
           - name: GINKGO_FOCUS
-            value: (\[Feature:NodeLogQuery\]|\[sig-windows\]) # run the features and a few windows related tests
+            value: (\[Feature:InPlacePodVerticalScaling\]|\[Feature:NodeLogQuery\]|\[sig-windows\]) # run the features and a few windows related tests
           - name: NODE_FEATURE_GATES
-            value: "NodeLogQuery=true"
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
+            value: "InPlacePodVerticalScaling=true,NodeLogQuery=true,PodAndContainerStatsFromCRI=true,RuntimeClassInImageCriApi=true"
+          - name: SCHEDULER_FEATURE_GATES
+            value: "InPlacePodVerticalScaling=true"
+          - name: WINDOWS_CONTAINERD_URL
+            value: "https://github.com/kubernetes-sigs/sig-windows-tools/releases/download/windows-containerd-nightly/windows-containerd.tar.gz"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
