@@ -508,6 +508,14 @@ func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
 	for _, key := range keys {
 		res = append(res, c.PresubmitsStatic[key]...)
 	}
+
+	// If res is empty, fall back to org's presubmits
+	if len(res) == 0 {
+		for _, key := range keys {
+			org := strings.Split(key, "/")[0]
+			res = append(res, c.PresubmitsStatic[org]...)
+		}
+	}
 	return res
 }
 
@@ -537,6 +545,14 @@ func (c *Config) GetPostsubmitsStatic(identifier string) []Postsubmit {
 	var res []Postsubmit
 	for _, key := range keys {
 		res = append(res, c.PostsubmitsStatic[key]...)
+	}
+
+	// If res is empty, fall back to org's postsubmits
+	if len(res) == 0 {
+		for _, key := range keys {
+			org := strings.Split(key, "/")[0]
+			res = append(res, c.PostsubmitsStatic[org]...)
+		}
 	}
 	return res
 }
