@@ -320,7 +320,8 @@ function copy-logs-from-node() {
       # FIXME(dims): bug in gcloud prevents multiple source files specified using curly braces, so we just loop through for now
       for single_file in "${files[@]}"; do
         # gcloud scp doesn't work very well when trying to fetch constantly changing files such as logs, as it blocks forever sometimes.
-        gcloud compute ssh --project "${PROJECT}" --zone "${ZONE}" "${node}" --command "tar -zcvf - ${single_file}" | tar -zxf - --strip-components=2 -C "${dir}" || true
+        # We set ConnectTimeout to 5s to avoid blocking for (default tested on 2023-11-17) 2m.
+        gcloud compute ssh --project "${PROJECT}" --zone "${ZONE}" "${node}" --command "tar -zcvf - ${single_file}" -- -o ConnectTimeout=5 | tar -zxf - --strip-components=2 -C "${dir}" || true
       done
     elif  [[ "${KUBERNETES_PROVIDER}" == "aws" ]]; then
       local ip
