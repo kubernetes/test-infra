@@ -1480,7 +1480,7 @@ presubmits:
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20231117' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --terraform-version=1.0.5 \
+            --terraform-version=1.5.5 \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
@@ -1548,7 +1548,7 @@ presubmits:
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20231117' --channel=alpha --networking=cilium --ipv6 --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
-            --terraform-version=1.0.5 \
+            --terraform-version=1.5.5 \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
