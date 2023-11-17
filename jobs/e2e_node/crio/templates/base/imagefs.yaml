@@ -1,0 +1,28 @@
+---
+storage:
+  files:
+    - path: /etc/containers/storage.conf
+      contents:
+        local: 50-storage.conf
+      mode: 0644
+systemd:
+  units:
+    - name: label-graphroot.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Label Graphroot
+        After=crio-install.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=rpm-ostree install \
+          -y \
+          --apply-live \
+          --allow-inactive \
+          policycoreutils-python-utils 
+        ExecStart=semanage fcontext -a -e /var/lib/containers /tmp/containers
+        ExecStart=restorecon -R -v /tmp/containers
+
+        [Install]
+        WantedBy=multi-user.target
