@@ -300,7 +300,7 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "standard"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.28"
+              value: "latest"
             - name: GINKGO_ARGS # cloud-provider-azure config
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
@@ -358,7 +358,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.28"
+              value: "latest"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
     annotations:
