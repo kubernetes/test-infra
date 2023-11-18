@@ -409,7 +409,6 @@ distro_options = [
 ]
 
 k8s_versions = [
-    "1.24",
     "1.25",
     "1.26",
     "1.27",
@@ -418,8 +417,8 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.26",
     "1.27",
+    "1.28",
 ]
 
 
@@ -486,15 +485,15 @@ def generate_misc():
 
         # A one-off scenario testing the artifacts-sandbox.k8s.io mirror
         build_test(name_override="kops-artifacts-sandbox",
-                   runs_per_day=24,
+                   runs_per_day=3,
                    cloud="aws",
                    k8s_version='stable',
                    extra_dashboards=['kops-misc'],
                    scenario='smoketest',
                    env={
-                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/", # pylint: disable=line-too-long
-                       'KOPS_VERSION': "v1.26.0-beta.2",
-                       'K8S_VERSION': "v1.25.0",
+                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.1/", # pylint: disable=line-too-long
+                       'KOPS_VERSION': "v1.28.1",
+                       'K8S_VERSION': "v1.28.4",
                        'KOPS_SKIP_E2E': '1',
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),
@@ -1285,28 +1284,22 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops26 = 'v1.26.4'
-    kops27 = 'v1.27.1'
-    kops28 = 'v1.28.0-beta.1'
+    kops26 = 'v1.26.6'
+    kops27 = 'v1.27.2'
+    kops28 = 'v1.28.1'
 
     versions_list = [
         #  kops    k8s          kops      k8s
         # 1.27 release branch
-        ((kops26, 'v1.21.14'), ('1.27', 'v1.22.17')),
-        ((kops26, 'v1.26.6'), ('1.27', 'v1.27.3')),
-        ((kops27, 'v1.22.17'), ('1.27', 'v1.23.17')),
-        ((kops27, 'v1.27.2'), ('1.27', 'v1.27.3')),
+        ((kops26, 'v1.26.11'), ('1.27', 'v1.27.8')),
+        ((kops27, 'v1.27.7'), ('1.27', 'v1.27.8')),
         # 1.28 release branch
-        ((kops26, 'v1.22.17'), ('1.28', 'v1.23.17')),
-        ((kops26, 'v1.26.6'), ('1.28', 'v1.27.3')),
-        ((kops27, 'v1.22.17'), ('1.28', 'v1.23.17')),
-        ((kops27, 'v1.27.3'), ('1.28', 'v1.28.1')),
-        ((kops28, 'v1.23.17'), ('1.28', 'v1.24.17')),
-        ((kops28, 'v1.28.0'), ('1.28', 'v1.28.1')),
+        ((kops26, 'v1.26.11'), ('1.28', 'v1.27.8')),
+        ((kops27, 'v1.27.8'), ('1.28', 'v1.28.4')),
+        ((kops28, 'v1.28.3'), ('1.28', 'v1.28.4')),
         # 1.26 upgrade to latest
         ((kops26, 'v1.26.0'), ('latest', 'v1.27.0')),
         # 1.27 upgrade to latest
-        ((kops27, 'v1.23.0'), ('latest', 'v1.24.0')),
         ((kops27, 'v1.24.0'), ('latest', 'v1.25.0')),
         ((kops27, 'v1.25.0'), ('latest', 'v1.26.0')),
         ((kops27, 'v1.26.0'), ('latest', 'v1.27.0')),
@@ -1357,7 +1350,6 @@ def generate_upgrades():
             build_test(name_override=job_name,
                        distro='u2004',
                        networking='calico',
-                       irsa=k8s_a >= 'v1.22',
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
@@ -1371,7 +1363,6 @@ def generate_upgrades():
             build_test(name_override=job_name + "-many-addons",
                        distro='u2004',
                        networking='calico',
-                       irsa=k8s_a >= 'v1.22',
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades-many-addons'],
@@ -1497,7 +1488,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.28', '1.27', '1.26', '1.25', '1.24']:
+    for version in ['1.28', '1.27', '1.26', '1.25']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -1846,16 +1837,6 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            branch='master',
-            k8s_version='1.24',
-            kops_channel='alpha',
-            name='pull-kops-latest-e2e-aws-k8s-1-24',
-            networking='calico',
-            tab_name='e2e-aws-1-24',
-            always_run=False,
-        ),
-
-        presubmit_test(
             distro='channels',
             branch='release-1.28',
             k8s_version='1.28',
@@ -1885,26 +1866,7 @@ def generate_presubmits_e2e():
             tab_name='e2e-1-26',
             always_run=True,
         ),
-        presubmit_test(
-            distro='channels',
-            branch='release-1.25',
-            k8s_version='1.25',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-25',
-            networking='calico',
-            tab_name='e2e-1-25',
-            always_run=True,
-        ),
-        presubmit_test(
-            distro='channels',
-            branch='release-1.24',
-            k8s_version='1.24',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-24',
-            networking='calico',
-            tab_name='e2e-1-24',
-            always_run=True,
-        ),
+
         presubmit_test(
             distro='u2204arm64',
             name="pull-kops-e2e-aws-karpenter",
