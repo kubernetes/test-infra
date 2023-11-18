@@ -486,15 +486,15 @@ def generate_misc():
 
         # A one-off scenario testing the artifacts-sandbox.k8s.io mirror
         build_test(name_override="kops-artifacts-sandbox",
-                   runs_per_day=24,
+                   runs_per_day=3,
                    cloud="aws",
                    k8s_version='stable',
                    extra_dashboards=['kops-misc'],
                    scenario='smoketest',
                    env={
-                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/", # pylint: disable=line-too-long
-                       'KOPS_VERSION': "v1.26.0-beta.2",
-                       'K8S_VERSION': "v1.25.0",
+                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.1/", # pylint: disable=line-too-long
+                       'KOPS_VERSION': "v1.28.1",
+                       'K8S_VERSION': "v1.28.4",
                        'KOPS_SKIP_E2E': '1',
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),
