@@ -409,7 +409,6 @@ distro_options = [
 ]
 
 k8s_versions = [
-    "1.24",
     "1.25",
     "1.26",
     "1.27",
@@ -418,8 +417,8 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.26",
     "1.27",
+    "1.28",
 ]
 
 
