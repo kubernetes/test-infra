@@ -629,7 +629,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.25
+        base_ref: release-1.26
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -658,7 +658,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.25"
+              value: "latest-1.26"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
