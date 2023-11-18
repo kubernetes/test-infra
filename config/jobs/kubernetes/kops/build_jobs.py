@@ -1488,7 +1488,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.28', '1.27', '1.26', '1.25', '1.24']:
+    for version in ['1.28', '1.27', '1.26', '1.25']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -1837,16 +1837,6 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            branch='master',
-            k8s_version='1.24',
-            kops_channel='alpha',
-            name='pull-kops-latest-e2e-aws-k8s-1-24',
-            networking='calico',
-            tab_name='e2e-aws-1-24',
-            always_run=False,
-        ),
-
-        presubmit_test(
             distro='channels',
             branch='release-1.28',
             k8s_version='1.28',
@@ -1876,26 +1866,7 @@ def generate_presubmits_e2e():
             tab_name='e2e-1-26',
             always_run=True,
         ),
-        presubmit_test(
-            distro='channels',
-            branch='release-1.25',
-            k8s_version='1.25',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-25',
-            networking='calico',
-            tab_name='e2e-1-25',
-            always_run=True,
-        ),
-        presubmit_test(
-            distro='channels',
-            branch='release-1.24',
-            k8s_version='1.24',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-24',
-            networking='calico',
-            tab_name='e2e-1-24',
-            always_run=True,
-        ),
+
         presubmit_test(
             distro='u2204arm64',
             name="pull-kops-e2e-aws-karpenter",
