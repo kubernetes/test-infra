@@ -6,7 +6,7 @@ steps:
     - --tag=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
     - --build-arg=AWS_IAM_AUTHENTICATOR_VERSION=$_AWS_IAM_AUTHENTICATOR_VERSION
-    - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
+    - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
     - --push
     - .
     dir: .

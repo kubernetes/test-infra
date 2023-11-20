@@ -5,7 +5,7 @@ steps:
     - build
     - --tag=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
-    - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
+    - --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
     - --push
     - .
     dir: .

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 push-prod:
-	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb images/bootstrap
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb --build-dir=. images/bootstrap
 
 push:
-	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty images/bootstrap
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty --build-dir=. images/bootstrap
 
 .PHONY: push push-prod
