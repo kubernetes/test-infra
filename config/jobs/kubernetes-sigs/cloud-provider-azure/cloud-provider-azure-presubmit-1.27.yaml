@@ -31,7 +31,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
-      skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
       decorate: true
       decoration_config:
         timeout: 4h
@@ -84,7 +84,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-capz-1-27 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-capz-1-27
-      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -145,7 +145,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-1-27
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-27
-      skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
       decorate: true
       decoration_config:
         timeout: 4h
@@ -429,7 +429,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-27 runs Azure specific e2e tests with cloud controller manager v1.27 and IP-based load balancer backend pools.
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-27
-      skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+      skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
       decorate: true
       decoration_config:
         timeout: 3h
