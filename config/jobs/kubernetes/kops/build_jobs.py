@@ -1259,7 +1259,7 @@ def generate_network_plugins():
         distro = 'u2204'
         if plugin == 'amazon-vpc':
             distro = 'u2004'
-        if plugin in ['canal', 'flannel', 'kuberouter']:
+        if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         focus_regex = None
         if plugin == 'cilium-eni':
@@ -1554,7 +1554,7 @@ def generate_presubmits_network_plugins():
         if plugin == 'amazonvpc':
             distro = 'u2004'
             optional = True
-        if plugin in ['canal', 'flannel', 'kuberouter']:
+        if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
