@@ -623,17 +623,18 @@ presubmits:
             - bash
             - -c
             - |
+              set -x
               KUBE_MINOR_VERSION="v1.29"
               TODAYS_DATE=$(date -u +'%Y%m%d')
               AMI_NAME="amazon-eks-al2023-node-${KUBE_MINOR_VERSION}-v${TODAYS_DATE}"
-              ami_id=$(aws ec2 describe-images --region=us-west-2 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
+              AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
 
-              if [ -z "${ami_id}" ] ; then
+              if [ -z "$AMI_ID" ] ; then
                 export AMI_NAME
                 $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/hack/build-ami.sh
-                ami_id=$(aws ec2 describe-images --region=us-west-2 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
+                AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
               else
-                echo "found existing ami : ${ami_id} skipping building a new AMI..."
+                echo "found existing ami : $AMI_ID skipping building a new AMI..."
               fi
 
               cd kubetest2-ec2 && GOPROXY=direct go install .
@@ -642,7 +643,7 @@ presubmits:
                --instance-type=m6a.large  \
                --region us-east-1 \
                --target-build-arch linux/amd64 \
-               --worker-image "${ami_id}" \
+               --worker-image "$AMI_ID" \
                --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
                --stage provider-aws-test-infra \
                --up \
@@ -821,24 +822,25 @@ periodics:
           - bash
           - -c
           - |
+            set -x
             KUBE_MINOR_VERSION="v1.29"
             TODAYS_DATE=$(date -u +'%Y%m%d')
             AMI_NAME="amazon-eks-al2023-node-${KUBE_MINOR_VERSION}-v${TODAYS_DATE}"
-            ami_id=$(aws ec2 describe-images --region=us-west-2 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
+            AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
 
-            if [ -z "${ami_id}" ] ; then
+            if [ -z "$AMI_ID" ] ; then
               export AMI_NAME
               $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/hack/build-ami.sh
-              ami_id=$(aws ec2 describe-images --region=us-west-2 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
+              AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
             else
-              echo "found existing ami : ${ami_id} skipping building a new AMI..."
+              echo "found existing ami : $AMI_ID skipping building a new AMI..."
             fi
 
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
             kubetest2 ec2 \
              --build \
              --target-build-arch linux/amd64 \
-             --worker-image "${ami_id}" \
+             --worker-image "$AMI_ID" \
              --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
              --stage provider-aws-test-infra \
              --up \
