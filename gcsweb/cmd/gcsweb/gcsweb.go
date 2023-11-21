@@ -26,7 +26,6 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -225,7 +224,7 @@ func main() {
 	for _, prowPath := range o.allowedProwPaths {
 		prefix := pathPrefix(prowPath)
 
-		logrus.WithField("bucket", bucketWithScheme(prowPath)).Info("allowing bucket")
+		logrus.WithField("bucket", prowPath.BucketWithScheme()).Info("allowing bucket")
 		mux.HandleFunc(prefix+"/", s.storageRequest)
 		mux.HandleFunc(prefix, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, prefix+"/", http.StatusPermanentRedirect)
@@ -342,7 +341,7 @@ type objectHeaders struct {
 }
 
 func (s *server) handleObject(w http.ResponseWriter, prowPath *prowv1.ProwPath, headers objectHeaders) error {
-	objReader, err := s.storageClient.Reader(context.Background(), fullObjectPath(prowPath))
+	objReader, err := s.storageClient.Reader(context.Background(), prowPath.String())
 	if err != nil {
 		return fmt.Errorf("couldn't create the object reader: %w", err)
 	}
@@ -370,10 +369,10 @@ func (s *server) handleObject(w http.ResponseWriter, prowPath *prowv1.ProwPath, 
 	return nil
 }
 
-func (s *server) handleDirectory(w http.ResponseWriter, prowPath *prowv1.ProwPath, object, path string) error {
+func (s *server) handleDirectory(w http.ResponseWriter, prowPath *prowv1.ProwPath, path string) error {
 	// Get all object that exist in the parent folder only. We can do that by adding a
 	// slash at the end of the prefix and use this as a delimiter in the gcs query.
-	o, err := s.storageClient.Iterator(context.Background(), fullObjectPath(prowPath)+"/", "/")
+	o, err := s.storageClient.Iterator(context.Background(), prowPath.String()+"/", "/")
 	if err != nil {
 		return fmt.Errorf("couldn't create the object iterator: %w", err)
 	}
@@ -432,13 +431,11 @@ func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// e.g. "/gcs/bucket/path/to/object/" -> "path/to/object"
-	object := strings.Trim(prowPath.Path, "/")
-	objectLogger := logger.WithFields(logrus.Fields{"bucket": bucketWithScheme(prowPath), "object": object})
+	objectLogger := logger.WithFields(logrus.Fields{"bucket": prowPath.BucketWithScheme(), "object": strings.Trim(prowPath.Path, "/")})
 
 	objectLogger.Info("Processing request...")
 	// Getting the object attributes directly will determine if is a folder or a file.
-	objAttrs, err := s.storageClient.Attributes(context.Background(), fullObjectPath(prowPath))
+	objAttrs, err := s.storageClient.Attributes(context.Background(), prowPath.String())
 
 	// This means that the object is a file.
 	if err == nil {
@@ -456,7 +453,7 @@ func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		err := s.handleDirectory(w, prowPath, object, path)
+		err := s.handleDirectory(w, prowPath, path)
 		if err != nil {
 			objectLogger.WithError(err).Error("error while handling objects")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -464,10 +461,6 @@ func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-}
-
-func bucketWithScheme(prowPath *prowv1.ProwPath) string {
-	return fmt.Sprintf("%s://%s", prowPath.StorageProvider(), prowPath.Bucket())
 }
 
 func providerPrefix(provider string) string {
@@ -491,10 +484,6 @@ func providerName(provider string) string {
 
 func pathPrefix(prowPath *prowv1.ProwPath) string {
 	return joinPath(providerPrefix(prowPath.StorageProvider()), prowPath.Bucket())
-}
-
-func fullObjectPath(prowPath *prowv1.ProwPath) string {
-	return (*url.URL)(prowPath).String()
 }
 
 func parsePath(path string) (*prowv1.ProwPath, error) {

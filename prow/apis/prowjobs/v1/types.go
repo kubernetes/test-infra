@@ -979,8 +979,16 @@ func (pp ProwPath) Bucket() string {
 	return pp.Host
 }
 
+func (pp ProwPath) BucketWithScheme() string {
+	return fmt.Sprintf("%s://%s", pp.StorageProvider(), pp.Bucket())
+}
+
 func (pp ProwPath) FullPath() string {
 	return pp.Host + pp.Path
+}
+
+func (pp *ProwPath) String() string {
+	return (*url.URL)(pp).String()
 }
 
 // ParsePath tries to extract the ProwPath from, e.g.:

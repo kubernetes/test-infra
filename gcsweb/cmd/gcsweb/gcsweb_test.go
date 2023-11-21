@@ -24,7 +24,6 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -63,7 +62,7 @@ func (f *fakeOpener) Iterator(ctx context.Context, prefix string, delimiter stri
 	if err != nil {
 		return nil, err
 	}
-	bucket := bucketWithScheme(prowPath)
+	bucket := prowPath.BucketWithScheme()
 
 	var objects []pkgio.ObjectAttributes
 
@@ -477,7 +476,7 @@ func TestHandleDirectory(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if err := s.handleDirectory(w, prowPath, strings.Trim(prowPath.Path, "/"), tc.path); err != nil {
+			if err := s.handleDirectory(w, prowPath, tc.path); err != nil {
 				t.Fatalf("error not expected: %v", err)
 			}
 
