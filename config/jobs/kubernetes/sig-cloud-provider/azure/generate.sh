@@ -46,7 +46,7 @@ installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
-  capz_release="release-1.11"
+  capz_release="release-1.12"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
@@ -375,7 +375,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: main # TODO: switch back to capz_periodic_branch_name once capz release-1.12 exists
+    base_ref: ${capz_periodic_branch_name}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -424,7 +424,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: main # TODO: switch back to capz_periodic_branch_name once capz release-1.12 exists
+    base_ref: ${capz_periodic_branch_name}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
