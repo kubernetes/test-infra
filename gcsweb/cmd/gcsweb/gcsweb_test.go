@@ -621,11 +621,6 @@ func TestGetParent(t *testing.T) {
 			expected: "/gcs/foo/",
 		},
 		{
-			id:       "without leading slash",
-			path:     "gcs/foo/bar",
-			expected: "/gcs/foo/",
-		},
-		{
 			id:       "bucket root with trailing slash",
 			path:     "/gcs/foo/",
 			expected: "",

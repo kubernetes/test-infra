@@ -27,6 +27,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -513,16 +514,15 @@ func joinPath(paths ...string) string {
 	return strings.Join(paths, "/")
 }
 
-// getParent returns the logical parent directory of the path.  This is different
-// than path.Split() in that we want getParent("/gcs/foo/bar/") -> "/gcs/foo/", whereas
-// path.Split() returns "/gcs/foo/bar/".
-// As a special case, getParent returns the empty string for the bucket root, e.g.
-// getParent("/gcs/foo") -> "".
-func getParent(path string) string {
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) > 2 {
-		return "/" + strings.Join(parts[0:len(parts)-1], "/") + "/"
+// getParent is basically path.Dir but handles two special cases for gcsweb:
+// - it treats paths with and without trailing slash equally, e.g.: /gcs/foo/bar/ -> /gcs/foo/ and /gcs/foo/bar -> /gcs/foo/
+// - it returns the empty string for the bucket root, e.g.: /gcs/foo -> ""
+func getParent(inPath string) string {
+	parent := path.Dir(strings.TrimSuffix(inPath, "/"))
+	if strings.Count(parent, "/") >= 2 {
+		return parent + "/"
 	}
+	// inPath is bucket root
 	return ""
 }
 
