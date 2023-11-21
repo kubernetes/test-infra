@@ -72,6 +72,7 @@ type Configuration struct {
 	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
 	BranchCleaner        BranchCleaner                `json:"branch_cleaner,omitempty"`
 	Cat                  Cat                          `json:"cat,omitempty"`
+	CherryPickApproved   []CherryPickApproved         `json:"cherry_pick_approved,omitempty"`
 	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater        ConfigUpdater                `json:"config_updater,omitempty"`
 	Dco                  map[string]*Dco              `json:"dco,omitempty"`
@@ -704,6 +705,21 @@ type Dco struct {
 	ContributingPath string `json:"contributing_path,omitempty"`
 }
 
+// CherryPickApproved is the config for the cherrypick-approved plugin.
+type CherryPickApproved struct {
+	// Org is the GitHub organization that this config applies to.
+	Org string `json:"org,omitempty"`
+	// Repo is the GitHub repository within Org that this config applies to.
+	Repo string `json:"repo,omitempty"`
+	// BranchRegexp is the regular expression for branch names such that
+	// the plugin treats only PRs against these branch names as cherrypick PRs.
+	// Compiles into BranchRe during config load.
+	BranchRegexp string         `json:"branchregexp,omitempty"`
+	BranchRe     *regexp.Regexp `json:"-"`
+	// Approvers is the list of GitHub logins allowed to approve a cherry-pick.
+	Approvers []string `json:"approvers,omitempty"`
+}
+
 // CherryPickUnapproved is the config for the cherrypick-unapproved plugin.
 type CherryPickUnapproved struct {
 	// BranchRegexp is the regular expression for branch names such that
@@ -1056,6 +1072,12 @@ func (c *Configuration) setDefaults() {
 		c.CherryPickUnapproved.Comment = `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.`
 	}
 
+	for i := range c.CherryPickApproved {
+		if c.CherryPickApproved[i].BranchRegexp == "" {
+			c.CherryPickApproved[i].BranchRegexp = `^release-.*$`
+		}
+	}
+
 	for i, rml := range c.RequireMatchingLabel {
 		if rml.GracePeriod == "" {
 			c.RequireMatchingLabel[i].GracePeriod = "5s"
@@ -1296,11 +1318,19 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 	}
 	pc.SigMention.Re = cRe
 
-	branchRe, err := regexp.Compile(pc.CherryPickUnapproved.BranchRegexp)
+	unapprovedBranchRe, err := regexp.Compile(pc.CherryPickUnapproved.BranchRegexp)
 	if err != nil {
 		return err
 	}
-	pc.CherryPickUnapproved.BranchRe = branchRe
+	pc.CherryPickUnapproved.BranchRe = unapprovedBranchRe
+
+	for i := range pc.CherryPickApproved {
+		approvedBranchRe, err := regexp.Compile(pc.CherryPickApproved[i].BranchRegexp)
+		if err != nil {
+			return err
+		}
+		pc.CherryPickApproved[i].BranchRe = approvedBranchRe
+	}
 
 	for i := range pc.Blockades {
 		if pc.Blockades[i].BranchRegexp == nil {
