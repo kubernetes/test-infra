@@ -288,6 +288,7 @@ type Client interface {
 	ForSubcomponent(subcomponent string) Client
 	Used() bool
 	TriggerGitHubWorkflow(org, repo string, id int) error
+	TriggerFailedGitHubWorkflow(org, repo string, id int) error
 }
 
 // client interacts with the github api. It is reconstructed whenever
@@ -2080,6 +2081,9 @@ func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA 
 	return prRuns, err
 }
 
+// TriggerGitHubWorkflow will rerun a workflow
+//
+// See https://docs.github.com/en/rest/actions/workflow-runs#re-run-a-workflow
 func (c *client) TriggerGitHubWorkflow(org, repo string, id int) error {
 	durationLogger := c.log("TriggerGitHubWorkflow", org, repo, id)
 	defer durationLogger()
@@ -2087,6 +2091,22 @@ func (c *client) TriggerGitHubWorkflow(org, repo string, id int) error {
 		accept:    "application/vnd.github.v3+json",
 		method:    http.MethodPost,
 		path:      fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
+		org:       org,
+		exitCodes: []int{201},
+	}, nil)
+	return err
+}
+
+// TriggerFailedGitHubWorkflow will rerun the failed jobs and all its dependents
+//
+// See https://docs.github.com/en/rest/actions/workflow-runs#re-run-failed-jobs-from-a-workflow-run
+func (c *client) TriggerFailedGitHubWorkflow(org, repo string, id int) error {
+	durationLogger := c.log("TriggerFailedGitHubWorkflow", org, repo, id)
+	defer durationLogger()
+	_, err := c.request(&request{
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun-failed-jobs", org, repo, id),
 		org:       org,
 		exitCodes: []int{201},
 	}, nil)
