@@ -625,6 +625,7 @@ periodics:
           --instance-image=ubuntu-os-cloud/ubuntu-2204-lts \
           --instance-type=n2-standard-4 \
           --kind-rootless \
+          --user=rootless \
           --build \
           --up \
           --down \
