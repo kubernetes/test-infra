@@ -1,0 +1,265 @@
+dashboards:
+- dashboard_tab:
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.14-lp-rosa-hypershift-jaeger-product-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.14-lp-rosa-hypershift-jaeger-product-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-kiali-kiali-master-kiali-hypershift-4.14-lp-rosa-hypershift-aws-lp-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-kiali-kiali-master-kiali-hypershift-4.14-lp-rosa-hypershift-aws-lp-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.14-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.14-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-jenkins-release-4.14-jenkins-hypershift4.14-aws-jenkins-lp-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-jenkins-release-4.14-jenkins-hypershift4.14-aws-jenkins-lp-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhpit-interop-tests-main-mtc-hypershift-4.14-lp-rosa-hypershift-mtc-aws-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhpit-interop-tests-main-mtc-hypershift-4.14-lp-rosa-hypershift-mtc-aws-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhpit-interop-tests-main-openshift-pipelines-hypershift-4.14-lp-rosa-hypershift-openshift-pipelines-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhpit-interop-tests-main-openshift-pipelines-hypershift-4.14-lp-rosa-hypershift-openshift-pipelines-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhpit-interop-tests-main-serverless-hypershift-4.14-lp-rosa-hypershift-serverless-aws-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhpit-interop-tests-main-serverless-hypershift-4.14-lp-rosa-hypershift-serverless-aws-rosa-hypershift
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhpit-interop-tests-main-web-terminal-hypershift-4.14-lp-rosa-hypershift-web-terminal-aws-rosa-hypershift
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhpit-interop-tests-main-web-terminal-hypershift-4.14-lp-rosa-hypershift-web-terminal-aws-rosa-hypershift
+  name: redhat-openshift-lp-rosa-hypershift-release-4.14-informing
+test_groups:
+- gcs_prefix: origin-ci-test/logs/periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.14-lp-rosa-hypershift-jaeger-product-rosa-hypershift
+  name: periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.14-lp-rosa-hypershift-jaeger-product-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-kiali-kiali-master-kiali-hypershift-4.14-lp-rosa-hypershift-aws-lp-rosa-hypershift
+  name: periodic-ci-kiali-kiali-master-kiali-hypershift-4.14-lp-rosa-hypershift-aws-lp-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.14-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift
+  name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.14-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-jenkins-release-4.14-jenkins-hypershift4.14-aws-jenkins-lp-rosa-hypershift
+  name: periodic-ci-openshift-jenkins-release-4.14-jenkins-hypershift4.14-aws-jenkins-lp-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-rosa-hypershift
+  name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-rhpit-interop-tests-main-mtc-hypershift-4.14-lp-rosa-hypershift-mtc-aws-rosa-hypershift
+  name: periodic-ci-rhpit-interop-tests-main-mtc-hypershift-4.14-lp-rosa-hypershift-mtc-aws-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-rhpit-interop-tests-main-openshift-pipelines-hypershift-4.14-lp-rosa-hypershift-openshift-pipelines-rosa-hypershift
+  name: periodic-ci-rhpit-interop-tests-main-openshift-pipelines-hypershift-4.14-lp-rosa-hypershift-openshift-pipelines-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-rhpit-interop-tests-main-serverless-hypershift-4.14-lp-rosa-hypershift-serverless-aws-rosa-hypershift
+  name: periodic-ci-rhpit-interop-tests-main-serverless-hypershift-4.14-lp-rosa-hypershift-serverless-aws-rosa-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-rhpit-interop-tests-main-web-terminal-hypershift-4.14-lp-rosa-hypershift-web-terminal-aws-rosa-hypershift
+  name: periodic-ci-rhpit-interop-tests-main-web-terminal-hypershift-4.14-lp-rosa-hypershift-web-terminal-aws-rosa-hypershift
