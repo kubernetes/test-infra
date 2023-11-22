@@ -2192,7 +2192,7 @@ presubmits:
       preset-capz-windows-common-pull: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-e2e-capz-windows-1.29
+    name: pull-kubernetes-e2e-capz-windows-1-29
     optional: true
     path_alias: k8s.io/kubernetes
     run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
