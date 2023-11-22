@@ -9,7 +9,6 @@ presubmits:
       # The script this job runs is not in all branches.
       - ^release-1.4$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           command:
@@ -35,7 +34,6 @@ presubmits:
       - ^release-1.4$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - command:
             - runner.sh
@@ -62,7 +60,6 @@ presubmits:
       # The script this job runs is not in all branches.
       - ^release-1.4$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           command:
@@ -89,7 +86,6 @@ presubmits:
       - ^release-1.4$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:
@@ -114,7 +110,6 @@ presubmits:
       - ^release-1.4$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:
@@ -150,7 +145,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:
@@ -185,7 +179,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:
@@ -222,7 +215,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:
@@ -255,15 +247,12 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     always_run: false
     branches:
       # The script this job runs is not in all branches.
       - ^release-1.4$
     path_alias: sigs.k8s.io/cluster-api
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:
@@ -294,7 +283,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    optional: true
     always_run: false
     branches:
       # The script this job runs is not in all branches.
@@ -306,7 +294,6 @@ presubmits:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
           args:

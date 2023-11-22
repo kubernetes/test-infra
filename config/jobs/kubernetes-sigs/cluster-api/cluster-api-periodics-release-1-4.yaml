@@ -13,7 +13,6 @@ periodics:
       base_ref: release-1.4
       path_alias: sigs.k8s.io/cluster-api
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
         command:
@@ -45,7 +44,6 @@ periodics:
       base_ref: release-1.4
       path_alias: sigs.k8s.io/cluster-api
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
         command:
@@ -92,7 +90,6 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
         args:
@@ -137,7 +134,6 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.26
         args:
