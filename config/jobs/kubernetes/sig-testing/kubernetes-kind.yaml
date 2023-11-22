@@ -638,3 +638,5 @@ periodics:
         requests:
           memory: 2Gi
           cpu: 2
+  rerun_auth_config:
+    allow_anyone: true
