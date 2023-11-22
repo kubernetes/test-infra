@@ -116,6 +116,9 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   50_crd.yaml
   WAIT_FOR_CRD_prowjobs.prow.k8s.io,default
 
+  git-config-system.yaml
+  WAIT_FOR_RESOURCE_configmaps,git-config-system,default
+
   100_starter.yaml
   WAIT_FOR_RESOURCE_namespaces,test-pods,default
   WAIT_FOR_RESOURCE_secrets,oauth-token,default

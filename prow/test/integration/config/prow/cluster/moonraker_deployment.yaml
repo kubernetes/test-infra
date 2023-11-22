@@ -54,6 +54,9 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        - name: git-config-system
+          mountPath: /etc/git-config-system
+          readOnly: true
         livenessProbe:
           httpGet:
             path: /healthz
@@ -72,6 +75,8 @@ spec:
         # This allows us to use "https://..." addresses to fakegitserver.
         - name: GIT_SSL_NO_VERIFY
           value: "1"
+        - name: GIT_CONFIG_SYSTEM
+          value: /etc/git-config-system/config
       volumes:
       - name: cookies
         secret:
@@ -83,3 +88,6 @@ spec:
       - name: job-config
         configMap:
           name: job-config
+      - name: git-config-system
+        configMap:
+          name: git-config-system
