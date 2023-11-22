@@ -28,7 +28,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -95,7 +95,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -202,7 +202,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
         imagePullPolicy: Always
         command:
         - runner.sh
