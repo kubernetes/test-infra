@@ -473,16 +473,6 @@ func providerPrefix(provider string) string {
 	return "/" + provider
 }
 
-func providerName(provider string) string {
-	switch provider {
-	case providers.GS:
-		return "GCS"
-	case providers.S3:
-		return "S3"
-	}
-	return provider
-}
-
 func pathPrefix(prowPath *prowv1.ProwPath) string {
 	return joinPath(providerPrefix(prowPath.StorageProvider()), prowPath.Bucket())
 }
@@ -537,7 +527,7 @@ type gcsDir struct {
 
 // Render writes HTML representing this gcsDir to the provided output.
 func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
-	htmlPageHeader(out, providerName(dir.ProwPath.StorageProvider()), dir.ProwPath.Bucket())
+	htmlPageHeader(out, providers.DisplayName(dir.ProwPath.StorageProvider()), dir.ProwPath.Bucket())
 
 	if !strings.HasSuffix(inPath, "/") {
 		inPath += "/"
