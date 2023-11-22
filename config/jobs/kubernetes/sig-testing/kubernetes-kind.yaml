@@ -634,7 +634,6 @@ periodics:
           --down \
           --test=ginkgo \
           -- \
-          --use-built-binaries \
           --focus-regex='\[NodeConformance\]' \
           --skip-regex='\[Environment:NotInUserNS\]|\[Slow\]' \
           --parallel=8
