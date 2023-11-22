@@ -29,11 +29,12 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
-    # - name: gce-cos-1.14-ingress
-    #   test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-    #   alert_options:
-    #     alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
+    # TODO(1.29): comment this out when we move 1.29 to stable1
+    - name: gce-cos-1.14-ingress
+      test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-ip-alias
       test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
       alert_options:
