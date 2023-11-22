@@ -35,35 +35,36 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
-  # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
-  # ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-  #   interval: 1h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-  #   interval: 1h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sbeta-default:
-  #   args:
-  #   - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-  #   interval: 1h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
-  #   interval: 1h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseInforming: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
-  #   interval: 1h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseInforming: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
-  #   interval: 1h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
+  # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
+  # TODO(1.29): comment this out when we move 1.29 to stable1
+  ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sbeta-default:
+    args:
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
 
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
@@ -251,12 +252,13 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
-  # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
-  # beta:
-  #   args:
-  #   - --extract=ci/latest-1.28
-  #   - --extract-ci-bucket=k8s-release-dev
-  #   version: '1.28'
+  # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
+  # TODO(1.29): comment this out when we move 1.29 to stable1
+  beta:
+    args:
+    - --extract=ci/latest-1.29
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.29'
   stable1:
     args:
     - --extract=ci/latest-1.28
@@ -420,11 +422,12 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-master
-  # beta:
-  # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
-  #   args:
-  #   - --repo=k8s.io/kubernetes=release-1.28
-  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.28
+  # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
+  # TODO(1.29): comment this out when we move 1.29 to stable1
+  beta:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.29
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.29
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.28
