@@ -2168,47 +2168,6 @@ presubmits:
           requests:
             cpu: "5"
             memory: 12Gi
-  - always_run: false
-    branches:
-    - release-1.29
-    context: pull-kubernetes-e2e-capz-windows-1-29
-    decorate: true
-    extra_refs:
-    - base_ref: release-1.11
-      org: kubernetes-sigs
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      repo: cluster-api-provider-azure
-      workdir: true
-    - base_ref: master
-      org: kubernetes-sigs
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      repo: cloud-provider-azure
-    labels:
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
-      preset-azure-cred-only: "true"
-      preset-capz-containerd-1-7-latest: "true"
-      preset-capz-windows-2019: "true"
-      preset-capz-windows-common-pull: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-e2e-capz-windows-1-29
-    optional: true
-    path_alias: k8s.io/kubernetes
-    run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231117-8a628a317a-1.29
-        name: ""
-        resources:
-          requests:
-            cpu: "2"
-            memory: 9Gi
-        securityContext:
-          privileged: true
   kubernetes/perf-tests:
   - always_run: false
     branches:
