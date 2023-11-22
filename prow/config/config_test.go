@@ -7526,7 +7526,7 @@ func TestGetProwYAMLDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T
 	}
 
 	c := &Config{}
-	if _, err := c.getProwYAMLWithDefaults(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+	if _, err := c.getProwYAMLWithDefaults(nil, "test", "main", baseSHAGetter, headSHAGetter); err != nil {
 		t.Fatalf("error calling GetProwYAML: %v", err)
 	}
 	if baseSHAGetterCalled {
@@ -7563,7 +7563,7 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 		},
 	}
 
-	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, "main", func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPresubmits: %v", err)
 	}
@@ -7601,7 +7601,7 @@ func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
 		},
 	}
 
-	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, "main", func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPostsubmits: %v", err)
 	}

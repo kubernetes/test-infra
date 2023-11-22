@@ -613,14 +613,26 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 
 			var p *ProwYAML
 			if headSHA == baseSHA {
-				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "main", baseSHA)
 			} else {
-				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "main", baseSHA, headSHA)
 			}
 
 			if err := tc.validate(p, err); err != nil {
 				t.Fatal(err)
 			}
+
+			// Empty base branch string shouldn't affect how we can fetch the configs.
+			if headSHA == baseSHA {
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "", baseSHA)
+			} else {
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "", baseSHA, headSHA)
+			}
+
+			if err := tc.validate(p, err); err != nil {
+				t.Fatal(err)
+			}
+
 		})
 	}
 }

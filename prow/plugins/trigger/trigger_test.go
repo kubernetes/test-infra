@@ -472,7 +472,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -496,7 +496,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -550,7 +550,7 @@ func TestGetPostsubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-postsubmit"},
 						}},
 					},
-					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Postsubmits: []config.Postsubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
@@ -574,7 +574,7 @@ func TestGetPostsubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-postsubmit"},
 						}},
 					},
-					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Postsubmits: []config.Postsubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},

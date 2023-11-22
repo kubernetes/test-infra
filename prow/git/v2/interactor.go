@@ -85,6 +85,8 @@ type cacher interface {
 	RemoteUpdate() error
 	// FetchCommits fetches only the given commits.
 	FetchCommits([]string) error
+	// RetargetBranch moves the given branch to an already-existing commit.
+	RetargetBranch(string, string) error
 }
 
 // cloner knows how to clone repositories from a central cache
@@ -454,6 +456,16 @@ func (i *interactor) FetchCommits(commitSHAs []string) error {
 
 	if err := i.Fetch(fetchArgs...); err != nil {
 		return fmt.Errorf("failed to fetch %s: %v", fetchArgs, err)
+	}
+
+	return nil
+}
+
+// RetargetBranch moves the given branch to an already-existing commit.
+func (i *interactor) RetargetBranch(branch, sha string) error {
+	args := []string{"branch", "-f", branch, sha}
+	if out, err := i.executor.Run(args...); err != nil {
+		return fmt.Errorf("error retargeting branch: %w %v", err, string(out))
 	}
 
 	return nil
