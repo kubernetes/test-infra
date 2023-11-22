@@ -616,6 +616,9 @@ periodics:
         # kindinv: Kubernetes in (Rootless) Docker in (GCE) VM
         # See https://github.com/rootless-containers/kubetest2-kindinv
         (cd ; GO111MODULE=on go install github.com/rootless-containers/kubetest2-kindinv@master)
+        mkdir -p -m 0700 ~/.ssh
+        cp -f "${GCE_SSH_PRIVATE_KEY_FILE}" ~/.ssh/google_compute_engine
+        cp -f "${GCE_SSH_PUBLIC_KEY_FILE}" ~/.ssh/google_compute_engine.pub
         exec kubetest2 kindinv \
           --gcp-project=k8s-prow-builds \
           --gcp-zone=us-west1-b \
