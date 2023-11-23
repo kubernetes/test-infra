@@ -624,7 +624,9 @@ presubmits:
             - -c
             - |
               set -x
-              KUBE_MINOR_VERSION="v1.29"
+              pushd "$(go env GOPATH)/src/k8s.io/kubernetes" >/dev/null
+                KUBE_MINOR_VERSION=$(hack/print-workspace-status.sh | grep gitVersion | awk '{print $2}' | sed -E 's/v([0-9]+)\.([0-9]+).*/v\1.\2/')
+              popd
               TODAYS_DATE=$(date -u +'%Y%m%d')
               AMI_NAME="amazon-eks-al2023-node-${KUBE_MINOR_VERSION}-v${TODAYS_DATE}"
               AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
@@ -823,7 +825,9 @@ periodics:
           - -c
           - |
             set -x
-            KUBE_MINOR_VERSION="v1.29"
+            pushd "$(go env GOPATH)/src/k8s.io/kubernetes" >/dev/null
+              KUBE_MINOR_VERSION=$(hack/print-workspace-status.sh | grep gitVersion | awk '{print $2}' | sed -E 's/v([0-9]+)\.([0-9]+).*/v\1.\2/')
+            popd
             TODAYS_DATE=$(date -u +'%Y%m%d')
             AMI_NAME="amazon-eks-al2023-node-${KUBE_MINOR_VERSION}-v${TODAYS_DATE}"
             AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
