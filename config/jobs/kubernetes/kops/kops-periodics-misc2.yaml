@@ -205,7 +205,7 @@ periodics:
   cron: '22 12-23/24 * * *'
   labels:
     preset-k8s-ssh: "true"
-  cluster: default
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -2066,7 +2066,7 @@ periodics:
   cron: '16 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
-  cluster: default
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m

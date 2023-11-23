@@ -3,6 +3,7 @@ periodics:
 - cron: '3 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
+  cluster: k8s-infra-prow-build
   name: e2e-kops-gce-stable
   decorate: true
   decoration_config:
@@ -45,10 +46,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: containerd
@@ -66,6 +68,7 @@ periodics:
 - cron: '48 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
+  cluster: k8s-infra-prow-build
   name: e2e-kops-gce-latest
   decorate: true
   decoration_config:
@@ -110,10 +113,11 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: 3Gi
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: containerd

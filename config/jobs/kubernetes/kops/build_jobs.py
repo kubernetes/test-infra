@@ -464,6 +464,7 @@ def generate_grid():
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
                                    networking=networking,
+                                   build_cluster="k8s-infra-prow-build",
                                    extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747 # pylint: disable=line-too-long
                                    )
                     )
@@ -513,6 +514,7 @@ def generate_misc():
                    cloud="gce",
                    k8s_version="ci",
                    networking="cilium",
+                   build_cluster="k8s-infra-prow-build",
                    runs_per_day=1,
                    extra_flags=["--gce-service-account=default"],
                    extra_dashboards=['kops-network-plugins']),
@@ -860,7 +862,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
                    kops_channel="alpha",
-                   build_cluster="default",
+                   build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--set=spec.nodeProblemDetector.enabled=true",
