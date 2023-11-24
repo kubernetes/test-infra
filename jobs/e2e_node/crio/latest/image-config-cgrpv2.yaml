@@ -1,7 +1,5 @@
 images:
   fedora:
-    # TODO: use image_family when the test setup is fixed on fedora-coreos-39
-    image: fedora-coreos-38-20231027-3-2-gcp-x86-64
-    # image_family: fedora-coreos-stable
+    image_family: fedora-coreos-stable
     project: fedora-coreos-cloud
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/crio_cgroupsv2.ign"
