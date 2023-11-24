@@ -289,6 +289,7 @@ periodics:
       args:
       - --cluster=gce-coredns-perf
       - --env=CLUSTER_DNS_CORE_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -326,6 +327,7 @@ periodics:
       args:
       - --cluster=gce-kubedns-perf
       - --env=CLUSTER_DNS_CORE_DNS=false
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -364,6 +366,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -397,6 +400,7 @@ periodics:
       - --cluster=gce-coredns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -435,6 +439,7 @@ periodics:
       - --cluster=gce-kubedns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -474,6 +479,7 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -728,6 +734,7 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -796,6 +803,7 @@ periodics:
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --env=CLUSTER_DNS_CORE_DNS=false,
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
