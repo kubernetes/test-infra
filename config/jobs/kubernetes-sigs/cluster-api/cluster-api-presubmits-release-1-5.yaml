@@ -167,10 +167,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-mink8s-release-1-5
@@ -200,10 +200,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-release-1-5
@@ -234,10 +234,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-informing-release-1-5
@@ -273,10 +273,10 @@ presubmits:
           resources:
             requests:
               cpu: 7300m
-              memory: 9Gi
+              memory: 32Gi
             limits:
               cpu: 7300m
-              memory: 9Gi
+              memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-full-dualstack-and-ipv6-release-1-5
@@ -309,10 +309,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-full-release-1-5
@@ -357,10 +357,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-release-1-5-1-27-1-28
@@ -397,10 +397,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-scale-release-1-5-experimental
