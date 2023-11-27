@@ -41,6 +41,19 @@ const (
 	File = "file"
 )
 
+// DisplayName turns canonical provider IDs into displayable names.
+func DisplayName(provider string) string {
+	switch provider {
+	case GS:
+		return "GCS"
+	case S3:
+		return "S3"
+	case File:
+		return "File"
+	}
+	return provider
+}
+
 // GetBucket opens and returns a gocloud blob.Bucket based on credentials and a path.
 // The path is used to discover which storageProvider should be used.
 //

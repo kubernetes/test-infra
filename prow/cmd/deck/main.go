@@ -1044,7 +1044,7 @@ lensesLoop:
 
 	artifactsLink := ""
 	bucket := ""
-	if jobPath != "" && strings.HasPrefix(jobPath, providers.GS) {
+	if jobPath != "" && (strings.HasPrefix(jobPath, providers.GS) || strings.HasPrefix(jobPath, providers.S3)) {
 		bucket = strings.Split(jobPath, "/")[1] // The provider (gs) will be in index 0, followed by the bucket name
 	}
 	gcswebPrefix := cfg().Deck.Spyglass.GetGCSBrowserPrefix(org, repo, bucket)
