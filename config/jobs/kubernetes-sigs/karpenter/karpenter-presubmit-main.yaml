@@ -1,0 +1,31 @@
+presubmits:
+  kubernetes-sigs/karpenter:
+  - name: pull-karpenter-test
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/karpenter"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
+        command:
+        - runner.sh
+        args:
+        - make
+        - toolchain
+        - test
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 16Gi
+          requests:
+            cpu: 6
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-autoscaling-karpenter
+      testgrid-tab-name: karpenter-pr-test-main
