@@ -25,27 +25,35 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-      preset-capz-windows-2019: "true"
+      preset-capz-windows-2022: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
       preset-azure-capz-sa-cred: "true"
+      preset-windows-private-registry-cred: "true" # Needed for WS 2022 images
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
       base_ref: release-1.11
       path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
+      workdir: false
     - org: kubernetes-sigs
       repo: cloud-provider-azure
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
+    - org: kubernetes-sigs
+      repo: windows-testing
+      base_ref: master
+      path_alias: k8s.io/windows-testing
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
         command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
+        - "runner.sh"
+        - "env"
+        - "KUBERNETES_VERSION=latest"
+        - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
@@ -54,6 +62,7 @@ presubmits:
             memory: "9Gi"
     annotations:
       fork-per-release: "true"
+      fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows
       testgrid-num-columns-recent: '30'
