@@ -43,9 +43,6 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 	if err != nil {
 		return err
 	}
-	// Treat the ID returned by ResultStore as authoritative.
-	p.invID = w.InvID()
-
 	w.WriteConfiguration(ctx, p.defaultConfiguration())
 	w.WriteTarget(ctx, p.overallTarget())
 	w.WriteConfiguredTarget(ctx, p.configuredTarget())

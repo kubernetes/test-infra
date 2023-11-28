@@ -46,7 +46,6 @@ func TestInvocation(t *testing.T) {
 		{
 			desc: "complete",
 			payload: &Payload{
-				invID: "inv-id", // note differs from Job.Name; verifies sources.
 				Job: &v1.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "job-name",
@@ -176,7 +175,6 @@ func TestInvocation(t *testing.T) {
 		{
 			desc: "podspec nil",
 			payload: &Payload{
-				invID: "inv-id", // note differs from Job.Name; verifies sources.
 				Job: &v1.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "job-name",
@@ -271,7 +269,6 @@ func TestInvocation(t *testing.T) {
 		{
 			desc: "started finished nil",
 			payload: &Payload{
-				invID: "inv-id", // note differs from Job.Name; verifies sources.
 				Job: &v1.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "job-name",
@@ -450,14 +447,10 @@ func TestStatusAttributes(t *testing.T) {
 }
 
 func TestDefaultconfiguration(t *testing.T) {
-	p := &Payload{
-		invID: "inv-id",
-	}
+	p := &Payload{}
 	got := p.defaultConfiguration()
 	want := &resultstore.Configuration{
-		Name: "default",
 		Id: &resultstore.Configuration_Id{
-			InvocationId:    "inv-id",
 			ConfigurationId: "default",
 		},
 	}
@@ -475,7 +468,6 @@ func TestOverallTarget(t *testing.T) {
 		{
 			desc: "success",
 			payload: &Payload{
-				invID: "inv-id",
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
@@ -484,8 +476,7 @@ func TestOverallTarget(t *testing.T) {
 			},
 			want: &resultstore.Target{
 				Id: &resultstore.Target_Id{
-					InvocationId: "inv-id",
-					TargetId:     "spec-job",
+					TargetId: "spec-job",
 				},
 				TargetAttributes: &resultstore.TargetAttributes{
 					Type: resultstore.TargetType_TEST,
@@ -493,14 +484,11 @@ func TestOverallTarget(t *testing.T) {
 			},
 		},
 		{
-			desc: "nil job",
-			payload: &Payload{
-				invID: "inv-id",
-			},
+			desc:    "nil job",
+			payload: &Payload{},
 			want: &resultstore.Target{
 				Id: &resultstore.Target_Id{
-					InvocationId: "inv-id",
-					TargetId:     "Unknown",
+					TargetId: "Unknown",
 				},
 				TargetAttributes: &resultstore.TargetAttributes{
 					Type: resultstore.TargetType_TEST,
@@ -525,7 +513,6 @@ func TestConfiguredTarget(t *testing.T) {
 		{
 			desc: "success",
 			payload: &Payload{
-				invID: "inv-id",
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
@@ -534,20 +521,16 @@ func TestConfiguredTarget(t *testing.T) {
 			},
 			want: &resultstore.ConfiguredTarget{
 				Id: &resultstore.ConfiguredTarget_Id{
-					InvocationId:    "inv-id",
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 				},
 			},
 		},
 		{
-			desc: "nil job",
-			payload: &Payload{
-				invID: "inv-id",
-			},
+			desc:    "nil job",
+			payload: &Payload{},
 			want: &resultstore.ConfiguredTarget{
 				Id: &resultstore.ConfiguredTarget_Id{
-					InvocationId:    "inv-id",
 					TargetId:        "Unknown",
 					ConfigurationId: "default",
 				},
@@ -571,7 +554,6 @@ func TestOverallAction(t *testing.T) {
 		{
 			desc: "success",
 			payload: &Payload{
-				invID: "inv-id",
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
@@ -590,7 +572,6 @@ func TestOverallAction(t *testing.T) {
 			},
 			want: &resultstore.Action{
 				Id: &resultstore.Action_Id{
-					InvocationId:    "inv-id",
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 					ActionId:        "overall",
@@ -609,7 +590,6 @@ func TestOverallAction(t *testing.T) {
 		{
 			desc: "started nil",
 			payload: &Payload{
-				invID: "inv-id",
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
@@ -621,7 +601,6 @@ func TestOverallAction(t *testing.T) {
 			},
 			want: &resultstore.Action{
 				Id: &resultstore.Action_Id{
-					InvocationId:    "inv-id",
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 					ActionId:        "overall",
@@ -632,7 +611,6 @@ func TestOverallAction(t *testing.T) {
 		{
 			desc: "finished nil",
 			payload: &Payload{
-				invID: "inv-id",
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
@@ -648,7 +626,6 @@ func TestOverallAction(t *testing.T) {
 			},
 			want: &resultstore.Action{
 				Id: &resultstore.Action_Id{
-					InvocationId:    "inv-id",
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 					ActionId:        "overall",
@@ -659,7 +636,6 @@ func TestOverallAction(t *testing.T) {
 		{
 			desc: "job nil",
 			payload: &Payload{
-				invID: "inv-id",
 				Started: &metadata.Started{
 					Timestamp:  150,
 					RepoCommit: "repo-commit",
@@ -673,7 +649,6 @@ func TestOverallAction(t *testing.T) {
 			},
 			want: &resultstore.Action{
 				Id: &resultstore.Action_Id{
-					InvocationId:    "inv-id",
 					TargetId:        "Unknown",
 					ConfigurationId: "default",
 					ActionId:        "overall",

@@ -35,10 +35,6 @@ type Payload struct {
 	Finished  *metadata.Finished
 	Files     []*resultstore.File
 	ProjectID string
-	// TODO: It is unclear whether InvocationID is needed when uploading to
-	// resultstore using the batch API. If not, invID and its functionality
-	// may be removed.
-	invID string
 }
 
 func (p *Payload) invocation() (*resultstore.Invocation, error) {
@@ -182,9 +178,7 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 
 func (p *Payload) defaultConfiguration() *resultstore.Configuration {
 	return &resultstore.Configuration{
-		Name: "default",
 		Id: &resultstore.Configuration_Id{
-			InvocationId:    p.invID,
 			ConfigurationId: "default",
 		},
 	}
@@ -200,8 +194,7 @@ func (p *Payload) targetID() string {
 func (p *Payload) overallTarget() *resultstore.Target {
 	return &resultstore.Target{
 		Id: &resultstore.Target_Id{
-			InvocationId: p.invID,
-			TargetId:     p.targetID(),
+			TargetId: p.targetID(),
 		},
 		TargetAttributes: &resultstore.TargetAttributes{
 			Type: resultstore.TargetType_TEST,
@@ -212,7 +205,6 @@ func (p *Payload) overallTarget() *resultstore.Target {
 func (p *Payload) configuredTarget() *resultstore.ConfiguredTarget {
 	return &resultstore.ConfiguredTarget{
 		Id: &resultstore.ConfiguredTarget_Id{
-			InvocationId:    p.invID,
 			TargetId:        p.targetID(),
 			ConfigurationId: "default",
 		},
@@ -222,7 +214,6 @@ func (p *Payload) configuredTarget() *resultstore.ConfiguredTarget {
 func (p *Payload) overallAction() *resultstore.Action {
 	return &resultstore.Action{
 		Id: &resultstore.Action_Id{
-			InvocationId:    p.invID,
 			TargetId:        p.targetID(),
 			ConfigurationId: "default",
 			ActionId:        "overall",
