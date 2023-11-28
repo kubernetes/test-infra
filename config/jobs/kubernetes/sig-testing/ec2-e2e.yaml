@@ -872,6 +872,93 @@ periodics:
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
+  name: ci-kubernetes-ec2-eks-al2023-arm64-conformance-latest
+  annotations:
+    testgrid-dashboards: amazon-ec2, conformance-ec2
+    testgrid-tab-name: Conformance - EC2/EKS/AL2023 - master on arm64
+    description: Runs conformance tests using kubetest against kubernetes master on EC2 using EKS arm64 worker nodes
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            set -x
+            build_eks_arch=""
+            target_build_arch="linux/amd64"
+            if [[ ${BUILD_EKS_AMI_ARCH:-""} == "arm64" ]]; then
+              build_eks_arch="arm64-"
+              target_build_arch="linux/arm64"
+            fi
+            pushd "$(go env GOPATH)/src/k8s.io/kubernetes" >/dev/null
+              KUBE_MINOR_VERSION=$(hack/print-workspace-status.sh | grep gitVersion | awk '{print $2}' | sed -E 's/v([0-9]+)\.([0-9]+).*/v\1.\2/')
+            popd
+            TODAYS_DATE=$(date -u +'%Y%m%d')
+            AMI_VERSION="v$TODAYS_DATE"
+            AMI_NAME="amazon-eks-al2023-${build_eks_arch}node-${KUBE_MINOR_VERSION}-v${TODAYS_DATE}"
+            AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
+
+            if [ -z "$AMI_ID" ] ; then
+              export AMI_NAME
+              export AMI_VERSION
+              $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/hack/build-ami.sh
+              AMI_ID=$(aws ec2 describe-images --region=us-east-1 --filters "Name=name,Values=$AMI_NAME" --query 'Images[*].[ImageId]' --output text --max-items 1)
+            else
+              echo "found existing ami : $AMI_ID skipping building a new AMI..."
+            fi
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --target-build-arch $target_build_arch \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --focus-regex='\[Conformance\]'
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "arm64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-arm64-conformance-latest
   annotations:
     testgrid-dashboards: amazon-ec2, conformance-all, conformance-ec2, sig-release-master-informing
