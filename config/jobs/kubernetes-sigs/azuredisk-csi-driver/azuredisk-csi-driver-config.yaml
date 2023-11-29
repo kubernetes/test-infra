@@ -147,6 +147,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
+    always_run: false
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -194,6 +195,57 @@ presubmits:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az
       description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-e2e-capz-multi-az
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+    - (master)|(^release-.+$)
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.11
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.27
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.27"
+            - name: ENABLE_TOPOLOGY # azuredisk-csi-driver config
+              value: "true"
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver
+      testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-multi-az
+      description: "Run multi-az E2E tests on a capz cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration
     decorate: true
@@ -702,6 +754,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows-2019
     decorate: true
+    always_run: false
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
