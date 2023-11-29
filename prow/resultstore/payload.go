@@ -199,6 +199,7 @@ func (p *Payload) overallTarget() *resultstore.Target {
 		TargetAttributes: &resultstore.TargetAttributes{
 			Type: resultstore.TargetType_TEST,
 		},
+		Visible: true,
 	}
 }
 

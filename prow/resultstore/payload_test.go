@@ -481,6 +481,7 @@ func TestOverallTarget(t *testing.T) {
 				TargetAttributes: &resultstore.TargetAttributes{
 					Type: resultstore.TargetType_TEST,
 				},
+				Visible: true,
 			},
 		},
 		{
@@ -493,6 +494,7 @@ func TestOverallTarget(t *testing.T) {
 				TargetAttributes: &resultstore.TargetAttributes{
 					Type: resultstore.TargetType_TEST,
 				},
+				Visible: true,
 			},
 		},
 	} {
