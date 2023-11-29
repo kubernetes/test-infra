@@ -807,7 +807,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-eks-al2023-conformance-latest
   annotations:
-    testgrid-dashboards: amazon-ec2, conformance-ec2
+    testgrid-dashboards: amazon-ec2, conformance-ec2, amazon-ec2-al2023
     testgrid-tab-name: Conformance - EC2/EKS/AL2023 - master
     description: Runs conformance tests using kubetest against kubernetes master on EC2 using EKS worker nodes
   labels:
@@ -898,7 +898,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-eks-al2023-arm64-conformance-latest
   annotations:
-    testgrid-dashboards: amazon-ec2, conformance-ec2
+    testgrid-dashboards: amazon-ec2, conformance-ec2, amazon-ec2-al2023
     testgrid-tab-name: Conformance - EC2/EKS/AL2023 - master on arm64
     description: Runs conformance tests using kubetest against kubernetes master on EC2 using EKS arm64 worker nodes
   labels:
@@ -989,7 +989,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ec2-eks-al2023
   annotations:
-    testgrid-dashboards: amazon-ec2, conformance-ec2
+    testgrid-dashboards: amazon-ec2, conformance-ec2, amazon-ec2-al2023
     testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023
     description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (al2023 EKS image) created with kubetest2-ec2
   labels:
@@ -1081,7 +1081,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ec2-eks-al2023-arm64
   annotations:
-    testgrid-dashboards: amazon-ec2, conformance-ec2
+    testgrid-dashboards: amazon-ec2, conformance-ec2, amazon-ec2-al2023
     testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-arm64
     description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) cluster (al2023 EKS image) created with kubetest2-ec2 on arm64
   labels:
