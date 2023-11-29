@@ -37,8 +37,6 @@ type fileFinder interface {
 //
 // In the event of error, returns any files collected so far in the
 // interest of best effort.
-//
-// TODO: There is no limit on the number of files collected.
 func ArtifactFiles(ctx context.Context, opener fileFinder, dir string) ([]*resultstore.File, error) {
 	prefix := ensureTrailingSlash(dir)
 	c := newFilesCollector(opener, prefix)
@@ -125,7 +123,8 @@ func (b *filesBuilder) Add(name string, attrs *pio.Attributes) {
 		// exception, since ResultStore requires unique Uids.
 		return
 	case "build-log.txt":
-		// ResultStore wants this uid specially.
+		// This Uid is used to populate the "Build Log" tab in the
+		// GUI. We want build-log.txt to appear there.
 		uid = "build.log"
 	}
 	b.files = append(b.files, &resultstore.File{

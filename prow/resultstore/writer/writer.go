@@ -19,18 +19,30 @@ package writer
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
 	"google.golang.org/grpc"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
-	// Number of UploadRequest messages per batch. This is likely not
-	// a significant factor unless this implementation is changed to
-	// upload individual tests.
-	batchSize = 4
+	// Number of UploadRequest messages per batch recommended by the
+	// ResultStore maintainers. This is likely not a factor unless
+	// this implementation is changed to upload individual tests.
+	batchSize = 100
 )
+
+var rpcRetryBackoff = func() wait.Backoff {
+	return wait.Backoff{
+		Duration: 100 * time.Millisecond,
+		Factor:   2,
+		Cap:      30 * time.Second,
+		Steps:    8,
+		Jitter:   0.5,
+	}
+}
 
 func uuidString() string {
 	return uuid.New().String()
@@ -59,11 +71,18 @@ func New(ctx context.Context, client ResultStoreBatchClient, inv *resultstore.In
 		resumeToken: uuidString(),
 		updates:     []*resultstore.UploadRequest{},
 	}
-	inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
+
+	err := wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff(), func() (bool, error) {
+		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
+		if err != nil {
+			return false, fmt.Errorf("resultstore.CreateInvocation: %w", err)
+		}
+		w.retInv = inv
+		return true, nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("resultstore.CreateInvocation: %w", err)
+		return nil, err
 	}
-	w.retInv = inv
 	return w, nil
 }
 
@@ -120,11 +139,13 @@ func (w *writer) addUploadRequest(ctx context.Context, r *resultstore.UploadRequ
 
 func (w *writer) flushUpdates(ctx context.Context) error {
 	b := w.uploadBatchRequest(w.updates)
-	if _, err := w.client.UploadBatch(ctx, b); err != nil {
-		return fmt.Errorf("resultstore.UploadBatch: %w", err)
-	}
-	w.updates = []*resultstore.UploadRequest{}
-	return nil
+	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff(), func() (bool, error) {
+		if _, err := w.client.UploadBatch(ctx, b); err != nil {
+			return false, fmt.Errorf("resultstore.UploadBatch: %w", err)
+		}
+		w.updates = []*resultstore.UploadRequest{}
+		return true, nil
+	})
 }
 
 func (w *writer) uploadBatchRequest(reqs []*resultstore.UploadRequest) *resultstore.UploadBatchRequest {
