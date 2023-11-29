@@ -29416,8 +29416,6 @@ spec:
                   resultstore:
                     properties:
                       project_id:
-                        description: Presence of ProjectID is required to report during
-                          alpha.
                         type: string
                     type: object
                   slack:
