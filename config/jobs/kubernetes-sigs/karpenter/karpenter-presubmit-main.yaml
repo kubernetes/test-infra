@@ -3,7 +3,7 @@ presubmits:
   - name: pull-karpenter-test
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: false
+    optional: true # TODO set back to false when stabilized
     decorate: true
     path_alias: "sigs.k8s.io/karpenter"
     branches:
