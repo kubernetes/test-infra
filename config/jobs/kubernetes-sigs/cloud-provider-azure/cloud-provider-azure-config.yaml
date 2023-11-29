@@ -1411,7 +1411,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.11
+    base_ref: release-1.12
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1450,7 +1450,8 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
+        # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
+        value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
