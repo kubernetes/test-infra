@@ -163,7 +163,7 @@ periodics:
   - name: ci-cgroupv2-containerd-node-al2023-e2e-ec2-eks
     interval: 6h
     annotations:
-      testgrid-dashboards: sig-node-containerd,amazon-ec2-node
+      testgrid-dashboards: sig-node-containerd,amazon-ec2-node,amazon-ec2-al2023
       testgrid-tab-name: ci-cgroupv2-containerd-node-al2023-e2e-ec2-eks
       testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     labels:
@@ -212,7 +212,7 @@ periodics:
   - name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-ec2-eks
     interval: 6h
     annotations:
-      testgrid-dashboards: sig-node-containerd,amazon-ec2-node
+      testgrid-dashboards: sig-node-containerd,amazon-ec2-node,amazon-ec2-al2023
       testgrid-tab-name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-ec2-eks
       testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     labels:
@@ -525,7 +525,7 @@ periodics:
   - name: ci-cgroupv2-containerd-node-al2023-e2e-serial-ec2-eks
     interval: 6h
     annotations:
-      testgrid-dashboards: sig-node-containerd,amazon-ec2-node
+      testgrid-dashboards: sig-node-containerd,amazon-ec2-node,amazon-ec2-al2023
       testgrid-tab-name: ci-cgroupv2-containerd-node-al2023-e2e-serial-ec2-eks
     decoration_config:
       timeout: 240m
@@ -575,7 +575,7 @@ periodics:
   - name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-serial-ec2-eks
     interval: 6h
     annotations:
-      testgrid-dashboards: sig-node-containerd,amazon-ec2-node
+      testgrid-dashboards: sig-node-containerd,amazon-ec2-node,amazon-ec2-al2023
       testgrid-tab-name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-serial-ec2-eks
     decoration_config:
       timeout: 240m

@@ -4,6 +4,7 @@
 dashboards:
 - name: amazon-ec2
 - name: amazon-ec2-node
+- name: amazon-ec2-al2023
 - name: amazon-ec2-provider
 
 #
@@ -14,4 +15,5 @@ dashboard_groups:
   dashboard_names:
   - amazon-ec2
   - amazon-ec2-node
+  - amazon-ec2-al2023
   - amazon-ec2-provider
