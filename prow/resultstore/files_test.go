@@ -60,21 +60,21 @@ func (f *fakeFileFinder) Attributes(_ context.Context, name string) (pio.Attribu
 	return a, nil
 }
 
-func (f *fakeFileFinder) Iterator(_ context.Context, prefix, delimeter string) (pio.ObjectIterator, error) {
+func (f *fakeFileFinder) Iterator(_ context.Context, prefix, delimiter string) (pio.ObjectIterator, error) {
 	var fs []string
 	seenDirs := sets.Set[string]{}
 	for n, a := range f.files {
 		if !strings.HasPrefix(n, prefix) {
 			continue
 		}
-		if delimeter == "" || !strings.Contains(n[len(prefix):], delimeter) {
+		if delimiter == "" || !strings.Contains(n[len(prefix):], delimiter) {
 			if a.ContentEncoding == wantIterErr.ContentEncoding {
 				return nil, fmt.Errorf("iterator error at %q", n)
 			}
 			fs = append(fs, n)
 			continue
 		}
-		ps := strings.SplitN(n[len(prefix):], delimeter, 2)
+		ps := strings.SplitN(n[len(prefix):], delimiter, 2)
 		if seenDirs.Has(ps[0]) {
 			continue
 		}

@@ -28,7 +28,7 @@ import (
 
 // fileFinder is the subset of pio.Opener required.
 type fileFinder interface {
-	Iterator(ctx context.Context, prefix, delimeter string) (pio.ObjectIterator, error)
+	Iterator(ctx context.Context, prefix, delimiter string) (pio.ObjectIterator, error)
 	Attributes(ctx context.Context, name string) (pio.Attributes, error)
 }
 
@@ -76,8 +76,8 @@ func newFilesCollector(opener fileFinder, prefix string) *filesCollector {
 // - prefix should be a "/" terminated path.
 // - delimiter should be "/" to search a single dir
 // - delimiter should be "" to search the tree below prefix
-func (c *filesCollector) collect(ctx context.Context, prefix, delimeter string) error {
-	iter, err := c.finder.Iterator(ctx, prefix, delimeter)
+func (c *filesCollector) collect(ctx context.Context, prefix, delimiter string) error {
+	iter, err := c.finder.Iterator(ctx, prefix, delimiter)
 	if err != nil {
 		return err
 	}

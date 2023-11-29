@@ -294,7 +294,7 @@ func main() {
 		hasReporter = true
 		conn, err := resultstore.Connect(context.Background())
 		if err != nil {
-			logrus.WithError(err).Fatal("Error connecing to resultstore")
+			logrus.WithError(err).Fatal("Error connecting to resultstore")
 		}
 		uploader := resultstore.NewUploader(resultstore.NewClient(conn))
 		if err := crier.New(mgr, resultstorereporter.New(cfg, opener, uploader), o.resultStoreWorkers, o.githubEnablement.EnablementChecker()); err != nil {
