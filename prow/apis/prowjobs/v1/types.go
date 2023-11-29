@@ -355,7 +355,6 @@ type ReporterConfig struct {
 }
 
 type ResultStoreReporter struct {
-	// Presence of ProjectID is required to report during alpha.
 	ProjectID string `json:"project_id,omitempty"`
 }
 
