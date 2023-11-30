@@ -1099,19 +1099,18 @@ cherry_pick_unapproved:
 
     For details on the patch release process and schedule, see the [Patch Releases](https://k8s.io/releases/patch-releases) page.
 
-# TODO: enable when https://github.com/kubernetes/test-infra/pull/31286 merged
-# cherry_pick_approved:
-# - org: kubernetes
-#   repo: kubernetes
-#   approvers: # List taken from: https://github.com/kubernetes/kubernetes/blob/a8f6ea24209b332217f7baa7c14248e8d0266d28/OWNERS_ALIASES#L101-L108
-#   - cpanato
-#   - jeremyrickard
-#   - justaugustus
-#   - palnabarun
-#   - puerco
-#   - saschagrunert
-#   - Verolop
-#   - xmudrii
+cherry_pick_approved:
+- org: kubernetes
+  repo: kubernetes
+  approvers: # List taken from: https://github.com/kubernetes/kubernetes/blob/a8f6ea24209b332217f7baa7c14248e8d0266d28/OWNERS_ALIASES#L101-L108
+  - cpanato
+  - jeremyrickard
+  - justaugustus
+  - palnabarun
+  - puerco
+  - saschagrunert
+  - Verolop
+  - xmudrii
 
 # Enabled plugins per repo.
 # Keys: Full repo name: "org/repo".
@@ -1240,8 +1239,7 @@ plugins:
   kubernetes/kubernetes:
     plugins:
     - blockade
-    # TODO: enable when https://github.com/kubernetes/test-infra/pull/31286 merged
-    # - cherry-pick-approved
+    - cherry-pick-approved
     - cherry-pick-unapproved
     - mergecommitblocker
     - milestone
