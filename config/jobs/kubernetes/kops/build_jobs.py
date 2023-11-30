@@ -994,7 +994,8 @@ def generate_misc():
                    distro="al2023",
                    networking="amazonvpc",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1016,7 +1017,8 @@ def generate_misc():
                    distro="al2023",
                    networking="cilium",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   cluster_name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
