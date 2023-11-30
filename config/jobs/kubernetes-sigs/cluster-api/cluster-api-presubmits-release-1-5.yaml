@@ -1,28 +1,32 @@
 presubmits:
   kubernetes-sigs/cluster-api:
   - name: pull-cluster-api-build-release-1-5
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         command:
         - runner.sh
         - ./scripts/ci-build.sh
+        resources:
+          requests:
+            cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-build-release-1-5
   - name: pull-cluster-api-apidiff-release-1-5
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     optional: true
     branches:
@@ -30,19 +34,24 @@ presubmits:
     - ^release-1.5$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
+        resources:
+          requests:
+            cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-apidiff-release-1-5
   - name: pull-cluster-api-verify-release-1-5
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -51,7 +60,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         command:
@@ -60,22 +68,24 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-verify-release-1-5
   - name: pull-cluster-api-test-release-1-5
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -84,20 +94,22 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-test-release-1-5
   - name: pull-cluster-api-test-mink8s-release-1-5
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -116,23 +128,25 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-test-mink8s-release-1-5
   - name: pull-cluster-api-e2e-mink8s-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -153,23 +167,25 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-mink8s-release-1-5
   - name: pull-cluster-api-e2e-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -184,16 +200,19 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-release-1-5
   - name: pull-cluster-api-e2e-informing-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     branches:
     # The script this job runs is not in all branches.
@@ -201,7 +220,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -216,23 +234,25 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-informing-release-1-5
   - name: pull-cluster-api-e2e-full-dualstack-and-ipv6-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     always_run: false
     branches:
       # The script this job runs is not in all branches.
       - ^release-1.5$
     path_alias: sigs.k8s.io/cluster-api
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
           args:
@@ -253,23 +273,25 @@ presubmits:
           resources:
             requests:
               cpu: 7300m
+              memory: 32Gi
+            limits:
+              cpu: 7300m
+              memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-full-dualstack-and-ipv6-release-1-5
   - name: pull-cluster-api-e2e-full-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     always_run: false
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
     path_alias: sigs.k8s.io/cluster-api
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -287,16 +309,19 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-full-release-1-5
   - name: pull-cluster-api-e2e-workload-upgrade-1-27-1-28-release-1-5
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -308,7 +333,6 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -333,11 +357,16 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-release-1-5-1-27-1-28
   # This job is experimental for now. Please do not duplicate it to release branches.
   - name: pull-cluster-api-e2e-scale-release-1-5-experimental
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -352,7 +381,6 @@ presubmits:
     - ^release-1.5$
     path_alias: sigs.k8s.io/cluster-api
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-1.27
         args:
@@ -369,6 +397,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-scale-release-1-5-experimental
