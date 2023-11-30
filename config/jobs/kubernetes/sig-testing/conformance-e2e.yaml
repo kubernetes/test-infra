@@ -16,7 +16,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     decoration_config:
-      timeout: 60m
+      timeout: 3h
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
@@ -109,7 +109,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 60m
+    timeout: 3h
   extra_refs:
   - org: kubernetes
     repo: test-infra
