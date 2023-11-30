@@ -850,7 +850,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20231128-bb6aa76183
+    - image: gcr.io/k8s-prow/checkconfig:v20231130-2f95ffc454
       command:
       - checkconfig
       args:
