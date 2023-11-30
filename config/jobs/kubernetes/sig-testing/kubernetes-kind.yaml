@@ -615,19 +615,25 @@ periodics:
         set -eux
         # kindinv: Kubernetes in (Rootless) Docker in (GCE) VM
         # See https://github.com/rootless-containers/kubetest2-kindinv
+        #
+        # GCE VM is used for setting up cgroup v2 and systemd.
+        # (k8s-infra-prow-build lacks cgroup v2, and the kubekins-e2e container lacks systemd)
         (cd ; GO111MODULE=on go install github.com/rootless-containers/kubetest2-kindinv@master)
+        mkdir -p -m 0700 ~/.ssh
+        cp -f "${GCE_SSH_PRIVATE_KEY_FILE}" ~/.ssh/google_compute_engine
+        cp -f "${GCE_SSH_PUBLIC_KEY_FILE}" ~/.ssh/google_compute_engine.pub
         exec kubetest2 kindinv \
           --gcp-project=k8s-prow-builds \
           --gcp-zone=us-west1-b \
           --instance-image=ubuntu-os-cloud/ubuntu-2204-lts \
           --instance-type=n2-standard-4 \
           --kind-rootless \
+          --user=rootless \
           --build \
           --up \
           --down \
           --test=ginkgo \
           -- \
-          --use-built-binaries \
           --focus-regex='\[NodeConformance\]' \
           --skip-regex='\[Environment:NotInUserNS\]|\[Slow\]' \
           --parallel=8
