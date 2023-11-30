@@ -2191,7 +2191,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-canary
 
@@ -2394,7 +2394,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-slow-canary
 
@@ -2530,7 +2530,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-canary
 
@@ -2598,7 +2598,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: amazonvpc
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary
 
@@ -2666,7 +2666,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary
 
@@ -2870,7 +2870,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-disruptive-canary
 
@@ -3007,7 +3007,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '71'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-serial-canary
 
@@ -3076,7 +3076,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-alpha-features
 
