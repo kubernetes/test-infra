@@ -78,7 +78,7 @@ func (f *fakeFileFinder) Iterator(_ context.Context, prefix, delimiter string) (
 		if seenDirs.Has(ps[0]) {
 			continue
 		}
-		fs = append(fs, fmt.Sprintf("%s/%s/", prefix, ps[0]))
+		fs = append(fs, fmt.Sprintf("%s%s/", prefix, ps[0]))
 		seenDirs.Insert(ps[0])
 	}
 	slices.Sort(fs)
@@ -101,11 +101,13 @@ func (i *fakeIterator) Next(_ context.Context) (pio.ObjectAttributes, error) {
 	if i.finder.files[n].ContentEncoding == wantNextErr.ContentEncoding {
 		return oa, fmt.Errorf("next error at %q", n)
 	}
-	ps := strings.Split(n, "/")
-	objName := ps[len(ps)-1]
 	oa.Name = n
-	oa.ObjName = objName
-	oa.IsDir = strings.HasSuffix(n, "/")
+	if ps := strings.Split(n, "/"); ps[len(ps)-1] == "" {
+		oa.IsDir = true
+		oa.ObjName = ps[len(ps)-2] + "/"
+	} else {
+		oa.ObjName = ps[len(ps)-1]
+	}
 	return oa, nil
 }
 
@@ -115,6 +117,7 @@ func TestArtifactFiles(t *testing.T) {
 	for _, tc := range []struct {
 		desc    string
 		ff      *fakeFileFinder
+		opts    ArtifactOpts
 		want    []*resultstore.File
 		wantErr bool
 	}{
@@ -135,6 +138,9 @@ func TestArtifactFiles(t *testing.T) {
 						ContentEncoding: "text/plain; charset=utf-8",
 					},
 				},
+			},
+			opts: ArtifactOpts{
+				Dir: base,
 			},
 			want: []*resultstore.File{
 				{
@@ -158,11 +164,55 @@ func TestArtifactFiles(t *testing.T) {
 			},
 		},
 		{
+			desc: "artifacts dir",
+			ff: &fakeFileFinder{
+				files: map[string]pio.Attributes{
+					base + "/build-log.txt": {
+						Size:            9000,
+						ContentEncoding: "text/plain; charset=utf-8",
+					},
+					base + "/started.json": {
+						Size:            350,
+						ContentEncoding: "application/json; charset=utf-8",
+					},
+					base + "/artifacts/artifact.txt": {
+						Size:            10000,
+						ContentEncoding: "text/plain; charset=utf-8",
+					},
+				},
+			},
+			opts: ArtifactOpts{
+				Dir:              base,
+				ArtifactsDirOnly: true,
+			},
+			want: []*resultstore.File{
+				{
+					Uid:         "build.log",
+					Uri:         "gs://bucket/pr-logs/1234/build-log.txt",
+					Length:      &wrapperspb.Int64Value{Value: 9000},
+					ContentType: "text/plain",
+				},
+				{
+					Uid:         "started.json",
+					Uri:         "gs://bucket/pr-logs/1234/started.json",
+					Length:      &wrapperspb.Int64Value{Value: 350},
+					ContentType: "application/json",
+				},
+				{
+					Uid: "artifacts/",
+					Uri: "gs://bucket/pr-logs/1234/artifacts/",
+				},
+			},
+		},
+		{
 			desc: "exclude unwanted subdirs",
 			ff: &fakeFileFinder{
 				files: map[string]pio.Attributes{
 					base + "/not-artifacts-subdir/unwanted": {},
 				},
+			},
+			opts: ArtifactOpts{
+				Dir: base,
 			},
 			want: nil,
 		},
@@ -173,11 +223,17 @@ func TestArtifactFiles(t *testing.T) {
 					base + "/build.log": {},
 				},
 			},
+			opts: ArtifactOpts{
+				Dir: base,
+			},
 			want: nil,
 		},
 		{
 			desc: "empty",
 			ff:   &fakeFileFinder{},
+			opts: ArtifactOpts{
+				Dir: base,
+			},
 			want: nil,
 		},
 		{
@@ -187,6 +243,9 @@ func TestArtifactFiles(t *testing.T) {
 					base + "/attr-error.txt": wantAttrErr,
 				},
 			},
+			opts: ArtifactOpts{
+				Dir: base,
+			},
 			wantErr: true,
 		},
 		{
@@ -195,6 +254,9 @@ func TestArtifactFiles(t *testing.T) {
 				files: map[string]pio.Attributes{
 					base + "/iterator-error.txt": wantIterErr,
 				},
+			},
+			opts: ArtifactOpts{
+				Dir: base,
 			},
 			wantErr: true,
 		},
@@ -212,6 +274,9 @@ func TestArtifactFiles(t *testing.T) {
 						ContentEncoding: "text/plain; charset=utf-8",
 					},
 				},
+			},
+			opts: ArtifactOpts{
+				Dir: base,
 			},
 			want: []*resultstore.File{
 				{
@@ -242,6 +307,9 @@ func TestArtifactFiles(t *testing.T) {
 					},
 				},
 			},
+			opts: ArtifactOpts{
+				Dir: base,
+			},
 			want: []*resultstore.File{
 				{
 					Uid:         "ok.txt",
@@ -260,7 +328,7 @@ func TestArtifactFiles(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			got, err := ArtifactFiles(ctx, tc.ff, base)
+			got, err := ArtifactFiles(ctx, tc.ff, tc.opts)
 			if err != nil {
 				if tc.wantErr {
 					t.Logf("got expected error: %v", err)

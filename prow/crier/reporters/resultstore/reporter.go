@@ -40,14 +40,16 @@ type Reporter struct {
 	cfg      config.Getter
 	opener   io.Opener
 	uploader *resultstore.Uploader
+	dirOnly  bool
 }
 
 // New returns a new Reporter.
-func New(cfg config.Getter, opener io.Opener, uploader *resultstore.Uploader) *Reporter {
+func New(cfg config.Getter, opener io.Opener, uploader *resultstore.Uploader, dirOnly bool) *Reporter {
 	return &Reporter{
 		cfg:      cfg,
 		opener:   opener,
 		uploader: uploader,
+		dirOnly:  dirOnly,
 	}
 }
 
@@ -102,7 +104,7 @@ func (r *Reporter) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob
 	log = log.WithField("BuildID", pj.Status.BuildID)
 	finished := readFinishedFile(ctx, log, r.opener, path)
 	started := readStartedFile(ctx, log, r.opener, path)
-	files, err := resultstore.ArtifactFiles(ctx, r.opener, path)
+	files, err := resultstore.ArtifactFiles(ctx, r.opener, resultstore.ArtifactOpts{Dir: path, ArtifactsDirOnly: r.dirOnly})
 	if err != nil {
 		// Log and continue in case of errors.
 		log.WithError(err).Errorf("error reading artifact files from %q", path)

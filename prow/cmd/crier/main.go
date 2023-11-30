@@ -76,6 +76,8 @@ type options struct {
 
 	dryrun      bool
 	reportAgent string
+
+	resultstoreArtifactsDirOnly bool
 }
 
 func (o *options) validate() error {
@@ -130,6 +132,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 	fs.IntVar(&o.resultStoreWorkers, "resultstore-workers", 0, "Number of ResultStore report workers (0 means disabled)")
+	fs.BoolVar(&o.resultstoreArtifactsDirOnly, "resultstore-artifacts-dir-only", false, "Report the artifacts/ dir instead of subtree files (testing)")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
@@ -297,7 +300,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error connecting to resultstore")
 		}
 		uploader := resultstore.NewUploader(resultstore.NewClient(conn))
-		if err := crier.New(mgr, resultstorereporter.New(cfg, opener, uploader), o.resultStoreWorkers, o.githubEnablement.EnablementChecker()); err != nil {
+		if err := crier.New(mgr, resultstorereporter.New(cfg, opener, uploader, o.resultstoreArtifactsDirOnly), o.resultStoreWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct resultstorereporter controller")
 		}
 	}

@@ -18,6 +18,7 @@ package resultstore
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"strings"
 
@@ -32,18 +33,37 @@ type fileFinder interface {
 	Attributes(ctx context.Context, name string) (pio.Attributes, error)
 }
 
-// ArtifactFiles returns the files in directory dir, then all files
-// in the artifacts/ subtree.
+type ArtifactOpts struct {
+	// Dir is the top-level directory; include all files here.
+	Dir string
+	// ArtifactsDirOnly includes only the "Dir/artifacts/" directory,
+	// instead of files in the tree rooted there. Experimental.
+	ArtifactsDirOnly bool
+}
+
+// ArtifactFiles returns the files based on ARtifactOpts.
 //
 // In the event of error, returns any files collected so far in the
 // interest of best effort.
-func ArtifactFiles(ctx context.Context, opener fileFinder, dir string) ([]*resultstore.File, error) {
-	prefix := ensureTrailingSlash(dir)
+func ArtifactFiles(ctx context.Context, opener fileFinder, o ArtifactOpts) ([]*resultstore.File, error) {
+	prefix := ensureTrailingSlash(o.Dir)
 	c := newFilesCollector(opener, prefix)
 
 	// Collect the files in the top-level dir.
 	if err := c.collect(ctx, prefix, "/"); err != nil {
 		return c.builder.Files(), err
+	}
+
+	if o.ArtifactsDirOnly {
+		artifacts := prefix + "artifacts/"
+		match := func(name string) bool {
+			fmt.Printf("\nname: %q\n", name)
+			return name == artifacts
+		}
+		if err := c.collectDirs(ctx, prefix, match); err != nil {
+			return c.builder.Files(), err
+		}
+		return c.builder.Files(), nil
 	}
 
 	// Collect the entire artifacts/ subtree.
@@ -101,6 +121,30 @@ func (c *filesCollector) collect(ctx context.Context, prefix, delimiter string) 
 	return nil
 }
 
+// collectDirs collects directories in prefix where match is true.
+func (c *filesCollector) collectDirs(ctx context.Context, prefix string, match func(string) bool) error {
+	iter, err := c.finder.Iterator(ctx, prefix, "/")
+	if err != nil {
+		return err
+	}
+	for {
+		f, err := iter.Next(ctx)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+		if !f.IsDir {
+			continue
+		}
+		if match(f.Name) {
+			c.builder.AddDir(f.Name)
+		}
+	}
+	return nil
+}
+
 type filesBuilder struct {
 	prefix string
 	trim   func(string) string
@@ -132,6 +176,14 @@ func (b *filesBuilder) Add(name string, attrs *pio.Attributes) {
 		Uri:         name,
 		Length:      &wrapperspb.Int64Value{Value: attrs.Size},
 		ContentType: shortContentType(attrs.ContentEncoding),
+	})
+}
+
+func (b *filesBuilder) AddDir(name string) {
+	uid := b.trim(name)
+	b.files = append(b.files, &resultstore.File{
+		Uid: uid,
+		Uri: name,
 	})
 }
 

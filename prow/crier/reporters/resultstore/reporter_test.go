@@ -38,7 +38,7 @@ func (fcg fakeConfigGetter) Config() *config.Config {
 }
 
 func TestGetName(t *testing.T) {
-	gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{}, &resultstore.Uploader{})
+	gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{}, &resultstore.Uploader{}, false)
 	want := "resultstorereporter"
 	if got := gr.GetName(); got != want {
 		t.Errorf("GetName() got %v, want %v", got, want)
@@ -267,7 +267,7 @@ func TestShouldReport(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{}, &resultstore.Uploader{})
+			gr := New(fakeConfigGetter{}.Config, &fakeopener.FakeOpener{}, &resultstore.Uploader{}, false)
 			result := gr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.job)
 			if result != tc.shouldReport {
 				t.Errorf("ShouldReport() got %v, want %v", result, tc.shouldReport)
