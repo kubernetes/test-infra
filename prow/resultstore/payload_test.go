@@ -105,16 +105,18 @@ func TestInvocation(t *testing.T) {
 				Finished: &metadata.Finished{
 					Timestamp: int64Pointer(250),
 				},
+				ProjectID: "project-id",
 			},
 			want: &resultstore.Invocation{
 				Id: &resultstore.Invocation_Id{
 					InvocationId: "job-name",
 				},
 				InvocationAttributes: &resultstore.InvocationAttributes{
-					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
+					ProjectId: "project-id",
 					Labels: []string{
 						"prow",
 					},
+					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
 				Properties: []*resultstore.Property{
 					{
@@ -215,16 +217,18 @@ func TestInvocation(t *testing.T) {
 				Finished: &metadata.Finished{
 					Timestamp: int64Pointer(250),
 				},
+				ProjectID: "project-id",
 			},
 			want: &resultstore.Invocation{
 				Id: &resultstore.Invocation_Id{
 					InvocationId: "job-name",
 				},
 				InvocationAttributes: &resultstore.InvocationAttributes{
-					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
+					ProjectId: "project-id",
 					Labels: []string{
 						"prow",
 					},
+					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
 				Properties: []*resultstore.Property{
 					{
@@ -318,16 +322,18 @@ func TestInvocation(t *testing.T) {
 						BuildID: "build-id",
 					},
 				},
+				ProjectID: "project-id",
 			},
 			want: &resultstore.Invocation{
 				Id: &resultstore.Invocation_Id{
 					InvocationId: "job-name",
 				},
 				InvocationAttributes: &resultstore.InvocationAttributes{
-					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
+					ProjectId: "project-id",
 					Labels: []string{
 						"prow",
 					},
+					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
 				Properties: []*resultstore.Property{
 					{
