@@ -354,7 +354,14 @@ type ReporterConfig struct {
 	Slack       *SlackReporterConfig `json:"slack,omitempty"`
 }
 
+// TODO: This config is used only for alpha testing and will
+// likely move to ProwJobDefaults for flexibility.
 type ResultStoreReporter struct {
+	// Specifies the ResultStore InvocationAttributes.ProjectId, used
+	// for various quota and GUI access control purposes.
+	// In practice, it is generally the same as the Google Cloud
+	// Project ID or number of the job's GCS storage bucket.
+	// Required to write job results to ResultStore.
 	ProjectID string `json:"project_id,omitempty"`
 }
 
