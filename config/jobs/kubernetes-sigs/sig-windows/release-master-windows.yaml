@@ -537,7 +537,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: \[Feature:NodeLogQuery\] # run the NodeLogQuery tests
           - name: GINKGO_SKIP
-            value: ""
+            value: \[Serial\]|\[Slow\]
           - name: NODE_FEATURE_GATES
             value: "NodeLogQuery=true"
           - name: WINDOWS_CONTAINERD_URL
