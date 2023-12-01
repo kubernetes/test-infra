@@ -128,8 +128,7 @@ presubmits:
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz
@@ -181,8 +180,7 @@ presubmits:
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz
@@ -235,8 +233,7 @@ presubmits:
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Flexible"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -416,8 +413,7 @@ presubmits:
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-capz
@@ -470,8 +466,7 @@ presubmits:
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-md.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-md.yaml
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-dualstack-capz
@@ -520,8 +515,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: ENABLE_MULTI_SLB # cloud-provider-azure config
@@ -587,8 +581,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-              value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win-oot-credential-provider.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win-oot-credential-provider.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
@@ -689,8 +682,7 @@ periodics:
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-          value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz
@@ -745,8 +737,7 @@ periodics:
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-          value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-vmss-capz
@@ -801,8 +792,7 @@ periodics:
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-          value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-md.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-md.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-dualstack-capz
@@ -857,8 +847,7 @@ periodics:
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-          value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-dualstack-vmss-capz
@@ -1461,8 +1450,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
-        # TODO change back to kubernetes-sigs/cloud-provider-azure/master when https://github.com/kubernetes-sigs/cloud-provider-azure/pull/5078 merges
-        value: https://raw.githubusercontent.com/jackfrancis/cloud-provider-azure/capz-templates-caaph-calico/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
