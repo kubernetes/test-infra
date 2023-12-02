@@ -175,7 +175,7 @@ func TestInvocation(t *testing.T) {
 			},
 		},
 		{
-			desc: "podspec nil",
+			desc: "podspec refs nil",
 			payload: &Payload{
 				Job: &v1.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{
@@ -190,10 +190,9 @@ func TestInvocation(t *testing.T) {
 						},
 					},
 					Spec: v1.ProwJobSpec{
-						Job: "spec-job",
-						Refs: &v1.Refs{
-							RepoLink: "repo-link",
-						},
+						Job:     "spec-job",
+						PodSpec: nil,
+						Refs:    nil,
 					},
 					Status: v1.ProwJobStatus{
 						StartTime: metav1.Time{
@@ -244,10 +243,6 @@ func TestInvocation(t *testing.T) {
 						Value: "https://prow/url",
 					},
 					{
-						Key:   "Repo",
-						Value: "repo-link",
-					},
-					{
 						Key:   "Commit",
 						Value: "repo-commit",
 					},
@@ -271,7 +266,7 @@ func TestInvocation(t *testing.T) {
 			},
 		},
 		{
-			desc: "started finished nil",
+			desc: "completiontime started finished nil",
 			payload: &Payload{
 				Job: &v1.ProwJob{
 					ObjectMeta: metav1.ObjectMeta{
@@ -314,14 +309,14 @@ func TestInvocation(t *testing.T) {
 						StartTime: metav1.Time{
 							Time: time.Unix(100, 0),
 						},
-						CompletionTime: &metav1.Time{
-							Time: time.Unix(300, 0),
-						},
-						State:   v1.SuccessState,
-						URL:     "https://prow/url",
-						BuildID: "build-id",
+						CompletionTime: nil,
+						State:          v1.SuccessState,
+						URL:            "https://prow/url",
+						BuildID:        "build-id",
 					},
 				},
+				Started:   nil,
+				Finished:  nil,
 				ProjectID: "project-id",
 			},
 			want: &resultstore.Invocation{
@@ -369,7 +364,7 @@ func TestInvocation(t *testing.T) {
 						Seconds: 100,
 					},
 					Duration: &durationpb.Duration{
-						Seconds: 200,
+						Seconds: 0,
 					},
 				},
 				WorkspaceInfo: &resultstore.WorkspaceInfo{
@@ -382,7 +377,8 @@ func TestInvocation(t *testing.T) {
 					},
 				},
 			},
-		}, {
+		},
+		{
 			desc:    "job nil",
 			payload: &Payload{},
 			wantErr: true,

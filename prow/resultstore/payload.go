@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
@@ -79,7 +80,10 @@ func (p *Payload) invocationStatusAttributes() *resultstore.StatusAttributes {
 
 func (p *Payload) invocationTiming() *resultstore.Timing {
 	start := p.Job.Status.StartTime.Time
-	duration := p.Job.Status.CompletionTime.Time.Sub(start)
+	var duration time.Duration
+	if p.Job.Status.CompletionTime != nil {
+		duration = p.Job.Status.CompletionTime.Time.Sub(start)
+	}
 	return &resultstore.Timing{
 		StartTime: &timestamppb.Timestamp{
 			Seconds: start.Unix(),
@@ -95,7 +99,7 @@ func (p *Payload) invocationAttributes() *resultstore.InvocationAttributes {
 		// TODO: ProjectID might be assigned directly from the GCS
 		// BucketAttrs.ProjectNumber; requires a raw GCS client.
 		ProjectId:   p.ProjectID,
-		Labels:      []string{"prow"},
+		Labels:      []string{"prowjob"},
 		Description: descriptionFromLabels(p.Job.Labels),
 	}
 }
@@ -146,10 +150,12 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 			Key:   "Prow_Dashboard_URL",
 			Value: p.Job.Status.URL,
 		},
-		{
+	}
+	if p.Job.Spec.Refs != nil {
+		ps = append(ps, &resultstore.Property{
 			Key:   "Repo",
 			Value: p.Job.Spec.Refs.RepoLink,
-		},
+		})
 	}
 	if p.Started != nil {
 		ps = append(ps, &resultstore.Property{
@@ -176,10 +182,12 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 	return ps
 }
 
+const defaultConfigurationId = "default"
+
 func (p *Payload) defaultConfiguration() *resultstore.Configuration {
 	return &resultstore.Configuration{
 		Id: &resultstore.Configuration_Id{
-			ConfigurationId: "default",
+			ConfigurationId: defaultConfigurationId,
 		},
 	}
 }
@@ -207,7 +215,7 @@ func (p *Payload) configuredTarget() *resultstore.ConfiguredTarget {
 	return &resultstore.ConfiguredTarget{
 		Id: &resultstore.ConfiguredTarget_Id{
 			TargetId:        p.targetID(),
-			ConfigurationId: "default",
+			ConfigurationId: defaultConfigurationId,
 		},
 	}
 }
@@ -216,7 +224,7 @@ func (p *Payload) overallAction() *resultstore.Action {
 	return &resultstore.Action{
 		Id: &resultstore.Action_Id{
 			TargetId:        p.targetID(),
-			ConfigurationId: "default",
+			ConfigurationId: defaultConfigurationId,
 			ActionId:        "overall",
 		},
 		Timing: p.metadataTiming(),
