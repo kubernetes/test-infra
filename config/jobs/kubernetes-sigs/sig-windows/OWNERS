@@ -3,24 +3,18 @@
 reviewers:
 - adelina-t
 - andyzhangx
-- claudiubelu
-- ddebroy
 - feiskyer
-- jayunit100
-- jsturtevant
-- marosset
+- sig-windows-leads
 approvers:
 - adelina-t
 - andyzhangx
-- benmoss
-- claudiubelu
-- ddebroy
 - feiskyer
-- jayunit100
-- jsturtevant
-- marosset
+- sig-windows-leads
 emeritus_approvers:
+- benmoss
 - chewong
+- ddebroy
+- jayunit100
 
 labels:
 - sig/windows
