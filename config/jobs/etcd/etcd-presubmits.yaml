@@ -95,6 +95,7 @@ presubmits:
         - -c
         - |
           set -euo pipefail
+          make gofail-enable
           VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
         resources:
           requests:
