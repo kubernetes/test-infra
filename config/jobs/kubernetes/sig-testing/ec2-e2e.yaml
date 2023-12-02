@@ -639,6 +639,7 @@ presubmits:
                --test=ginkgo \
                -- \
                --use-built-binaries true \
+               --test-args="--node-os-arch=$NODE_OS_ARCH" \
                --focus-regex='\[Conformance\]'
           env:
             - name: BUILD_EKS_AMI_OS
@@ -825,6 +826,7 @@ periodics:
              --test=ginkgo \
              -- \
              --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
              --focus-regex='\[Conformance\]'
         env:
           - name: BUILD_EKS_AMI_OS
@@ -891,6 +893,7 @@ periodics:
              --test=ginkgo \
              -- \
              --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
              --focus-regex='\[Conformance\]'
         env:
           - name: BUILD_EKS_AMI_OS
@@ -957,6 +960,7 @@ periodics:
              --test=ginkgo \
              -- \
              --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
              --parallel=30 \
              --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
         env:
@@ -1024,7 +1028,7 @@ periodics:
              --test=ginkgo \
              -- \
              --use-built-binaries true \
-             --test-args='--node-os-arch=arm64' \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
              --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
         env:
           - name: BUILD_EKS_AMI_OS
