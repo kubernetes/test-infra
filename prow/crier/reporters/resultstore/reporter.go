@@ -19,12 +19,9 @@ package resultstore
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"time"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/wait"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
@@ -76,8 +73,9 @@ func (r *Reporter) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.P
 		return false
 	}
 
-	if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
-		log.Info("job not finished")
+	if !pj.Complete() {
+		// TODO: Change to debug or remove after alpha testing.
+		log.Infof("job not finished")
 		return false
 	}
 
@@ -102,8 +100,8 @@ func (r *Reporter) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob
 		return nil, nil, err
 	}
 	log = log.WithField("BuildID", pj.Status.BuildID)
-	finished := readFinishedFile(ctx, log, r.opener, path)
 	started := readStartedFile(ctx, log, r.opener, path)
+	finished := readFinishedFile(ctx, log, r.opener, path)
 	files, err := resultstore.ArtifactFiles(ctx, r.opener, resultstore.ArtifactOpts{Dir: path, ArtifactsDirOnly: r.dirOnly})
 	if err != nil {
 		// Log and continue in case of errors.
@@ -116,53 +114,29 @@ func (r *Reporter) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob
 		Files:     files,
 		ProjectID: projectID(pj),
 	})
-	if err != nil {
-		log.WithError(err).Error("resultstore upload error")
-	}
 	return []*v1.ProwJob{pj}, nil, err
-}
-
-// There is a race between this and the GCS reporter in the case the
-// finished.json file does not exist. This reporter waits for it to
-// be written by the GCS reporter so it is not missed.
-
-var waitFinishedBackoff = func() wait.Backoff {
-	return wait.Backoff{
-		Duration: time.Second,
-		Factor:   2,
-		Cap:      15 * time.Second,
-	}
 }
 
 func readFinishedFile(ctx context.Context, log *logrus.Entry, opener io.Opener, dir string) *metadata.Finished {
 	n := dir + "/" + v1.FinishedStatusFile
-	var finished *metadata.Finished
-	err := wait.ExponentialBackoffWithContext(ctx, waitFinishedBackoff(), func() (bool, error) {
-		bs, err := io.ReadContent(ctx, log, opener, n)
-		if err != nil {
-			if !io.IsNotExist(err) {
-				return false, nil
-			}
-			return false, err
-		}
-		if err := json.Unmarshal(bs, &finished); err != nil {
-			return false, fmt.Errorf("unmarshal: %w", err)
-		}
-		return true, nil
-	})
+	bs, err := io.ReadContent(ctx, log, opener, n)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to read %q", n)
+		return nil
 	}
-	return finished
+	var finished metadata.Finished
+	if err := json.Unmarshal(bs, &finished); err != nil {
+		log.WithError(err).Errorf("Error unmarshalling %v", n)
+		return nil
+	}
+	return &finished
 }
 
 func readStartedFile(ctx context.Context, log *logrus.Entry, opener io.Opener, dir string) *metadata.Started {
 	n := dir + "/" + v1.StartedStatusFile
 	bs, err := io.ReadContent(ctx, log, opener, n)
 	if err != nil {
-		if !io.IsNotExist(err) {
-			log.WithError(err).Warnf("Failed to read %q", v1.StartedStatusFile)
-		}
+		log.WithError(err).Warnf("Failed to read %q", v1.StartedStatusFile)
 		return nil
 	}
 	var started metadata.Started

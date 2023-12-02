@@ -114,7 +114,7 @@ func TestInvocation(t *testing.T) {
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
-						"prow",
+						"prowjob",
 					},
 					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
@@ -225,7 +225,7 @@ func TestInvocation(t *testing.T) {
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
-						"prow",
+						"prowjob",
 					},
 					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
@@ -326,7 +326,7 @@ func TestInvocation(t *testing.T) {
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
-						"prow",
+						"prowjob",
 					},
 					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
@@ -613,11 +613,52 @@ func TestOverallAction(t *testing.T) {
 			},
 		},
 		{
-			desc: "finished nil",
+			desc: "finished nil use competion time",
 			payload: &Payload{
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
+					},
+					Status: v1.ProwJobStatus{
+						CompletionTime: &metav1.Time{
+							Time: time.Unix(250, 0),
+						},
+					},
+				},
+				Started: &metadata.Started{
+					Timestamp:  150,
+					RepoCommit: "repo-commit",
+					Repos: map[string]string{
+						"repo-key": "repo-value",
+					},
+				},
+			},
+			want: &resultstore.Action{
+				Id: &resultstore.Action_Id{
+					TargetId:        "spec-job",
+					ConfigurationId: "default",
+					ActionId:        "overall",
+				},
+				ActionType: &resultstore.Action_TestAction{},
+				Timing: &resultstore.Timing{
+					StartTime: &timestamppb.Timestamp{
+						Seconds: 150,
+					},
+					Duration: &durationpb.Duration{
+						Seconds: 100,
+					},
+				},
+			},
+		},
+		{
+			desc: "finished and job completion time nil",
+			payload: &Payload{
+				Job: &v1.ProwJob{
+					Spec: v1.ProwJobSpec{
+						Job: "spec-job",
+					},
+					Status: v1.ProwJobStatus{
+						CompletionTime: nil,
 					},
 				},
 				Started: &metadata.Started{

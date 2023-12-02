@@ -234,11 +234,19 @@ func (p *Payload) overallAction() *resultstore.Action {
 }
 
 func (p *Payload) metadataTiming() *resultstore.Timing {
-	if p.Started == nil || p.Finished == nil {
+	if p.Started == nil {
 		return nil
 	}
 	start := p.Started.Timestamp
-	duration := *p.Finished.Timestamp - start
+	var duration int64
+	switch {
+	case p.Finished != nil:
+		duration = *p.Finished.Timestamp - start
+	case p.Job != nil && p.Job.Status.CompletionTime != nil:
+		duration = p.Job.Status.CompletionTime.Unix() - start
+	default:
+		return nil
+	}
 	return &resultstore.Timing{
 		StartTime: &timestamppb.Timestamp{
 			Seconds: start,
