@@ -1217,11 +1217,11 @@ periodics:
           requests:
             cpu: 8
             memory: 10Gi
-- interval: 12h
+- interval: 1h
   cluster: eks-prow-build-cluster
   name: ci-aws-ec2-janitor
   annotations:
-    testgrid-dashboards: amazon-ec2
+    testgrid-dashboards: amazon-ec2, sig-testing-maintenance
     testgrid-tab-name: aws-ec2-janitor
     description: cleanup any EC2 instances older than 2 days
   labels:
@@ -1232,25 +1232,16 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
-        command:
-          - runner.sh
+      - command:
+        - /app
         args:
-          - bash
-          - -c
-          - |
-            set -xeu
-            target=$(date -d "2 days ago" +%Y-%m-%d)
-            region="us-east-1"
-            # Is the Launch time *before* two days ago? if so then terminate the instance.
-            for id in `aws ec2 describe-instances --query "Reservations[].Instances[?LaunchTime<='$target'][].{id: InstanceId}" --filters "Name=instance-state-name,Values=running" --output text`
-            do
-              aws ec2 --region us-east-1 terminate-instances --instance-ids $id
-            done
+        - --ttl=6h
+        - --path=s3://provider-aws-test-infra/objs.json
+        image: gcr.io/k8s-staging-boskos/aws-janitor:v20230908-da54d76
         resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
