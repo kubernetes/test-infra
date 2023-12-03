@@ -165,7 +165,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-vmss
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -211,7 +211,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-windows
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -317,7 +317,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-capz
     decorate: true
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     optional: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
@@ -336,7 +336,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.24
+        base_ref: release-1.26
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -357,7 +357,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.24"
+              value: "latest-1.26"
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-e2e-capz
