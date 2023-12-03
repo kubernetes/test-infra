@@ -81,8 +81,7 @@ type options struct {
 	flIcons  string
 	flStyles string
 	flagutil.StorageClientOptions
-	oauthTokenFile string
-	// deprecated and ineffective
+	oauthTokenFile     string
 	defaultCredentials bool
 
 	flVersion bool
@@ -111,11 +110,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.flStyles, "s", "", "path to the styles directory")
 
 	o.StorageClientOptions.AddFlags(fs)
-	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
-	// StorageClientOptions.StorageClient / io.NewOpener automatically uses application default credentials as a fallback.
-	// Mark this flag as ineffective but don't remove it for backward-compatibility.
-	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials "+
-		"(deprecated and ineffective, is assumed to be true if --gcs-credentials-file is not set)")
+	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret (only supported for GCS buckets)")
+	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials (only supported for GCS buckets)")
 
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
@@ -243,23 +239,38 @@ func (o *options) parseBucket(bucket string) (*prowv1.ProwPath, error) {
 func getStorageClient(o options) (pkgio.Opener, error) {
 	ctx := context.Background()
 
-	// prow/io doesn't support oauth token files, gcsweb is the only component supporting this.
-	// If --oauth-token-file is set create a storage client manually and pass it to NewGCSOpener.
+	if o.provider != providers.GS {
+		return o.StorageClientOptions.StorageClient(ctx)
+	}
+
+	// Handle GCS separately for backwards-compatibility, see https://github.com/kubernetes/test-infra/issues/31349.
+	// StorageClientOptions.StorageClient() tries using application default credentials which isn't the default in gcsweb.
+	// If gcsweb is running on GCE, we might not be able to access public buckets unless we configure anonymous auth,
+	// see https://cloud.google.com/storage/docs/access-public-data#client-libraries.
+	var clientOption []option.ClientOption
+
+	if !o.defaultCredentials {
+		clientOption = []option.ClientOption{option.WithoutAuthentication()}
+	}
+
 	if o.oauthTokenFile != "" {
 		b, err := os.ReadFile(o.oauthTokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
-
-		storageClient, err := storage.NewClient(ctx, option.WithAPIKey(string(bytes.TrimSpace(b))))
-		if err != nil {
-			return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
-		}
-
-		return pkgio.NewGCSOpener(storageClient), nil
+		clientOption = []option.ClientOption{option.WithAPIKey(string(bytes.TrimSpace(b)))}
 	}
 
-	return o.StorageClient(ctx)
+	if o.GCSCredentialsFile != "" {
+		clientOption = []option.ClientOption{option.WithCredentialsFile(o.GCSCredentialsFile)}
+	}
+
+	storageClient, err := storage.NewClient(ctx, clientOption...)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create gcs storage client: %w", err)
+	}
+
+	return pkgio.NewGCSOpener(storageClient), nil
 }
 
 func main() {
