@@ -87,6 +87,8 @@ type options struct {
 
 	flVersion bool
 
+	// the provider of the first configured bucket (only one provider is supported for now)
+	provider string
 	// Only buckets in this list will be served.
 	allowedBuckets strslice
 	// allowedProwPaths is the parsed list of allowedBuckets
@@ -133,8 +135,17 @@ func (o *options) validate() error {
 	// validate and parse bucket list
 	o.bucketAliases = bucketAliases{}
 	for _, bucket := range o.allowedBuckets {
-		if err := o.parseBucket(bucket); err != nil {
+		prowPath, err := o.parseBucket(bucket)
+		if err != nil {
 			return err
+		}
+
+		if o.provider == "" {
+			o.provider = prowPath.StorageProvider()
+		} else if o.provider != prowPath.StorageProvider() {
+			// If GCS buckets are served, we create a GCS-only client in getStorageClient, hence we cannot serve S3 buckets in
+			// this case.
+			return fmt.Errorf("serving buckets of different storage providers at the same time is not supported")
 		}
 	}
 
@@ -176,25 +187,25 @@ func (o *options) validate() error {
 	return nil
 }
 
-func (o *options) parseBucket(bucket string) error {
+func (o *options) parseBucket(bucket string) (*prowv1.ProwPath, error) {
 	bucketParts := strings.Split(bucket, "=")
 	bucketName := strings.TrimSpace(bucketParts[0])
 
 	if bucketName == "" {
-		return errors.New("empty bucket name is not allowed")
+		return nil, errors.New("empty bucket name is not allowed")
 	}
 
 	// canonicalize buckets: adds the gs:// prefix if omitted
 	prowPath, err := prowv1.ParsePath(bucketName)
 	if err != nil {
-		return fmt.Errorf("bucket %q is not a valid bucket: %w", bucketName, err)
+		return nil, fmt.Errorf("bucket %q is not a valid bucket: %w", bucketName, err)
 	}
 
 	o.allowedProwPaths = append(o.allowedProwPaths, prowPath)
 
 	if len(bucketParts) <= 1 {
 		// No aliases
-		return nil
+		return prowPath, nil
 	}
 
 	// handle aliases
@@ -202,18 +213,18 @@ func (o *options) parseBucket(bucket string) error {
 	bucketAliases := strings.Split(bucketParts[1], ",")
 
 	if len(bucketAliases) == 0 {
-		return fmt.Errorf("no aliases for bucket %q have been set", bucketName)
+		return nil, fmt.Errorf("no aliases for bucket %q have been set", bucketName)
 	}
 
 	for _, alias := range bucketAliases {
 		alias := strings.TrimSpace(alias)
 		if alias == "" {
-			return fmt.Errorf("empty alias for bucket %q is not a allowed", bucketName)
+			return nil, fmt.Errorf("empty alias for bucket %q is not a allowed", bucketName)
 		}
 
 		aliasProwPath, err := prowv1.ParsePath(alias)
 		if err != nil {
-			return fmt.Errorf("bucket alias %q is not a valid bucket: %w", alias, err)
+			return nil, fmt.Errorf("bucket alias %q is not a valid bucket: %w", alias, err)
 		}
 
 		aliasProwPathPrefixed := pathPrefix(aliasProwPath)
@@ -226,7 +237,7 @@ func (o *options) parseBucket(bucket string) error {
 		o.bucketAliases[pathPrefix(aliasProwPath)] = bucketPrefix
 	}
 
-	return nil
+	return prowPath, nil
 }
 
 func getStorageClient(o options) (pkgio.Opener, error) {
