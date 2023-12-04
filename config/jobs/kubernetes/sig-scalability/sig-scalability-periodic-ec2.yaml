@@ -33,7 +33,7 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  interval: 12h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
