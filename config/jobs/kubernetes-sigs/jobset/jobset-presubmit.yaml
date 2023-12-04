@@ -27,11 +27,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-test-integration-main
     cluster: eks-prow-build-cluster
     always_run: true
@@ -50,11 +50,11 @@ presubmits:
         - test-integration
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-test-e2e-main-1-24
     cluster: eks-prow-build-cluster
     always_run: true
@@ -83,11 +83,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-test-e2e-main-1-25
     cluster: eks-prow-build-cluster
     always_run: true
@@ -116,11 +116,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-test-e2e-main-1-26
     cluster: eks-prow-build-cluster
     always_run: true
@@ -149,11 +149,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-test-e2e-main-1-27
     cluster: eks-prow-build-cluster
     always_run: true
@@ -182,11 +182,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-test-e2e-main-1-28
     cluster: eks-prow-build-cluster
     always_run: true
@@ -215,11 +215,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
   - name: pull-jobset-verify-main
     cluster: eks-prow-build-cluster
     branches:
@@ -240,8 +240,8 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
           requests:
-            cpu: 2
-            memory: 8Gi
+            cpu: 3
+            memory: 10Gi
