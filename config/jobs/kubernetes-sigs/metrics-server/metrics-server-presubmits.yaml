@@ -93,7 +93,6 @@ presubmits:
       - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
-    optional: true # remove when we deflake the ha tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
@@ -127,6 +126,7 @@ presubmits:
       - release-0.5
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
+    optional: true # remove when we deflake the ha tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
