@@ -18,6 +18,8 @@ package repoowners
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -480,6 +482,12 @@ func loadAliasesFrom(baseDir, filename string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
+func isHttpUrl(str string) bool {
+	pattern := `^https?:\/\/`
+	matched, _ := regexp.MatchString(pattern, str)
+	return matched
+}
+
 func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorelist []*regexp.Regexp, filenames ownersconfig.Filenames, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
@@ -495,6 +503,29 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorel
 		options:           make(map[string]dirOptions),
 
 		dirDenylist: dirIgnorelist,
+	}
+
+	baseOwnersFile := filepath.Join(o.baseDir, filenames.Owners)
+	if _, err := os.Stat(filepath.Join(baseOwnersFile)); os.IsNotExist(err) {
+		// Download templates Owner File if file ownersconfig.Filenames.OwnersFilePath is http url
+		if isHttpUrl(filenames.OwnersFilePath) {
+			url := filenames.OwnersFilePath + filenames.Owners
+			resp, err := http.Get(url)
+			if err != nil {
+				o.log.Warnf("Download remote owner file %s failed: %v", url, err)
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				o.log.Warnf("Read remote owner file %s failed: %v", url, err)
+			}
+
+			err = os.WriteFile(filepath.Join(baseOwnersFile), body, 0644)
+			if err != nil {
+				o.log.Warnf("Write remote owner file %s failed: %v", url, err)
+			}
+		}
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
