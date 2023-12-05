@@ -29,6 +29,8 @@ spec:
         args:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        # Use a static, predictable folder for storing primary clones.
+        - --cache-dir-base=/etc/moonraker-inrepoconfig-pv
         # This cookie file is only here to trigger the creation of a
         # Gerrit-flavored Git client factory. So this makes this moonraker deployment
         # "tied" to Gerrit.
