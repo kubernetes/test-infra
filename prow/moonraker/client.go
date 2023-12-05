@@ -171,7 +171,7 @@ func (c *Client) GetProwYAML(refs *prowapi.Refs) (*config.ProwYAML, error) {
 // required because the Presubmit and Postsubmit job types have private fields
 // in them that would not be serialized into JSON when sent over from the
 // server. So the defaulting has to be done client-side.
-func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) (*config.ProwYAML, error) {
+func (c *Client) GetInRepoConfig(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) (*config.ProwYAML, error) {
 	refs := prowapi.Refs{}
 
 	orgRepo := config.NewOrgRepo(identifier)
@@ -183,6 +183,8 @@ func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGett
 	if err != nil {
 		return nil, err
 	}
+
+	refs.BaseRef = baseBranch
 
 	pulls := []prowapi.Pull{}
 	for _, headSHAGetter := range headSHAGetters {
@@ -209,8 +211,8 @@ func (c *Client) GetInRepoConfig(identifier string, baseSHAGetter config.RefGett
 	return prowYAML, nil
 }
 
-func (c *Client) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
-	prowYAML, err := c.GetInRepoConfig(identifier, baseSHAGetter, headSHAGetters...)
+func (c *Client) GetPresubmits(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	prowYAML, err := c.GetInRepoConfig(identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +221,8 @@ func (c *Client) GetPresubmits(identifier string, baseSHAGetter config.RefGetter
 	return append(config.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
 }
 
-func (c *Client) GetPostsubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error) {
-	prowYAML, err := c.GetInRepoConfig(identifier, baseSHAGetter, headSHAGetters...)
+func (c *Client) GetPostsubmits(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error) {
+	prowYAML, err := c.GetInRepoConfig(identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
