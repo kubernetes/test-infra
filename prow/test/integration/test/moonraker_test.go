@@ -515,7 +515,7 @@ cat README.txt
 
 	// Now make moonraker do lookups of the ProwYAML in the PR we created.
 	// It is at this point that moonraker will learn of the
-	// moonraker-burst repo we've created in FGS.
+	// moonraker-update-base-branch repo we've created in FGS.
 	for prRef, headSHA := range refsToShas {
 		go sendGetProwYAMLRequest(t, "", baseSHA, prRef, headSHA)
 	}
