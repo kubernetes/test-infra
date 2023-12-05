@@ -29,9 +29,6 @@ import (
 
 func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir string, err error) {
 	// We can't divine a destination for jobs that don't have a build ID, so don't try.
-	if pj.Status.BuildID == "" {
-		return "", "", errors.New("cannot get job destination for job with no BuildID")
-	}
 	gc, err := gcsConfig(cfg, pj)
 	if err != nil {
 		return "", "", err
@@ -55,6 +52,9 @@ func IsGCSDestination(cfg config.Getter, pj *prowv1.ProwJob) bool {
 }
 
 func gcsConfig(cfg config.Getter, pj *prowv1.ProwJob) (*prowv1.GCSConfiguration, error) {
+	if pj.Status.BuildID == "" {
+		return nil, errors.New("cannot get job destination for job with no BuildID")
+	}
 
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
 		return pj.Spec.DecorationConfig.GCSConfiguration, nil
