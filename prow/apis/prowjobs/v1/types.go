@@ -350,7 +350,8 @@ func (rac *RerunAuthConfig) IsAllowAnyone() bool {
 }
 
 type ReporterConfig struct {
-	Slack *SlackReporterConfig `json:"slack,omitempty"`
+	Slack      *SlackReporterConfig      `json:"slack,omitempty"`
+	RocketChat *RocketChatReporterConfig `json:"rocketchat,omitempty"`
 }
 
 type SlackReporterConfig struct {
@@ -376,6 +377,57 @@ func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackRep
 		return nil
 	}
 	var merged SlackReporterConfig
+	if src != nil {
+		merged = *src.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if src == nil || def == nil {
+		return &merged
+	}
+
+	if merged.Channel == "" {
+		merged.Channel = def.Channel
+	}
+	if merged.Host == "" {
+		merged.Host = def.Host
+	}
+	// Note: `job_states_to_report: []` also results in JobStatesToReport == nil
+	if merged.JobStatesToReport == nil {
+		merged.JobStatesToReport = def.JobStatesToReport
+	}
+	if merged.ReportTemplate == "" {
+		merged.ReportTemplate = def.ReportTemplate
+	}
+	if merged.Report == nil {
+		merged.Report = def.Report
+	}
+	return &merged
+}
+
+type RocketChatReporterConfig struct {
+	Host              string         `json:"host,omitempty"`
+	Channel           string         `json:"channel,omitempty"`
+	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
+	ReportTemplate    string         `json:"report_template,omitempty"`
+	// Report is derived from JobStatesToReport, it's used for differentiating
+	// nil from empty slice, as yaml roundtrip by design can't tell the
+	// difference when omitempty is supplied.
+	// See https://github.com/kubernetes/test-infra/pull/24168 for details
+	// Priority-wise, it goes by following order:
+	// - `report: true/false`` in job config
+	// - `JobStatesToReport: <anything including empty slice>` in job config
+	// - `report: true/false`` in global config
+	// - `JobStatesToReport:` in global config
+	Report *bool `json:"report,omitempty"`
+}
+
+// ApplyDefault is called by jobConfig.ApplyDefault(globalConfig)
+func (src *RocketChatReporterConfig) ApplyDefault(def *RocketChatReporterConfig) *RocketChatReporterConfig {
+	if src == nil && def == nil {
+		return nil
+	}
+	var merged RocketChatReporterConfig
 	if src != nil {
 		merged = *src.DeepCopy()
 	} else {

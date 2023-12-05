@@ -47,6 +47,7 @@ import (
 	"k8s.io/test-infra/prow/plugins/jira"
 	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/rocketchat"
 	"k8s.io/test-infra/prow/slack"
 
 	_ "k8s.io/test-infra/prow/version"
@@ -72,8 +73,10 @@ type options struct {
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	jira                   prowflagutil.JiraOptions
 
-	webhookSecretFile string
-	slackTokenFile    string
+	webhookSecretFile     string
+	slackTokenFile        string
+	rocketChatWebhookFile string
+	rocketChatChannel     string
 }
 
 func (o *options) Validate() error {
@@ -100,6 +103,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
+	fs.StringVar(&o.rocketChatWebhookFile, "rocketchat-webhook-file", "", "Path to the file containing the secret RocketChat webhook url to use.")
+	fs.StringVar(&o.rocketChatChannel, "rocketchat-channel", "", "Channel to send message to.")
 	fs.Parse(args)
 	return o
 }
@@ -120,7 +125,7 @@ func main() {
 
 	var tokens []string
 
-	// Append the path of hmac and github secrets.
+	// Append the path of hmac and GitHub secrets.
 	if o.github.TokenPath != "" {
 		tokens = append(tokens, o.github.TokenPath)
 	}
@@ -132,6 +137,16 @@ func main() {
 	// This is necessary since slack token is optional.
 	if o.slackTokenFile != "" {
 		tokens = append(tokens, o.slackTokenFile)
+	}
+
+	// This is necessary since RocketChat is optional.
+	if o.rocketChatWebhookFile != "" {
+		tokens = append(tokens, o.rocketChatWebhookFile)
+	}
+
+	// This is necessary since RocketChat is optional.
+	if o.rocketChatChannel != "" {
+		tokens = append(tokens, o.rocketChatChannel)
 	}
 
 	if o.bugzilla.ApiKeyPath != "" {
@@ -203,6 +218,16 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
+	var rocketChatClient *rocketchat.Client
+	if !o.dryRun && string(secret.GetSecret(o.rocketChatWebhookFile)) != "" {
+		logrus.Info("Using real rocketchat client.")
+		rocketChatClient = rocketchat.NewClient(secret.GetTokenGenerator(o.rocketChatWebhookFile))
+	}
+	if rocketChatClient == nil {
+		logrus.Info("Using fake rocketchat client.")
+		rocketChatClient = rocketchat.NewFakeClient()
+	}
+
 	mdYAMLEnabled := func(org, repo string) bool {
 		return pluginAgent.Config().MDYAMLEnabled(org, repo)
 	}
@@ -230,6 +255,7 @@ func main() {
 		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
 		GitClient:                 gitClient,
 		SlackClient:               slackClient,
+		RocketChatClient:          rocketChatClient,
 		OwnersClient:              ownersClient,
 		BugzillaClient:            bugzillaClient,
 		JiraClient:                jiraClient,

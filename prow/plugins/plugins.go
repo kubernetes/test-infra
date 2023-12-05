@@ -48,6 +48,7 @@ import (
 	"k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/rocketchat"
 	"k8s.io/test-infra/prow/slack"
 	"k8s.io/test-infra/prow/version"
 )
@@ -265,6 +266,7 @@ type ClientAgent struct {
 	OwnersClient              repoowners.Interface
 	BugzillaClient            bugzilla.Client
 	JiraClient                jira.Client
+	RocketChatClient          *rocketchat.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.

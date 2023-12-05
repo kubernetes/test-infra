@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package slack
+package rocketchat
 
 import (
 	"encoding/json"
@@ -29,28 +29,23 @@ import (
 	"k8s.io/test-infra/prow/clientutil"
 )
 
-// Client allows you to provide connection to Slack API Server
-// It contains a token that allows to authenticate connection to post and work with channels in the domain
+// Client allows you to provide connection to RocketChat API Server
+// It contains a secret webhookURL that allows to authenticate connection to post and work with channels in the domain
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger clientutil.Logger
 
-	tokenGenerator func() []byte
-	fake           bool
+	fake bool
+
+	webhookURL string
 }
 
-const (
-	chatPostMessage = "https://slack.com/api/chat.postMessage"
-
-	botName      = "prow"
-	botIconEmoji = ":prow:"
-)
-
-// NewClient creates a slack client with an API token.
-func NewClient(tokenGenerator func() []byte) *Client {
+// NewClient creates a RocketChat client with a secret webhookURL.
+func NewClient(webhook func() []byte) *Client {
+	webhookURL := string(webhook())
 	return &Client{
-		logger:         logrus.WithField("client", "slack"),
-		tokenGenerator: tokenGenerator,
+		logger:     logrus.WithField("client", "rocketchat"),
+		webhookURL: webhookURL,
 	}
 }
 
@@ -70,14 +65,6 @@ func (sl *Client) log(methodName string, args ...interface{}) {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
 	sl.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
-}
-
-func (sl *Client) urlValues() *url.Values {
-	uv := url.Values{}
-	uv.Add("username", botName)
-	uv.Add("icon_emoji", botIconEmoji)
-	uv.Add("token", string(sl.tokenGenerator()))
-	return &uv
 }
 
 func (sl *Client) postMessage(url string, uv *url.Values) error {
@@ -111,11 +98,13 @@ func (sl *Client) WriteMessage(text, channel string) error {
 		return nil
 	}
 
-	var uv = sl.urlValues()
-	uv.Add("channel", channel)
+	uv := url.Values{}
+	if channel != "" {
+		uv.Add("channel", channel)
+	}
 	uv.Add("text", text)
 
-	if err := sl.postMessage(chatPostMessage, uv); err != nil {
+	if err := sl.postMessage(sl.webhookURL, &uv); err != nil {
 		return fmt.Errorf("failed to post message to %s: %w", channel, err)
 	}
 	return nil
