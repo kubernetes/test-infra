@@ -317,9 +317,9 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-capz
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     optional: true
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
       - master
     labels:
