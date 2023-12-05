@@ -25,6 +25,7 @@ import (
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	pio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 // fileFinder is the subset of pio.Opener required.
@@ -34,7 +35,8 @@ type fileFinder interface {
 }
 
 type ArtifactOpts struct {
-	// Dir is the top-level directory; include all files here.
+	// Dir is the top-level directory, including the provider, e.g.
+	// "gs://some-bucket/path"; include all files here.
 	Dir string
 	// ArtifactsDirOnly includes only the "Dir/artifacts/" directory,
 	// instead of files in the tree rooted there. Experimental.
@@ -47,11 +49,14 @@ type ArtifactOpts struct {
 // interest of best effort.
 func ArtifactFiles(ctx context.Context, opener fileFinder, o ArtifactOpts) ([]*resultstore.File, error) {
 	prefix := ensureTrailingSlash(o.Dir)
-	c := newFilesCollector(opener, prefix)
+	c, err := newFilesCollector(opener, prefix)
+	if err != nil {
+		return nil, err
+	}
 
 	// Collect the files in the top-level dir.
 	if err := c.collect(ctx, prefix, "/"); err != nil {
-		return c.builder.Files(), err
+		return c.builder.files, err
 	}
 
 	if o.ArtifactsDirOnly {
@@ -61,16 +66,16 @@ func ArtifactFiles(ctx context.Context, opener fileFinder, o ArtifactOpts) ([]*r
 			return name == artifacts
 		}
 		if err := c.collectDirs(ctx, prefix, match); err != nil {
-			return c.builder.Files(), err
+			return c.builder.files, err
 		}
-		return c.builder.Files(), nil
+		return c.builder.files, nil
 	}
 
 	// Collect the entire artifacts/ subtree.
 	if err := c.collect(ctx, prefix+"artifacts/", ""); err != nil {
-		return c.builder.Files(), err
+		return c.builder.files, err
 	}
-	return c.builder.Files(), nil
+	return c.builder.files, nil
 }
 
 func ensureTrailingSlash(p string) string {
@@ -81,15 +86,32 @@ func ensureTrailingSlash(p string) string {
 }
 
 type filesCollector struct {
-	finder  fileFinder
+	finder fileFinder
+	// The bucket, including provider, e.g. "gs://some-bucket/".
+	bucket  string
 	builder *filesBuilder
 }
 
-func newFilesCollector(opener fileFinder, prefix string) *filesCollector {
+// bucket returns a string of the provider and bucket name, with a
+// trailing slash.
+func bucket(path string) (string, error) {
+	provider, bucket, _, err := providers.ParseStoragePath(path)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s://%s/", provider, bucket), nil
+}
+
+func newFilesCollector(opener fileFinder, prefix string) (*filesCollector, error) {
+	b, err := bucket(prefix)
+	if err != nil {
+		return nil, err
+	}
 	return &filesCollector{
 		finder:  opener,
+		bucket:  b,
 		builder: newFilesBuilder(prefix),
-	}
+	}, nil
 }
 
 // collect collects files from storage using GCS List semantics:
@@ -112,11 +134,15 @@ func (c *filesCollector) collect(ctx context.Context, prefix, delimiter string) 
 		if f.IsDir {
 			continue
 		}
-		attrs, err := c.finder.Attributes(ctx, f.Name)
+		name := c.bucket + f.Name
+		// TODO: Fetching file attributes individually is costly. A
+		// bare GCS client List would provide both names and attrs.
+		// Consider switching if we must keep walking files.
+		attrs, err := c.finder.Attributes(ctx, name)
 		if err != nil {
 			return err
 		}
-		c.builder.Add(f.Name, &attrs)
+		c.builder.Add(name, &attrs)
 	}
 	return nil
 }
@@ -138,8 +164,9 @@ func (c *filesCollector) collectDirs(ctx context.Context, prefix string, match f
 		if !f.IsDir {
 			continue
 		}
-		if match(f.Name) {
-			c.builder.AddDir(f.Name)
+		name := c.bucket + f.Name
+		if match(name) {
+			c.builder.AddDir(name)
 		}
 	}
 	return nil
@@ -190,8 +217,4 @@ func (b *filesBuilder) AddDir(name string) {
 func shortContentType(contentType string) string {
 	ps := strings.SplitN(contentType, ";", 2)
 	return ps[0]
-}
-
-func (b *filesBuilder) Files() []*resultstore.File {
-	return b.files
 }

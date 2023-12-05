@@ -60,9 +60,15 @@ func (f *fakeFileFinder) Attributes(_ context.Context, name string) (pio.Attribu
 	return a, nil
 }
 
+// Iterator iterates at a prefix, which includes the provider and
+// bucket; the output names are relative to the bucket.
 func (f *fakeFileFinder) Iterator(_ context.Context, prefix, delimiter string) (pio.ObjectIterator, error) {
 	var fs []string
 	seenDirs := sets.Set[string]{}
+	b, err := bucket(prefix)
+	if err != nil {
+		return nil, err
+	}
 	for n, a := range f.files {
 		if !strings.HasPrefix(n, prefix) {
 			continue
@@ -82,15 +88,18 @@ func (f *fakeFileFinder) Iterator(_ context.Context, prefix, delimiter string) (
 		seenDirs.Insert(ps[0])
 	}
 	slices.Sort(fs)
-	return &fakeIterator{finder: f, files: fs}, nil
+	return &fakeIterator{finder: f, files: fs, bucket: b}, nil
 }
 
 type fakeIterator struct {
 	finder *fakeFileFinder
 	files  []string
+	bucket string
 	pos    int
 }
 
+// Next only populates ObjectAttributes fields used by this package:
+// Name and IsDir.
 func (i *fakeIterator) Next(_ context.Context) (pio.ObjectAttributes, error) {
 	oa := pio.ObjectAttributes{}
 	if i.pos >= len(i.files) {
@@ -101,13 +110,8 @@ func (i *fakeIterator) Next(_ context.Context) (pio.ObjectAttributes, error) {
 	if i.finder.files[n].ContentEncoding == wantNextErr.ContentEncoding {
 		return oa, fmt.Errorf("next error at %q", n)
 	}
-	oa.Name = n
-	if ps := strings.Split(n, "/"); ps[len(ps)-1] == "" {
-		oa.IsDir = true
-		oa.ObjName = ps[len(ps)-2] + "/"
-	} else {
-		oa.ObjName = ps[len(ps)-1]
-	}
+	oa.Name = strings.TrimPrefix(n, i.bucket)
+	oa.IsDir = strings.HasSuffix(n, "/")
 	return oa, nil
 }
 
