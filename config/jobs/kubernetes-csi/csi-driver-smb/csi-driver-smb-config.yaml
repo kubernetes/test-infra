@@ -339,11 +339,6 @@ presubmits:
         base_ref: release-1.26
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
-      - org: kubernetes-csi
-        repo: csi-driver-smb
-        base_ref: master
-        path_alias: github.com/kubernetes-csi/csi-driver-smb
-        workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
