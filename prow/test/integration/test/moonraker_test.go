@@ -133,7 +133,7 @@ git reset --hard ${baseSHA}
 	}
 
 	// Clone the repo out of FGS to our local disk to determine the base SHA of
-	// master branch for repo-moonraker-stres-test, as well as the 100 different
+	// master branch for moonraker-burst, as well as the 100 different
 	// PR head SHAs. We want to figure out the base SHA (master branch HEAD SHA)
 	// and head SHAs (SHAs of each of the 100 changes we created during
 	// repoSetup above) programmatically, so that we don't have to do it
