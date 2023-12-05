@@ -209,3 +209,58 @@ periodics:
     testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: ci-aws-kops-eks-sandbox
     description: Uses to test scheduling on an EKS cluster and Boskos features development
+
+
+- name: ci-aws-kops-eks-pod-identity-sandbox
+  interval: 1h
+  cluster: k8s-infra-kops-prow-build
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image='136693071363/debian-12-amd64-20231013-1532' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+          --test=kops \
+          -- \
+          --test-args="-test.timeout=60m" \
+          --test-package-marker=stable.txt \
+          --parallel=25
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: admin
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231122-5f461e0995-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: ci-aws-kops-eks-pod-identity-sandbox
+    description: Uses to test EKS Pod Identity
