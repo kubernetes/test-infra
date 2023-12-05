@@ -1135,6 +1135,93 @@ func TestProwJobToPod(t *testing.T) {
 				},
 			},
 		},
+		{
+			podName: "pod",
+			buildID: "blabla",
+			labels:  map[string]string{"needstobe": "inherited"},
+			pjSpec: prowapi.ProwJobSpec{
+				Type:    prowapi.PresubmitJob,
+				Job:     "job-name",
+				Context: "job-context",
+				DecorationConfig: &prowapi.DecorationConfig{
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
+					UtilityImages: &prowapi.UtilityImages{
+						CloneRefs:  "clonerefs:tag",
+						InitUpload: "initupload:tag",
+						Entrypoint: "entrypoint:tag",
+						Sidecar:    "sidecar:tag",
+					},
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket:       "my-bucket",
+						PathStrategy: "legacy",
+						DefaultOrg:   "kubernetes",
+						DefaultRepo:  "kubernetes",
+						MediaTypes:   map[string]string{"log": "text/plain"},
+					},
+					// Specify K8s SA rather than cloud storage secret key.
+					DefaultServiceAccountName: pStr("default-SA"),
+					CookiefileSecret:          pStr("yummy/.gitcookies"),
+					RunAsGroup:                pInt64(1000),
+					RunAsUser:                 pInt64(1000),
+					FsGroup:                   pInt64(2000),
+					SchedulingOptions: &prowapi.SchedulingOptions{
+						Tolerations: []coreapi.Toleration{
+							{
+								Key:      "prow.k8s.io/schedulable",
+								Effect:   coreapi.TaintEffectNoSchedule,
+								Operator: coreapi.TolerationOpExists,
+							},
+						},
+						Affinity: &coreapi.Affinity{
+							NodeAffinity: &coreapi.NodeAffinity{
+								PreferredDuringSchedulingIgnoredDuringExecution: []coreapi.PreferredSchedulingTerm{
+									{
+										Weight: 10,
+										Preference: coreapi.NodeSelectorTerm{
+											MatchExpressions: []coreapi.NodeSelectorRequirement{
+												{
+													Key:      "node-type",
+													Values:   []string{"prowjobs"},
+													Operator: coreapi.NodeSelectorOpIn,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
+					Org:     "org-name",
+					Repo:    "repo-name",
+					BaseRef: "base-ref",
+					BaseSHA: "base-sha",
+					Pulls: []prowapi.Pull{{
+						Number:  1,
+						Author:  "author-name",
+						SHA:     "pull-sha",
+						HeadRef: "orig-branch-name",
+					}},
+					PathAlias: "somewhere/else",
+				},
+				ExtraRefs: []prowapi.Refs{},
+				PodSpec: &coreapi.PodSpec{
+					Containers: []coreapi.Container{
+						{
+							Image:   "tester",
+							Command: []string{"/bin/thing"},
+							Args:    []string{"some", "args"},
+							Env: []coreapi.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	findContainer := func(name string, pod coreapi.Pod) *coreapi.Container {
