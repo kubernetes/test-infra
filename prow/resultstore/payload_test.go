@@ -114,7 +114,7 @@ func TestInvocation(t *testing.T) {
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
-						"prowjob",
+						"prow",
 					},
 					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
@@ -225,7 +225,7 @@ func TestInvocation(t *testing.T) {
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
-						"prowjob",
+						"prow",
 					},
 					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},
@@ -326,7 +326,7 @@ func TestInvocation(t *testing.T) {
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
-						"prowjob",
+						"prow",
 					},
 					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
 				},

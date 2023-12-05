@@ -99,7 +99,7 @@ func (p *Payload) invocationAttributes() *resultstore.InvocationAttributes {
 		// TODO: ProjectID might be assigned directly from the GCS
 		// BucketAttrs.ProjectNumber; requires a raw GCS client.
 		ProjectId:   p.ProjectID,
-		Labels:      []string{"prowjob"},
+		Labels:      []string{"prow"},
 		Description: descriptionFromLabels(p.Job.Labels),
 	}
 }
