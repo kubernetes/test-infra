@@ -2246,12 +2246,13 @@ func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
 // validatePresubmits validates the presubmits for one repo.
 func (c Config) validatePresubmits(presubmits []Presubmit) error {
 	validPresubmits := map[string][]Presubmit{}
+	duplicatePresubmits := sets.New[string]()
 	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
 		for _, existingJob := range validPresubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
+				duplicatePresubmits.Insert(ps.Name)
 			}
 		}
 		for _, otherPS := range presubmits {
@@ -2273,6 +2274,9 @@ func (c Config) validatePresubmits(presubmits []Presubmit) error {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %w", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
+	}
+	if duplicatePresubmits.Len() > 0 {
+		errs = append(errs, fmt.Errorf("duplicated presubmit jobs (consider both inrepo and central config): %v", sortStringSlice(duplicatePresubmits.UnsortedList())))
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -2304,13 +2308,14 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 // validatePostsubmits validates the postsubmits for one repo.
 func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 	validPostsubmits := map[string][]Postsubmit{}
+	duplicatePostsubmits := sets.New[string]()
 
 	var errs []error
 	for _, ps := range postsubmits {
 		// Checking that no duplicate job in prow config exists on the same repo / branch.
 		for _, existingJob := range validPostsubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				errs = append(errs, fmt.Errorf("duplicated postsubmit job: %s", ps.Name))
+				duplicatePostsubmits.Insert(ps.Name)
 			}
 		}
 		for _, otherPS := range postsubmits {
@@ -2332,6 +2337,9 @@ func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %w", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
+	}
+	if duplicatePostsubmits.Len() > 0 {
+		errs = append(errs, fmt.Errorf("duplicated postsubmit jobs (consider both inrepo and central config): %v", sortStringSlice(duplicatePostsubmits.UnsortedList())))
 	}
 
 	return utilerrors.NewAggregate(errs)

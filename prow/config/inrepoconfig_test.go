@@ -107,7 +107,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated presubmit job: hans"
+				expectedErrMsg := "duplicated presubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -128,7 +128,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated presubmit job: hans"
+				expectedErrMsg := "duplicated presubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -212,7 +212,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated postsubmit job: hans"
+				expectedErrMsg := "duplicated postsubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -233,7 +233,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated postsubmit job: hans"
+				expectedErrMsg := "duplicated postsubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
