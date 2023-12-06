@@ -491,6 +491,8 @@ type Milestone struct {
 	MaintainersID           int    `json:"maintainers_id,omitempty"`
 	MaintainersTeam         string `json:"maintainers_team,omitempty"`
 	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
+	// CodeFreezeMaintainersTeam is the GitHub team allowed to set milestones if code freeze is in place.
+	CodeFreezeMaintainersTeam string `json:"code_freeze_maintainers_team,omitempty"`
 }
 
 // BranchToMilestone is a map of the branch name to the configured milestone for that branch.

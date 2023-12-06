@@ -26,10 +26,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/milestone/codefreezechecker"
 )
 
 const pluginName = "milestone"
@@ -85,7 +87,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []prowconfig.OrgRe
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone, pc.Config)
 }
 
 func BuildMilestoneMap(milestones []github.Milestone) map[string]int {
@@ -95,7 +97,7 @@ func BuildMilestoneMap(milestones []github.Milestone) map[string]int {
 	}
 	return m
 }
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone, prowConfig *config.Config) error {
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -117,19 +119,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if err != nil {
 		return err
 	}
+
 	found := false
-	for _, person := range milestoneMaintainers {
-		login := github.NormLogin(e.User.Login)
-		if github.NormLogin(person.Login) == login {
-			found = true
-			break
-		}
-	}
-	if !found {
-		// not in the milestone maintainers team
-		msg := fmt.Sprintf(mustBeAuthorized, org, milestone.MaintainersTeam, org, milestone.MaintainersTeam, milestone.MaintainersFriendlyName)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
-	}
+	team := milestone.MaintainersTeam
+	inCodeFreeze := false
 
 	milestones, err := gc.ListMilestones(org, repo)
 	if err != nil {
@@ -137,6 +130,42 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		return err
 	}
 	proposedMilestone := milestoneMatch[1]
+
+	if milestone.CodeFreezeMaintainersTeam != "" {
+		codeFreezeMaintainers, err := gc.ListTeamMembersBySlug(org, milestone.CodeFreezeMaintainersTeam, github.RoleAll)
+		if err != nil {
+			return fmt.Errorf("retrieve code freeze maintainers: %w", err)
+		}
+
+		inCodeFreeze = codefreezechecker.New().InCodeFreeze(prowConfig, proposedMilestone, org, repo)
+		if inCodeFreeze {
+			team = milestone.CodeFreezeMaintainersTeam
+
+			for _, maintainer := range codeFreezeMaintainers {
+				login := github.NormLogin(e.User.Login)
+				if github.NormLogin(maintainer.Login) == login {
+					found = true
+					break
+				}
+			}
+		}
+	}
+
+	if !inCodeFreeze {
+		for _, person := range milestoneMaintainers {
+			login := github.NormLogin(e.User.Login)
+			if github.NormLogin(person.Login) == login {
+				found = true
+				break
+			}
+		}
+	}
+
+	if !found {
+		// not in the milestone maintainers team
+		msg := fmt.Sprintf(mustBeAuthorized, org, team, org, team, milestone.MaintainersFriendlyName)
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+	}
 
 	// special case, if the clear keyword is used
 	if proposedMilestone == clearKeyword {
