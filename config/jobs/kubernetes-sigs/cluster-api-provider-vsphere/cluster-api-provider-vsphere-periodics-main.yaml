@@ -164,6 +164,7 @@ periodics:
     description: Runs conformance tests for CAPV
 
 - name: periodic-cluster-api-provider-vsphere-coverage-main
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   rerun_auth_config:
@@ -203,6 +204,9 @@ periodics:
           add: ["NET_ADMIN"]
       resources:
         requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
