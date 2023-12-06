@@ -1029,6 +1029,7 @@ periodics:
              -- \
              --use-built-binaries true \
              --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --parallel=30 \
              --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
         env:
           - name: BUILD_EKS_AMI_OS
