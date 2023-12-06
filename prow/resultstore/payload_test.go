@@ -613,7 +613,7 @@ func TestOverallAction(t *testing.T) {
 			},
 		},
 		{
-			desc: "finished nil use competion time",
+			desc: "finished nil use completion time",
 			payload: &Payload{
 				Job: &v1.ProwJob{
 					Spec: v1.ProwJobSpec{
