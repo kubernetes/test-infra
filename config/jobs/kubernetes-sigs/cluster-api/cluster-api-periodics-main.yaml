@@ -1,9 +1,8 @@
 periodics:
 - name: periodic-cluster-api-test-main
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -14,7 +13,6 @@ periodics:
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
       command:
@@ -23,16 +21,19 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-test-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-test-mink8s-main
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -43,7 +44,6 @@ periodics:
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
       command:
@@ -62,16 +62,19 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-test-mink8s-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-main
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -89,7 +92,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
         args:
@@ -104,16 +106,19 @@ periodics:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-dualstack-and-ipv6-main
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes-sigs
@@ -131,7 +136,6 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
         args:
@@ -149,16 +153,19 @@ periodics:
         resources:
           requests:
             cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-dualstack-and-ipv6-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -176,7 +183,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
       args:
@@ -199,6 +205,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 32Gi
+        limits:
+          cpu: 7300m
+          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-mink8s-main
