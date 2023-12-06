@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -37,20 +38,16 @@ const (
 var (
 	// rpcRetryBackoff returns the Backoff for retrying CreateInvocation
 	// and UploadBatch requests to ResultStore.
-	rpcRetryBackoff = func() wait.Backoff {
-		return wait.Backoff{
-			Duration: 100 * time.Millisecond,
-			Factor:   2,
-			Cap:      30 * time.Second,
-			Steps:    8,
-			Jitter:   0.2,
-		}
+	rpcRetryBackoff = wait.Backoff{
+		Duration: 100 * time.Millisecond,
+		Factor:   2,
+		Cap:      30 * time.Second,
+		Steps:    8,
+		Jitter:   0.2,
 	}
 	// rpcRetryDuration returns the time allowed for all retries of a
 	// single CreateInvocation or UploadBatch request to ResultStore.
-	rpcRetryDuration = func() time.Duration {
-		return 5 * time.Minute
-	}
+	rpcRetryDuration = 5 * time.Minute
 )
 
 func uuidString() string {
@@ -64,6 +61,7 @@ type ResultStoreBatchClient interface {
 
 // writer writes results to resultstore using the UpdateBatch API.
 type writer struct {
+	log         *logrus.Entry
 	client      ResultStoreBatchClient
 	authToken   string
 	resumeToken string
@@ -72,20 +70,22 @@ type writer struct {
 	finalized   bool
 }
 
-func New(ctx context.Context, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
+func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
 	invID := inv.Id.InvocationId
 	w := &writer{
+		log:         log,
 		client:      client,
 		authToken:   uuidString(),
 		resumeToken: uuidString(),
 		updates:     []*resultstore.UploadRequest{},
 	}
-	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration())
+	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration)
 	defer cancel()
-	err := wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff(), func() (bool, error) {
+	err := wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
 		if err != nil {
-			return false, fmt.Errorf("resultstore.CreateInvocation: %w", err)
+			log.Errorf("resultstore.CreateInvocation: %v", err)
+			return false, nil
 		}
 		w.retInv = inv
 		return true, nil
@@ -94,14 +94,6 @@ func New(ctx context.Context, client ResultStoreBatchClient, inv *resultstore.In
 		return nil, err
 	}
 	return w, nil
-}
-
-func (w *writer) InvID() string {
-	return w.retInv.Id.InvocationId
-}
-
-func (w *writer) InvName() string {
-	return w.retInv.Name
 }
 
 func (w *writer) WriteConfiguration(ctx context.Context, c *resultstore.Configuration) error {
@@ -149,11 +141,12 @@ func (w *writer) addUploadRequest(ctx context.Context, r *resultstore.UploadRequ
 
 func (w *writer) flushUpdates(ctx context.Context) error {
 	b := w.uploadBatchRequest(w.updates)
-	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration())
+	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration)
 	defer cancel()
-	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff(), func() (bool, error) {
+	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		if _, err := w.client.UploadBatch(ctx, b); err != nil {
-			return false, fmt.Errorf("resultstore.UploadBatch: %w", err)
+			w.log.Errorf("resultstore.UploadBatch: %v", err)
+			return false, nil
 		}
 		w.updates = []*resultstore.UploadRequest{}
 		return true, nil
@@ -163,7 +156,7 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 func (w *writer) uploadBatchRequest(reqs []*resultstore.UploadRequest) *resultstore.UploadBatchRequest {
 	nextToken := uuidString()
 	req := &resultstore.UploadBatchRequest{
-		Parent:             w.InvName(),
+		Parent:             w.retInv.Name,
 		ResumeToken:        w.resumeToken,
 		NextResumeToken:    nextToken,
 		AuthorizationToken: w.authToken,
