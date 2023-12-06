@@ -7857,7 +7857,7 @@ func TestValidatePresubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
-			expectedError: "duplicated presubmit job: a",
+			expectedError: "duplicated presubmit jobs (consider both inrepo and central config): [a]",
 		},
 		{
 			name: "Duplicate jobname on different branches doesn't cause error",
@@ -7956,7 +7956,7 @@ func TestValidatePostsubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
-			expectedError: "duplicated postsubmit job: a",
+			expectedError: "duplicated postsubmit jobs (consider both inrepo and central config): [a]",
 		},
 		{
 			name:          "Invalid JobBase causes error",
