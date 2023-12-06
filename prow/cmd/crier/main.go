@@ -24,7 +24,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil/pprof"
+	"k8s.io/test-infra/prow/resultstore"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -36,6 +38,7 @@ import (
 	gerritreporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	githubreporter "k8s.io/test-infra/prow/crier/reporters/github"
 	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
+	resultstorereporter "k8s.io/test-infra/prow/crier/reporters/resultstore"
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -60,6 +63,7 @@ type options struct {
 	slackWorkers          int
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
+	resultStoreWorkers    int
 
 	slackTokenFile            string
 	additionalSlackTokenFiles slackclient.HostsFlag
@@ -72,10 +76,12 @@ type options struct {
 
 	dryrun      bool
 	reportAgent string
+
+	resultstoreArtifactsDirOnly bool
 }
 
 func (o *options) validate() error {
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers+o.resultStoreWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -125,6 +131,8 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-blob-storage-workers are enabled (0 - > none, 1.0 -> all)")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
+	fs.IntVar(&o.resultStoreWorkers, "resultstore-workers", 0, "Number of ResultStore report workers (0 means disabled)")
+	fs.BoolVar(&o.resultstoreArtifactsDirOnly, "resultstore-artifacts-dir-only", false, "Report the artifacts/ dir instead of subtree files (testing)")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
@@ -256,12 +264,15 @@ func main() {
 		}
 	}
 
-	if o.blobStorageWorkers > 0 || o.k8sBlobStorageWorkers > 0 {
-		opener, err := o.storage.StorageClient(context.Background())
+	var opener io.Opener
+	if o.blobStorageWorkers+o.k8sBlobStorageWorkers+o.resultStoreWorkers > 0 {
+		opener, err = o.storage.StorageClient(context.Background())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating opener")
 		}
+	}
 
+	if o.blobStorageWorkers > 0 || o.k8sBlobStorageWorkers > 0 {
 		hasReporter = true
 		if o.blobStorageWorkers > 0 {
 			if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
@@ -279,6 +290,18 @@ func main() {
 			if err := crier.New(mgr, k8sGcsReporter, o.k8sBlobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 				logrus.WithError(err).Fatal("failed to construct k8sgcsreporter controller")
 			}
+		}
+	}
+
+	if o.resultStoreWorkers > 0 {
+		hasReporter = true
+		conn, err := resultstore.Connect(context.Background())
+		if err != nil {
+			logrus.WithError(err).Fatal("Error connecting to resultstore")
+		}
+		uploader := resultstore.NewUploader(resultstore.NewClient(conn))
+		if err := crier.New(mgr, resultstorereporter.New(cfg, opener, uploader, o.resultstoreArtifactsDirOnly), o.resultStoreWorkers, o.githubEnablement.EnablementChecker()); err != nil {
+			logrus.WithError(err).Fatal("failed to construct resultstorereporter controller")
 		}
 	}
 
