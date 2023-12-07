@@ -398,7 +398,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 			// Simulate storing a value of the wrong type in the cache (a string
 			// instead of a *ProwYAML).
 			if tc.cacheCorrupted {
-				cache.Clear()
+				cache.Purge()
 
 				for _, kp := range tc.cacheInitialState {
 					k, err := kp.CacheKey()

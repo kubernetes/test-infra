@@ -17,12 +17,11 @@ limitations under the License.
 package cache
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 
+	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/sirupsen/logrus"
-	"k8s.io/utils/lru"
 )
 
 // Overview
@@ -46,7 +45,7 @@ import (
 // LRUCache is the actual concurrent non-blocking cache.
 type LRUCache struct {
 	*sync.Mutex
-	*lru.Cache
+	*simplelru.LRU
 	callbacks Callbacks
 }
 
@@ -65,7 +64,7 @@ type Callbacks struct {
 	LookupsCallback         EventCallback
 	HitsCallback            EventCallback
 	MissesCallback          EventCallback
-	ForcedEvictionsCallback lru.EvictionFunc
+	ForcedEvictionsCallback simplelru.EvictCallback
 	ManualEvictionsCallback EventCallback
 }
 
@@ -121,10 +120,10 @@ func (p *Promise) resolve() {
 // underlying cache.
 func NewLRUCache(size int,
 	callbacks Callbacks) (*LRUCache, error) {
-	if size <= 0 {
-		return nil, errors.New("Must provide a positive size")
+	cache, err := simplelru.NewLRU(size, callbacks.ForcedEvictionsCallback)
+	if err != nil {
+		return nil, err
 	}
-	cache := lru.NewWithEvictionFunc(size, callbacks.ForcedEvictionsCallback)
 
 	return &LRUCache{
 		&sync.Mutex{},
@@ -216,7 +215,7 @@ func (lruCache *LRUCache) GetOrAdd(
 		// don't care if the underlying LRU cache had to evict an existing
 		// entry.
 		promise = newPromise(valConstructor)
-		lruCache.Add(key, promise)
+		_ = lruCache.Add(key, promise)
 		// We must unlock here so that the cache does not block other GetOrAdd()
 		// calls to it for different (or same) key/value pairs.
 		lruCache.Unlock()
@@ -260,8 +259,17 @@ func (lruCache *LRUCache) GetOrAdd(
 			logrus.WithField("key", key).Infof("promise was successfully resolved, but the call to resolve() returned an error; deleting key from cache...")
 
 			lruCache.Lock()
-			lruCache.Remove(key)
+			weDeletedThisKey := lruCache.Remove(key)
 			lruCache.Unlock()
+			if weDeletedThisKey {
+				if lruCache.callbacks.ManualEvictionsCallback != nil {
+					lruCache.callbacks.ManualEvictionsCallback(key)
+				}
+				logrus.WithField("key", key).Infof("successfully deleted")
+			} else {
+				err := fmt.Errorf("unexpected (non-problematic) race: key deleted by the cache without our knowledge; our own deletion of this key was a NOP but this does not constitute a problem")
+				logrus.WithField("key", key).Info(err)
+			}
 		}
 	}
 
