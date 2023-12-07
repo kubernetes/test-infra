@@ -25,6 +25,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -70,6 +72,28 @@ type writer struct {
 	finalized   bool
 }
 
+// persistentError returns whether the error status code is not
+// retryable per the ResultStore maintainers. Any codes not
+// listed here should be retried with exponential backoff.
+func persistentError(err error) bool {
+	status, _ := status.FromError(err)
+	switch status.Code() {
+	case codes.AlreadyExists:
+		return true
+	case codes.NotFound:
+		return true
+	case codes.InvalidArgument:
+		return true
+	case codes.FailedPrecondition:
+		return true
+	case codes.Unimplemented:
+		return true
+	case codes.PermissionDenied:
+		return true
+	}
+	return false
+}
+
 func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
 	invID := inv.Id.InvocationId
 	w := &writer{
@@ -85,6 +109,10 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
 		if err != nil {
 			log.Errorf("resultstore.CreateInvocation: %v", err)
+			if persistentError(err) {
+				// End retries by returning error.
+				return false, err
+			}
 			return false, nil
 		}
 		w.retInv = inv
@@ -146,6 +174,10 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		if _, err := w.client.UploadBatch(ctx, b); err != nil {
 			w.log.Errorf("resultstore.UploadBatch: %v", err)
+			if persistentError(err) {
+				// End retries by returning error.
+				return false, err
+			}
 			return false, nil
 		}
 		w.updates = []*resultstore.UploadRequest{}
