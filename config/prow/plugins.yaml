@@ -239,6 +239,7 @@ lgtm:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/prow
+  - kubernetes-sigs/release-actions
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
