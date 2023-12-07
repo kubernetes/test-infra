@@ -18,6 +18,7 @@ package writer
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -52,8 +53,16 @@ var (
 	rpcRetryDuration = 5 * time.Minute
 )
 
-func uuidString() string {
+func authorizationToken() string {
+	// ResultStore authorization tokens "must be set to a RFC 4122-
+	// compliant v3, v4, or v5 UUID."
 	return uuid.New().String()
+}
+
+func resumeToken() string {
+	// ResultStore resume tokens must be unique and be "web safe
+	// Base64 encoded bytes."
+	return base64.StdEncoding.EncodeToString([]byte(uuid.New().String()))
 }
 
 type ResultStoreBatchClient interface {
@@ -99,8 +108,8 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 	w := &writer{
 		log:         log,
 		client:      client,
-		authToken:   uuidString(),
-		resumeToken: uuidString(),
+		authToken:   authorizationToken(),
+		resumeToken: resumeToken(),
 		updates:     []*resultstore.UploadRequest{},
 	}
 	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration)
@@ -186,7 +195,7 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 }
 
 func (w *writer) uploadBatchRequest(reqs []*resultstore.UploadRequest) *resultstore.UploadBatchRequest {
-	nextToken := uuidString()
+	nextToken := resumeToken()
 	req := &resultstore.UploadBatchRequest{
 		Parent:             w.retInv.Name,
 		ResumeToken:        w.resumeToken,
