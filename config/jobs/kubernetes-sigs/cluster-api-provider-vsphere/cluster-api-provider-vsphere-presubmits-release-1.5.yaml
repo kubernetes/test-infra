@@ -92,7 +92,7 @@ presubmits:
       description: Runs unit tests
 
   - name: pull-cluster-api-provider-vsphere-test-integration-release-1-5
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-1.5$
     labels:
