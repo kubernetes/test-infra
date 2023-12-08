@@ -18,6 +18,7 @@ package writer
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -25,6 +26,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -50,8 +53,16 @@ var (
 	rpcRetryDuration = 5 * time.Minute
 )
 
-func uuidString() string {
+func authorizationToken() string {
+	// ResultStore authorization tokens "must be set to a RFC 4122-
+	// compliant v3, v4, or v5 UUID."
 	return uuid.New().String()
+}
+
+func resumeToken() string {
+	// ResultStore resume tokens must be unique and be "web safe
+	// Base64 encoded bytes."
+	return base64.StdEncoding.EncodeToString([]byte(uuid.New().String()))
 }
 
 type ResultStoreBatchClient interface {
@@ -70,13 +81,35 @@ type writer struct {
 	finalized   bool
 }
 
+// persistentError returns whether the error status code is not
+// retryable per the ResultStore maintainers. Any codes not
+// listed here should be retried with exponential backoff.
+func persistentError(err error) bool {
+	status, _ := status.FromError(err)
+	switch status.Code() {
+	case codes.AlreadyExists:
+		return true
+	case codes.NotFound:
+		return true
+	case codes.InvalidArgument:
+		return true
+	case codes.FailedPrecondition:
+		return true
+	case codes.Unimplemented:
+		return true
+	case codes.PermissionDenied:
+		return true
+	}
+	return false
+}
+
 func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
 	invID := inv.Id.InvocationId
 	w := &writer{
 		log:         log,
 		client:      client,
-		authToken:   uuidString(),
-		resumeToken: uuidString(),
+		authToken:   authorizationToken(),
+		resumeToken: resumeToken(),
 		updates:     []*resultstore.UploadRequest{},
 	}
 	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration)
@@ -85,6 +118,10 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
 		if err != nil {
 			log.Errorf("resultstore.CreateInvocation: %v", err)
+			if persistentError(err) {
+				// End retries by returning error.
+				return false, err
+			}
 			return false, nil
 		}
 		w.retInv = inv
@@ -146,6 +183,10 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		if _, err := w.client.UploadBatch(ctx, b); err != nil {
 			w.log.Errorf("resultstore.UploadBatch: %v", err)
+			if persistentError(err) {
+				// End retries by returning error.
+				return false, err
+			}
 			return false, nil
 		}
 		w.updates = []*resultstore.UploadRequest{}
@@ -154,7 +195,7 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 }
 
 func (w *writer) uploadBatchRequest(reqs []*resultstore.UploadRequest) *resultstore.UploadBatchRequest {
-	nextToken := uuidString()
+	nextToken := resumeToken()
 	req := &resultstore.UploadBatchRequest{
 		Parent:             w.retInv.Name,
 		ResumeToken:        w.resumeToken,
