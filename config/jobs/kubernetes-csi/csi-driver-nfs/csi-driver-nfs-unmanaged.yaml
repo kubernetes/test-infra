@@ -6,9 +6,9 @@ presubmits:
     cluster: default #This job uses azure-creds
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/csi-driver-nfs
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -39,9 +39,9 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/csi-driver-nfs
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -70,9 +70,9 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/csi-driver-nfs
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -102,9 +102,9 @@ presubmits:
     cluster: default #This job uses azure-creds
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-nfs
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -152,14 +152,61 @@ presubmits:
       testgrid-tab-name: pull-csi-driver-nfs-e2e
       description: "Run E2E tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
-
+  - name: pull-csi-driver-nfs-e2e-capz
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
+    branches:
+      - (master)|(^release-.+$)
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.12
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.26
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.26"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-nfs-e2e-capz
+      description: "Run E2E tests on a capz cluster for nfs CSI driver."
+      testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-external-e2e
     cluster: default #This job uses azure-creds
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-nfs
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"

@@ -3,9 +3,9 @@ presubmits:
   - name: pull-csi-driver-smb-verify
     decorate: true
     always_run: true
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -26,9 +26,9 @@ presubmits:
   - name: pull-csi-driver-smb-unit
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -49,9 +49,9 @@ presubmits:
   - name: pull-csi-driver-smb-sanity
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -74,9 +74,9 @@ presubmits:
   - name: pull-csi-driver-smb-integration
     decorate: true
     always_run: false
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -99,9 +99,9 @@ presubmits:
   - name: pull-csi-driver-smb-windows-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -120,9 +120,9 @@ presubmits:
   - name: pull-csi-driver-smb-e2e
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -166,9 +166,9 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-vmss
     decorate: true
     always_run: false
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -212,9 +212,9 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-windows
     decorate: true
     always_run: false
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -265,9 +265,9 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-windows-containerd
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -321,7 +321,7 @@ presubmits:
     optional: true
     path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-      - master
+      - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -367,9 +367,63 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-      - master
+      - (master)|(^release-.+$)
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.12
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.27
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-smb &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS # csi driver config
+              value: "true"
+            - name: TEST_WINDOWS # CAPZ config
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.27"
+            - name: WORKER_MACHINE_COUNT # CAPZ config
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2019
+      description: "Run E2E tests on a capz Windows 2019 cluster for SMB CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-e2e-capz-windows-2022-hostprocess
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
+    branches:
+      - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -412,19 +466,21 @@ presubmits:
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.27"
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
+              value: "windows-2022"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2019
-      description: "Run E2E tests on a capz Windows 2019 cluster for SMB CSI driver."
+      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2022-hostprocess
+      description: "Run E2E hostprocess tests on a capz Windows 2022 cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-external-e2e
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-smb
+    path_alias: github.com/kubernetes-csi/csi-driver-smb
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
