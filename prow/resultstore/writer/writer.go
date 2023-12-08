@@ -72,6 +72,7 @@ type writer struct {
 
 func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
 	invID := inv.Id.InvocationId
+	inv.Id = nil
 	w := &writer{
 		log:         log,
 		client:      client,
@@ -174,10 +175,12 @@ func (w *writer) finalizeRequest() *resultstore.UploadRequest {
 }
 
 func createConfigurationUploadRequest(c *resultstore.Configuration) *resultstore.UploadRequest {
+	id := &resultstore.UploadRequest_Id{
+		ConfigurationId: c.Id.ConfigurationId,
+	}
+	c.Id = nil
 	return &resultstore.UploadRequest{
-		Id: &resultstore.UploadRequest_Id{
-			ConfigurationId: c.Id.ConfigurationId,
-		},
+		Id:              id,
 		UploadOperation: resultstore.UploadRequest_CREATE,
 		Resource: &resultstore.UploadRequest_Configuration{
 			Configuration: c,
@@ -186,10 +189,12 @@ func createConfigurationUploadRequest(c *resultstore.Configuration) *resultstore
 }
 
 func createTargetUploadRequest(t *resultstore.Target) *resultstore.UploadRequest {
+	id := &resultstore.UploadRequest_Id{
+		TargetId: t.Id.GetTargetId(),
+	}
+	t.Id = nil
 	return &resultstore.UploadRequest{
-		Id: &resultstore.UploadRequest_Id{
-			TargetId: t.Id.GetTargetId(),
-		},
+		Id:              id,
 		UploadOperation: resultstore.UploadRequest_CREATE,
 		Resource: &resultstore.UploadRequest_Target{
 			Target: t,
@@ -198,11 +203,13 @@ func createTargetUploadRequest(t *resultstore.Target) *resultstore.UploadRequest
 }
 
 func createConfiguredTargetUploadRequest(ct *resultstore.ConfiguredTarget) *resultstore.UploadRequest {
+	id := &resultstore.UploadRequest_Id{
+		TargetId:        ct.Id.GetTargetId(),
+		ConfigurationId: ct.Id.GetConfigurationId(),
+	}
+	ct.Id = nil
 	return &resultstore.UploadRequest{
-		Id: &resultstore.UploadRequest_Id{
-			TargetId:        ct.Id.GetTargetId(),
-			ConfigurationId: ct.Id.GetConfigurationId(),
-		},
+		Id:              id,
 		UploadOperation: resultstore.UploadRequest_CREATE,
 		Resource: &resultstore.UploadRequest_ConfiguredTarget{
 			ConfiguredTarget: ct,
@@ -211,12 +218,14 @@ func createConfiguredTargetUploadRequest(ct *resultstore.ConfiguredTarget) *resu
 }
 
 func createActionUploadRequest(a *resultstore.Action) *resultstore.UploadRequest {
+	id := &resultstore.UploadRequest_Id{
+		TargetId:        a.Id.GetTargetId(),
+		ConfigurationId: a.Id.GetActionId(),
+		ActionId:        a.Id.GetActionId(),
+	}
+	a.Id = nil
 	return &resultstore.UploadRequest{
-		Id: &resultstore.UploadRequest_Id{
-			TargetId:        a.Id.GetTargetId(),
-			ConfigurationId: a.Id.GetActionId(),
-			ActionId:        a.Id.GetActionId(),
-		},
+		Id:              id,
 		UploadOperation: resultstore.UploadRequest_CREATE,
 		Resource: &resultstore.UploadRequest_Action{
 			Action: a,
