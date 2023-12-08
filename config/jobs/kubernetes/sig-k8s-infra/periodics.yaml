@@ -250,6 +250,8 @@ periodics:
           --test-package-marker=stable.txt \
           --parallel=25
       env:
+      - name: DISCOVERY_STORE
+        value: k8s-kops-ci-prow-sandbox-state-store
       - name: KOPS_STATE_STORE
         value: k8s-kops-ci-prow-sandbox
       - name: KUBE_SSH_KEY_PATH
