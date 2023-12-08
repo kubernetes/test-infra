@@ -8,7 +8,7 @@ presubmits:
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -41,7 +41,7 @@ presubmits:
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -72,7 +72,7 @@ presubmits:
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -104,7 +104,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -158,7 +158,7 @@ presubmits:
     optional: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-      - master
+      - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -206,7 +206,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
