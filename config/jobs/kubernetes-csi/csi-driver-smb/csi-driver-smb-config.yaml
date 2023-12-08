@@ -406,8 +406,6 @@ presubmits:
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
-              value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
@@ -419,7 +417,7 @@ presubmits:
       testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2019
       description: "Run E2E tests on a capz Windows 2019 cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-csi-driver-smb-e2e-capz-windows-2022
+  - name: pull-csi-driver-smb-e2e-capz-windows-2022-hostprocess
     decorate: true
     always_run: false
     optional: true
@@ -474,8 +472,8 @@ presubmits:
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2022
-      description: "Run E2E tests on a capz Windows 2022 cluster for SMB CSI driver."
+      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2022-hostprocess
+      description: "Run E2E hostprocess tests on a capz Windows 2022 cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-external-e2e
     decorate: true
