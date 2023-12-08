@@ -48,10 +48,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-testing-canaries
     extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: cloud-provider-gcp
-      path_alias: k8s.io/cloud-provider-gcp
     - org: kubernetes
       repo: kubernetes
       base_ref: master
@@ -70,6 +66,39 @@ presubmits:
         - "runner.sh"
         args:
         - "./kubetest2-gce/ci-tests/buildupdown-legacy.sh"
+        securityContext:
+          privileged: true
+
+  - name: pull-kubetest2-gce-legacy-up-down
+    decorate: true
+    always_run: true
+    optional: true
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+        command:
+        - "runner.sh"
+        args:
+        - "./kubetest2-gce/ci-tests/updown-legacy.sh"
         securityContext:
           privileged: true
 
