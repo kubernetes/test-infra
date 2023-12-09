@@ -120,7 +120,7 @@ presubmits:
   - name: pull-csi-driver-smb-e2e
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: github.com/kubernetes-csi/csi-driver-smb
+    path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - (master)|(^release-.+$)
     labels:
@@ -166,7 +166,7 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-vmss
     decorate: true
     always_run: false
-    path_alias: github.com/kubernetes-csi/csi-driver-smb
+    path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - (master)|(^release-.+$)
     labels:
@@ -212,7 +212,7 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-windows
     decorate: true
     always_run: false
-    path_alias: github.com/kubernetes-csi/csi-driver-smb
+    path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - (master)|(^release-.+$)
     labels:
@@ -265,7 +265,7 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-windows-containerd
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: github.com/kubernetes-csi/csi-driver-smb
+    path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - (master)|(^release-.+$)
     labels:
@@ -478,7 +478,7 @@ presubmits:
   - name: pull-csi-driver-smb-external-e2e
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: github.com/kubernetes-csi/csi-driver-smb
+    path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - (master)|(^release-.+$)
     labels:
