@@ -42,6 +42,7 @@ periodics:
              --worker-image "$AMI_ID" \
              --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
              --stage provider-aws-test-infra \
+             --external-cloud-provider true \
              --up \
              --down \
              --test=ginkgo \
@@ -111,6 +112,7 @@ periodics:
              --worker-image "$AMI_ID" \
              --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
              --stage provider-aws-test-infra \
+             --external-cloud-provider true \
              --up \
              --down \
              --test=ginkgo \
