@@ -43,6 +43,7 @@ periodics:
              --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
              --stage provider-aws-test-infra \
              --external-cloud-provider true \
+             --external-load-balancer true \
              --up \
              --down \
              --test=ginkgo \
@@ -113,6 +114,7 @@ periodics:
              --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
              --stage provider-aws-test-infra \
              --external-cloud-provider true \
+             --external-load-balancer true \
              --up \
              --down \
              --test=ginkgo \
