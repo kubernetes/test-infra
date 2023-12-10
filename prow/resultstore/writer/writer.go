@@ -261,7 +261,7 @@ func createConfiguredTargetUploadRequest(ct *resultstore.ConfiguredTarget) *resu
 func createActionUploadRequest(a *resultstore.Action) *resultstore.UploadRequest {
 	id := &resultstore.UploadRequest_Id{
 		TargetId:        a.Id.GetTargetId(),
-		ConfigurationId: a.Id.GetActionId(),
+		ConfigurationId: a.Id.GetConfigurationId(),
 		ActionId:        a.Id.GetActionId(),
 	}
 	a.Id = nil
