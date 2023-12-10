@@ -49,7 +49,7 @@ periodics:
              --test=ginkgo \
              -- \
              --use-built-binaries true \
-             --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws" \
              --focus-regex="\[Slow\]" \
              --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
              --parallel=25
@@ -120,7 +120,7 @@ periodics:
              --test=ginkgo \
              -- \
              --use-built-binaries true \
-             --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws" \
              --focus-regex="\[Slow\]" \
              --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
              --parallel=25
