@@ -908,6 +908,8 @@ presubmits:
           securityContext:
             privileged: true
           env:
+            - name: ORCHESTRATION_MODE # CAPZ config
+              value: "Uniform"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: DISABLE_ZONE # azuredisk-csi-driver config
