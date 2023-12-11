@@ -1477,7 +1477,9 @@ def generate_presubmits_scale():
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
                 'CL2_ENABLE_DNSTESTS': "false",
-                'CL2_USE_ADVANCED_DNSTEST': "false"
+                'CL2_USE_ADVANCED_DNSTEST': "false",
+                'SMALL_STATEFUL_SETS_PER_NAMESPACE': 0,
+                'MEDIUM_STATEFUL_SETS_PER_NAMESPACE': 0
             }
         ),
         presubmit_test(
