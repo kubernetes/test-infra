@@ -1624,3 +1624,98 @@ type Workflow struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// RegistryPackageEvent holds information about an `registry_package` GitHub webhook event.
+// see https://docs.github.com/en/webhooks/webhook-events-and-payloads#registry_package
+type RegistryPackageEvent struct {
+	Action          string          `json:"action"`
+	RegistryPackage RegistryPackage `json:"registry_package"`
+	Repo            *Repo           `json:"repository"`
+	Organization    Organization    `json:"organization"`
+	Sender          User            `json:"sender"`
+
+	// GUID is included in the header of the request received by GitHub.
+	GUID string
+}
+
+type RegistryPackage struct {
+	ID             int            `json:"id"`
+	Name           string         `json:"name"`
+	Namespace      string         `json:"namespace"`
+	Description    string         `json:"description"`
+	Ecosystem      string         `json:"ecosystem"`
+	PackageType    string         `json:"package_type"`
+	HTMLURL        string         `json:"html_url"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	Owner          User           `json:"owner"`
+	Registry       Registry       `json:"registry"`
+	PackageVersion PackageVersion `json:"package_version"`
+}
+
+type Registry struct {
+	AboutURL string `json:"about_url"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	URL      string `json:"url"`
+	Vendor   string `json:"vendor"`
+}
+
+type PackageVersion struct {
+	ID                  int               `json:"id"`
+	Version             string            `json:"version"`
+	Name                string            `json:"name"`
+	Description         string            `json:"description"`
+	Summary             string            `json:"summary"`
+	Manifest            string            `json:"manifest"`
+	HTMLURL             string            `json:"html_url"`
+	TargetCommitish     string            `json:"target_commitish"`
+	TargetOid           string            `json:"target_oid"`
+	CreatedAt           time.Time         `json:"created_at"`
+	UpdatedAt           time.Time         `json:"updated_at"`
+	Metadata            []interface{}     `json:"metadata"`
+	ContainerMetadata   ContainerMetadata `json:"container_metadata"`
+	PackageFiles        []interface{}     `json:"package_files"`
+	Author              User              `json:"author"`
+	InstallationCommand string            `json:"installation_command"`
+	PackageURL          string            `json:"package_url"`
+}
+
+type ContainerMetadata struct {
+	Tag      Tag      `json:"tag"`
+	Labels   Labels   `json:"labels"`
+	Manifest Manifest `json:"manifest"`
+}
+type Tag struct {
+	Name   string `json:"name"`
+	Digest string `json:"digest"`
+}
+
+type Labels struct {
+	Description string `json:"description"`
+	Source      string `json:"source"`
+	Revision    string `json:"revision"`
+	ImageURL    string `json:"image_url"`
+	Licenses    string `json:"licenses"`
+}
+
+type Manifest struct {
+	Digest    string   `json:"digest"`
+	MediaType string   `json:"media_type"`
+	URI       string   `json:"uri"`
+	Size      int      `json:"size"`
+	Config    Config   `json:"config"`
+	Layers    []Layers `json:"layers"`
+}
+
+type Config struct {
+	Digest    string `json:"digest"`
+	MediaType string `json:"media_type"`
+	Size      int    `json:"size"`
+}
+
+type Layers struct {
+	Digest    string `json:"digest"`
+	MediaType string `json:"media_type"`
+	Size      int    `json:"size"`
+}
