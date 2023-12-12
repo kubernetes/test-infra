@@ -64,15 +64,17 @@ func (p *Payload) invocationID() *resultstore.Invocation_Id {
 
 func (p *Payload) invocationStatusAttributes() *resultstore.StatusAttributes {
 	status := resultstore.Status_TOOL_FAILED
-	switch p.Job.Status.State {
-	case v1.SuccessState:
-		status = resultstore.Status_PASSED
-	case v1.FailureState:
-		status = resultstore.Status_FAILED
-	case v1.AbortedState:
-		status = resultstore.Status_CANCELLED
-	case v1.ErrorState:
-		status = resultstore.Status_INCOMPLETE
+	if p.Job != nil {
+		switch p.Job.Status.State {
+		case v1.SuccessState:
+			status = resultstore.Status_PASSED
+		case v1.FailureState:
+			status = resultstore.Status_FAILED
+		case v1.AbortedState:
+			status = resultstore.Status_CANCELLED
+		case v1.ErrorState:
+			status = resultstore.Status_INCOMPLETE
+		}
 	}
 	return &resultstore.StatusAttributes{
 		Status: status,
@@ -268,7 +270,8 @@ func (p *Payload) overallAction() *resultstore.Action {
 			ConfigurationId: defaultConfigurationId,
 			ActionId:        "overall",
 		},
-		Timing: p.metadataTiming(),
+		StatusAttributes: p.invocationStatusAttributes(),
+		Timing:           p.metadataTiming(),
 		// TODO: What else if anything is required here?
 		ActionType: &resultstore.Action_TestAction{},
 	}

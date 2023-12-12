@@ -613,6 +613,9 @@ func TestOverallAction(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
 					},
+					Status: v1.ProwJobStatus{
+						State: v1.SuccessState,
+					},
 				},
 				Started: &metadata.Started{
 					Timestamp:  150,
@@ -630,6 +633,9 @@ func TestOverallAction(t *testing.T) {
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 					ActionId:        "overall",
+				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_PASSED,
 				},
 				ActionType: &resultstore.Action_TestAction{},
 				Timing: &resultstore.Timing{
@@ -649,6 +655,9 @@ func TestOverallAction(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
 					},
+					Status: v1.ProwJobStatus{
+						State: v1.ErrorState,
+					},
 				},
 				Finished: &metadata.Finished{
 					Timestamp: int64Pointer(250),
@@ -659,6 +668,9 @@ func TestOverallAction(t *testing.T) {
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 					ActionId:        "overall",
+				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_INCOMPLETE,
 				},
 				ActionType: &resultstore.Action_TestAction{},
 			},
@@ -671,6 +683,7 @@ func TestOverallAction(t *testing.T) {
 						Job: "spec-job",
 					},
 					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
 						CompletionTime: &metav1.Time{
 							Time: time.Unix(250, 0),
 						},
@@ -689,6 +702,9 @@ func TestOverallAction(t *testing.T) {
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
 					ActionId:        "overall",
+				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_FAILED,
 				},
 				ActionType: &resultstore.Action_TestAction{},
 				Timing: &resultstore.Timing{
@@ -726,6 +742,9 @@ func TestOverallAction(t *testing.T) {
 					ConfigurationId: "default",
 					ActionId:        "overall",
 				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_TOOL_FAILED,
+				},
 				ActionType: &resultstore.Action_TestAction{},
 			},
 		},
@@ -748,6 +767,9 @@ func TestOverallAction(t *testing.T) {
 					TargetId:        "Unknown",
 					ConfigurationId: "default",
 					ActionId:        "overall",
+				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_TOOL_FAILED,
 				},
 				ActionType: &resultstore.Action_TestAction{},
 				Timing: &resultstore.Timing{
