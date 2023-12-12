@@ -154,6 +154,10 @@ presubmits:
           value: "false"
         - name: CL2_USE_ADVANCED_DNSTEST
           value: "false"
+        - name: SMALL_STATEFUL_SETS_PER_NAMESPACE
+          value: "0"
+        - name: MEDIUM_STATEFUL_SETS_PER_NAMESPACE
+          value: "0"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
