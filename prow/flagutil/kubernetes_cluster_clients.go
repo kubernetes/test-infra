@@ -78,6 +78,8 @@ type KubernetesOptions struct {
 	kubeconfigWatchEvents       <-chan fsnotify.Event
 }
 
+var MissingPermissions = errors.New("missing permissions")
+
 // AddKubeconfigChangeCallback adds a callback that gets called whenever the kubeconfig changes.
 // The main usecase for this is to exit components that can not reload a kubeconfig at runtime
 // so the kubelet restarts them
@@ -391,7 +393,14 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 
 			// Check to see if we are able to perform actions against pods in
 			// the build cluster. The actions are given in requiredTestPodVerbs.
-			if err := checkAuthorizations(config, options.Namespace, requiredTestPodVerbs); err != nil {
+			authzClient, err := authorizationv1.NewForConfig(&config)
+			if err != nil {
+				lock.Lock()
+				errs = append(errs, fmt.Errorf("failed to construct authz client: %s", err))
+				lock.Unlock()
+				return
+			}
+			if err := CheckAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
 				lock.Lock()
 				errs = append(errs, fmt.Errorf("failed pod resource authorization check: %w", err))
 				lock.Unlock()
@@ -427,7 +436,13 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}
-					if err := checkAuthorizations(buildClusterConfig, options.Namespace, requiredTestPodVerbs); err != nil {
+
+					authzClient, err := authorizationv1.NewForConfig(&buildClusterConfig)
+					if err != nil {
+						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct authz client: %s", err)
+						continue
+					}
+					if err := CheckAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}
@@ -445,14 +460,9 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 	return res, aggregatedErr
 }
 
-// checkAuthorizations checks if we are able to perform the required actions
+// CheckAuthorizations checks if we are able to perform the required actions
 // against test pods for the provided pod verbs (requiredTestPodVerbs).
-func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requiredTestPodVerbs []string) error {
-	client, err := authorizationv1.NewForConfig(&buildClusterConfig)
-	if err != nil {
-		return err
-	}
-	ssarInterface := client.SelfSubjectAccessReviews()
+func CheckAuthorizations(client authorizationv1.SelfSubjectAccessReviewInterface, namespace string, requiredTestPodVerbs []string) error {
 
 	var errs []error
 	// Unfortunately we have to do multiple API requests because there is no way
@@ -492,14 +502,14 @@ func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requi
 				},
 			},
 		}
-		ssarExpanded, err := ssarInterface.Create(context.TODO(), &ssar, metav1.CreateOptions{})
+		ssarExpanded, err := client.Create(context.TODO(), &ssar, metav1.CreateOptions{})
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
 		if !ssarExpanded.Status.Allowed {
-			errs = append(errs, fmt.Errorf("unable to %q pods", verb))
+			errs = append(errs, fmt.Errorf("%w: unable to %q pods", MissingPermissions, verb))
 		}
 	}
 
@@ -531,11 +541,11 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 	return clients, utilerrors.NewAggregate(errs)
 }
 
-func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.Set[string], error) {
+func (o *KubernetesOptions) KnownClusters(dryRun bool) (map[string]rest.Config, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
-	return sets.KeySet[string](o.clusterConfigs), nil
+	return o.clusterConfigs, nil
 }
 
 // SetDisabledClusters sets disabledClusters
