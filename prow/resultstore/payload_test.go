@@ -71,10 +71,6 @@ func TestInvocation(t *testing.T) {
 											Name:  "env1",
 											Value: "env1-value",
 										},
-										{
-											Name:  "env2",
-											Value: "env2-value",
-										},
 									},
 								},
 							},
@@ -129,6 +125,10 @@ func TestInvocation(t *testing.T) {
 						Value: "https://prow/url",
 					},
 					{
+						Key:   "Env",
+						Value: "env1=env1-value",
+					},
+					{
 						Key:   "Commit",
 						Value: "repo-commit",
 					},
@@ -139,14 +139,6 @@ func TestInvocation(t *testing.T) {
 					{
 						Key:   "Repo",
 						Value: "https://repo-key",
-					},
-					{
-						Key:   "Env",
-						Value: "env1=env1-value",
-					},
-					{
-						Key:   "Env",
-						Value: "env2=env2-value",
 					},
 				},
 				StatusAttributes: &resultstore.StatusAttributes{
@@ -169,97 +161,6 @@ func TestInvocation(t *testing.T) {
 						},
 					},
 				},
-			},
-		},
-		{
-			desc: "podspec refs nil",
-			payload: &Payload{
-				Job: &v1.ProwJob{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "job-name",
-						Labels: map[string]string{
-							kube.ProwJobTypeLabel:  "job-type-label",
-							kube.RepoLabel:         "repo-label",
-							kube.PullLabel:         "pull-label",
-							kube.GerritPatchset:    "gerrit-patchset-label",
-							kube.ProwBuildIDLabel:  "build-id-label",
-							kube.ContextAnnotation: "context-annotation-label",
-						},
-					},
-					Spec: v1.ProwJobSpec{
-						Job:     "spec-job",
-						PodSpec: nil,
-						Refs:    nil,
-					},
-					Status: v1.ProwJobStatus{
-						StartTime: metav1.Time{
-							Time: time.Unix(100, 0),
-						},
-						CompletionTime: &metav1.Time{
-							Time: time.Unix(300, 0),
-						},
-						State:   v1.SuccessState,
-						URL:     "https://prow/url",
-						BuildID: "build-id",
-					},
-				},
-				Started: &metadata.Started{
-					Timestamp:  150,
-					RepoCommit: "repo-commit",
-					Repos: map[string]string{
-						"repo-key": "repo-value",
-					},
-				},
-				Finished: &metadata.Finished{
-					Timestamp: int64Pointer(250),
-				},
-				ProjectID: "project-id",
-			},
-			want: &resultstore.Invocation{
-				Id: &resultstore.Invocation_Id{
-					InvocationId: "job-name",
-				},
-				InvocationAttributes: &resultstore.InvocationAttributes{
-					ProjectId: "project-id",
-					Labels: []string{
-						"prow",
-					},
-					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
-				},
-				Properties: []*resultstore.Property{
-					{
-						Key:   "Instance",
-						Value: "build-id",
-					},
-					{
-						Key:   "Job",
-						Value: "spec-job",
-					},
-					{
-						Key:   "Prow_Dashboard_URL",
-						Value: "https://prow/url",
-					},
-					{
-						Key:   "Commit",
-						Value: "repo-commit",
-					},
-					{
-						Key:   "Branch",
-						Value: "repo-value",
-					},
-				},
-				StatusAttributes: &resultstore.StatusAttributes{
-					Status: resultstore.Status_PASSED,
-				},
-				Timing: &resultstore.Timing{
-					StartTime: &timestamppb.Timestamp{
-						Seconds: 100,
-					},
-					Duration: &durationpb.Duration{
-						Seconds: 200,
-					},
-				},
-				WorkspaceInfo: &resultstore.WorkspaceInfo{},
 			},
 		},
 		{
@@ -463,6 +364,89 @@ func TestStartedProperties(t *testing.T) {
 				Started: tc.started,
 			}
 			got := payload.startedProperties()
+			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("properties differ (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestPodSpecProperties(t *testing.T) {
+	for _, tc := range []struct {
+		desc    string
+		podSpec *corev1.PodSpec
+		want    []*resultstore.Property
+	}{
+		{
+			desc: "success",
+			podSpec: &corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name:    "container-1",
+						Args:    []string{"arg-1", "arg-2"},
+						Command: []string{"command"},
+						Env: []corev1.EnvVar{
+							{
+								Name:  "env1",
+								Value: "env1-value",
+							},
+							{
+								Name:  "env2",
+								Value: "env2-value",
+							},
+							{
+								Name:  "",
+								Value: "skip empty Name",
+							},
+						},
+					},
+					{
+						Name:    "container-2",
+						Args:    []string{"arg-3", "arg-4"},
+						Command: []string{"command2"},
+						Env: []corev1.EnvVar{
+							{
+								Name:  "env1",
+								Value: "env1-value",
+							},
+							{
+								Name:  "env3",
+								Value: "env3-value",
+							},
+						},
+					},
+				},
+			},
+			want: []*resultstore.Property{
+				{
+					Key:   "Env",
+					Value: "env1=env1-value",
+				},
+				{
+					Key:   "Env",
+					Value: "env2=env2-value",
+				},
+				{
+					Key:   "Env",
+					Value: "env3=env3-value",
+				},
+			},
+		},
+		{
+			desc:    "nil podspec",
+			podSpec: nil,
+			want:    nil,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			payload := &Payload{
+				Job: &v1.ProwJob{
+					Spec: v1.ProwJobSpec{
+						PodSpec: tc.podSpec,
+					},
+				},
+			}
+			got := payload.podSpecProperties()
 			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("properties differ (-want +got):\n%s", diff)
 			}

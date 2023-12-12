@@ -152,13 +152,28 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 			Value: p.Job.Status.URL,
 		},
 	}
+	ps = append(ps, p.podSpecProperties()...)
 	ps = append(ps, p.startedProperties()...)
-	if p.Job.Spec.PodSpec != nil {
-		for _, c := range p.Job.Spec.PodSpec.Containers {
-			for _, e := range c.Env {
+	return ps
+}
+
+func (p *Payload) podSpecProperties() []*resultstore.Property {
+	var ps []*resultstore.Property
+	if p.Job.Spec.PodSpec == nil {
+		return ps
+	}
+	seenEnv := map[string]bool{}
+	for _, c := range p.Job.Spec.PodSpec.Containers {
+		for _, e := range c.Env {
+			if e.Name == "" {
+				continue
+			}
+			v := e.Name + "=" + e.Value
+			if !seenEnv[v] {
+				seenEnv[v] = true
 				ps = append(ps, &resultstore.Property{
 					Key:   "Env",
-					Value: e.Name + "=" + e.Value,
+					Value: v,
 				})
 			}
 		}
