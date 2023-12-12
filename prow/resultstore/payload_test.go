@@ -79,9 +79,6 @@ func TestInvocation(t *testing.T) {
 								},
 							},
 						},
-						Refs: &v1.Refs{
-							RepoLink: "repo-link",
-						},
 					},
 					Status: v1.ProwJobStatus{
 						StartTime: metav1.Time{
@@ -132,16 +129,16 @@ func TestInvocation(t *testing.T) {
 						Value: "https://prow/url",
 					},
 					{
-						Key:   "Repo",
-						Value: "repo-link",
-					},
-					{
 						Key:   "Commit",
 						Value: "repo-commit",
 					},
 					{
 						Key:   "Branch",
 						Value: "repo-value",
+					},
+					{
+						Key:   "Repo",
+						Value: "https://repo-key",
 					},
 					{
 						Key:   "Env",
@@ -301,9 +298,6 @@ func TestInvocation(t *testing.T) {
 								},
 							},
 						},
-						Refs: &v1.Refs{
-							RepoLink: "repo-link",
-						},
 					},
 					Status: v1.ProwJobStatus{
 						StartTime: metav1.Time{
@@ -342,10 +336,6 @@ func TestInvocation(t *testing.T) {
 					{
 						Key:   "Prow_Dashboard_URL",
 						Value: "https://prow/url",
-					},
-					{
-						Key:   "Repo",
-						Value: "repo-link",
 					},
 					{
 						Key:   "Env",
@@ -398,6 +388,83 @@ func TestInvocation(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("invocation differs (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestStartedProperties(t *testing.T) {
+	for _, tc := range []struct {
+		desc    string
+		started *metadata.Started
+		want    []*resultstore.Property
+	}{
+		{
+			desc: "single repo",
+			started: &metadata.Started{
+				Timestamp:  150,
+				RepoCommit: "repo-commit",
+				Repos: map[string]string{
+					"repo1.com": "branch1",
+				},
+			},
+			want: []*resultstore.Property{
+				{
+					Key:   "Commit",
+					Value: "repo-commit",
+				},
+				{
+					Key:   "Branch",
+					Value: "branch1",
+				},
+				{
+					Key:   "Repo",
+					Value: "https://repo1.com",
+				},
+			},
+		},
+		{
+			desc: "multi repo",
+			started: &metadata.Started{
+				Timestamp:  150,
+				RepoCommit: "repo-commit",
+				Repos: map[string]string{
+					"repo2.com": "branch1",
+					"repo1.com": "branch1",
+				},
+			},
+			want: []*resultstore.Property{
+				{
+					Key:   "Commit",
+					Value: "repo-commit",
+				},
+				{
+					Key:   "Branch",
+					Value: "branch1",
+				},
+				{
+					Key:   "Repo",
+					Value: "https://repo1.com",
+				},
+				{
+					Key:   "Repo",
+					Value: "https://repo2.com",
+				},
+			},
+		},
+		{
+			desc:    "nil",
+			started: nil,
+			want:    nil,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			payload := &Payload{
+				Started: tc.started,
+			}
+			got := payload.startedProperties()
+			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("properties differ (-want +got):\n%s", diff)
 			}
 		})
 	}

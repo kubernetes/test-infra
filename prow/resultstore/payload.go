@@ -19,6 +19,7 @@ package resultstore
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -151,24 +152,7 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 			Value: p.Job.Status.URL,
 		},
 	}
-	if p.Job.Spec.Refs != nil {
-		ps = append(ps, &resultstore.Property{
-			Key:   "Repo",
-			Value: p.Job.Spec.Refs.RepoLink,
-		})
-	}
-	if p.Started != nil {
-		ps = append(ps, &resultstore.Property{
-			Key:   "Commit",
-			Value: p.Started.RepoCommit,
-		})
-		for _, branch := range p.Started.Repos {
-			ps = append(ps, &resultstore.Property{
-				Key:   "Branch",
-				Value: branch,
-			})
-		}
-	}
+	ps = append(ps, p.startedProperties()...)
 	if p.Job.Spec.PodSpec != nil {
 		for _, c := range p.Job.Spec.PodSpec.Containers {
 			for _, e := range c.Env {
@@ -178,6 +162,42 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 				})
 			}
 		}
+	}
+	return ps
+}
+
+func (p *Payload) startedProperties() []*resultstore.Property {
+	var ps []*resultstore.Property
+	if p.Started == nil {
+		return ps
+	}
+	ps = append(ps, &resultstore.Property{
+		Key:   "Commit",
+		Value: p.Started.RepoCommit,
+	})
+
+	var branches, repos []string
+	seenBranch := map[string]bool{}
+	for repo, branch := range p.Started.Repos {
+		if !seenBranch[branch] {
+			seenBranch[branch] = true
+			branches = append(branches, branch)
+		}
+		repos = append(repos, repo)
+	}
+	slices.Sort(branches)
+	for _, b := range branches {
+		ps = append(ps, &resultstore.Property{
+			Key:   "Branch",
+			Value: b,
+		})
+	}
+	slices.Sort(repos)
+	for _, r := range repos {
+		ps = append(ps, &resultstore.Property{
+			Key:   "Repo",
+			Value: "https://" + r,
+		})
 	}
 	return ps
 }
