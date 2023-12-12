@@ -155,7 +155,7 @@ func TestInvocation(t *testing.T) {
 				WorkspaceInfo: &resultstore.WorkspaceInfo{
 					CommandLines: []*resultstore.CommandLine{
 						{
-							Label:   "container-1",
+							Label:   "original",
 							Args:    []string{"arg-1", "arg-2"},
 							Command: "command",
 						},
@@ -261,7 +261,7 @@ func TestInvocation(t *testing.T) {
 				WorkspaceInfo: &resultstore.WorkspaceInfo{
 					CommandLines: []*resultstore.CommandLine{
 						{
-							Label:   "container-1",
+							Label:   "original",
 							Args:    []string{"arg-1", "arg-2"},
 							Command: "command",
 						},

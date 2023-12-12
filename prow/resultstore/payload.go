@@ -123,12 +123,18 @@ func (p *Payload) workspaceInfo() *resultstore.WorkspaceInfo {
 	}
 }
 
+// Per the ResultStore maintainers, the CommandLine Label must be
+// populated, and should be either "original" or "canonical". (To be
+// documented by them: if the original value contains placeholders,
+// the final values should be added as "canonical".)
+const commandLineLabel = "original"
+
 func commandLines(pj *v1.ProwJob) []*resultstore.CommandLine {
 	var cl []*resultstore.CommandLine
 	if pj.Spec.PodSpec != nil {
 		for _, c := range pj.Spec.PodSpec.Containers {
 			cl = append(cl, &resultstore.CommandLine{
-				Label:   c.Name,
+				Label:   commandLineLabel,
 				Args:    c.Args,
 				Command: strings.Join(c.Command, " "),
 			})
