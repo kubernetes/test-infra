@@ -136,9 +136,9 @@ func commandLines(pj *v1.ProwJob) []*resultstore.CommandLine {
 	if pj.Spec.PodSpec != nil {
 		for _, c := range pj.Spec.PodSpec.Containers {
 			cl = append(cl, &resultstore.CommandLine{
-				Label:   commandLineLabel,
-				Args:    c.Args,
-				Command: strings.Join(c.Command, " "),
+				Label: commandLineLabel,
+				Tool:  strings.Join(c.Command, " "),
+				Args:  c.Args,
 			})
 		}
 	}
