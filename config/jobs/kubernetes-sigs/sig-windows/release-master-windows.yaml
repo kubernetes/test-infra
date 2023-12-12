@@ -560,6 +560,7 @@ periodics:
     preset-capz-containerd-1-7-latest: "true"
     preset-windows-private-registry-cred: "true"
     preset-azure-capz-sa-cred: "true"
+    preset-capz-windows-2022: "true" # although it is not WS 2022, the tooling and container images treat it like WS2022
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
