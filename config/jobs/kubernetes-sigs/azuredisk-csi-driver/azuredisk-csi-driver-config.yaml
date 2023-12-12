@@ -910,12 +910,8 @@ presubmits:
           env:
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Uniform"
-            - name: CLUSTER_PROVISIONING_TOOL # azuredisk-csi-driver config
-              value: "capz"
-            - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
-            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
-              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: EXP_MACHINE_POOL # CAPZ config
+              value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: DISABLE_ZONE # azuredisk-csi-driver config
