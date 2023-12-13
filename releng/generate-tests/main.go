@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"embed"
+	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -120,7 +122,7 @@ func SaveConfigsToFile(data interface{}, outputFilePath string) {
 }
 
 func forEachJob(outputDir string, jobName string, job Job, config Config) (Periodic, TestGroup) {
-	// var jobConfig Job
+	var jobConfig Job
 	var prowConfig Periodic
 	var testgridConfig TestGroup
 	fields := strings.Split(jobName, "-")
@@ -131,13 +133,42 @@ func forEachJob(outputDir string, jobName string, job Job, config Config) (Perio
 	switch jobType {
 	case "e2e":
 		e2eTest := newE2ETest(outputDir, jobName, job, config)
-		_, prowConfig, testgridConfig = e2eTest.generate()
+		jobConfig, prowConfig, testgridConfig = e2eTest.generate()
 	case "e2enode":
 		log.Println("nothing yet")
 	default:
 		log.Fatalf("Job %s has unexpected job type %s", jobName, jobType)
 	}
+	jobConfig.Args = applyJobOverrides(jobConfig.Args, getArgs(jobName, job.Args))
+	prowConfig.Spec.Containers[0].Args = append(prowConfig.Spec.Containers[0].Args, jobConfig.Args...)
+	file := fmt.Sprintf("/workspace/scenarios/%s.py", jobConfig.Scenario)
+	prowConfig.Spec.Containers[0].Command = []string{"runner.sh", file}
 	return prowConfig, testgridConfig
+}
+
+func applyJobOverrides(envsOrArgs []string, jobEnvsOrArgs []string) []string {
+	originalEnvsOrArgs := append([]string(nil), envsOrArgs...)
+	for _, jobEnvOrArg := range jobEnvsOrArgs {
+		name := strings.Split(jobEnvOrArg, "=")[0]
+		var envOrArg string
+		for _, val := range originalEnvsOrArgs {
+			trimVal := strings.TrimSpace(val)
+			if strings.HasPrefix(trimVal, name+"=") || trimVal == name {
+				envOrArg = val
+				break
+			}
+		}
+		if envOrArg != "" {
+			for i, v := range envsOrArgs {
+				if v == envOrArg {
+					envsOrArgs = append(envsOrArgs[:i], envsOrArgs[i+1:]...)
+					break
+				}
+			}
+		}
+		envsOrArgs = append(envsOrArgs, jobEnvOrArg)
+	}
+	return envsOrArgs
 }
 
 func newE2ETest(outputDir string, jobName string, job Job, config Config) E2ETest {
@@ -153,6 +184,25 @@ func newE2ETest(outputDir string, jobName string, job Job, config Config) E2ETes
 		TestSuites:     config.TestSuites,
 	}
 }
+
+func getSHA1Hash(data string) string {
+	h := sha1.New()
+	h.Write([]byte(data))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func substitute(jobName string, lines []string) []string {
+	var result []string
+	for _, line := range lines {
+		result = append(result, strings.Replace(line, "${job_name_hash}", getSHA1Hash(jobName)[:10], -1))
+	}
+	return result
+}
+
+func getArgs(jobName string, args []string) []string {
+	return substitute(jobName, args)
+}
+
 func (et *E2ETest) generate() (Job, Periodic, TestGroup) {
 	log.Printf("generating e2e job: %s", et.JobName)
 	fields := strings.Split(et.JobName, "-")
@@ -164,11 +214,12 @@ func (et *E2ETest) generate() (Job, Periodic, TestGroup) {
 	K8SVersion := et.K8SVersions[fields[5][3:]]
 	testSuite := et.TestSuites[fields[6]]
 	args := []string{}
-	args = append(args, et.Common.Args...)
-	args = append(args, cloudProvider.Args...)
-	args = append(args, image.Args...)
-	args = append(args, K8SVersion.Args...)
-	args = append(args, testSuite.Args...)
+	args = append(args, getArgs(et.JobName, et.Common.Args)...)
+	args = append(args, getArgs(et.JobName, cloudProvider.Args)...)
+	args = append(args, getArgs(et.JobName, image.Args)...)
+	args = append(args, getArgs(et.JobName, K8SVersion.Args)...)
+	args = append(args, getArgs(et.JobName, testSuite.Args)...)
+
 	jobConfig := et.getJobDefinition(args)
 	prowConfig := et.getProwConfig(testSuite)
 	tgConfig := et.getTestGridConfig()
@@ -269,10 +320,9 @@ func (et *E2ETest) getProwConfig(testSuite TestSuite) Periodic {
 	} else if et.Job.Cluster != "" {
 		prowConfig.Cluster = et.Job.Cluster
 	}
-	emptyResources := Resources{}
-	if testSuite.Resources != emptyResources {
+	if !testSuite.Resources.isEmpty() {
 		prowConfig.Spec.Containers[0].Resources = testSuite.Resources
-	} else if et.Job.Resources != emptyResources {
+	} else if !et.Job.Resources.isEmpty() {
 		prowConfig.Spec.Containers[0].Resources = et.Job.Resources
 	}
 	// Possible weird assumtion
@@ -287,10 +337,14 @@ func (et *E2ETest) getProwConfig(testSuite TestSuite) Periodic {
 	}
 	// Assumes that the value in --timeout is of minutes.
 	var timeout int
+	var err error
 	for _, arg := range testSuite.Args {
 		if strings.HasPrefix(arg, "--timeout=") {
-			value := arg[10:]
-			timeout, _ = strconv.Atoi(value)
+			value := arg[10 : len(arg)-1]
+			timeout, err = strconv.Atoi(value)
+			if err != nil {
+				log.Fatalf("error, parsing timeout of job: %s, %s", et.JobName, err)
+			}
 			break
 		}
 	}
@@ -438,4 +492,11 @@ type TestGroup struct {
 
 func (tg *TestGroup) isEmpty() bool {
 	return tg.Name != "" || tg.GCSPrefix != "" || len(tg.ColumnHeader) != 0
+}
+
+func (cr *ComputeResources) isEmpty() bool {
+	return cr.CPU != "" || cr.Memory != ""
+}
+func (r *Resources) isEmpty() bool {
+	return !r.Limits.isEmpty() || !r.Requests.isEmpty()
 }
