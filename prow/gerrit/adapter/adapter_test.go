@@ -252,6 +252,28 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 			latest:   lastUpdateTime,
 			result:   false,
 		},
+		{
+			name:     "trigger jobs for previously-seen change coming out of WIP status",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {
+						Number: 10,
+						// The associated revision is old (predates
+						// lastUpdateTime)...
+						Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date: makeStamp(now),
+						// ...but we shouldn't skip triggering jobs for it
+						// because the message says this is no longer WIP.
+						Message:        noLongerWIP,
+						RevisionNumber: 10,
+					},
+				}},
+			latest: lastUpdateTime,
+			result: false,
+		},
 	}
 
 	for _, tc := range cases {

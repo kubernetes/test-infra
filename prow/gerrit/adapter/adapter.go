@@ -46,6 +46,7 @@ import (
 const (
 	inRepoConfigRetries = 2
 	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict (please resolve them), an inRepoConfig parsing error (incorrect formatting) in the .prow directory or .prow.yaml file, or a flake. For possible flakes, try again with /test all"
+	noLongerWIP         = "Set Ready For Review"
 )
 
 var gerritMetrics = struct {
@@ -552,6 +553,9 @@ func (c *Controller) shouldSkipProcessingChange(change client.ChangeInfo, lastPr
 
 	for _, message := range currentMessages(change, lastProjectSyncTime) {
 		if c.messageContainsJobTriggeringCommand(message) {
+			return false
+		}
+		if message.Message == noLongerWIP {
 			return false
 		}
 	}
