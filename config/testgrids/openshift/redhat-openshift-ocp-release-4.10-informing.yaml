@@ -3941,8 +3941,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-ci-4.10-upgrade-from-stable-4.9-from-stable-4.8-e2e-aws-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.10-console-aws
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-credentials-request-freeze
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-credentials-request-freeze
   name: periodic-ci-openshift-release-master-nightly-4.10-credentials-request-freeze
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-alibaba
   name: periodic-ci-openshift-release-master-nightly-4.10-e2e-alibaba
@@ -4076,27 +4075,19 @@ test_groups:
   name: promote-release-openshift-machine-os-content-e2e-aws-4.10-ppc64le
 - gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.10-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.10-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-mirrors-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-mirrors-4.10
   name: release-openshift-ocp-installer-e2e-aws-mirrors-4.10
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-upi-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-upi-4.10
   name: release-openshift-ocp-installer-e2e-aws-upi-4.10
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-serial-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-serial-4.10
   name: release-openshift-ocp-installer-e2e-azure-serial-4.10
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-disruptive-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-disruptive-4.10
   name: release-openshift-origin-installer-e2e-aws-disruptive-4.10
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.10
   name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.10
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.7-to-4.8-to-4.9-to-4.10-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.7-to-4.8-to-4.9-to-4.10-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.7-to-4.8-to-4.9-to-4.10-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.10
   name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.10
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.10
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.10
   name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.10
