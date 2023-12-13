@@ -42,6 +42,19 @@ func parseFlags() *options {
 	return &opt
 }
 
+func (opt *options) getYamlConfig() ConfigFile {
+	yamlFile, err := os.ReadFile(opt.yamlConfigPath)
+	if err != nil {
+		log.Fatalln("error trying to read yaml config path file")
+	}
+	var config ConfigFile
+	err = yaml.Unmarshal(yamlFile, &config)
+	if err != nil {
+		log.Fatalln("error trying to parse yaml config path file")
+	}
+	return config
+}
+
 func (opt *options) validateOptions() error {
 	if opt.outputDir == "" {
 		return errors.New("--output-dir must be specified")
@@ -54,6 +67,7 @@ func (opt *options) validateOptions() error {
 	}
 	return nil
 }
+
 func main() {
 	options := parseFlags()
 	if err := options.validateOptions(); err != nil {
@@ -65,7 +79,7 @@ func main() {
 		jobNames = append(jobNames, name)
 	}
 	slices.Sort(jobNames)
-	outputConfig := OutputConfig{
+	outputConfig := ProwConfigFile{
 		Periodics: []Periodic{},
 	}
 	testgridConfig := TestgridConfig{
@@ -108,7 +122,7 @@ func writeConfigToFile(outputFile string, config interface{}, comment string) {
 func SaveConfigsToFile(data interface{}, outputFilePath string) {
 	tmpt, err := template.ParseFS(testTemplateFS, "test.template.yml")
 	if err != nil {
-		log.Fatalf("fail to Parse Config Template: , %+v", err)
+		log.Fatalf("fail to Parse ConfigFile Template: , %+v", err)
 	}
 	var buf bytes.Buffer
 	err = tmpt.Execute(&buf, data)
@@ -121,7 +135,7 @@ func SaveConfigsToFile(data interface{}, outputFilePath string) {
 	}
 }
 
-func forEachJob(outputDir string, jobName string, job Job, config Config) (Periodic, TestGroup) {
+func forEachJob(outputDir string, jobName string, job Job, config ConfigFile) (Periodic, TestGroup) {
 	var jobConfig Job
 	var prowConfig Periodic
 	var testgridConfig TestGroup
@@ -171,20 +185,6 @@ func applyJobOverrides(envsOrArgs []string, jobEnvsOrArgs []string) []string {
 	return envsOrArgs
 }
 
-func newE2ETest(outputDir string, jobName string, job Job, config Config) E2ETest {
-	envFilePath := filepath.Join(outputDir, jobName+".env")
-	return E2ETest{
-		EnvFilename:    envFilePath,
-		JobName:        jobName,
-		Job:            job,
-		Common:         config.Common,
-		CloudProviders: config.CloudProviders,
-		Images:         config.Images,
-		K8SVersions:    config.K8SVersions,
-		TestSuites:     config.TestSuites,
-	}
-}
-
 func getSHA1Hash(data string) string {
 	h := sha1.New()
 	h.Write([]byte(data))
@@ -201,6 +201,20 @@ func substitute(jobName string, lines []string) []string {
 
 func getArgs(jobName string, args []string) []string {
 	return substitute(jobName, args)
+}
+
+func newE2ETest(outputDir string, jobName string, job Job, config ConfigFile) E2ETest {
+	envFilePath := filepath.Join(outputDir, jobName+".env")
+	return E2ETest{
+		EnvFilename:    envFilePath,
+		JobName:        jobName,
+		Job:            job,
+		Common:         config.Common,
+		CloudProviders: config.CloudProviders,
+		Images:         config.Images,
+		K8SVersions:    config.K8SVersions,
+		TestSuites:     config.TestSuites,
+	}
 }
 
 func (et *E2ETest) generate() (Job, Periodic, TestGroup) {
@@ -353,6 +367,15 @@ func (et *E2ETest) getProwConfig(testSuite TestSuite) Periodic {
 	return prowConfig
 }
 
+type ConfigFile struct {
+	Jobs           map[string]Job           `yaml:"jobs"`
+	CloudProviders map[string]CloudProvider `yaml:"cloudProviders"`
+	Common         Common                   `yaml:"common"`
+	Images         map[string]Image         `yaml:"images"`
+	K8SVersions    map[string]K8SVersion    `yaml:"k8sVersions"`
+	TestSuites     map[string]TestSuite     `yaml:"testSuites"`
+}
+
 type E2ETest struct {
 	EnvFilename    string
 	JobName        string
@@ -363,6 +386,8 @@ type E2ETest struct {
 	K8SVersions    map[string]K8SVersion
 	TestSuites     map[string]TestSuite
 }
+
+// Common/Shared
 type Job struct {
 	Scenario                   string // `yaml:"interval"`
 	Interval                   string `yaml:"interval"`
@@ -376,26 +401,41 @@ type Job struct {
 	Resources                  Resources
 }
 
-// type JobDefinition struct {
-// 	Scenario                   string   `yaml:"interval"`
-// 	SigOwners                  []string `yaml:"sigOwners"`
-// 	ReleaseBlocking            bool     `yaml:"releaseBlocking"`
-// 	ReleaseInforming           bool     `yaml:"releaseInforming"`
-// 	TestgridNumFailuresToAlert int      `yaml:"testgridNumFailuresToAlert"`
-// 	Args                       []string `yaml:"args"`
-// }
-
-type K8SVersion struct {
-	Args    []string `yaml:"args"`
-	Version string   `yaml:"version"`
+type Common struct {
+	Args           []string
+	TestgridPrefix string `yaml:"testgrid_prefix"`
 }
+
+type CloudProvider struct {
+	Args []string
+}
+
+type Image struct {
+	Args           []string
+	TestgridPrefix string `yaml:"testgrid_prefix"`
+}
+
 type Resources struct {
 	Requests ComputeResources `yaml:"requests"`
 	Limits   ComputeResources `yaml:"limits"`
 }
+
 type ComputeResources struct {
 	CPU    string `yaml:"cpu"`
 	Memory string `yaml:"memory"`
+}
+
+func (cr *ComputeResources) isEmpty() bool {
+	return cr.CPU != "" || cr.Memory != ""
+}
+
+func (r *Resources) isEmpty() bool {
+	return !r.Limits.isEmpty() || !r.Requests.isEmpty()
+}
+
+type K8SVersion struct {
+	Args    []string `yaml:"args"`
+	Version string   `yaml:"version"`
 }
 
 type TestSuite struct {
@@ -404,58 +444,9 @@ type TestSuite struct {
 	Cluster   string    `yaml:"cluster"`
 }
 
-type CloudProvider struct {
-	Args []string
-}
-
-type Common struct {
-	Args           []string
-	TestgridPrefix string `yaml:"testgrid_prefix"`
-}
-
-type Image struct {
-	Args           []string
-	TestgridPrefix string `yaml:"testgrid_prefix"`
-}
-
-type Config struct {
-	Jobs           map[string]Job           `yaml:"jobs"`
-	CloudProviders map[string]CloudProvider `yaml:"cloudProviders"`
-	Common         Common                   `yaml:"common"`
-	Images         map[string]Image         `yaml:"images"`
-	K8SVersions    map[string]K8SVersion    `yaml:"k8sVersions"`
-	TestSuites     map[string]TestSuite     `yaml:"testSuites"`
-}
-
-func (opt *options) getYamlConfig() Config {
-	yamlFile, err := os.ReadFile(opt.yamlConfigPath)
-	if err != nil {
-		log.Fatalln("error trying to read yaml config path file")
-	}
-	var config Config
-	err = yaml.Unmarshal(yamlFile, &config)
-	if err != nil {
-		log.Fatalln("error trying to parse yaml config path file")
-	}
-	return config
-}
-
-//
-
-type DecorationConfig struct {
-	Timeout string `yaml:"timeout"`
-}
-
-type Container struct {
-	Command   []string  `yaml:"command"`
-	Args      []string  `yaml:"args"`
-	Env       string    `yaml:"env"`
-	Image     string    `yaml:"image"`
-	Resources Resources `yaml:"resources"`
-}
-
-type Spec struct {
-	Containers []Container `yaml:"containers"`
+// Prow Config Generated File
+type ProwConfigFile struct {
+	Periodics []Periodic `yaml:"periodics"`
 }
 
 type Periodic struct {
@@ -471,17 +462,25 @@ type Periodic struct {
 	Annotations      map[string]string `yaml:"annotations"`
 }
 
-type OutputConfig struct {
-	Periodics []Periodic `yaml:"periodics"`
+type DecorationConfig struct {
+	Timeout string `yaml:"timeout"`
 }
 
+type Spec struct {
+	Containers []Container `yaml:"containers"`
+}
+
+type Container struct {
+	Command   []string  `yaml:"command"`
+	Args      []string  `yaml:"args"`
+	Env       string    `yaml:"env"`
+	Image     string    `yaml:"image"`
+	Resources Resources `yaml:"resources"`
+}
+
+// Testgrid
 type TestgridConfig struct {
 	TestGroups []TestGroup `json:"test_groups"`
-}
-
-// testgrid
-type ConfigurationValue struct {
-	ConfigurationValue string `json:"configuration_value"`
 }
 
 type TestGroup struct {
@@ -494,9 +493,6 @@ func (tg *TestGroup) isEmpty() bool {
 	return tg.Name != "" || tg.GCSPrefix != "" || len(tg.ColumnHeader) != 0
 }
 
-func (cr *ComputeResources) isEmpty() bool {
-	return cr.CPU != "" || cr.Memory != ""
-}
-func (r *Resources) isEmpty() bool {
-	return !r.Limits.isEmpty() || !r.Requests.isEmpty()
+type ConfigurationValue struct {
+	ConfigurationValue string `json:"configuration_value"`
 }
