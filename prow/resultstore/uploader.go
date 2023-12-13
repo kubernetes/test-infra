@@ -36,7 +36,7 @@ func NewUploader(client *Client) *Uploader {
 // Upload uploads a completed Prow job's results to ResultStore's API:
 // https://github.com/googleapis/googleapis/blob/master/google/devtools/resultstore/v2/resultstore_upload.proto
 func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) error {
-	inv, err := p.invocation()
+	inv, err := p.Invocation()
 	if err != nil {
 		return err
 	}
@@ -44,10 +44,10 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 	if err != nil {
 		return err
 	}
-	w.WriteConfiguration(ctx, p.defaultConfiguration())
-	w.WriteTarget(ctx, p.overallTarget())
-	w.WriteConfiguredTarget(ctx, p.configuredTarget())
-	w.WriteAction(ctx, p.overallAction())
+	w.WriteConfiguration(ctx, p.DefaultConfiguration())
+	w.WriteTarget(ctx, p.OverallTarget())
+	w.WriteConfiguredTarget(ctx, p.ConfiguredTarget())
+	w.WriteAction(ctx, p.OverallAction())
 	w.Finalize(ctx)
 	return nil
 }

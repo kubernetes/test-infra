@@ -19,6 +19,7 @@ package resultstore
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -38,51 +40,60 @@ type Payload struct {
 	ProjectID string
 }
 
-func (p *Payload) invocation() (*resultstore.Invocation, error) {
-	if p.Job == nil {
-		return nil, errors.New("internal error: Payload.Job is nil")
+func (p *Payload) Invocation() (*resultstore.Invocation, error) {
+	id, err := invocationID(p.Job)
+	if err != nil {
+		return nil, err
 	}
 	i := &resultstore.Invocation{
-		Id:                   p.invocationID(),
-		StatusAttributes:     p.invocationStatusAttributes(),
-		Timing:               p.invocationTiming(),
-		InvocationAttributes: p.invocationAttributes(),
-		WorkspaceInfo:        p.workspaceInfo(),
-		Properties:           p.invocationProperties(),
+		Id:                   id,
+		StatusAttributes:     invocationStatusAttributes(p.Job),
+		Timing:               invocationTiming(p.Job),
+		InvocationAttributes: invocationAttributes(p.ProjectID, p.Job),
+		WorkspaceInfo:        workspaceInfo(p.Job),
+		Properties:           invocationProperties(p.Job, p.Started),
 		Files:                p.Files,
 	}
 	return i, nil
 }
 
-func (p *Payload) invocationID() *resultstore.Invocation_Id {
+func invocationID(pj *v1.ProwJob) (*resultstore.Invocation_Id, error) {
+	if pj == nil {
+		return nil, errors.New("internal error: pj is nil")
+	}
 	return &resultstore.Invocation_Id{
 		// Name is a v4 UUID set in pjutil.go.
-		InvocationId: p.Job.Name,
-	}
+		InvocationId: pj.Name,
+	}, nil
 }
 
-func (p *Payload) invocationStatusAttributes() *resultstore.StatusAttributes {
+func invocationStatusAttributes(job *v1.ProwJob) *resultstore.StatusAttributes {
 	status := resultstore.Status_TOOL_FAILED
-	switch p.Job.Status.State {
-	case v1.SuccessState:
-		status = resultstore.Status_PASSED
-	case v1.FailureState:
-		status = resultstore.Status_FAILED
-	case v1.AbortedState:
-		status = resultstore.Status_CANCELLED
-	case v1.ErrorState:
-		status = resultstore.Status_INCOMPLETE
+	if job != nil {
+		switch job.Status.State {
+		case v1.SuccessState:
+			status = resultstore.Status_PASSED
+		case v1.FailureState:
+			status = resultstore.Status_FAILED
+		case v1.AbortedState:
+			status = resultstore.Status_CANCELLED
+		case v1.ErrorState:
+			status = resultstore.Status_INCOMPLETE
+		}
 	}
 	return &resultstore.StatusAttributes{
 		Status: status,
 	}
 }
 
-func (p *Payload) invocationTiming() *resultstore.Timing {
-	start := p.Job.Status.StartTime.Time
+func invocationTiming(pj *v1.ProwJob) *resultstore.Timing {
+	if pj == nil {
+		return nil
+	}
+	start := pj.Status.StartTime.Time
 	var duration time.Duration
-	if p.Job.Status.CompletionTime != nil {
-		duration = p.Job.Status.CompletionTime.Time.Sub(start)
+	if pj.Status.CompletionTime != nil {
+		duration = pj.Status.CompletionTime.Time.Sub(start)
 	}
 	return &resultstore.Timing{
 		StartTime: &timestamppb.Timestamp{
@@ -94,13 +105,17 @@ func (p *Payload) invocationTiming() *resultstore.Timing {
 	}
 }
 
-func (p *Payload) invocationAttributes() *resultstore.InvocationAttributes {
+func invocationAttributes(projectID string, pj *v1.ProwJob) *resultstore.InvocationAttributes {
+	var labels map[string]string
+	if pj != nil {
+		labels = pj.Labels
+	}
 	return &resultstore.InvocationAttributes{
 		// TODO: ProjectID might be assigned directly from the GCS
 		// BucketAttrs.ProjectNumber; requires a raw GCS client.
-		ProjectId:   p.ProjectID,
+		ProjectId:   projectID,
 		Labels:      []string{"prow"},
-		Description: descriptionFromLabels(p.Job.Labels),
+		Description: descriptionFromLabels(labels),
 	}
 }
 
@@ -116,65 +131,78 @@ func descriptionFromLabels(labels map[string]string) string {
 	return fmt.Sprintf("%s for %s/%s/%s/%s", jt, repo, pull, buildID, job)
 }
 
-func (p *Payload) workspaceInfo() *resultstore.WorkspaceInfo {
+func workspaceInfo(job *v1.ProwJob) *resultstore.WorkspaceInfo {
 	return &resultstore.WorkspaceInfo{
-		CommandLines: commandLines(p.Job),
+		CommandLines: commandLines(job),
 	}
 }
 
+// Per the ResultStore maintainers, the CommandLine Label must be
+// populated, and should be either "original" or "canonical". (To be
+// documented by them: if the original value contains placeholders,
+// the final values should be added as "canonical".)
+const commandLineLabel = "original"
+
 func commandLines(pj *v1.ProwJob) []*resultstore.CommandLine {
 	var cl []*resultstore.CommandLine
-	if pj.Spec.PodSpec != nil {
+	if pj != nil && pj.Spec.PodSpec != nil {
 		for _, c := range pj.Spec.PodSpec.Containers {
 			cl = append(cl, &resultstore.CommandLine{
-				Label:   c.Name,
-				Args:    c.Args,
-				Command: strings.Join(c.Command, " "),
+				Label: commandLineLabel,
+				Tool:  strings.Join(c.Command, " "),
+				Args:  c.Args,
 			})
 		}
 	}
 	return cl
 }
 
-func (p *Payload) invocationProperties() []*resultstore.Property {
+func invocationProperties(pj *v1.ProwJob, started *metadata.Started) []*resultstore.Property {
+	var ps []*resultstore.Property
+	ps = append(ps, jobProperties(pj)...)
+	ps = append(ps, startedProperties(started)...)
+	return ps
+}
+
+func jobProperties(pj *v1.ProwJob) []*resultstore.Property {
+	if pj == nil {
+		return nil
+	}
 	ps := []*resultstore.Property{
 		{
 			Key:   "Instance",
-			Value: p.Job.Status.BuildID,
+			Value: pj.Status.BuildID,
 		},
 		{
 			Key:   "Job",
-			Value: p.Job.Spec.Job,
+			Value: pj.Spec.Job,
 		},
 		{
 			Key:   "Prow_Dashboard_URL",
-			Value: p.Job.Status.URL,
+			Value: pj.Status.URL,
 		},
 	}
-	if p.Job.Spec.Refs != nil {
-		ps = append(ps, &resultstore.Property{
-			Key:   "Repo",
-			Value: p.Job.Spec.Refs.RepoLink,
-		})
+	ps = append(ps, podSpecProperties(pj.Spec.PodSpec)...)
+	return ps
+}
+
+func podSpecProperties(podSpec *corev1.PodSpec) []*resultstore.Property {
+	if podSpec == nil {
+		return nil
 	}
-	if p.Started != nil {
-		ps = append(ps, &resultstore.Property{
-			Key:   "Commit",
-			Value: p.Started.RepoCommit,
-		})
-		for _, branch := range p.Started.Repos {
-			ps = append(ps, &resultstore.Property{
-				Key:   "Branch",
-				Value: branch,
-			})
-		}
-	}
-	if p.Job.Spec.PodSpec != nil {
-		for _, c := range p.Job.Spec.PodSpec.Containers {
-			for _, e := range c.Env {
+	var ps []*resultstore.Property
+	seenEnv := map[string]bool{}
+	for _, c := range podSpec.Containers {
+		for _, e := range c.Env {
+			if e.Name == "" {
+				continue
+			}
+			v := e.Name + "=" + e.Value
+			if !seenEnv[v] {
+				seenEnv[v] = true
 				ps = append(ps, &resultstore.Property{
 					Key:   "Env",
-					Value: e.Name + "=" + e.Value,
+					Value: v,
 				})
 			}
 		}
@@ -182,9 +210,44 @@ func (p *Payload) invocationProperties() []*resultstore.Property {
 	return ps
 }
 
+func startedProperties(started *metadata.Started) []*resultstore.Property {
+	if started == nil {
+		return nil
+	}
+	ps := []*resultstore.Property{{
+		Key:   "Commit",
+		Value: started.RepoCommit,
+	}}
+
+	var branches, repos []string
+	seenBranch := map[string]bool{}
+	for repo, branch := range started.Repos {
+		if !seenBranch[branch] {
+			seenBranch[branch] = true
+			branches = append(branches, branch)
+		}
+		repos = append(repos, repo)
+	}
+	slices.Sort(branches)
+	for _, b := range branches {
+		ps = append(ps, &resultstore.Property{
+			Key:   "Branch",
+			Value: b,
+		})
+	}
+	slices.Sort(repos)
+	for _, r := range repos {
+		ps = append(ps, &resultstore.Property{
+			Key:   "Repo",
+			Value: "https://" + r,
+		})
+	}
+	return ps
+}
+
 const defaultConfigurationId = "default"
 
-func (p *Payload) defaultConfiguration() *resultstore.Configuration {
+func (p *Payload) DefaultConfiguration() *resultstore.Configuration {
 	return &resultstore.Configuration{
 		Id: &resultstore.Configuration_Id{
 			ConfigurationId: defaultConfigurationId,
@@ -192,17 +255,18 @@ func (p *Payload) defaultConfiguration() *resultstore.Configuration {
 	}
 }
 
-func (p *Payload) targetID() string {
-	if p.Job == nil {
+func targetID(pj *v1.ProwJob) string {
+	if pj == nil {
 		return "Unknown"
 	}
-	return p.Job.Spec.Job
+	return pj.Spec.Job
+
 }
 
-func (p *Payload) overallTarget() *resultstore.Target {
+func (p *Payload) OverallTarget() *resultstore.Target {
 	return &resultstore.Target{
 		Id: &resultstore.Target_Id{
-			TargetId: p.targetID(),
+			TargetId: targetID(p.Job),
 		},
 		TargetAttributes: &resultstore.TargetAttributes{
 			Type: resultstore.TargetType_TEST,
@@ -211,39 +275,40 @@ func (p *Payload) overallTarget() *resultstore.Target {
 	}
 }
 
-func (p *Payload) configuredTarget() *resultstore.ConfiguredTarget {
+func (p *Payload) ConfiguredTarget() *resultstore.ConfiguredTarget {
 	return &resultstore.ConfiguredTarget{
 		Id: &resultstore.ConfiguredTarget_Id{
-			TargetId:        p.targetID(),
+			TargetId:        targetID(p.Job),
 			ConfigurationId: defaultConfigurationId,
 		},
 	}
 }
 
-func (p *Payload) overallAction() *resultstore.Action {
+func (p *Payload) OverallAction() *resultstore.Action {
 	return &resultstore.Action{
 		Id: &resultstore.Action_Id{
-			TargetId:        p.targetID(),
+			TargetId:        targetID(p.Job),
 			ConfigurationId: defaultConfigurationId,
 			ActionId:        "overall",
 		},
-		Timing: p.metadataTiming(),
+		StatusAttributes: invocationStatusAttributes(p.Job),
+		Timing:           metadataTiming(p.Job, p.Started, p.Finished),
 		// TODO: What else if anything is required here?
 		ActionType: &resultstore.Action_TestAction{},
 	}
 }
 
-func (p *Payload) metadataTiming() *resultstore.Timing {
-	if p.Started == nil {
+func metadataTiming(job *v1.ProwJob, started *metadata.Started, finished *metadata.Finished) *resultstore.Timing {
+	if started == nil {
 		return nil
 	}
-	start := p.Started.Timestamp
+	start := started.Timestamp
 	var duration int64
 	switch {
-	case p.Finished != nil:
-		duration = *p.Finished.Timestamp - start
-	case p.Job != nil && p.Job.Status.CompletionTime != nil:
-		duration = p.Job.Status.CompletionTime.Unix() - start
+	case finished != nil:
+		duration = *finished.Timestamp - start
+	case job != nil && job.Status.CompletionTime != nil:
+		duration = job.Status.CompletionTime.Unix() - start
 	default:
 		return nil
 	}
