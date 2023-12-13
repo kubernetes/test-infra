@@ -42,6 +42,7 @@ const addStdoutStderrOpeners = (): void => {
       const text = (link.nextElementSibling as HTMLElement).innerHTML;
       const blob = new Blob([`
       <head>
+        <meta charset="UTF-8">
         <title>Logs</title>
       </head>
       <body style="background-color: #303030; color: white; font-family: monospace; white-space: pre-wrap;">${text}</body>`], {type: 'text/html'});

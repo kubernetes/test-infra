@@ -7680,7 +7680,7 @@ func TestGetProwYAMLDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T
 	}
 
 	c := &Config{}
-	if _, err := c.getProwYAMLWithDefaults(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+	if _, err := c.getProwYAMLWithDefaults(nil, "test", "main", baseSHAGetter, headSHAGetter); err != nil {
 		t.Fatalf("error calling GetProwYAML: %v", err)
 	}
 	if baseSHAGetterCalled {
@@ -7717,7 +7717,7 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 		},
 	}
 
-	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, "main", func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPresubmits: %v", err)
 	}
@@ -7755,7 +7755,7 @@ func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
 		},
 	}
 
-	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, "main", func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPostsubmits: %v", err)
 	}
@@ -8011,7 +8011,7 @@ func TestValidatePresubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
-			expectedError: "duplicated presubmit job: a",
+			expectedError: "duplicated presubmit jobs (consider both inrepo and central config): [a]",
 		},
 		{
 			name: "Duplicate jobname on different branches doesn't cause error",
@@ -8110,7 +8110,7 @@ func TestValidatePostsubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
-			expectedError: "duplicated postsubmit job: a",
+			expectedError: "duplicated postsubmit jobs (consider both inrepo and central config): [a]",
 		},
 		{
 			name:          "Invalid JobBase causes error",

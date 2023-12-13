@@ -50,7 +50,7 @@ func (c *fakeClientClose) CloseIssueAsNotPlanned(org, repo string, number int) e
 	return nil
 }
 
-func (c *fakeClientClose) ClosePR(owner, repo string, number int) error {
+func (c *fakeClientClose) ClosePullRequest(owner, repo string, number int) error {
 	c.closed = true
 	return nil
 }

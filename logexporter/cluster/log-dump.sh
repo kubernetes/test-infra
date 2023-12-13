@@ -197,7 +197,7 @@ function detect-node-names() {
     for group in "${INSTANCE_GROUPS[@]}"; do
       NODE_NAMES+=($(gcloud compute instance-groups managed list-instances \
         "${group}" --zone "${ZONE}" --project "${PROJECT}" \
-        --format='value(instance)'))
+        --format='value(name)'))
     done
   fi
   # Add heapster node name to the list too (if it exists).
@@ -208,7 +208,7 @@ function detect-node-names() {
     for group in "${WINDOWS_INSTANCE_GROUPS[@]}"; do
       WINDOWS_NODE_NAMES+=($(gcloud compute instance-groups managed \
         list-instances "${group}" --zone "${ZONE}" --project "${PROJECT}" \
-        --format='value(instance)'))
+        --format='value(name)'))
     done
   fi
 
@@ -318,17 +318,11 @@ function copy-logs-from-node() {
       # get-serial-port-output lets you ask for ports 1-4, but currently (11/21/2016) only port 1 contains useful information
       gcloud compute instances get-serial-port-output --project "${PROJECT}" --zone "${ZONE}" --port 1 "${node}" > "${dir}/serial-1.log" || true
       # FIXME(dims): bug in gcloud prevents multiple source files specified using curly braces, so we just loop through for now
-      set +e
-
-      # TODO(argh4k): remove it once https://github.com/kubernetes/kubernetes/issues/121320 is solved
-      source_file_args=()
       for single_file in "${files[@]}"; do
-        source_file_args+=( "${node}:${single_file}" )
+        # gcloud scp doesn't work very well when trying to fetch constantly changing files such as logs, as it blocks forever sometimes.
+        # We set ConnectTimeout to 5s to avoid blocking for (default tested on 2023-11-17) 2m.
+        gcloud compute ssh --project "${PROJECT}" --zone "${ZONE}" "${node}" --command "tar -zcvf - ${single_file}" -- -o ConnectTimeout=5 | tar -zxf - --strip-components=2 -C "${dir}" || true
       done
-      gcloud compute scp --dry-run --recurse --project "${PROJECT}" --zone "${ZONE}" "${source_file_args[@]}" "${dir}" --verbosity debug
-
-      gcloud compute scp --recurse --project "${PROJECT}" --zone "${ZONE}" "${source_file_args[@]}" "${dir}" --verbosity debug --scp-flag="-v"
-      set -e
     elif  [[ "${KUBERNETES_PROVIDER}" == "aws" ]]; then
       local ip
       ip=$(get_ssh_hostname "${node}")

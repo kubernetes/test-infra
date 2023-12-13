@@ -375,8 +375,8 @@ func (gi *GitHubProvider) headContexts(pr *CodeReviewCommon) ([]Context, error) 
 	return contexts, nil
 }
 
-func (gi *GitHubProvider) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
-	return gi.cfg().GetPresubmits(gi.gc, identifier, baseSHAGetter, headSHAGetters...)
+func (gi *GitHubProvider) GetPresubmits(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	return gi.cfg().GetPresubmits(gi.gc, identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 }
 
 func (gi *GitHubProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {

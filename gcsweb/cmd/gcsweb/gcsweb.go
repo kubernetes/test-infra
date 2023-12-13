@@ -27,6 +27,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -34,11 +35,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"cloud.google.com/go/storage"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
+	pkgio "k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -46,7 +49,7 @@ import (
 
 const (
 	// path for GCS browsing on this server
-	gcsPath = "/gcs"
+	gcsPath = "gcs"
 
 	// The base URL for GCP's GCS browser.
 	gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
@@ -75,16 +78,19 @@ func (ss *strslice) Set(value string) error {
 type options struct {
 	flPort int
 
-	flIcons            string
-	flStyles           string
-	oauthTokenFile     string
-	gcsCredentialsFile string
+	flIcons  string
+	flStyles string
+	flagutil.StorageClientOptions
+	oauthTokenFile string
+	// deprecated and ineffective
 	defaultCredentials bool
 
 	flVersion bool
 
 	// Only buckets in this list will be served.
 	allowedBuckets strslice
+	// allowedProwPaths is the parsed list of allowedBuckets
+	allowedProwPaths []*prowv1.ProwPath
 
 	instrumentationOptions flagutil.InstrumentationOptions
 }
@@ -99,20 +105,38 @@ func gatherOptions() options {
 
 	fs.StringVar(&o.flIcons, "i", "", "path to the icons directory")
 	fs.StringVar(&o.flStyles, "s", "", "path to the styles directory")
+
+	o.StorageClientOptions.AddFlags(fs)
 	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the file containing the gcs service account credentials.")
-	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials")
+	// StorageClientOptions.StorageClient / io.NewOpener automatically uses application default credentials as a fallback.
+	// Mark this flag as ineffective but don't remove it for backward-compatibility.
+	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials "+
+		"(deprecated and ineffective, is assumed to be true if --gcs-credentials-file is not set)")
 
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
 
-	fs.Var(&o.allowedBuckets, "b", "GCS bucket to serve (may be specified more than once)")
+	fs.Var(&o.allowedBuckets, "b", "Buckets to serve (may be specified more than once). Can be GCS buckets (gs:// prefix) or S3 buckets (s3:// prefix).\n"+
+		"If the bucket doesn't have a prefix, gs:// is assumed (deprecated, add the gs:// prefix).")
+
 	o.instrumentationOptions.AddFlags(fs)
+
 	fs.Parse(os.Args[1:])
 	return o
 }
 
 func (o *options) validate() error {
+	// validate and parse bucket list
+	for _, bucket := range o.allowedBuckets {
+		// canonicalize buckets: adds the gs:// prefix if omitted
+		prowPath, err := prowv1.ParsePath(bucket)
+		if err != nil {
+			return fmt.Errorf("bucket %q is not a valid bucket: %w", bucket, err)
+		}
+
+		o.allowedProwPaths = append(o.allowedProwPaths, prowPath)
+	}
+
 	if o.flIcons != "" {
 		if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
 			return fmt.Errorf("icons path %q doesn't exist", o.flIcons)
@@ -123,8 +147,11 @@ func (o *options) validate() error {
 			return fmt.Errorf("styles path %q doesn't exist", o.flStyles)
 		}
 	}
-	if o.oauthTokenFile != "" && o.gcsCredentialsFile != "" {
+	if o.oauthTokenFile != "" && o.GCSCredentialsFile != "" {
 		return errors.New("specifying both --oauth-token-file and --gcs-credentials-file is not allowed")
+	}
+	if o.oauthTokenFile != "" && o.S3CredentialsFile != "" {
+		return errors.New("specifying both --oauth-token-file and --s3-credentials-file is not allowed")
 	}
 
 	if o.oauthTokenFile != "" {
@@ -133,41 +160,41 @@ func (o *options) validate() error {
 		}
 	}
 
-	if o.gcsCredentialsFile != "" {
-		if _, err := os.Stat(o.gcsCredentialsFile); os.IsNotExist(err) {
-			return fmt.Errorf("gcs service account crendentials file %q doesn't exist", o.gcsCredentialsFile)
+	if o.GCSCredentialsFile != "" {
+		if _, err := os.Stat(o.GCSCredentialsFile); os.IsNotExist(err) {
+			return fmt.Errorf("gcs crendentials file %q doesn't exist", o.GCSCredentialsFile)
+		}
+	}
+
+	if o.S3CredentialsFile != "" {
+		if _, err := os.Stat(o.S3CredentialsFile); os.IsNotExist(err) {
+			return fmt.Errorf("s3 crendentials file %q doesn't exist", o.S3CredentialsFile)
 		}
 	}
 
 	return nil
 }
 
-func getStorageClient(o options) (*storage.Client, error) {
+func getStorageClient(o options) (pkgio.Opener, error) {
 	ctx := context.Background()
-	clientOption := []option.ClientOption{}
 
-	if !o.defaultCredentials {
-		clientOption = []option.ClientOption{option.WithoutAuthentication()}
-	}
-
+	// prow/io doesn't support oauth token files, gcsweb is the only component supporting this.
+	// If --oauth-token-file is set create a storage client manually and pass it to NewGCSOpener.
 	if o.oauthTokenFile != "" {
 		b, err := os.ReadFile(o.oauthTokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
-		clientOption = []option.ClientOption{option.WithAPIKey(string(bytes.TrimSpace(b)))}
+
+		storageClient, err := storage.NewClient(ctx, option.WithAPIKey(string(bytes.TrimSpace(b))))
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
+		}
+
+		return pkgio.NewGCSOpener(storageClient), nil
 	}
 
-	if o.gcsCredentialsFile != "" {
-		clientOption = []option.ClientOption{option.WithCredentialsFile(o.gcsCredentialsFile)}
-	}
-
-	storageClient, err := storage.NewClient(ctx, clientOption...)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
-	}
-
-	return storageClient, nil
+	return o.StorageClient(ctx)
 }
 
 func main() {
@@ -194,17 +221,19 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Canonicalize allowed buckets.
-	for i := range o.allowedBuckets {
-		bucket := joinPath(gcsPath, o.allowedBuckets[i])
-		logrus.WithField("bucket", bucket).Info("allowing bucket")
-		mux.HandleFunc(bucket+"/", s.gcsRequest)
-		mux.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
+	// Handle allowed buckets.
+	for _, prowPath := range o.allowedProwPaths {
+		prefix := pathPrefix(prowPath)
+
+		logrus.WithField("bucket", prowPath.BucketWithScheme()).Info("allowing bucket")
+		mux.HandleFunc(prefix+"/", s.storageRequest)
+		mux.HandleFunc(prefix, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, prefix+"/", http.StatusPermanentRedirect)
 		})
 	}
-	// Handle unknown buckets.
-	mux.HandleFunc("/gcs/", unknownBucketRequest)
+
+	// Handle unknown GCS buckets.
+	mux.HandleFunc("/gcs/", unknownGCSBucketRequest)
 
 	// Serve icons and styles.
 	longCacheServer := func(h http.Handler) http.HandlerFunc {
@@ -270,7 +299,7 @@ func robotsRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
 }
 
-func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
+func unknownGCSBucketRequest(w http.ResponseWriter, r *http.Request) {
 	logger := newTxnLogger(r)
 
 	if upgradeToHTTPS(w, r, logger) {
@@ -285,7 +314,7 @@ func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
 	// the official bucket browser for it.
 	if strings.HasSuffix(r.URL.Path, "/") {
 		// e.g. "/gcs/bucket/path/to/object" -> "/bucket/path/to/object"
-		path := strings.TrimPrefix(r.URL.Path, gcsPath)
+		path := strings.TrimPrefix(r.URL.Path, "/"+gcsPath)
 		http.Redirect(w, r, gcsBrowserURL+path, http.StatusSeeOther)
 		return
 	}
@@ -302,7 +331,7 @@ func otherRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 type server struct {
-	storageClient *storage.Client
+	storageClient pkgio.Opener
 }
 
 type objectHeaders struct {
@@ -312,10 +341,8 @@ type objectHeaders struct {
 	contentLanguage    string
 }
 
-func (s *server) handleObject(w http.ResponseWriter, bucket, object string, headers objectHeaders) error {
-	obj := s.storageClient.Bucket(bucket).Object(object)
-
-	objReader, err := obj.NewReader(context.Background())
+func (s *server) handleObject(w http.ResponseWriter, prowPath *prowv1.ProwPath, headers objectHeaders) error {
+	objReader, err := s.storageClient.Reader(context.Background(), prowPath.String())
 	if err != nil {
 		return fmt.Errorf("couldn't create the object reader: %w", err)
 	}
@@ -343,43 +370,40 @@ func (s *server) handleObject(w http.ResponseWriter, bucket, object string, head
 	return nil
 }
 
-func (s *server) handleDirectory(w http.ResponseWriter, bucket, object, path string) error {
+func (s *server) handleDirectory(w http.ResponseWriter, prowPath *prowv1.ProwPath, path string) error {
 	// Get all object that exist in the parent folder only. We can do that by adding a
 	// slash at the end of the prefix and use this as a delimiter in the gcs query.
-	prefix := object + "/"
-	o := s.storageClient.Bucket(bucket).Objects(context.Background(), &storage.Query{
-		Delimiter: "/",
-		Prefix:    prefix,
-	})
+	o, err := s.storageClient.Iterator(context.Background(), prowPath.String()+"/", "/")
+	if err != nil {
+		return fmt.Errorf("couldn't create the object iterator: %w", err)
+	}
 
 	var files []Record
 	var dirs []Prefix
 
 	for {
-		objAttrs, err := o.Next()
-		if err == iterator.Done {
+		objAttrs, err := o.Next(context.Background())
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return fmt.Errorf("error while processing object: %w", err)
 		}
 
-		// That means that the object is a file
-		if objAttrs.Name != "" {
+		if !objAttrs.IsDir {
 			files = append(files, Record{
-				Name:  filepath.Base(objAttrs.Name),
+				Name:  objAttrs.ObjName,
 				MTime: objAttrs.Updated,
 				Size:  objAttrs.Size,
 			})
 			continue
 		}
 
-		dirs = append(dirs, Prefix{Prefix: fmt.Sprintf("%s/", filepath.Base(objAttrs.Prefix))})
+		dirs = append(dirs, Prefix{Prefix: fmt.Sprintf("%s/", filepath.Base(objAttrs.Name))})
 	}
 
 	dir := &gcsDir{
-		Name:           bucket,
-		Prefix:         prefix,
+		ProwPath:       prowPath,
 		Contents:       files,
 		CommonPrefixes: dirs,
 	}
@@ -388,7 +412,7 @@ func (s *server) handleDirectory(w http.ResponseWriter, bucket, object, path str
 	return nil
 }
 
-func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
+func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 	logger := newTxnLogger(r)
 
 	if upgradeToHTTPS(w, r, logger) {
@@ -399,18 +423,23 @@ func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// e.g. "/gcs/bucket/path/to/object" -> "/bucket/path/to/object"
-	path := strings.TrimPrefix(r.URL.Path, gcsPath)
-	// e.g. "/bucket/path/to/object" -> ["bucket", "path/to/object"]
-	bucket, object := splitBucketObject(path)
-	objectLogger := logger.WithFields(logrus.Fields{"bucket": bucket, "object": object})
+	path := r.URL.Path
+	prowPath, err := parsePath(path)
+	if err != nil {
+		logger.WithError(err).Error("error parsing path")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error: %v", err)
+		return
+	}
+
+	objectLogger := logger.WithFields(logrus.Fields{"bucket": prowPath.BucketWithScheme(), "object": strings.Trim(prowPath.Path, "/")})
 
 	objectLogger.Info("Processing request...")
 	// Getting the object attributes directly will determine if is a folder or a file.
-	objAttrs, _ := s.storageClient.Bucket(bucket).Object(object).Attrs(context.Background())
+	objAttrs, err := s.storageClient.Attributes(context.Background(), prowPath.String())
 
 	// This means that the object is a file.
-	if objAttrs != nil {
+	if err == nil {
 		headers := objectHeaders{
 			contentType:        objAttrs.ContentType,
 			contentEncoding:    objAttrs.ContentEncoding,
@@ -418,14 +447,14 @@ func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 			contentLanguage:    objAttrs.ContentLanguage,
 		}
 
-		if err := s.handleObject(w, bucket, object, headers); err != nil {
+		if err := s.handleObject(w, prowPath, headers); err != nil {
 			objectLogger.WithError(err).Error("error while handling object")
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "Error: %v", err)
 			return
 		}
 	} else {
-		err := s.handleDirectory(w, bucket, object, path)
+		err := s.handleDirectory(w, prowPath, path)
 		if err != nil {
 			objectLogger.WithError(err).Error("error while handling objects")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -435,18 +464,38 @@ func (s *server) gcsRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// splitBucketObject breaks a path into the first part (the bucket), and
-// everything else (the object).
-func splitBucketObject(path string) (string, string) {
+func providerPrefix(provider string) string {
+	// rewrite /gs to legacy /gcs path for compatibility
+	if provider == providers.GS {
+		provider = gcsPath
+	}
+
+	return "/" + provider
+}
+
+func pathPrefix(prowPath *prowv1.ProwPath) string {
+	return joinPath(providerPrefix(prowPath.StorageProvider()), prowPath.Bucket())
+}
+
+func parsePath(path string) (*prowv1.ProwPath, error) {
+	// e.g. "/gcs/bucket/path/to/object/" -> "gcs/bucket/path/to/object"
 	path = strings.Trim(path, "/")
+
+	// e.g. "gcs/bucket/path/to/object" -> "gs://bucket/path/to/object"
+	// e.g. "s3/bucket/path/to/object" -> "s3://bucket/path/to/object"
 	parts := strings.SplitN(path, "/", 2)
-	if len(parts) == 0 {
-		return "", ""
+	if len(parts) < 2 {
+		// "/gcs/bucket" is valid, "/gcs/" is invalid
+		return nil, fmt.Errorf("invalid path: expected at least 1 slash: %s", path)
 	}
-	if len(parts) == 1 {
-		return parts[0], ""
+
+	provider := parts[0]
+	if provider == "gcs" {
+		// rewrite legacy /gcs path to gs provider for compatibility
+		provider = providers.GS
 	}
-	return parts[0], parts[1]
+
+	return prowv1.ParsePath(fmt.Sprintf("%s://%s", provider, parts[1]))
 }
 
 // joinPath joins a set of path elements, but does not remove duplicate /
@@ -455,25 +504,21 @@ func joinPath(paths ...string) string {
 	return strings.Join(paths, "/")
 }
 
-// dirname returns the logical parent directory of the path.  This is different
-// than path.Split() in that we want dirname("foo/bar/") -> "foo/", whereas
-// path.Split() returns "foo/bar/".
-func dirname(path string) string {
-	leading := ""
-	if strings.HasPrefix(path, "/") {
-		leading = "/"
+// getParent is basically path.Dir but handles two special cases for gcsweb:
+// - it treats paths with and without trailing slash equally, e.g.: /gcs/foo/bar/ -> /gcs/foo/ and /gcs/foo/bar -> /gcs/foo/
+// - it returns the empty string for the bucket root, e.g.: /gcs/foo -> ""
+func getParent(inPath string) string {
+	parent := path.Dir(strings.TrimSuffix(inPath, "/"))
+	if strings.Count(parent, "/") >= 2 {
+		return parent + "/"
 	}
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) > 1 {
-		return leading + strings.Join(parts[0:len(parts)-1], "/") + "/"
-	}
-	return leading
+	// inPath is bucket root
+	return ""
 }
 
 // gcsDir represents a bucket in GCS, decoded from XML.
 type gcsDir struct {
-	Name           string
-	Prefix         string
+	ProwPath       *prowv1.ProwPath
 	Marker         string
 	NextMarker     string
 	Contents       []Record
@@ -482,22 +527,21 @@ type gcsDir struct {
 
 // Render writes HTML representing this gcsDir to the provided output.
 func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
-	htmlPageHeader(out, dir.Name)
+	htmlPageHeader(out, providers.DisplayName(dir.ProwPath.StorageProvider()), dir.ProwPath.Bucket())
 
 	if !strings.HasSuffix(inPath, "/") {
 		inPath += "/"
 	}
 
-	htmlContentHeader(out, dir.Name, inPath)
+	htmlContentHeader(out, dir.ProwPath.Bucket(), strings.TrimPrefix(inPath, providerPrefix(dir.ProwPath.StorageProvider())))
 
 	if dir.NextMarker != "" {
-		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
+		htmlNextButton(out, inPath, dir.NextMarker)
 	}
 
 	htmlGridHeader(out)
-	if parent := dirname(inPath); parent != "" {
-		url := gcsPath + parent
-		htmlGridItem(out, iconBack, url, "..", "-", "-")
+	if parent := getParent(inPath); parent != "" {
+		htmlGridItem(out, iconBack, parent, "..", "-", "-")
 	}
 	for i := range dir.CommonPrefixes {
 		dir.CommonPrefixes[i].Render(out, inPath)
@@ -507,10 +551,10 @@ func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 	}
 
 	if dir.NextMarker != "" {
-		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
+		htmlNextButton(out, inPath, dir.NextMarker)
 	}
 
-	htmlContentFooter(out, strings.TrimPrefix(inPath, "/"))
+	htmlContentFooter(out, dir.ProwPath)
 
 	htmlPageFooter(out)
 }
@@ -527,7 +571,7 @@ func (rec *Record) Render(out http.ResponseWriter, inPath string) {
 	htmlGridItem(
 		out,
 		iconFile,
-		gcsPath+inPath+rec.Name,
+		inPath+rec.Name,
 		rec.Name,
 		fmt.Sprintf("%v", rec.Size),
 		rec.MTime.Format(time.RFC1123),
@@ -541,7 +585,7 @@ type Prefix struct {
 
 // Render writes HTML representing this Prefix to the provided output.
 func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
-	url := gcsPath + inPath + pfx.Prefix
+	url := inPath + pfx.Prefix
 	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
 }
 

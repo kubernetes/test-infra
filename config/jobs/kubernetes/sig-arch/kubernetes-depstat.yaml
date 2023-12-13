@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: check-dependency-stats
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 5m
@@ -31,6 +32,13 @@ presubmits:
           git checkout -b base "${PULL_BASE_SHA}"
           depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-base.txt"
           diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.txt "${WORKDIR}"/stats.txt || true
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-testing-misc

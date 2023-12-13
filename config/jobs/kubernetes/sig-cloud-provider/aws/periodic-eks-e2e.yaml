@@ -1,0 +1,419 @@
+periodics:
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-eks-al2023-slow
+  annotations:
+    testgrid-dashboards: amazon-ec2, amazon-ec2-al2023
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-slow
+    description: Uses kubetest to run Slow e2e tests against a cluster (al2023 EKS image) created with kubetest2-ec2
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --region "$AWS_REGION" \
+             --target-build-arch "$AMI_TARGET_BUILD_ARCH" \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --external-cloud-provider true \
+             --external-load-balancer true \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws" \
+             --focus-regex="\[Slow\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
+             --parallel=25
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "x86_64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-eks-al2023-arm64-slow
+  annotations:
+    testgrid-dashboards: amazon-ec2, amazon-ec2-al2023
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-arm64-slow
+    description: Uses kubetest to run e2e Slow tests against a cluster (al2023 EKS image) created with kubetest2-ec2 on arm64
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --region "$AWS_REGION" \
+             --target-build-arch "$AMI_TARGET_BUILD_ARCH" \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --external-cloud-provider true \
+             --external-load-balancer true \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws" \
+             --focus-regex="\[Slow\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
+             --parallel=25
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "arm64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-eks-al2023-serial
+  annotations:
+    testgrid-dashboards: amazon-ec2, amazon-ec2-al2023
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-serial
+    description: Uses kubetest to run Serial e2e tests against a cluster (al2023 EKS image) created with kubetest2-ec2
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --region "$AWS_REGION" \
+             --target-build-arch "$AMI_TARGET_BUILD_ARCH" \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --focus-regex="\[Serial\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
+             --parallel=1
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "x86_64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-eks-al2023-arm64-serial
+  annotations:
+    testgrid-dashboards: amazon-ec2, amazon-ec2-al2023
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-arm64-serial
+    description: Uses kubetest to run e2e Serial tests against a cluster (al2023 EKS image) created with kubetest2-ec2 on arm64
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --region "$AWS_REGION" \
+             --target-build-arch "$AMI_TARGET_BUILD_ARCH" \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --focus-regex="\[Serial\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
+             --parallel=1
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "arm64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-eks-al2023-disruptive
+  annotations:
+    testgrid-dashboards: amazon-ec2, amazon-ec2-al2023
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-disruptive
+    description: Uses kubetest to run Disruptive e2e tests against a cluster (al2023 EKS image) created with kubetest2-ec2
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --region "$AWS_REGION" \
+             --target-build-arch "$AMI_TARGET_BUILD_ARCH" \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --focus-regex="\[Disruptive\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
+             --parallel=1
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "x86_64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-eks-al2023-arm64-disruptive
+  annotations:
+    testgrid-dashboards: amazon-ec2, amazon-ec2-al2023
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-eks-al2023-arm64-disruptive
+    description: Uses kubetest to run e2e Disruptive tests against a cluster (al2023 EKS image) created with kubetest2-ec2 on arm64
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            kubetest2 ec2 \
+             --build \
+             --region "$AWS_REGION" \
+             --target-build-arch "$AMI_TARGET_BUILD_ARCH" \
+             --worker-image "$AMI_ID" \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2023.sh \
+             --stage provider-aws-test-infra \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --use-built-binaries true \
+             --test-args="--node-os-arch=$NODE_OS_ARCH" \
+             --focus-regex="\[Disruptive\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]" \
+             --parallel=1
+        env:
+          - name: BUILD_EKS_AMI_OS
+            value: "al2023"
+          - name: BUILD_EKS_AMI_ARCH
+            value: "arm64"
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi

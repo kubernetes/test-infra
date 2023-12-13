@@ -33,7 +33,7 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  interval: 12h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -64,9 +64,10 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws
     testgrid-tab-name: ec2-master-scale-performance
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       imagePullPolicy: Always
       command:
       - runner.sh

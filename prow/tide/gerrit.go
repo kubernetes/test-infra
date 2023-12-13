@@ -391,13 +391,13 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) *types.PullRequest
 //
 // (TODO:chaodaiG): deduplicate this with GitHub, which means inrepoconfig
 // processing all use cache client.
-func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+func (p *GerritProvider) GetPresubmits(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
 	// Get presubmits from Config alone.
 	presubmits := p.cfg().GetPresubmitsStatic(identifier)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if p.inRepoConfigGetter != nil {
-		prowYAML, err := p.inRepoConfigGetter.GetInRepoConfig(identifier, baseSHAGetter, headSHAGetters...)
+		prowYAML, err := p.inRepoConfigGetter.GetInRepoConfig(identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from inrepoconfig: %v", err)
 		}

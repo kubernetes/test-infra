@@ -337,6 +337,7 @@ func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client
 // github.go.
 func (o *GitHubOptions) GitClientFactory(cookieFilePath string, cacheDir *string, dryRun, persistCache bool) (gitv2.ClientFactory, error) {
 	opts := gitv2.ClientFactoryOpts{
+		Censor:         secret.Censor,
 		CookieFilePath: cookieFilePath,
 		Host:           o.Host,
 		Persist:        &persistCache,

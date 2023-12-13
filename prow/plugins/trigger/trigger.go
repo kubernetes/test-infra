@@ -160,6 +160,7 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
 	TriggerGitHubWorkflow(org, repo string, id int) error
+	TriggerFailedGitHubWorkflow(org, repo string, id int) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
@@ -340,7 +341,7 @@ func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJob
 }
 
 func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {
-	presubmits, err := cfg.GetPresubmits(gc, orgRepo, baseSHAGetter, headSHAGetter)
+	presubmits, err := cfg.GetPresubmits(gc, orgRepo, "", baseSHAGetter, headSHAGetter)
 	if err != nil {
 		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
 		// inrepoconfig. Tide will still respect errors here and not merge.
@@ -351,7 +352,7 @@ func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, 
 }
 
 func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, orgRepo string, baseSHAGetter config.RefGetter) []config.Postsubmit {
-	postsubmits, err := cfg.GetPostsubmits(gc, orgRepo, baseSHAGetter)
+	postsubmits, err := cfg.GetPostsubmits(gc, orgRepo, "", baseSHAGetter)
 	if err != nil {
 		// Fall back to static postsubmits, loading inrepoconfig returned an error.
 		log.WithError(err).Error("Failed to get postsubmits")

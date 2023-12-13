@@ -1,0 +1,11 @@
+dashboard_groups:
+- name: sig-etcd
+  dashboard_names:
+  - sig-etcd-presubmits
+  - sig-etcd-periodics
+  - sig-etcd-postsubmits
+
+dashboards:
+  - name: sig-etcd-presubmits
+  - name: sig-etcd-periodics
+  - name: sig-etcd-postsubmits

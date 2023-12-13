@@ -33,6 +33,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	authorizationv1 "k8s.io/client-go/kubernetes/typed/authorization/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/utils/clock"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,6 +48,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/kube"
@@ -68,10 +71,33 @@ const (
 	NodeUnreachablePodReason = "NodeLost"
 )
 
+// RequiredTestPodVerbs returns a list of verbs that we expect to be able to
+// have permissions for when interacting with the test pods. This is used during
+// startup to check that we have the necessary authorizations on build clusters.
+//
+// NOTE: Setting up build cluster managers is tricky because if we don't
+// have the required permissions, the controller manager setup machinery
+// (library code, not our code) can return an error and this can essentially
+// result in a fatal error, resulting in a crash loop on startup. Although
+// other components such as crier, deck, and hook also need to talk to build
+// clusters, we only perform this preemptive requiredTestPodVerbs check for
+// PCM and sinker because only these latter components make use of the
+// BuildClusterManagers() call.
+func RequiredTestPodVerbs() []string {
+	return []string{
+		"create",
+		"delete",
+		"list",
+		"watch",
+		"get",
+		"patch",
+	}
+}
+
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
-	knownClusters sets.Set[string],
+	knownClusters map[string]rest.Config,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -83,7 +109,7 @@ func Add(
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
-	knownClusters sets.Set[string],
+	knownClusters map[string]rest.Config,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -117,7 +143,16 @@ func add(
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
 			podEventRequestMapper(cfg().ProwJobNamespace))
-		r.buildClients[buildCluster] = buildClusterMgr.GetClient()
+		bc := buildClient{
+			Client: buildClusterMgr.GetClient()}
+		if restConfig, ok := knownClusters[buildCluster]; ok {
+			authzClient, err := authorizationv1.NewForConfig(&restConfig)
+			if err != nil {
+				return fmt.Errorf("failed to construct authz client: %s", err)
+			}
+			bc.ssar = authzClient.SelfSubjectAccessReviews()
+		}
+		r.buildClients[buildCluster] = bc
 	}
 
 	if err := blder.Complete(r); err != nil {
@@ -138,7 +173,7 @@ func add(
 func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcile.Func, cfg config.Getter, opener io.Opener, totURL string) *reconciler {
 	return &reconciler{
 		pjClient:           pjClient,
-		buildClients:       map[string]ctrlruntimeclient.Client{},
+		buildClients:       map[string]buildClient{},
 		overwriteReconcile: overwriteReconcile,
 		log:                logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
 		config:             cfg,
@@ -158,7 +193,7 @@ func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overw
 
 type reconciler struct {
 	pjClient           ctrlruntimeclient.Client
-	buildClients       map[string]ctrlruntimeclient.Client
+	buildClients       map[string]buildClient
 	overwriteReconcile reconcile.Func
 	log                *logrus.Entry
 	config             config.Getter
@@ -187,6 +222,11 @@ type reconciler struct {
 type shardedLock struct {
 	mapLock *sync.Mutex
 	locks   map[string]*sync.Mutex
+}
+
+type buildClient struct {
+	ctrlruntimeclient.Client
+	ssar authorizationv1.SelfSubjectAccessReviewInterface
 }
 
 func (s *shardedLock) getLock(key string) *sync.Mutex {
@@ -218,13 +258,24 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 
 type ClusterStatus string
 
+// FIXME(listx): ClusterStatusUnreachable is no longer used here. It was used
+// previously when we used to list pods directly. However that code has been
+// deleted and replaced with flagutil.CheckAuthorizations.
+//
+// We should delete this status value sometime after
+// https://github.com/kubernetes/test-infra/pull/29282 is merged.
 const (
-	ClusterStatusUnreachable ClusterStatus = "Unreachable"
-	ClusterStatusReachable   ClusterStatus = "Reachable"
-	ClusterStatusNoManager   ClusterStatus = "No-Manager"
+	ClusterStatusUnreachable        ClusterStatus = "Unreachable"
+	ClusterStatusReachable          ClusterStatus = "Reachable"
+	ClusterStatusNoManager          ClusterStatus = "No-Manager"
+	ClusterStatusError              ClusterStatus = "Error"
+	ClusterStatusMissingPermissions ClusterStatus = "MissingPermissions"
 )
 
-func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters sets.Set[string]) func(context.Context) error {
+func (r *reconciler) syncClusterStatus(
+	interval time.Duration,
+	knownClusters map[string]rest.Config,
+) func(context.Context) error {
 	return func(ctx context.Context) error {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -252,10 +303,14 @@ func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters set
 					if !ok {
 						status = ClusterStatusNoManager
 					} else {
-						var pods corev1.PodList
-						if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
-							r.log.WithField("cluster", cluster).WithError(err).Warn("Error listing pod to check for build cluster reachability.")
-							status = ClusterStatusUnreachable
+						// Check for pod verbs.
+						if err := flagutil.CheckAuthorizations(client.ssar, r.config().PodNamespace, RequiredTestPodVerbs()); err != nil {
+							r.log.WithField("cluster", cluster).WithError(err).Warn("Error checking pod verbs to check for build cluster usability.")
+							if errors.Is(err, flagutil.MissingPermissions) {
+								status = ClusterStatusMissingPermissions
+							} else {
+								status = ClusterStatusError
+							}
 						}
 					}
 					clusters[cluster] = status

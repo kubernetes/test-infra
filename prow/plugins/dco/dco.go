@@ -113,7 +113,7 @@ type gitHubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	CreateStatus(owner, repo, ref string, status github.Status) error
-	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
+	ListPullRequestCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	BotUserChecker() (func(candidate string) bool, error)
@@ -146,7 +146,7 @@ func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollabo
 // commits contained within the PR with the given number.
 // *All* commits in the pull request *must* match the 'testRe' in order to pass.
 func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.RepositoryCommit, error) {
-	allCommits, err := gc.ListPRCommits(org, repo, number)
+	allCommits, err := gc.ListPullRequestCommits(org, repo, number)
 	if err != nil {
 		return nil, fmt.Errorf("error listing commits for pull request: %w", err)
 	}

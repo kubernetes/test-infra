@@ -19,6 +19,8 @@ package main
 import (
 	"io"
 	"text/template"
+
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 const tmplPageHeaderText = `
@@ -28,7 +30,7 @@ const tmplPageHeaderText = `
    	    <link rel="stylesheet" type="text/css" href="/styles/style.css">
    	    <meta charset="utf-8">
    	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   	    <title>GCS browser: {{.Name}}</title>
+   	    <title>{{.ProviderName}} browser: {{.BucketName}}</title>
 		<style>
 		header {
 			margin-left: 10px;
@@ -67,11 +69,13 @@ const tmplPageHeaderText = `
 
 var tmplPageHeader = template.Must(template.New("page-header").Parse(tmplPageHeaderText))
 
-func htmlPageHeader(out io.Writer, name string) error {
+func htmlPageHeader(out io.Writer, providerName, bucketName string) error {
 	args := struct {
-		Name string
+		ProviderName string
+		BucketName   string
 	}{
-		Name: name,
+		ProviderName: providerName,
+		BucketName:   bucketName,
 	}
 	return tmplPageHeader.Execute(out, args)
 }
@@ -86,7 +90,7 @@ func htmlPageFooter(out io.Writer) error {
 
 const tmplContentHeaderText = `
     <header>
-        <h1>{{.DirName}}</h1>
+        <h1>{{.BucketName}}</h1>
         <h3>{{.Path}}</h3>
     </header>
     <ul class="resource-grid">
@@ -94,34 +98,36 @@ const tmplContentHeaderText = `
 
 var tmplContentHeader = template.Must(template.New("content-header").Parse(tmplContentHeaderText))
 
-func htmlContentHeader(out io.Writer, dirname, path string) error {
+func htmlContentHeader(out io.Writer, bucketName, path string) error {
 	args := struct {
-		DirName string
-		Path    string
+		BucketName string
+		Path       string
 	}{
-		DirName: dirname,
-		Path:    path,
+		BucketName: bucketName,
+		Path:       path,
 	}
 	return tmplContentHeader.Execute(out, args)
 }
 
 const tmplContentFooterText = `</ul>
+{{- if eq .ProwPath.StorageProvider "gs" }}
 <details>
 	<summary style="display: list-item; padding-left: 1em">Download</summary>
 	<div style="padding: 1em">
 		You can download this directory by running the following <a href="https://cloud.google.com/storage/docs/gsutil">gsutil</a> command:
-		<pre>gsutil -m cp -r gs://{{.Path}} .</pre>
+		<pre>gsutil -m cp -r gs://{{.ProwPath.FullPath}}/ .</pre>
 	</div>
 </details>
+{{- end }}
 `
 
 var tmplContentFooter = template.Must(template.New("content-footer").Parse(tmplContentFooterText))
 
-func htmlContentFooter(out io.Writer, path string) error {
+func htmlContentFooter(out io.Writer, prowPath *prowv1.ProwPath) error {
 	args := struct {
-		Path string
+		ProwPath *prowv1.ProwPath
 	}{
-		Path: path,
+		ProwPath: prowPath,
 	}
 	return tmplContentFooter.Execute(out, args)
 }

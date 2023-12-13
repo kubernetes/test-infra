@@ -19,6 +19,7 @@ package util
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -28,9 +29,37 @@ import (
 
 func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir string, err error) {
 	// We can't divine a destination for jobs that don't have a build ID, so don't try.
-	if pj.Status.BuildID == "" {
-		return "", "", errors.New("cannot get job destination for job with no BuildID")
+	gc, err := gcsConfig(cfg, pj)
+	if err != nil {
+		return "", "", err
 	}
+	ps := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
+	_, d, _ := gcsupload.PathsForJob(gc, &ps, "")
+
+	return gc.Bucket, d, nil
+}
+
+func IsGCSDestination(cfg config.Getter, pj *prowv1.ProwJob) bool {
+	gc, err := gcsConfig(cfg, pj)
+	if err != nil || gc.Bucket == "" {
+		return false
+	}
+	if strings.HasPrefix(gc.Bucket, "gs://") {
+		return true
+	}
+	// GCS is default if no other storage type is specified.
+	return !strings.Contains(gc.Bucket, "://")
+}
+
+func gcsConfig(cfg config.Getter, pj *prowv1.ProwJob) (*prowv1.GCSConfiguration, error) {
+	if pj.Status.BuildID == "" {
+		return nil, errors.New("cannot get job destination for job with no BuildID")
+	}
+
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
+		return pj.Spec.DecorationConfig.GCSConfiguration, nil
+	}
+
 	// The decoration config is always provided for decorated jobs, but many
 	// jobs are not decorated, so we guess that we should use the default location
 	// for those jobs. This assumption is usually (but not always) correct.
@@ -42,20 +71,9 @@ func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir strin
 		repo = fmt.Sprintf("%s/%s", pj.Spec.ExtraRefs[0].Org, pj.Spec.ExtraRefs[0].Repo)
 	}
 
-	var gcsConfig *prowv1.GCSConfiguration
-	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
-		gcsConfig = pj.Spec.DecorationConfig.GCSConfiguration
-	} else {
-		ddc := cfg().Plank.GuessDefaultDecorationConfig(repo, pj.Spec.Cluster)
-		if ddc != nil && ddc.GCSConfiguration != nil {
-			gcsConfig = ddc.GCSConfiguration
-		} else {
-			return "", "", fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
-		}
+	ddc := cfg().Plank.GuessDefaultDecorationConfig(repo, pj.Spec.Cluster)
+	if ddc != nil && ddc.GCSConfiguration != nil {
+		return ddc.GCSConfiguration, nil
 	}
-
-	ps := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
-	_, d, _ := gcsupload.PathsForJob(gcsConfig, &ps, "")
-
-	return gcsConfig.Bucket, d, nil
+	return nil, fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
 }

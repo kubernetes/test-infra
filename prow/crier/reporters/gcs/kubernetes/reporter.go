@@ -106,7 +106,7 @@ func (gr *gcsK8sReporter) Report(ctx context.Context, log *logrus.Entry, pj *pro
 }
 
 func (gr *gcsK8sReporter) report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) (*reconcile.Result, error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
 	// Check if we have a destination before adding a finalizer so we don't add

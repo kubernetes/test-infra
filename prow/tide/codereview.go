@@ -244,7 +244,7 @@ type provider interface {
 	// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
 	// also need the result of that GitHub call just keep a pointer to its result, but must
 	// nilcheck that pointer before accessing it.
-	GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
+	GetPresubmits(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetChangedFiles(org, repo string, number int) ([]string, error)
 
 	refsForJob(sp subpool, prs []CodeReviewCommon) (prowapi.Refs, error)

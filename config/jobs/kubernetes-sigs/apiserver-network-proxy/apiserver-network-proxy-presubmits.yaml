@@ -40,6 +40,9 @@ presubmits:
         args:
         - make
         - docker-build/proxy-agent-amd64
+        env:
+        - name: REGISTRY
+          value: testlocal.io
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -70,6 +73,9 @@ presubmits:
         args:
         - make
         - docker-build/proxy-agent-arm64
+        env:
+        - name: REGISTRY
+          value: testlocal.io
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

@@ -1,5 +1,6 @@
 periodics:
 - interval: 3h
+  cluster: eks-prow-build-cluster
   name: apisnoop-conformance-gate
   annotations:
     testgrid-dashboards: sig-arch-conformance
@@ -15,3 +16,10 @@ periodics:
       command:
       - /usr/local/bin/docker-entrypoint.sh
       - postgres
+      resources:
+        requests:
+          memory: 4Gi
+          cpu: 2
+        limits:
+          memory: 4Gi
+          cpu: 2

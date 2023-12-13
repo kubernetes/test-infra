@@ -16,7 +16,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     decoration_config:
-      timeout: 60m
+      timeout: 3h
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
@@ -25,7 +25,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         args:
@@ -65,7 +65,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20231012-0288f8bc6c-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -109,7 +109,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 60m
+    timeout: 3h
   extra_refs:
   - org: kubernetes
     repo: test-infra
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       args:
@@ -163,7 +163,7 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20231012-0288f8bc6c-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
       command:
       - wrapper.sh
       - bash

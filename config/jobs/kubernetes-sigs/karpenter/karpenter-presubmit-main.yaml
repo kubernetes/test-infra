@@ -1,0 +1,114 @@
+presubmits:
+  kubernetes-sigs/karpenter:
+  - name: pull-karpenter-test-1-26
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true # TODO set back to false when stabilized
+    decorate: true
+    path_alias: "sigs.k8s.io/karpenter"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.26
+        command:
+        - runner.sh
+        args:
+        - make
+        - presubmit
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 16Gi
+          requests:
+            cpu: 6
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-autoscaling-karpenter
+      testgrid-tab-name: karpenter-pr-test-1-26-main
+  - name: pull-karpenter-test-1-27
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true # TODO set back to false when stabilized
+    decorate: true
+    path_alias: "sigs.k8s.io/karpenter"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        command:
+        - runner.sh
+        args:
+        - make
+        - presubmit
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 16Gi
+          requests:
+            cpu: 6
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-autoscaling-karpenter
+      testgrid-tab-name: karpenter-pr-test-1-27-main
+  - name: pull-karpenter-test-1-28
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true # TODO set back to false when stabilized
+    decorate: true
+    path_alias: "sigs.k8s.io/karpenter"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
+        command:
+        - runner.sh
+        args:
+        - make
+        - presubmit
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 16Gi
+          requests:
+            cpu: 6
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-autoscaling-karpenter
+      testgrid-tab-name: karpenter-pr-test-1-28-main
+  - name: pull-karpenter-test-1-29
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true # TODO set back to false when stabilized
+    decorate: true
+    path_alias: "sigs.k8s.io/karpenter"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.29
+        command:
+        - runner.sh
+        args:
+        - make
+        - presubmit
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 16Gi
+          requests:
+            cpu: 6
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-autoscaling-karpenter
+      testgrid-tab-name: karpenter-pr-test-1-29-main

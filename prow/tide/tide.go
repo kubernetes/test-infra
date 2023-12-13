@@ -1552,7 +1552,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 
 	for _, pr := range sp.prs {
 		log := c.logger.WithField("base-sha", sp.sha).WithFields(pr.logFields())
-		presubmitsForPull, err := c.provider.GetPresubmits(sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
+		presubmitsForPull, err := c.provider.GetPresubmits(sp.org+"/"+sp.repo, pr.BaseRefName, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
 		if err != nil {
 			log.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
 			continue
@@ -1605,7 +1605,7 @@ func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, b
 		headRefGetters = append(headRefGetters, refGetterFactory(pr.HeadRefOID))
 	}
 
-	presubmits, err := c.provider.GetPresubmits(org+"/"+repo, refGetterFactory(baseSHA), headRefGetters...)
+	presubmits, err := c.provider.GetPresubmits(org+"/"+repo, baseBranch, refGetterFactory(baseSHA), headRefGetters...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits for batch: %w", err)
 	}

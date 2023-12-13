@@ -20,6 +20,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"gocloud.dev/blob"
@@ -33,6 +34,10 @@ type ObjectAttributes struct {
 	ObjName string
 	// IsDir is true if the object is a directory
 	IsDir bool
+	// Size is the size of the blob's content in bytes in case of an object.
+	Size int64
+	// Updated is the creation or modification time in case of the object.
+	Updated time.Time
 }
 
 // ObjectIterator iterates through storage objects
@@ -62,6 +67,8 @@ func (g gcsObjectIterator) Next(_ context.Context) (ObjectAttributes, error) {
 		attr.Name = oAttrs.Name
 		nameSplit := strings.Split(oAttrs.Name, "/")
 		attr.ObjName = nameSplit[len(nameSplit)-1]
+		attr.Size = oAttrs.Size
+		attr.Updated = oAttrs.Updated
 	} else {
 		// directory
 		attr.Name = oAttrs.Prefix
@@ -91,6 +98,8 @@ func (g openerObjectIterator) Next(ctx context.Context) (ObjectAttributes, error
 		// object
 		nameSplit := strings.Split(oAttrs.Key, "/")
 		attr.ObjName = nameSplit[len(nameSplit)-1]
+		attr.Size = oAttrs.Size
+		attr.Updated = oAttrs.ModTime
 	}
 	return attr, nil
 }

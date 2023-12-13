@@ -629,7 +629,7 @@ func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, cha
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = c.inRepoConfigGetter.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
+			postsubmits, err = c.inRepoConfigGetter.GetPostsubmits(cloneURI, change.Branch, baseSHAGetter, headSHAGetter)
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil {
 				gerritMetrics.inrepoconfigResults.WithLabelValues(instance, change.Project, client.ResultSuccess).Inc()
@@ -675,7 +675,7 @@ func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, cha
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = c.inRepoConfigGetter.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
+			presubmits, err = c.inRepoConfigGetter.GetPresubmits(cloneURI, change.Branch, baseSHAGetter, headSHAGetter)
 			if err == nil {
 				break
 			}

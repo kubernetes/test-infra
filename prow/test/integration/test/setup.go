@@ -30,9 +30,11 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/remotecommand"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -145,4 +147,42 @@ func updateJobConfig(ctx context.Context, kubeClient ctrlruntimeclient.Client, f
 	}
 	existingMap.BinaryData[filename] = rawConfig
 	return kubeClient.Update(ctx, &existingMap)
+}
+
+// execRemoteCommand is the Golang-equivalent of "kubectl exec". The command
+// string should be something like {"/bin/sh", "-c", "..."} if you want to run a
+// shell script.
+//
+// Adapted from https://discuss.kubernetes.io/t/go-client-exec-ing-a-shel-command-in-pod/5354/5.
+func execRemoteCommand(restCfg *rest.Config, clientset *kubernetes.Clientset, pod *coreapi.Pod, command []string) (string, string, error) {
+	buf := &bytes.Buffer{}
+	errBuf := &bytes.Buffer{}
+	request := clientset.CoreV1().RESTClient().
+		Post().
+		Namespace(pod.Namespace).
+		Resource("pods").
+		Name(pod.Name).
+		SubResource("exec").
+		VersionedParams(&coreapi.PodExecOptions{
+			Command: command,
+			Stdin:   false,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     true,
+		}, scheme.ParameterCodec)
+	exec, err := remotecommand.NewSPDYExecutor(restCfg, "POST", request.URL())
+	if err != nil {
+		return "", "", err
+	}
+
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: buf,
+		Stderr: errBuf,
+	})
+	if err != nil {
+		return "", "", fmt.Errorf("%w Failed executing command %s on %v/%v", err, command, pod.Namespace, pod.Name)
+	}
+
+	// Return stdout, stderr.
+	return buf.String(), errBuf.String(), nil
 }

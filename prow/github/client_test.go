@@ -1590,7 +1590,7 @@ func TestReopenIssue(t *testing.T) {
 	}
 }
 
-func TestClosePR(t *testing.T) {
+func TestClosePullRequest(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
@@ -1613,12 +1613,12 @@ func TestClosePR(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if err := c.ClosePR("k8s", "kuber", 5); err != nil {
+	if err := c.ClosePullRequest("k8s", "kuber", 5); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
 
-func TestReopenPR(t *testing.T) {
+func TestReopenPullRequest(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
@@ -1641,7 +1641,7 @@ func TestReopenPR(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if err := c.ReopenPR("k8s", "kuber", 5); err != nil {
+	if err := c.ReopenPullRequest("k8s", "kuber", 5); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
@@ -2523,7 +2523,7 @@ func TestListPRCommits(t *testing.T) {
 	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if commits, err := c.ListPRCommits("theorg", "therepo", 3); err != nil {
+	if commits, err := c.ListPullRequestCommits("theorg", "therepo", 3); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else {
 		if len(commits) != 2 {

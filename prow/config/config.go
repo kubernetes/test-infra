@@ -439,7 +439,7 @@ func GetAndCheckRefs(
 // does a call to GitHub and who also need the result of that GitHub call just
 // keep a pointer to its result, but must nilcheck that pointer before accessing
 // it.
-func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier, baseBranch string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
@@ -452,7 +452,7 @@ func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier string
 		return nil, err
 	}
 
-	prowYAML, err := c.ProwYAMLGetterWithDefaults(c, gc, identifier, baseSHA, headSHAs...)
+	prowYAML, err := c.ProwYAMLGetterWithDefaults(c, gc, identifier, baseBranch, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -461,7 +461,7 @@ func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier string
 }
 
 // getProwYAML is like getProwYAMLWithDefaults, minus the defaulting logic.
-func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+func (c *Config) getProwYAML(gc git.ClientFactory, identifier, baseBranch string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
@@ -474,7 +474,7 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 		return nil, err
 	}
 
-	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseBranch, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -488,8 +488,8 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
-func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
+func (c *Config) GetPresubmits(gc git.ClientFactory, identifier, baseBranch string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -518,8 +518,8 @@ func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
-func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
+func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier, baseBranch string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -2332,12 +2332,13 @@ func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
 // validatePresubmits validates the presubmits for one repo.
 func (c Config) validatePresubmits(presubmits []Presubmit) error {
 	validPresubmits := map[string][]Presubmit{}
+	duplicatePresubmits := sets.New[string]()
 	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
 		for _, existingJob := range validPresubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
+				duplicatePresubmits.Insert(ps.Name)
 			}
 		}
 		for _, otherPS := range presubmits {
@@ -2359,6 +2360,9 @@ func (c Config) validatePresubmits(presubmits []Presubmit) error {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %w", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
+	}
+	if duplicatePresubmits.Len() > 0 {
+		errs = append(errs, fmt.Errorf("duplicated presubmit jobs (consider both inrepo and central config): %v", sortStringSlice(duplicatePresubmits.UnsortedList())))
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -2390,13 +2394,14 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 // validatePostsubmits validates the postsubmits for one repo.
 func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 	validPostsubmits := map[string][]Postsubmit{}
+	duplicatePostsubmits := sets.New[string]()
 
 	var errs []error
 	for _, ps := range postsubmits {
 		// Checking that no duplicate job in prow config exists on the same repo / branch.
 		for _, existingJob := range validPostsubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				errs = append(errs, fmt.Errorf("duplicated postsubmit job: %s", ps.Name))
+				duplicatePostsubmits.Insert(ps.Name)
 			}
 		}
 		for _, otherPS := range postsubmits {
@@ -2418,6 +2423,9 @@ func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %w", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
+	}
+	if duplicatePostsubmits.Len() > 0 {
+		errs = append(errs, fmt.Errorf("duplicated postsubmit jobs (consider both inrepo and central config): %v", sortStringSlice(duplicatePostsubmits.UnsortedList())))
 	}
 
 	return utilerrors.NewAggregate(errs)

@@ -58,11 +58,11 @@ var (
 		Help: "Used gb on moonraker disk.",
 	})
 	diskTotal = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "moonrakere_disk_total",
+		Name: "moonraker_disk_total",
 		Help: "Total gb on moonraker disk.",
 	})
 	diskInodeFree = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "moonrakere_disk_inode_free",
+		Name: "moonraker_disk_inode_free",
 		Help: "Free inodes on moonraker disk.",
 	})
 	diskInodeUsed = prometheus.NewGauge(prometheus.GaugeOpts{

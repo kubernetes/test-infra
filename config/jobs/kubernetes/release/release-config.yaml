@@ -32,7 +32,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         resources:
           requests:
             memory: "6Gi"
@@ -77,7 +77,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231031-660609d482-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         resources:
           requests:
             cpu: 4
@@ -100,7 +100,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -126,7 +126,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -151,7 +151,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -176,7 +176,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make

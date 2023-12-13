@@ -4,8 +4,10 @@ dashboard_groups:
     - sig-autoscaling-cluster-autoscaler
     - sig-autoscaling-hpa
     - sig-autoscaling-vpa
+    - sig-autoscaling-karpenter
 
 dashboards:
 - name: sig-autoscaling-cluster-autoscaler
 - name: sig-autoscaling-hpa
 - name: sig-autoscaling-vpa
+- name: sig-autoscaling-karpenter

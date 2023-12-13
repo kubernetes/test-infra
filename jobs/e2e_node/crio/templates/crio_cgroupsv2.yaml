@@ -99,7 +99,7 @@ systemd:
         Environment="CRIO_COMMIT=297d07c1c86f251fcb9c8c491a56508e6835cccb"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
-        ExecStartPre=mount -o remount,rw /usr
+        ExecStartPre=mount -o remount,rw /dev/sda4 /usr
         ExecStartPre=rm -f /usr/bin/runc
         ExecStartPre=bash -c '\
           curl --fail --retry 5 --retry-delay 3 --silent --show-error \
