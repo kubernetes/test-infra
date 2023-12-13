@@ -205,28 +205,32 @@ func getArgs(jobName string, args []string) []string {
 
 func newE2ETest(outputDir string, jobName string, job Job, config ConfigFile) E2ETest {
 	envFilePath := filepath.Join(outputDir, jobName+".env")
+	fields := strings.Split(jobName, "-")
+	if len(fields) != 7 {
+		log.Fatalln("Expected 7 fields in job name", jobName)
+	}
 	return E2ETest{
-		EnvFilename:    envFilePath,
-		JobName:        jobName,
-		Job:            job,
-		Common:         config.Common,
-		CloudProviders: config.CloudProviders,
-		Images:         config.Images,
-		K8SVersions:    config.K8SVersions,
-		TestSuites:     config.TestSuites,
+		EnvFilename:   envFilePath,
+		JobName:       jobName,
+		Job:           job,
+		fields:        fields,
+		Common:        config.Common,
+		CloudProvider: config.CloudProviders[fields[3]],
+		Image:         config.Images[fields[4]],
+		K8SVersion:    config.K8SVersions[fields[5][3:]],
+		TestSuite:     config.TestSuites[fields[6]],
 	}
 }
 
 func (et *E2ETest) generate() (Job, Periodic, TestGroup) {
 	log.Printf("generating e2e job: %s", et.JobName)
-	fields := strings.Split(et.JobName, "-")
-	if len(fields) != 7 {
+	if len(et.fields) != 7 {
 		log.Fatalln("Expected 7 fields in job name", et.JobName)
 	}
-	image := et.Images[fields[4]]
-	cloudProvider := et.CloudProviders[fields[3]]
-	K8SVersion := et.K8SVersions[fields[5][3:]]
-	testSuite := et.TestSuites[fields[6]]
+	image := et.Image
+	cloudProvider := et.CloudProvider
+	K8SVersion := et.K8SVersion
+	testSuite := et.TestSuite
 	args := []string{}
 	args = append(args, getArgs(et.JobName, et.Common.Args)...)
 	args = append(args, getArgs(et.JobName, cloudProvider.Args)...)
@@ -237,14 +241,14 @@ func (et *E2ETest) generate() (Job, Periodic, TestGroup) {
 	jobConfig := et.getJobDefinition(args)
 	prowConfig := et.getProwConfig(testSuite)
 	tgConfig := et.getTestGridConfig()
-	tabName := fmt.Sprintf("%s-%s-%s-%s", fields[3], fields[4], fields[5], fields[6])
+	tabName := fmt.Sprintf("%s-%s-%s-%s", et.fields[3], et.fields[4], et.fields[5], et.fields[6])
 	if prowConfig.Annotations == nil {
 		prowConfig.Annotations = map[string]string{}
 	}
 	prowConfig.Annotations["testgrid-tab-name"] = tabName
 	dashboards := et.InitializeDashBoardsWithReleaseBlockingInfo(K8SVersion.Version)
 	if image.TestgridPrefix != "" {
-		dashboard := fmt.Sprintf("%s-%s-%s", image.TestgridPrefix, fields[4], fields[5])
+		dashboard := fmt.Sprintf("%s-%s-%s", image.TestgridPrefix, et.fields[4], et.fields[5])
 		dashboards = append(dashboards, dashboard)
 	}
 	prowConfig.Annotations["testgrid-dashboards"] = strings.Join(dashboards, ", ")
@@ -377,14 +381,15 @@ type ConfigFile struct {
 }
 
 type E2ETest struct {
-	EnvFilename    string
-	JobName        string
-	Job            Job
-	Common         Common
-	CloudProviders map[string]CloudProvider
-	Images         map[string]Image
-	K8SVersions    map[string]K8SVersion
-	TestSuites     map[string]TestSuite
+	EnvFilename   string
+	JobName       string
+	fields        []string
+	Job           Job
+	Common        Common
+	CloudProvider CloudProvider
+	Image         Image
+	K8SVersion    K8SVersion
+	TestSuite     TestSuite
 }
 
 // Common/Shared
