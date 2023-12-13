@@ -297,7 +297,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.26
+        base_ref: release-1.28
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -318,7 +318,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.26"
+              value: "latest-1.28"
             - name: EXTERNAL_E2E_TEST_NFS
               value: "true"
     annotations:
