@@ -149,7 +149,8 @@ func forEachJob(outputDir string, jobName string, job Job, config ConfigFile) (P
 		e2eTest := newE2ETest(outputDir, jobName, job, config)
 		jobConfig, prowConfig, testgridConfig = e2eTest.generate()
 	case "e2enode":
-		log.Println("nothing yet")
+		e2eNodeTest := newE2ENodeTest(jobName, job, config)
+		jobConfig, prowConfig = e2eNodeTest.generate()
 	default:
 		log.Fatalf("Job %s has unexpected job type %s", jobName, jobType)
 	}
@@ -371,13 +372,172 @@ func (et *E2ETest) getProwConfig(testSuite TestSuite) Periodic {
 	return prowConfig
 }
 
+func newE2ENodeTest(jobName string, job Job, config ConfigFile) E2ENodeTest {
+	fields := strings.Split(jobName, "-")
+	if len(fields) != 6 {
+		log.Fatalln("Expected 6 fields in job name", jobName)
+	}
+	return E2ENodeTest{
+		JobName:    jobName,
+		Job:        job,
+		fields:     fields,
+		Common:     config.Common,
+		Image:      config.Images[fields[3]],
+		K8SVersion: config.NodeK8SVersions[fields[4][3:]],
+		TestSuite:  config.TestSuites[fields[5]],
+	}
+}
+
+func (ent *E2ENodeTest) getJobDefinition(args []string) Job {
+	rSigOwner := ent.Job.SigOwners
+	if len(rSigOwner) == 0 {
+		rSigOwner = []string{"UNKOWN"}
+	}
+
+	return Job{
+		Scenario:  "kubernetes_e2e",
+		Args:      args,
+		SigOwners: rSigOwner,
+	}
+}
+
+func (ent *E2ENodeTest) getProwConfig(testSuite TestSuite, k8sVersion NodeK8SVersion) Periodic {
+	prowConfig := Periodic{
+		Name: ent.JobName,
+		Tags: []string{"generated"},
+		Labels: map[string]string{
+			"preset-service-account": "true",
+			"preset-k8s-ssh":         "true",
+		},
+		Decorate: true,
+		DecorationConfig: DecorationConfig{
+			Timeout: "180m",
+		},
+		Spec: Spec{
+			Containers: []Container{
+				{
+					Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master",
+					Resources: Resources{
+						Requests: ComputeResources{
+							CPU:    "1000m",
+							Memory: "3Gi",
+						},
+						Limits: ComputeResources{
+							CPU:    "1000m",
+							Memory: "3Gi",
+						},
+					},
+					Args: []string{},
+				},
+			},
+		},
+	}
+	if testSuite.Cluster != "" {
+		prowConfig.Cluster = testSuite.Cluster
+	} else if ent.Job.Cluster != "" {
+		prowConfig.Cluster = ent.Job.Cluster
+	}
+	if !testSuite.Resources.isEmpty() {
+		prowConfig.Spec.Containers[0].Resources = testSuite.Resources
+	} else if !ent.Job.Resources.isEmpty() {
+		prowConfig.Spec.Containers[0].Resources = ent.Job.Resources
+	}
+	// Possible weird assumtion
+	if ent.Job.Interval != "" {
+		prowConfig.Cron = ""
+		prowConfig.Interval = ent.Job.Interval
+	} else if ent.Job.Cron != "" {
+		prowConfig.Interval = ""
+		prowConfig.Cron = ent.Job.Cron
+	} else {
+		log.Fatalln("No interval or cron definition found")
+	}
+	// Assumes that the value in --timeout is of minutes.
+	var timeout int
+	var err error
+	for _, arg := range testSuite.Args {
+		if strings.HasPrefix(arg, "--timeout=") {
+			value := arg[10 : len(arg)-1]
+			timeout, err = strconv.Atoi(value)
+			if err != nil {
+				log.Fatalf("error, parsing timeout of job: %s, %s", ent.JobName, err)
+			}
+			break
+		}
+	}
+	newTimeout := fmt.Sprintf("%vm", timeout+20)
+	prowConfig.DecorationConfig.Timeout = newTimeout
+	prowConfig.Spec.Containers[0].Args = append(prowConfig.Spec.Containers[0].Args, k8sVersion.Args...)
+	prowConfig.Spec.Containers[0].Args = append(prowConfig.Spec.Containers[0].Args, "--root=/go/src")
+	// Specify the appropriate kubekins-e2e image. This allows us to use a
+	// specific image (containing a particular Go version) to build and
+	// trigger the node e2e test to avoid issues like
+	// https://github.com/kubernetes/kubernetes/issues/43534.
+	if k8sVersion.ProwImage != "" {
+		prowConfig.Spec.Containers[0].Image = k8sVersion.ProwImage
+	}
+	return prowConfig
+}
+
+func (ent *E2ENodeTest) generate() (Job, Periodic) {
+	log.Printf("generating e2eNode job: %s", ent.JobName)
+	if len(ent.fields) != 6 {
+		log.Fatalln("Expected 6 fields in job name", ent.JobName)
+	}
+	image := ent.Image
+	K8SVersion := ent.K8SVersion
+	testSuite := ent.TestSuite
+	// ENV check but in golang exclipt structs so not sure if needs to be allowed in structs
+	args := []string{}
+	args = append(args, getArgs(ent.JobName, ent.Common.Args)...)
+	args = append(args, getArgs(ent.JobName, image.Args)...)
+	// args = append(args, getArgs(ent.JobName, K8SVersion.Args)...)
+	args = append(args, getArgs(ent.JobName, testSuite.Args)...)
+
+	jobConfig := ent.getJobDefinition(args)
+	prowConfig := ent.getProwConfig(testSuite, K8SVersion)
+
+	nodeArgs := []string{}
+	jobArgs := []string{}
+	nodeFlag := "--node-args="
+	for _, arg := range jobConfig.Args {
+		if strings.Contains(arg, nodeFlag) {
+			nodeArgs = append(nodeArgs, strings.SplitN(arg, "=", 2)[1])
+		} else {
+			jobArgs = append(jobArgs, arg)
+		}
+	}
+	if len(nodeArgs) != 0 {
+		for _, arg := range nodeArgs {
+			nodeFlag += arg + " "
+		}
+		jobArgs = append(jobArgs, strings.TrimSpace(nodeFlag))
+	}
+	jobConfig.Args = jobArgs
+
+	if prowConfig.Annotations == nil {
+		prowConfig.Annotations = map[string]string{}
+	}
+	if image.TestgridPrefix != "" {
+		dashboard := fmt.Sprintf("%s-%s-%s", image.TestgridPrefix, ent.fields[3], ent.fields[4])
+		prowConfig.Annotations["testgrid-dashboards"] = dashboard
+		tabName := fmt.Sprintf("%s-%s-%s", ent.fields[3], ent.fields[4], ent.fields[5])
+		prowConfig.Annotations["testgrid-tab-name"] = tabName
+	}
+	return jobConfig, prowConfig
+}
+
 type ConfigFile struct {
-	Jobs           map[string]Job           `yaml:"jobs"`
-	CloudProviders map[string]CloudProvider `yaml:"cloudProviders"`
-	Common         Common                   `yaml:"common"`
-	Images         map[string]Image         `yaml:"images"`
-	K8SVersions    map[string]K8SVersion    `yaml:"k8sVersions"`
-	TestSuites     map[string]TestSuite     `yaml:"testSuites"`
+	Jobs            map[string]Job            `yaml:"jobs"`
+	CloudProviders  map[string]CloudProvider  `yaml:"cloudProviders"`
+	Common          Common                    `yaml:"common"`
+	Images          map[string]Image          `yaml:"images"`
+	K8SVersions     map[string]K8SVersion     `yaml:"k8sVersions"`
+	TestSuites      map[string]TestSuite      `yaml:"testSuites"`
+	NodeTestSuites  map[string]TestSuite      `yaml:"nodeTestSuites"` // Only args
+	NodeK8SVersions map[string]NodeK8SVersion `yaml:"nodeK8sVersions"`
+	NodeImages      map[string]Image          `yaml:"nodeImages"`
+	NodeCommon      Common                    `yaml:"nodeCommon"`
 }
 
 type E2ETest struct {
@@ -390,6 +550,21 @@ type E2ETest struct {
 	Image         Image
 	K8SVersion    K8SVersion
 	TestSuite     TestSuite
+}
+
+type E2ENodeTest struct {
+	JobName    string
+	fields     []string
+	Job        Job
+	Common     Common
+	Image      Image
+	K8SVersion NodeK8SVersion
+	TestSuite  TestSuite
+}
+
+type NodeK8SVersion struct {
+	Args      []string `yaml:"args"`
+	ProwImage string   `yaml:"prowImage"`
 }
 
 // Common/Shared
