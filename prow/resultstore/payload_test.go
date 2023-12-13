@@ -276,7 +276,7 @@ func TestInvocation(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			got, err := tc.payload.invocation()
+			got, err := tc.payload.Invocation()
 			if err != nil {
 				if tc.wantErr {
 					t.Logf("got expected error: %v", err)
@@ -289,6 +289,216 @@ func TestInvocation(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("invocation differs (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInvocationId(t *testing.T) {
+	for _, tc := range []struct {
+		desc    string
+		job     *v1.ProwJob
+		want    *resultstore.Invocation_Id
+		wantErr bool
+	}{
+		{
+			desc: "success",
+			job: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "job-name",
+				},
+			},
+			want: &resultstore.Invocation_Id{
+				InvocationId: "job-name",
+			},
+		},
+		{
+			desc:    "nil",
+			job:     nil,
+			wantErr: true,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			got, err := invocationID(tc.job)
+			if err != nil {
+				if tc.wantErr {
+					t.Logf("got expected error: %v", err)
+					return
+				}
+				t.Fatal("got unexpected error")
+			}
+			if tc.wantErr {
+				t.Fatal("want error, got nil")
+			}
+			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("invocation id differs (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInvocationTiming(t *testing.T) {
+	for _, tc := range []struct {
+		desc string
+		job  *v1.ProwJob
+		want *resultstore.Timing
+	}{
+		{
+			desc: "success",
+			job: &v1.ProwJob{
+				Status: v1.ProwJobStatus{
+					StartTime: metav1.Time{
+						Time: time.Unix(100, 0),
+					},
+					CompletionTime: &metav1.Time{
+						Time: time.Unix(300, 0),
+					},
+				},
+			},
+			want: &resultstore.Timing{
+				StartTime: &timestamppb.Timestamp{
+					Seconds: 100,
+				},
+				Duration: &durationpb.Duration{
+					Seconds: 200,
+				},
+			},
+		},
+		{
+			desc: "completion nil",
+			job: &v1.ProwJob{
+				Status: v1.ProwJobStatus{
+					StartTime: metav1.Time{
+						Time: time.Unix(100, 0),
+					},
+					CompletionTime: nil,
+				},
+			},
+			want: &resultstore.Timing{
+				StartTime: &timestamppb.Timestamp{
+					Seconds: 100,
+				},
+				Duration: &durationpb.Duration{
+					Seconds: 0,
+				},
+			},
+		},
+		{
+			desc: "job nil",
+			job:  nil,
+			want: nil,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			got := invocationTiming(tc.job)
+			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("timing differs (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInvocationProperties(t *testing.T) {
+	for _, tc := range []struct {
+		desc    string
+		job     *v1.ProwJob
+		started *metadata.Started
+		want    []*resultstore.Property
+	}{
+		{
+			desc: "success",
+			job: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Job: "spec-job",
+					PodSpec: &corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:    "container-1",
+								Args:    []string{"arg-1", "arg-2"},
+								Command: []string{"command"},
+								Env: []corev1.EnvVar{
+									{
+										Name:  "env1",
+										Value: "env1-value",
+									},
+								},
+							},
+						},
+					},
+				},
+				Status: v1.ProwJobStatus{
+					URL:     "https://prow/url",
+					BuildID: "build-id",
+				},
+			},
+			started: &metadata.Started{
+				Timestamp:  150,
+				RepoCommit: "repo-commit",
+				Repos: map[string]string{
+					"repo-key": "repo-value",
+				},
+			},
+			want: []*resultstore.Property{
+				{
+					Key:   "Instance",
+					Value: "build-id",
+				},
+				{
+					Key:   "Job",
+					Value: "spec-job",
+				},
+				{
+					Key:   "Prow_Dashboard_URL",
+					Value: "https://prow/url",
+				},
+				{
+					Key:   "Env",
+					Value: "env1=env1-value",
+				},
+				{
+					Key:   "Commit",
+					Value: "repo-commit",
+				},
+				{
+					Key:   "Branch",
+					Value: "repo-value",
+				},
+				{
+					Key:   "Repo",
+					Value: "https://repo-key",
+				},
+			},
+		},
+		{
+			desc: "job nil",
+			job:  nil,
+			started: &metadata.Started{
+				Timestamp:  150,
+				RepoCommit: "repo-commit",
+				Repos: map[string]string{
+					"repo-key": "repo-value",
+				},
+			},
+			want: []*resultstore.Property{
+				{
+					Key:   "Commit",
+					Value: "repo-commit",
+				},
+				{
+					Key:   "Branch",
+					Value: "repo-value",
+				},
+				{
+					Key:   "Repo",
+					Value: "https://repo-key",
+				},
+			},
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			got := invocationProperties(tc.job, tc.started)
+			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("properties differ (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -360,10 +570,7 @@ func TestStartedProperties(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			payload := &Payload{
-				Started: tc.started,
-			}
-			got := payload.startedProperties()
+			got := startedProperties(tc.started)
 			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("properties differ (-want +got):\n%s", diff)
 			}
@@ -439,14 +646,7 @@ func TestPodSpecProperties(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			payload := &Payload{
-				Job: &v1.ProwJob{
-					Spec: v1.ProwJobSpec{
-						PodSpec: tc.podSpec,
-					},
-				},
-			}
-			got := payload.podSpecProperties()
+			got := podSpecProperties(tc.podSpec)
 			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("properties differ (-want +got):\n%s", diff)
 			}
@@ -481,17 +681,15 @@ func TestStatusAttributes(t *testing.T) {
 		},
 	} {
 		t.Run(string(tc.prowState), func(t *testing.T) {
-			p := &Payload{
-				Job: &v1.ProwJob{
-					Status: v1.ProwJobStatus{
-						State: tc.prowState,
-					},
+			job := &v1.ProwJob{
+				Status: v1.ProwJobStatus{
+					State: tc.prowState,
 				},
 			}
 			want := &resultstore.StatusAttributes{
 				Status: tc.want,
 			}
-			if diff := cmp.Diff(want, p.invocationStatusAttributes(), protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(want, invocationStatusAttributes(job), protocmp.Transform()); diff != "" {
 				t.Errorf("invocationStatusAttributes differs (-want +got):\n%s", diff)
 			}
 
@@ -501,7 +699,7 @@ func TestStatusAttributes(t *testing.T) {
 
 func TestDefaultconfiguration(t *testing.T) {
 	p := &Payload{}
-	got := p.defaultConfiguration()
+	got := p.DefaultConfiguration()
 	want := &resultstore.Configuration{
 		Id: &resultstore.Configuration_Id{
 			ConfigurationId: "default",
@@ -552,7 +750,7 @@ func TestOverallTarget(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			if diff := cmp.Diff(tc.want, tc.payload.overallTarget(), protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(tc.want, tc.payload.OverallTarget(), protocmp.Transform()); diff != "" {
 				t.Errorf("overallTarget differs (-want +got):\n%s", diff)
 			}
 		})
@@ -593,7 +791,7 @@ func TestConfiguredTarget(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			if diff := cmp.Diff(tc.want, tc.payload.configuredTarget(), protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(tc.want, tc.payload.ConfiguredTarget(), protocmp.Transform()); diff != "" {
 				t.Errorf("configuredTarget differs (-want +got):\n%s", diff)
 			}
 		})
@@ -784,7 +982,7 @@ func TestOverallAction(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			if diff := cmp.Diff(tc.want, tc.payload.overallAction(), protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(tc.want, tc.payload.OverallAction(), protocmp.Transform()); diff != "" {
 				t.Errorf("overallAction differs (-want +got):\n%s", diff)
 			}
 		})
