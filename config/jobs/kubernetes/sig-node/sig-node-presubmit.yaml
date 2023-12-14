@@ -2432,6 +2432,8 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --gcp-nodes=1
+        - --image-project=cos-cloud
+        - --image-family=cos-beta
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-inplace-pod-resize-containerd-main-v2
         - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
