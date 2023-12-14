@@ -19,6 +19,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -39,6 +41,14 @@ type fakeOpener struct {
 
 	objects     []gcsObject
 	directories []string
+}
+
+func mustParseProwPath(bucket string) *prowv1.ProwPath {
+	path, err := prowv1.ParsePath(bucket)
+	if err != nil {
+		panic(fmt.Sprintf("cannot parse prow path %s", bucket))
+	}
+	return path
 }
 
 func newFakeOpener(objects []gcsObject, directories []string) *fakeOpener {
@@ -637,6 +647,171 @@ func TestGetParent(t *testing.T) {
 			actual := getParent(tc.path)
 			if !reflect.DeepEqual(tc.expected, actual) {
 				t.Fatalf(cmp.Diff(tc.expected, actual))
+			}
+		})
+	}
+}
+
+func TestParseBucket(t *testing.T) {
+	aliasPath := func(bucket string) string { return pathPrefix(mustParseProwPath(bucket)) }
+
+	for _, testCase := range []struct {
+		name        string
+		bucket      string
+		wantErr     error
+		wantOptions *options
+	}{
+		{
+			name:   "Parse a bucket name with no alias",
+			bucket: "test-infra-bucket",
+			wantOptions: &options{
+				allowedProwPaths: []*prowv1.ProwPath{mustParseProwPath("test-infra-bucket")},
+			},
+		},
+		{
+			name:   "Parse a bucket name with an alias",
+			bucket: "test-infra-bucket=gs://test-infra-alias-1",
+			wantOptions: &options{
+				allowedProwPaths: []*prowv1.ProwPath{
+					mustParseProwPath("test-infra-bucket"),
+					mustParseProwPath("test-infra-alias-1"),
+				},
+				bucketAliases: bucketAliases{
+					aliasPath("test-infra-alias-1"): aliasPath("test-infra-bucket"),
+				},
+			},
+		},
+		{
+			name:   "Parse a bucket name with multiple aliases",
+			bucket: "test-infra-bucket=gs://test-infra-alias-1,test-infra-alias-2",
+			wantOptions: &options{
+				allowedProwPaths: []*prowv1.ProwPath{
+					mustParseProwPath("test-infra-bucket"),
+					mustParseProwPath("gs://test-infra-alias-1"),
+					mustParseProwPath("test-infra-alias-2"),
+				},
+				bucketAliases: bucketAliases{
+					aliasPath("test-infra-alias-1"):      aliasPath("test-infra-bucket"),
+					aliasPath("gs://test-infra-alias-1"): aliasPath("test-infra-bucket"),
+					aliasPath("test-infra-alias-2"):      aliasPath("test-infra-bucket"),
+				},
+			},
+		},
+		{
+			name:   "Deduplicate aliases",
+			bucket: "test-infra-bucket=gs://test-infra-alias-1,test-infra-alias-1",
+			wantOptions: &options{
+				allowedProwPaths: []*prowv1.ProwPath{
+					mustParseProwPath("test-infra-bucket"),
+					mustParseProwPath("gs://test-infra-alias-1"),
+				},
+				bucketAliases: bucketAliases{
+					aliasPath("test-infra-alias-1"):      aliasPath("test-infra-bucket"),
+					aliasPath("gs://test-infra-alias-1"): aliasPath("test-infra-bucket"),
+				},
+			},
+		},
+		{
+			name:    "Fail to parse: aliases expected",
+			bucket:  "test-infra-bucket=",
+			wantErr: errors.New(`empty alias for bucket "test-infra-bucket" is not a allowed`),
+		},
+		{
+			name:    "Fail to parse: bucket name is empty",
+			bucket:  "",
+			wantErr: errors.New("empty bucket name is not allowed"),
+		},
+		{
+			name:    "Fail to parse: invalid bucket name",
+			bucket:  string([]byte{0x0}),
+			wantErr: errors.New(`bucket "\x00" is not a valid bucket: path "gs://\x00" has invalid format, expected either <bucket-name>[/<path>] or <storage-provider>://<bucket-name>[/<path>]`),
+		},
+		{
+			name:    "Fail to parse: invalid alias name",
+			bucket:  fmt.Sprintf("test-infra-bucket:=%s", string([]byte{0x0})),
+			wantErr: errors.New(`bucket alias "\x00" is not a valid bucket: path "gs://\x00" has invalid format, expected either <bucket-name>[/<path>] or <storage-provider>://<bucket-name>[/<path>]`),
+		},
+	} {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.wantOptions != nil && testCase.wantOptions.bucketAliases == nil {
+				testCase.wantOptions.bucketAliases = bucketAliases{}
+			}
+			o := &options{bucketAliases: bucketAliases{}}
+			err := o.parseBucket(testCase.bucket)
+
+			if err != nil && testCase.wantErr == nil {
+				t.Fatalf("want err nil but got: %v", err)
+			}
+			if err == nil && testCase.wantErr != nil {
+				t.Fatalf("want err %v but got nil", testCase.wantErr)
+			}
+			if err != nil && testCase.wantErr != nil {
+				if diff := cmp.Diff(testCase.wantErr.Error(), err.Error()); diff != "" {
+					t.Fatalf("unexpected error: %s", diff)
+				}
+				return
+			}
+
+			if diff := cmp.Diff(testCase.wantOptions.bucketAliases, o.bucketAliases); diff != "" {
+				t.Error(diff)
+			}
+			if diff := cmp.Diff(testCase.wantOptions.allowedProwPaths, o.allowedProwPaths); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
+
+func TestBucketAlias(t *testing.T) {
+	for _, testCase := range []struct {
+		name     string
+		path     string
+		aliases  bucketAliases
+		wantPath string
+	}{
+		{
+			name:     "Do not match",
+			path:     "/bar",
+			aliases:  bucketAliases{"/foo": ""},
+			wantPath: "/bar",
+		},
+		{
+			name:     "Match and rewrite",
+			path:     "/foo/bar/baz",
+			aliases:  bucketAliases{"/foo/bar": "/super"},
+			wantPath: "/super/baz",
+		},
+		{
+			name:     "Match and rewrite but path stays the same",
+			path:     "/foo/bar/baz",
+			aliases:  bucketAliases{"/foo/bar": "/foo/bar"},
+			wantPath: "/foo/bar/baz",
+		},
+		{
+			name:     "Remove prefix",
+			path:     "/foo/bar/baz",
+			aliases:  bucketAliases{"/foo/bar": ""},
+			wantPath: "/baz",
+		},
+		{
+			name:     "Add prefix",
+			path:     "/foo/bar/baz",
+			aliases:  bucketAliases{"": "/super/super"},
+			wantPath: "/super/super/foo/bar/baz",
+		},
+		{
+			name:     "Rewrite path once",
+			path:     "/foo/foo/bar",
+			aliases:  bucketAliases{"/foo": "/baz"},
+			wantPath: "/baz/foo/bar",
+		},
+	} {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			path := testCase.aliases.rewritePath(testCase.path)
+			if path != testCase.wantPath {
+				t.Fatalf("want path %q but got %q", testCase.wantPath, path)
 			}
 		})
 	}
