@@ -979,7 +979,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      - --image-family=cos-stable
+      - --image-family=cos-beta
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -1027,7 +1027,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      - --image-family=cos-stable
+      - --image-family=cos-beta
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -1463,7 +1463,7 @@ periodics:
       - --gcp-nodes=1
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
-      - --image-family=cos-stable
+      - --image-family=cos-beta
       - --image-project=cos-cloud
       - --provider=gce
       # Currently, in-place pod resize tests have two SIGDescribe jobs:
@@ -1518,7 +1518,7 @@ periodics:
       - --gcp-nodes=1
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
-      - --image-family=cos-stable
+      - --image-family=cos-beta
       - --image-project=cos-cloud
       - --provider=gce
       # Currently, in-place pod resize tests have two SIGDescribe jobs:
