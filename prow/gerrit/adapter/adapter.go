@@ -264,7 +264,7 @@ func (c *Controller) processChange(latest client.LastSyncState, changeChan <-cha
 		now := time.Now()
 
 		result := client.ResultSuccess
-		if !c.shouldSkipProcessingChange(change, lastProjectSyncTime) {
+		if c.shouldTriggerJobs(change, lastProjectSyncTime) {
 			if err := c.triggerJobs(log, instance, change); err != nil {
 				result = client.ResultError
 				log.WithError(err).Info("Failed to trigger jobs based on change")
@@ -540,27 +540,28 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 	return nil
 }
 
-// shouldSkipProcessingChange returns true when there is no new commit or relevant commands in the comment messages
-func (c *Controller) shouldSkipProcessingChange(change client.ChangeInfo, lastProjectSyncTime time.Time) bool {
+// shouldTriggerJobs returns true if we should trigger jobs for the given
+// change.
+func (c *Controller) shouldTriggerJobs(change client.ChangeInfo, lastProjectSyncTime time.Time) bool {
 	// do not skip postsubmit jobs
 	if change.Status == client.Merged {
-		return false
+		return true
 	}
 	revision := change.Revisions[change.CurrentRevision]
 	if revision.Created.After(lastProjectSyncTime) {
-		return false
+		return true
 	}
 
 	for _, message := range currentMessages(change, lastProjectSyncTime) {
 		if c.messageContainsJobTriggeringCommand(message) {
-			return false
+			return true
 		}
 		if message.Message == noLongerWIP {
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 func (c *Controller) messageContainsJobTriggeringCommand(message gerrit.ChangeMessageInfo) bool {
