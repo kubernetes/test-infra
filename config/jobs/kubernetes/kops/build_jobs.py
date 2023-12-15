@@ -869,7 +869,6 @@ def generate_misc():
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
 
@@ -886,7 +885,6 @@ def generate_misc():
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=8),
 
@@ -922,7 +920,6 @@ def generate_misc():
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
                    test_timeout_minutes=150,
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
 
@@ -940,7 +937,6 @@ def generate_misc():
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=150,
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=6),
 
@@ -961,7 +957,6 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -983,7 +978,6 @@ def generate_misc():
                    ],
                    focus_regex=r'\[Conformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
@@ -1003,10 +997,10 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
+                       "--node-size=t3.large",
                    ],
                    focus_regex=r'\[Conformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
@@ -1025,11 +1019,13 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
+                       "--set=spec.kubeProxy.enabled=false",
+                       "--set=networking.cilium.enableNodePort=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Conformance\]',
-                   skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
+                   skip_regex=r'should.serve.endpoints.on.same.port.and.different.protocols',
+                   # https://github.com/cilium/cilium/pull/29524
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
@@ -1051,7 +1047,6 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=3),
 
@@ -1071,7 +1066,6 @@ def generate_misc():
                    skip_regex=r'\[FOOBAR\]',
                    test_timeout_minutes=300,
                    test_parallelism=1, # serial tests
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=3),
 
@@ -1087,7 +1081,6 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=500,
                    test_parallelism=1, # serial tests
-                   test_args="--master-os-distro=ubuntu --node-os-distro=ubuntu",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=3),
 
@@ -1110,7 +1103,6 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=4),
 
@@ -1154,7 +1146,6 @@ def generate_misc():
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
                    test_timeout_minutes=240,
                    test_parallelism=4,
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=6),
 
@@ -1179,7 +1170,6 @@ def generate_misc():
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
                    test_timeout_minutes=240,
                    test_parallelism=4,
-                   test_args="--master-os-distro=gci --node-os-distro=gci",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
     ]
@@ -2048,7 +2038,6 @@ def generate_presubmits_e2e():
             test_timeout_minutes=500,
             optional=True,
             test_parallelism=1, # serial tests
-            test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
 
         presubmit_test(
@@ -2066,7 +2055,6 @@ def generate_presubmits_e2e():
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=40,
             optional=True,
-            test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
 
         presubmit_test(
@@ -2085,7 +2073,6 @@ def generate_presubmits_e2e():
             skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=70,
             optional=True,
-            test_args="--master-os-distro=gci --node-os-distro=gci",
         ),
     ]
 
