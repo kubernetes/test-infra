@@ -251,9 +251,9 @@ periodics:
           --parallel=25
       env:
       - name: DISCOVERY_STORE
-        value: k8s-kops-ci-prow-sandbox
+        value: "s3://k8s-kops-ci-prow-sandbox"
       - name: KOPS_STATE_STORE
-        value: k8s-kops-ci-prow-sandbox-state-store
+        value: "s3://k8s-kops-ci-prow-sandbox-state-store"
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
