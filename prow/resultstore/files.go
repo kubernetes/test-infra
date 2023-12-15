@@ -34,6 +34,13 @@ type fileFinder interface {
 	Attributes(ctx context.Context, name string) (pio.Attributes, error)
 }
 
+// DefaultFile describes a file that should exist in ArtifactOpts.Dir.
+// If the file is not present, these values will be used instead.
+type DefaultFile struct {
+	Name        string
+	ContentType string
+	Size        int64
+}
 type ArtifactOpts struct {
 	// Dir is the top-level directory, including the provider, e.g.
 	// "gs://some-bucket/path"; include all files here.
@@ -41,9 +48,12 @@ type ArtifactOpts struct {
 	// ArtifactsDirOnly includes only the "Dir/artifacts/" directory,
 	// instead of files in the tree rooted there. Experimental.
 	ArtifactsDirOnly bool
+	// DefaultFiles are files in directory Dir (not nested) that are
+	// included in the output if they don't exist.
+	DefaultFiles []DefaultFile
 }
 
-// ArtifactFiles returns the files based on ARtifactOpts.
+// ArtifactFiles returns the files based on ArtifactOpts.
 //
 // In the event of error, returns any files collected so far in the
 // interest of best effort.
@@ -58,6 +68,8 @@ func ArtifactFiles(ctx context.Context, opener fileFinder, o ArtifactOpts) ([]*r
 	if err := c.collect(ctx, prefix, "/"); err != nil {
 		return c.builder.files, err
 	}
+
+	c.addDefaultFiles(prefix, o.DefaultFiles)
 
 	if o.ArtifactsDirOnly {
 		artifacts := prefix + "artifacts/"
@@ -142,9 +154,27 @@ func (c *filesCollector) collect(ctx context.Context, prefix, delimiter string) 
 		if err != nil {
 			return err
 		}
-		c.builder.Add(name, &attrs)
+		c.builder.Add(name, attrs.Size, attrs.ContentEncoding)
 	}
 	return nil
+}
+
+// addDefaultFiles adds default files if not already collected.
+func (c *filesCollector) addDefaultFiles(prefix string, files []DefaultFile) {
+	if len(files) == 0 {
+		return
+	}
+	seen := map[string]bool{}
+	for _, f := range c.builder.files {
+		seen[f.Uri] = true
+	}
+	for _, f := range files {
+		name := prefix + f.Name
+		if seen[name] {
+			continue
+		}
+		c.builder.Add(name, f.Size, f.ContentType)
+	}
 }
 
 // collectDirs collects directories in prefix where match is true.
@@ -186,7 +216,7 @@ func newFilesBuilder(prefix string) *filesBuilder {
 	}
 }
 
-func (b *filesBuilder) Add(name string, attrs *pio.Attributes) {
+func (b *filesBuilder) Add(name string, size int64, contentType string) {
 	uid := b.trim(name)
 	switch uid {
 	case "build.log":
@@ -201,8 +231,8 @@ func (b *filesBuilder) Add(name string, attrs *pio.Attributes) {
 	b.files = append(b.files, &resultstore.File{
 		Uid:         uid,
 		Uri:         name,
-		Length:      &wrapperspb.Int64Value{Value: attrs.Size},
-		ContentType: shortContentType(attrs.ContentEncoding),
+		Length:      &wrapperspb.Int64Value{Value: size},
+		ContentType: shortContentType(contentType),
 	})
 }
 

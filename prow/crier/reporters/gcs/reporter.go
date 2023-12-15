@@ -196,10 +196,10 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
-	// Unconditionally dump the prowjob to GCS, on all job updates.
-	output, err := json.MarshalIndent(pj, "", "\t")
+	// Unconditionally dump the ProwJob to GCS, on all job updates.
+	output, err := util.MarshalProwJob(pj)
 	if err != nil {
-		return fmt.Errorf("failed to marshal prowjob: %w", err)
+		return fmt.Errorf("failed to marshal ProwJob: %w", err)
 	}
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)

@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -76,4 +77,9 @@ func gcsConfig(cfg config.Getter, pj *prowv1.ProwJob) (*prowv1.GCSConfiguration,
 		return ddc.GCSConfiguration, nil
 	}
 	return nil, fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
+}
+
+// MarshalProwJob marshals the ProwJob in the format written to GCS.
+func MarshalProwJob(pj *prowv1.ProwJob) ([]byte, error) {
+	return json.MarshalIndent(pj, "", "\t")
 }
