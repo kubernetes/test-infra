@@ -732,6 +732,23 @@ func createIntegratePr(log *logrus.Entry, ghc githubClient, integratePrsRepo, to
 	if err != nil {
 		if !strings.Contains(err.Error(), "A pull request already exists for") {
 			return err
+		} else {
+			log.Infof("Pull request already exists: %v", err)
+			prs, err := ghc.GetPullRequests(integratePrOrg, integratePrRepo)
+			if err != nil {
+				return err
+			}
+
+			for _, pr := range prs {
+				if pr.Head.Ref == topicBranch && pr.State == "open" {
+					number = pr.Number
+					break
+				}
+			}
+
+			if number == 0 {
+				return fmt.Errorf("can't found pr at %s's branch: %s", integratePrsRepo, topicBranch)
+			}
 		}
 	}
 
