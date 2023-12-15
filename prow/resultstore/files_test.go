@@ -145,6 +145,18 @@ func TestArtifactFiles(t *testing.T) {
 			},
 			opts: ArtifactOpts{
 				Dir: base,
+				DefaultFiles: []DefaultFile{
+					{
+						Name:        "prowjob.json",
+						Size:        1984,
+						ContentType: "text/plain; charset=utf-8",
+					},
+					{
+						Name:        "started.json",
+						Size:        3500,
+						ContentType: "text/plain; charset=utf-8",
+					},
+				},
 			},
 			want: []*resultstore.File{
 				{
@@ -158,6 +170,12 @@ func TestArtifactFiles(t *testing.T) {
 					Uri:         "gs://bucket/pr-logs/1234/started.json",
 					Length:      &wrapperspb.Int64Value{Value: 350},
 					ContentType: "application/json",
+				},
+				{
+					Uid:         "prowjob.json",
+					Uri:         "gs://bucket/pr-logs/1234/prowjob.json",
+					Length:      &wrapperspb.Int64Value{Value: 1984},
+					ContentType: "text/plain",
 				},
 				{
 					Uid:         "artifacts/artifact.txt",
