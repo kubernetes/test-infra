@@ -121,14 +121,17 @@ func invocationAttributes(projectID string, pj *v1.ProwJob) *resultstore.Invocat
 
 func descriptionFromLabels(labels map[string]string) string {
 	jt := labels[kube.ProwJobTypeLabel]
-	repo := labels[kube.RepoLabel]
-	pull := labels[kube.PullLabel]
-	if ps := labels[kube.GerritPatchset]; ps != "" {
-		pull += "/" + ps
+	parts := []string{
+		labels[kube.RepoLabel],
 	}
-	buildID := labels[kube.ProwBuildIDLabel]
-	job := labels[kube.ContextAnnotation]
-	return fmt.Sprintf("%s for %s/%s/%s/%s", jt, repo, pull, buildID, job)
+	if pull := labels[kube.PullLabel]; pull != "" {
+		parts = append(parts, pull)
+		if ps := labels[kube.GerritPatchset]; ps != "" {
+			parts = append(parts, ps)
+		}
+	}
+	parts = append(parts, labels[kube.ProwBuildIDLabel], labels[kube.ProwJobAnnotation])
+	return fmt.Sprintf("%s for %s", jt, strings.Join(parts, "/"))
 }
 
 func workspaceInfo(job *v1.ProwJob) *resultstore.WorkspaceInfo {

@@ -55,7 +55,7 @@ func TestInvocation(t *testing.T) {
 							kube.PullLabel:         "pull-label",
 							kube.GerritPatchset:    "gerrit-patchset-label",
 							kube.ProwBuildIDLabel:  "build-id-label",
-							kube.ContextAnnotation: "context-annotation-label",
+							kube.ProwJobAnnotation: "job-label",
 						},
 					},
 					Spec: v1.ProwJobSpec{
@@ -109,7 +109,7 @@ func TestInvocation(t *testing.T) {
 					Labels: []string{
 						"prow",
 					},
-					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
+					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/job-label",
 				},
 				Properties: []*resultstore.Property{
 					{
@@ -172,10 +172,8 @@ func TestInvocation(t *testing.T) {
 						Labels: map[string]string{
 							kube.ProwJobTypeLabel:  "job-type-label",
 							kube.RepoLabel:         "repo-label",
-							kube.PullLabel:         "pull-label",
-							kube.GerritPatchset:    "gerrit-patchset-label",
 							kube.ProwBuildIDLabel:  "build-id-label",
-							kube.ContextAnnotation: "context-annotation-label",
+							kube.ProwJobAnnotation: "job-label",
 						},
 					},
 					Spec: v1.ProwJobSpec{
@@ -223,7 +221,7 @@ func TestInvocation(t *testing.T) {
 					Labels: []string{
 						"prow",
 					},
-					Description: "job-type-label for repo-label/pull-label/gerrit-patchset-label/build-id-label/context-annotation-label",
+					Description: "job-type-label for repo-label/build-id-label/job-label",
 				},
 				Properties: []*resultstore.Property{
 					{
