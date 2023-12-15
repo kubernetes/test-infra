@@ -166,11 +166,11 @@ presubmits:
           value: "true"
         resources:
           requests:
-            cpu: "10"
-            memory: "48Gi"
+            cpu: "6"
+            memory: "16Gi"
           limits:
-            cpu: "10"
-            memory: "48Gi"
+            cpu: "6"
+            memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/distro: u2204
@@ -226,7 +226,7 @@ presubmits:
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
-          value: "100"
+          value: "500"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "20"
         - name: CONTROL_PLANE_COUNT
