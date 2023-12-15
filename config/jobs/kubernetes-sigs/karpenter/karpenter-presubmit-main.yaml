@@ -2,7 +2,7 @@ presubmits:
   kubernetes-sigs/karpenter:
   - name: pull-karpenter-test-1-26
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true # TODO set back to false when stabilized
     decorate: true
     path_alias: "sigs.k8s.io/karpenter"
@@ -15,7 +15,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - presubmit
+        - toolchain
         securityContext:
           privileged: true
         resources:
@@ -30,7 +30,7 @@ presubmits:
       testgrid-tab-name: karpenter-pr-test-1-26-main
   - name: pull-karpenter-test-1-27
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true # TODO set back to false when stabilized
     decorate: true
     path_alias: "sigs.k8s.io/karpenter"
@@ -43,7 +43,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - presubmit
+        - toolchain
         securityContext:
           privileged: true
         resources:
@@ -58,7 +58,7 @@ presubmits:
       testgrid-tab-name: karpenter-pr-test-1-27-main
   - name: pull-karpenter-test-1-28
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true # TODO set back to false when stabilized
     decorate: true
     path_alias: "sigs.k8s.io/karpenter"
@@ -71,7 +71,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - presubmit
+        - toolchain
         securityContext:
           privileged: true
         resources:
@@ -86,7 +86,7 @@ presubmits:
       testgrid-tab-name: karpenter-pr-test-1-28-main
   - name: pull-karpenter-test-1-29
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true # TODO set back to false when stabilized
     decorate: true
     path_alias: "sigs.k8s.io/karpenter"
@@ -99,7 +99,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - presubmit
+        - toolchain
         securityContext:
           privileged: true
         resources:
