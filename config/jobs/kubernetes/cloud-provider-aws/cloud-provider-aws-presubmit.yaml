@@ -2,8 +2,8 @@ presubmits:
   kubernetes/cloud-provider-aws:
   - name: pull-cloud-provider-aws-e2e
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     path_alias: k8s.io/cloud-provider-aws
@@ -37,6 +37,7 @@ presubmits:
 
   - name: pull-cloud-provider-aws-e2e-kubetest2
     cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
@@ -49,7 +50,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     path_alias: k8s.io/cloud-provider-aws
-    always_run: true
     optional: true
     decorate: true
     decoration_config:
@@ -116,6 +116,7 @@ presubmits:
 
   - name: pull-cloud-provider-aws-e2e-kubetest2-quick
     cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
@@ -128,7 +129,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     path_alias: k8s.io/cloud-provider-aws
-    always_run: true
     optional: true
     decorate: true
     decoration_config:
