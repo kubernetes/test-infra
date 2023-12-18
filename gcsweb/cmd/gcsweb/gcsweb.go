@@ -91,6 +91,8 @@ type options struct {
 	allowedBuckets strslice
 	// allowedProwPaths is the parsed list of allowedBuckets
 	allowedProwPaths []*prowv1.ProwPath
+	// bucketAliases allows a bucket name to be rewritten under a different one
+	bucketAliases bucketAliases
 
 	instrumentationOptions flagutil.InstrumentationOptions
 }
@@ -117,7 +119,9 @@ func gatherOptions() options {
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
 
 	fs.Var(&o.allowedBuckets, "b", "Buckets to serve (may be specified more than once). Can be GCS buckets (gs:// prefix) or S3 buckets (s3:// prefix).\n"+
-		"If the bucket doesn't have a prefix, gs:// is assumed (deprecated, add the gs:// prefix).")
+		"If the bucket doesn't have a prefix, gs:// is assumed (deprecated, add the gs:// prefix)."+
+		"Multiple aliases can be set: foo=bar,baz,... The server will listen on bucket "+
+		"paths: foo, bar and baz, rewriting all requests to foo")
 
 	o.instrumentationOptions.AddFlags(fs)
 
@@ -127,14 +131,11 @@ func gatherOptions() options {
 
 func (o *options) validate() error {
 	// validate and parse bucket list
+	o.bucketAliases = bucketAliases{}
 	for _, bucket := range o.allowedBuckets {
-		// canonicalize buckets: adds the gs:// prefix if omitted
-		prowPath, err := prowv1.ParsePath(bucket)
-		if err != nil {
-			return fmt.Errorf("bucket %q is not a valid bucket: %w", bucket, err)
+		if err := o.parseBucket(bucket); err != nil {
+			return err
 		}
-
-		o.allowedProwPaths = append(o.allowedProwPaths, prowPath)
 	}
 
 	if o.flIcons != "" {
@@ -170,6 +171,59 @@ func (o *options) validate() error {
 		if _, err := os.Stat(o.S3CredentialsFile); os.IsNotExist(err) {
 			return fmt.Errorf("s3 crendentials file %q doesn't exist", o.S3CredentialsFile)
 		}
+	}
+
+	return nil
+}
+
+func (o *options) parseBucket(bucket string) error {
+	bucketParts := strings.Split(bucket, "=")
+	bucketName := strings.TrimSpace(bucketParts[0])
+
+	if bucketName == "" {
+		return errors.New("empty bucket name is not allowed")
+	}
+
+	// canonicalize buckets: adds the gs:// prefix if omitted
+	prowPath, err := prowv1.ParsePath(bucketName)
+	if err != nil {
+		return fmt.Errorf("bucket %q is not a valid bucket: %w", bucketName, err)
+	}
+
+	o.allowedProwPaths = append(o.allowedProwPaths, prowPath)
+
+	if len(bucketParts) <= 1 {
+		// No aliases
+		return nil
+	}
+
+	// handle aliases
+	bucketPrefix := pathPrefix(prowPath)
+	bucketAliases := strings.Split(bucketParts[1], ",")
+
+	if len(bucketAliases) == 0 {
+		return fmt.Errorf("no aliases for bucket %q have been set", bucketName)
+	}
+
+	for _, alias := range bucketAliases {
+		alias := strings.TrimSpace(alias)
+		if alias == "" {
+			return fmt.Errorf("empty alias for bucket %q is not a allowed", bucketName)
+		}
+
+		aliasProwPath, err := prowv1.ParsePath(alias)
+		if err != nil {
+			return fmt.Errorf("bucket alias %q is not a valid bucket: %w", alias, err)
+		}
+
+		aliasProwPathPrefixed := pathPrefix(aliasProwPath)
+		// Prevent duplicates in allowedProwPaths
+		if _, exists := o.bucketAliases[aliasProwPathPrefixed]; !exists {
+			// The server should be listening on this path too otherwise
+			// no rewriting would be possible
+			o.allowedProwPaths = append(o.allowedProwPaths, aliasProwPath)
+		}
+		o.bucketAliases[pathPrefix(aliasProwPath)] = bucketPrefix
 	}
 
 	return nil
@@ -215,7 +269,7 @@ func main() {
 		logrus.WithError(err).Fatal("couldn't get storage client")
 	}
 
-	s := &server{storageClient: storageClient}
+	s := &server{storageClient: storageClient, bucketAliases: o.bucketAliases}
 
 	logrus.Info("Starting GCSWeb")
 
@@ -330,8 +384,25 @@ func otherRequest(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
+// bucketAliases permits a naive URL rewriting functionality.
+// Keys represent aliases and their values are the authoritative
+// bucket names the URL is going to be rewritten with
+type bucketAliases map[string]string
+
+// rewritePath matches `path` against any knows aliases and
+// rewrites it if a match was found
+func (ba bucketAliases) rewritePath(path string) string {
+	for alias, authoritativeName := range ba {
+		if strings.HasPrefix(path, alias) {
+			return strings.Replace(path, alias, authoritativeName, 1)
+		}
+	}
+	return path
+}
+
 type server struct {
 	storageClient pkgio.Opener
+	bucketAliases bucketAliases
 }
 
 type objectHeaders struct {
@@ -423,7 +494,7 @@ func (s *server) storageRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := r.URL.Path
+	path := s.bucketAliases.rewritePath(r.URL.Path)
 	prowPath, err := parsePath(path)
 	if err != nil {
 		logger.WithError(err).Error("error parsing path")
