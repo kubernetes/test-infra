@@ -149,7 +149,6 @@ periodics:
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
-        --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
         --cluster=
         --extract=ci/latest
         --provider=gce
@@ -195,7 +194,6 @@ periodics:
         ./test/build.sh -f get-ci-env &&
         source ci-custom-flags.env &&
         /workspace/scenarios/kubernetes_e2e.py
-        --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
         --cluster=
         --extract=ci/latest
         --provider=gce

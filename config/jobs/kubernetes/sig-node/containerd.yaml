@@ -67,7 +67,6 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-0-47
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
@@ -469,10 +468,7 @@ periodics:
       - --extract=ci/latest
       # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-66-33
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
-      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
@@ -972,7 +968,6 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-66-33
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
       - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
@@ -1021,7 +1016,6 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-66-33
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
       - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service
@@ -1458,7 +1452,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-66-33
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
       - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
@@ -1514,7 +1507,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-109-17800-66-33
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
       - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service
