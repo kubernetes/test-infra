@@ -162,9 +162,8 @@ func defaultFiles(pj *v1.ProwJob) []resultstore.DefaultFile {
 	// case of error, skip it since the GCS reporter won't write it.
 	if bs, err := util.MarshalProwJob(pj); err == nil {
 		fs = append(fs, resultstore.DefaultFile{
-			Name:        "prowjob.json",
-			Size:        int64(len(bs)),
-			ContentType: "application/json",
+			Name: "prowjob.json",
+			Size: int64(len(bs)),
 		})
 	}
 	return fs
