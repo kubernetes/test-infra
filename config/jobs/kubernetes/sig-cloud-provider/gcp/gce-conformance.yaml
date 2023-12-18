@@ -41,7 +41,6 @@ periodics:
       args:
       - "/bin/bash"
       - "-c"
-      # TODO: Use published release tars for k/k
       - set -o errexit;
         set -o nounset;
         set -o pipefail;
@@ -52,8 +51,8 @@ periodics:
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
         MARKER_VERSION=latest-fast.txt;
-        kubetest2 gce -v 2 \;
-          --repo-root=. \;
+        kubetest2 gce \;
+          --v=9 \;
           --legacy-mode \;
           --up \;
           --down \;
