@@ -1,45 +1,10 @@
 periodics:
 - interval: 3h
   cluster: k8s-infra-prow-build
-  name: ci-kubernetes-gce-conformance-latest
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: conformance-all, conformance-gce
-    testgrid-tab-name: Conformance - GCE - master
-    description: Runs conformance tests using kubetest against kubernetes master on GCE
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 220m
-  spec:
-    containers:
-    - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --extract=ci/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
-      - --timeout=200m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
-      resources:
-        limits:
-          cpu: 1
-          memory: 3Gi
-        requests:
-          cpu: 1
-          memory: 3Gi
-- interval: 3h
-  cluster: k8s-infra-prow-build
   name: ci-kubernetes-gce-conformance-latest-kubetest2
   annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "MARKER_VERSION=latest-fast.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
     testgrid-tab-name: Conformance - GCE - master - kubetest2
     description: Runs conformance tests using kubetest2 against kubernetes master on GCE
@@ -81,19 +46,21 @@ periodics:
         set -o nounset;
         set -o pipefail;
         set -o xtrace;
-        REPO_ROOT=$GOPATH/src/k8s.io/kubernetes;
         cd;
         export GO111MODULE=on;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+        MARKER_VERSION=latest-fast.txt
         kubetest2 gce -v 2 \;
-          --repo-root $REPO_ROOT \;
+          --repo-root=. \;
           --legacy-mode \;
-          --build \;
           --up \;
           --down \;
+          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/$MARKER_VERSION \;
           --test=ginkgo \;
           -- \;
-          --focus-regex='\[Conformance\]' \;
-          --use-built-binaries
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \;
+          --test-package-dir=ci \;
+          --test-package-marker=$MARKER_VERSION \;
+          --focus-regex='\[Conformance\]'
