@@ -248,6 +248,8 @@ presubmits:
               value: "0"
             - name: LB_BACKEND_POOL_CONFIG_TYPE # cloud-provider-azure config
               value: ""
+            - name: HEALTH_PROBE_MODE
+              value: "servicenodeport"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmssflex-capz
@@ -534,6 +536,8 @@ presubmits:
               value: "capz"
             - name: ENABLE_VMSS_FLEX # cloud-provider-azure config
               value: "false"
+            - name: HEALTH_PROBE_MODE
+              value: "servicenodeport"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
@@ -631,6 +635,75 @@ presubmits:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-unit
       description: "Run unit tests for cloud-provider-azure."
+      testgrid-num-columns-recent: '30'
+  # pull-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz runs Azure specific e2e tests with cloud controller manager and shared health probe.
+  - name: pull-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.12
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-entrypoint.sh
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+              make test-ccm-e2e
+          securityContext:
+            privileged: true
+          env:
+            - name: TEST_CCM # CAPZ config
+              value: "true"
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+              value: "1"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
+            - name: CLUSTER_TEMPLATE # CAPZ config
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
+            - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+              value: "Standard"
+            - name: ENABLE_MULTI_SLB # cloud-provider-azure config
+              value: "false"
+            - name: PUT_VMSS_VM_BATCH_SIZE # cloud-provider-azure config
+              value: "0"
+            - name: LB_BACKEND_POOL_CONFIG_TYPE # cloud-provider-azure config
+              value: "nodeIPConfiguration"
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
+              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: CCM_E2E_ARGS # cloud-provider-azure config
+              value: "-ginkgo.skip=\"\\[Serial\\]\\[Slow\\]|Private\\slink\\sservice|\\[MultipleAgentPools\\]\""
+            - name: LABEL_FILTER # cloud-provider-azure config
+              value: "!Serial && !Slow && !PLS && !Multi-Nodepool"
+            - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+              value: "capz"
+            - name: ENABLE_VMSS_FLEX # cloud-provider-azure config
+              value: "false"
+            - name: HEALTH_PROBE_MODE
+              value: "shared"
+    annotations:
+      testgrid-dashboards: provider-azure-cloud-provider-azure
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz
+      description: "Runs Azure specific e2e tests with cloud controller manager and shared health probe."
       testgrid-num-columns-recent: '30'
 periodics:
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
