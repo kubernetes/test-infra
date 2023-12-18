@@ -51,7 +51,7 @@ periodics:
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        MARKER_VERSION=latest-fast.txt
+        MARKER_VERSION=latest-fast.txt;
         kubetest2 gce -v 2 \;
           --repo-root=. \;
           --legacy-mode \;
