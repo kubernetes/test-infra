@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
@@ -31,15 +33,13 @@ import (
 // fileFinder is the subset of pio.Opener required.
 type fileFinder interface {
 	Iterator(ctx context.Context, prefix, delimiter string) (pio.ObjectIterator, error)
-	Attributes(ctx context.Context, name string) (pio.Attributes, error)
 }
 
 // DefaultFile describes a file that should exist in ArtifactOpts.Dir.
 // If the file is not present, these values will be used instead.
 type DefaultFile struct {
-	Name        string
-	ContentType string
-	Size        int64
+	Name string
+	Size int64
 }
 type ArtifactOpts struct {
 	// Dir is the top-level directory, including the provider, e.g.
@@ -146,15 +146,7 @@ func (c *filesCollector) collect(ctx context.Context, prefix, delimiter string) 
 		if f.IsDir {
 			continue
 		}
-		name := c.bucket + f.Name
-		// TODO: Fetching file attributes individually is costly. A
-		// bare GCS client List would provide both names and attrs.
-		// Consider switching if we must keep walking files.
-		attrs, err := c.finder.Attributes(ctx, name)
-		if err != nil {
-			return err
-		}
-		c.builder.Add(name, attrs.Size, attrs.ContentEncoding)
+		c.builder.Add(c.bucket+f.Name, f.Size)
 	}
 	return nil
 }
@@ -173,7 +165,7 @@ func (c *filesCollector) addDefaultFiles(prefix string, files []DefaultFile) {
 		if seen[name] {
 			continue
 		}
-		c.builder.Add(name, f.Size, f.ContentType)
+		c.builder.Add(name, f.Size)
 	}
 }
 
@@ -216,7 +208,7 @@ func newFilesBuilder(prefix string) *filesBuilder {
 	}
 }
 
-func (b *filesBuilder) Add(name string, size int64, contentType string) {
+func (b *filesBuilder) Add(name string, size int64) {
 	uid := b.trim(name)
 	switch uid {
 	case "build.log":
@@ -232,7 +224,7 @@ func (b *filesBuilder) Add(name string, size int64, contentType string) {
 		Uid:         uid,
 		Uri:         name,
 		Length:      &wrapperspb.Int64Value{Value: size},
-		ContentType: shortContentType(contentType),
+		ContentType: contentType(uid),
 	})
 }
 
@@ -244,7 +236,12 @@ func (b *filesBuilder) AddDir(name string) {
 	})
 }
 
-func shortContentType(contentType string) string {
-	ps := strings.SplitN(contentType, ";", 2)
+func init() {
+	// Avoid the default of "text/x-log" for log files.
+	mime.AddExtensionType(".log", "text/plain")
+}
+
+func contentType(name string) string {
+	ps := strings.SplitN(mime.TypeByExtension(filepath.Ext(name)), ";", 2)
 	return ps[0]
 }
