@@ -45,7 +45,6 @@ periodics:
         set -o nounset;
         set -o pipefail;
         set -o xtrace;
-        cd;
         export GO111MODULE=on;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
