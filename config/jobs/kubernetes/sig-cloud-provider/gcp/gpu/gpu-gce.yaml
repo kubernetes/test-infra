@@ -37,9 +37,7 @@ periodics:
       - --extract-ci-bucket=k8s-release-dev
       # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
-      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
@@ -80,9 +78,7 @@ periodics:
       - --extract-ci-bucket=k8s-release-dev
       # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
-      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project=k8s-infra-e2e-gpu-project
       - --gcp-zone=us-west1-b
