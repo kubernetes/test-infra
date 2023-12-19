@@ -306,8 +306,9 @@ def presubmit_test(branch='master',
         tmpl_file = "presubmit-scenario.yaml.jinja"
         name_hash = hashlib.md5(name.encode()).hexdigest()
         env['CLOUD_PROVIDER'] = cloud
-        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
-        if 'KOPS_STATE_STORE' not in env:
+        if cloud == "aws":
+            env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
+        if 'KOPS_STATE_STORE' not in env and cloud == "aws":
             env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
@@ -1493,6 +1494,74 @@ def generate_presubmits_scale():
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
                 'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests",
+                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
+                'CL2_ENABLE_DNS_PROGRAMMING': "true",
+                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
+                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
+                'CL2_ALLOWED_SLOW_API_CALLS': "1",
+                'ENABLE_PROMETHEUS_SERVER': "true",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2",
+                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
+                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
+                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
+            }
+        ),
+        presubmit_test(
+            name='presubmit-kops-gce-scale-kubenet-using-cl2',
+            scenario='scalability',
+            build_cluster="k8s-infra-prow-build",
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='kubenet',
+            cloud="gce",
+            always_run=False,
+            artifacts='$(ARTIFACTS)',
+            test_timeout_minutes=450,
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
+            env={
+                'CNI_PLUGIN': "kubenet",
+                'KUBE_NODE_COUNT': "5000",
+                'CL2_LOAD_TEST_THROUGHPUT': "50",
+                'CL2_DELETE_TEST_THROUGHPUT': "50",
+                'CL2_RATE_LIMIT_POD_CREATION': "false",
+                'NODE_MODE': "master",
+                'CONTROL_PLANE_COUNT': "1",
+                'CONTROL_PLANE_SIZE': "e2-standard-32",
+                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
+                'CL2_ENABLE_DNS_PROGRAMMING': "true",
+                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
+                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
+                'CL2_ALLOWED_SLOW_API_CALLS': "1",
+                'ENABLE_PROMETHEUS_SERVER': "true",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "pd-ssd",
+                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
+                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
+                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
+                'CL2_ENABLE_DNSTESTS': "false",
+                'CL2_USE_ADVANCED_DNSTEST': "false",
+                'SMALL_STATEFUL_SETS_PER_NAMESPACE': 0,
+                'MEDIUM_STATEFUL_SETS_PER_NAMESPACE': 0
+            }
+        ),
+        presubmit_test(
+            name='presubmit-kops-gce-small-scale-kubenet-using-cl2',
+            scenario='scalability',
+            build_cluster="k8s-infra-prow-build",
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='kubenet',
+            cloud="gce",
+            always_run=False,
+            artifacts='$(ARTIFACTS)',
+            test_timeout_minutes=450,
+            env={
+                'CNI_PLUGIN': "kubenet",
+                'KUBE_NODE_COUNT': "500",
+                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
+                'CONTROL_PLANE_COUNT': "1",
+                'CONTROL_PLANE_SIZE': "e2-standard-32",
+                'CL2_LOAD_TEST_THROUGHPUT': "50",
+                'CL2_DELETE_TEST_THROUGHPUT': "50",
+                'CL2_RATE_LIMIT_POD_CREATION': "false",
+                'NODE_MODE': "master",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
