@@ -242,10 +242,19 @@ func startedProperties(started *metadata.Started) []*resultstore.Property {
 	for _, r := range repos {
 		ps = append(ps, &resultstore.Property{
 			Key:   "Repo",
-			Value: "https://" + r,
+			Value: fixRepo(r),
 		})
 	}
 	return ps
+}
+
+// fixRepo deletes the "-review" segment present in some Gerrit Repos to
+// produce a valid URL. Cf. CreateRefs() in gerrit/adapter/adapter.go.
+func fixRepo(repo string) string {
+	if ps := strings.SplitN(repo, ".", 2); len(ps) > 1 {
+		return strings.TrimSuffix(ps[0], "-review") + "." + ps[1]
+	}
+	return repo
 }
 
 const defaultConfigurationId = "default"
