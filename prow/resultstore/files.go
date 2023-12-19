@@ -239,6 +239,8 @@ func (b *filesBuilder) AddDir(name string) {
 func init() {
 	// Avoid the default of "text/x-log" for log files.
 	mime.AddExtensionType(".log", "text/plain")
+	// May not exist in the container.
+	mime.AddExtensionType(".txt", "text/plain")
 }
 
 func contentType(name string) string {
