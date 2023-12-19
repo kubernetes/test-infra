@@ -4,7 +4,7 @@ periodics:
   name: ci-kubernetes-gce-conformance-latest-kubetest2
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "MARKER_VERSION=latest-fast.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
+    fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
     testgrid-tab-name: Conformance - GCE - master - kubetest2
     description: Runs conformance tests using kubetest2 against kubernetes master on GCE
@@ -49,16 +49,16 @@ periodics:
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        MARKER_VERSION=latest-fast.txt;
+        MARKER_VERSION=latest.txt;
         kubetest2 gce \;
           --v=9 \;
           --legacy-mode \;
           --up \;
           --down \;
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/$MARKER_VERSION \;
+          --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION \;
           --test=ginkgo \;
           -- \;
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \;
+          --test-package-url=https://dl.k8s.io \;
           --test-package-dir=ci \;
           --test-package-marker=$MARKER_VERSION \;
           --focus-regex='\[Conformance\]'
