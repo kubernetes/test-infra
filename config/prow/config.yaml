@@ -8,6 +8,8 @@ plank:
   pod_unscheduled_timeout: 5m
   job_queue_capacities:
     'k8sio-image-promo': 1
+    'build-master': 1
+    'build-master-fast': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h

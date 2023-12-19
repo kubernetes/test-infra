@@ -15,7 +15,6 @@ external_services:
     prow_url: prow.istio.io
 jobs:
   kubernetes-jenkins/logs/:
-  - ci-kubernetes-build
   - ci-kubernetes-e2e-gce-scale-correctness
   - ci-kubernetes-e2e-gce-scale-performance
   - ci-kubernetes-e2e-gci-gce
