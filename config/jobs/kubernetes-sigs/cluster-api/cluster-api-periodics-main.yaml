@@ -58,7 +58,7 @@ periodics:
       # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
       # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
       - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-        value: "1.25.0"
+        value: "1.26.1"
       resources:
         requests:
           cpu: 7300m
@@ -196,9 +196,9 @@ periodics:
       # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
       # docs (look for minimum supported k8s version for management cluster, i.e N-3).
       # Please also make sure to refer a version where a kindest/node image exists
-      # for (see https://github.com/kubernetes-sigs/kind/releases/tag)
+      # for (see https://github.com/kubernetes-sigs/kind/releases/)
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "v1.25.11@sha256:227fa11ce74ea76a0474eeefb84cb75d8dad1b08638371ecf0e86259b35be0c8"
+        value: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
