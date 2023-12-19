@@ -92,7 +92,7 @@ func TestInvocation(t *testing.T) {
 					Timestamp:  150,
 					RepoCommit: "repo-commit",
 					Repos: map[string]string{
-						"repo-key": "repo-value",
+						"https://started-review.repo": "started-branch",
 					},
 				},
 				Finished: &metadata.Finished{
@@ -134,11 +134,11 @@ func TestInvocation(t *testing.T) {
 					},
 					{
 						Key:   "Branch",
-						Value: "repo-value",
+						Value: "started-branch",
 					},
 					{
 						Key:   "Repo",
-						Value: "https://repo-key",
+						Value: "https://started.repo",
 					},
 				},
 				StatusAttributes: &resultstore.StatusAttributes{
@@ -433,7 +433,7 @@ func TestInvocationProperties(t *testing.T) {
 				Timestamp:  150,
 				RepoCommit: "repo-commit",
 				Repos: map[string]string{
-					"repo-key": "repo-value",
+					"https://started.repo": "started-branch",
 				},
 			},
 			want: []*resultstore.Property{
@@ -459,11 +459,11 @@ func TestInvocationProperties(t *testing.T) {
 				},
 				{
 					Key:   "Branch",
-					Value: "repo-value",
+					Value: "started-branch",
 				},
 				{
 					Key:   "Repo",
-					Value: "https://repo-key",
+					Value: "https://started.repo",
 				},
 			},
 		},
@@ -474,7 +474,7 @@ func TestInvocationProperties(t *testing.T) {
 				Timestamp:  150,
 				RepoCommit: "repo-commit",
 				Repos: map[string]string{
-					"repo-key": "repo-value",
+					"https://started.repo": "started-branch",
 				},
 			},
 			want: []*resultstore.Property{
@@ -484,11 +484,11 @@ func TestInvocationProperties(t *testing.T) {
 				},
 				{
 					Key:   "Branch",
-					Value: "repo-value",
+					Value: "started-branch",
 				},
 				{
 					Key:   "Repo",
-					Value: "https://repo-key",
+					Value: "https://started.repo",
 				},
 			},
 		},
@@ -514,7 +514,7 @@ func TestStartedProperties(t *testing.T) {
 				Timestamp:  150,
 				RepoCommit: "repo-commit",
 				Repos: map[string]string{
-					"repo1.com": "branch1",
+					"https://repo1.com": "branch1",
 				},
 			},
 			want: []*resultstore.Property{
@@ -538,8 +538,40 @@ func TestStartedProperties(t *testing.T) {
 				Timestamp:  150,
 				RepoCommit: "repo-commit",
 				Repos: map[string]string{
-					"repo2.com": "branch1",
-					"repo1.com": "branch1",
+					"repo/two":                 "branch2",
+					"https://repo1-review.com": "branch1",
+				},
+			},
+			want: []*resultstore.Property{
+				{
+					Key:   "Commit",
+					Value: "repo-commit",
+				},
+				{
+					Key:   "Branch",
+					Value: "branch1",
+				},
+				{
+					Key:   "Branch",
+					Value: "branch2",
+				},
+				{
+					Key:   "Repo",
+					Value: "https://repo1.com",
+				},
+				{
+					Key:   "Repo",
+					Value: "repo/two",
+				},
+			},
+		},
+		{
+			desc: "non gerrit",
+			started: &metadata.Started{
+				Timestamp:  150,
+				RepoCommit: "repo-commit",
+				Repos: map[string]string{
+					"https://repo1.other-review.com": "branch1",
 				},
 			},
 			want: []*resultstore.Property{
@@ -553,11 +585,7 @@ func TestStartedProperties(t *testing.T) {
 				},
 				{
 					Key:   "Repo",
-					Value: "https://repo1.com",
-				},
-				{
-					Key:   "Repo",
-					Value: "https://repo2.com",
+					Value: "https://repo1.other-review.com",
 				},
 			},
 		},
