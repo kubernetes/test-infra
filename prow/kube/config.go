@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -128,7 +129,9 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 			if err != nil {
 				return nil, fmt.Errorf("fail to load kubecfg from %q: %w", candidate, err)
 			}
-			currentContext = tempCurrentContext
+			if !opts.disabledClusters.Has(tempCurrentContext) {
+				currentContext = tempCurrentContext
+			}
 			for c, k := range kubeCfgs {
 				if _, ok := allKubeCfgs[c]; ok {
 					return nil, fmt.Errorf("context %s occurred more than once in kubeconfig dir %q", c, opts.dir)
@@ -136,6 +139,11 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 				allKubeCfgs[c] = k
 			}
 		}
+	}
+
+	for _, disabledCluster := range opts.disabledClusters.UnsortedList() {
+		delete(allKubeCfgs, disabledCluster)
+		logrus.WithField("disabledCluster", disabledCluster).Info("Removed kubeconfig for disabled cluster")
 	}
 
 	if opts.noInClusterConfig {
@@ -151,6 +159,7 @@ type Options struct {
 	suffix             string
 	projectedTokenFile string
 	noInClusterConfig  bool
+	disabledClusters   sets.Set[string]
 }
 
 type ConfigOptions func(*Options)
@@ -159,6 +168,14 @@ type ConfigOptions func(*Options)
 func ConfigDir(dir string) ConfigOptions {
 	return func(kc *Options) {
 		kc.dir = dir
+	}
+}
+
+// DisabledClusters configures the set of disabled build cluster names.
+// They will be ignored as context names while loading kubeconfig files.
+func DisabledClusters(disabledClusters sets.Set[string]) ConfigOptions {
+	return func(kc *Options) {
+		kc.disabledClusters = disabledClusters
 	}
 }
 
@@ -176,14 +193,14 @@ func ConfigFile(file string) ConfigOptions {
 	}
 }
 
-// ConfigFile configures the path to a projectedToken file
+// ConfigProjectedTokenFile configures the path to a projectedToken file
 func ConfigProjectedTokenFile(projectedTokenFile string) ConfigOptions {
 	return func(kc *Options) {
 		kc.projectedTokenFile = projectedTokenFile
 	}
 }
 
-// noInClusterConfig indicates that there is no InCluster Config to load
+// NoInClusterConfig indicates that there is no InCluster Config to load
 func NoInClusterConfig(noInClusterConfig bool) ConfigOptions {
 	return func(kc *Options) {
 		kc.noInClusterConfig = noInClusterConfig

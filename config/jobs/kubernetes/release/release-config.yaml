@@ -32,7 +32,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         resources:
           requests:
             memory: "6Gi"
@@ -44,6 +44,55 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
+  - name: pull-release-cluster-up-canary
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    optional: true
+    decoration_config:
+      timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --down=false
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
+        - --test_args=--ginkgo.focus=definitely-not-a-real-focus
+        - --timeout=65m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        resources:
+          requests:
+            cpu: 4
+            memory: "6Gi"
+          limits:
+            cpu: 4
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-cluster-up-canary
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
   - name: pull-release-test
     always_run: true
     decorate: true
@@ -51,7 +100,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -77,7 +126,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -102,7 +151,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -127,7 +176,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -426,103 +475,3 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
-  - name: pull-release-image-kubepkg
-    cluster: k8s-infra-prow-build
-    decorate: true
-    run_if_changed: 'cloudbuild-kubepkg.yaml|Dockerfile-kubepkg*'
-    path_alias: k8s.io/release
-    spec:
-      serviceAccountName: gcb-builder-releng-test
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
-          command:
-            - /run.sh
-          args:
-            - --project=k8s-staging-releng-test
-            - --scratch-bucket=gs://k8s-staging-releng-test
-            - --env-passthrough=PULL_BASE_REF,REGISTRY
-            - --gcb-config=./cloudbuild-kubepkg.yaml
-            - .
-          env:
-            - name: LOG_TO_STDOUT
-              value: "y"
-            - name: REGISTRY
-              value: "gcr.io/k8s-staging-releng-test"
-          resources:
-            requests:
-              cpu: 1000m
-              memory: 1Gi
-            limits:
-              cpu: 1000m
-              memory: 1Gi
-    annotations:
-      testgrid-dashboards: sig-release-releng-presubmits
-      testgrid-tab-name: release-image-kubepkg
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-email: release-managers+alerts@kubernetes.io
-      testgrid-num-columns-recent: '30'
-periodics:
-# package tests
-- name: periodic-release-verify-packages-debs
-  cluster: eks-prow-build-cluster
-  interval: 6h
-  annotations:
-    testgrid-alert-email: release-managers+alerts@kubernetes.io
-    testgrid-dashboards: sig-release-releng-informing
-    testgrid-tab-name: verify-packages-debs
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: k8s.io/release
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
-      imagePullPolicy: Always
-      command:
-      - make
-      - verify-published-debs
-      resources:
-        limits:
-          memory: 2Gi
-          cpu: 4
-        requests:
-          memory: 2Gi
-          cpu: 4
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: release-managers
-- name: periodic-release-verify-packages-rpms
-  cluster: eks-prow-build-cluster
-  interval: 6h
-  annotations:
-    testgrid-alert-email: release-managers+alerts@kubernetes.io
-    testgrid-dashboards: sig-release-releng-informing
-    testgrid-tab-name: verify-packages-rpms
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: k8s.io/release
-  spec:
-    containers:
-    - image: registry.access.redhat.com/ubi9/ubi:9.2
-      imagePullPolicy: Always
-      command:
-      - sh
-      - "-c"
-      - "yum install -y make jq && make verify-published-rpms"
-      resources:
-        limits:
-          memory: 2Gi
-          cpu: 4
-        requests:
-          memory: 2Gi
-          cpu: 4
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: release-managers

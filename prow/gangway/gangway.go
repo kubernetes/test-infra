@@ -44,8 +44,8 @@ const (
 
 type Gangway struct {
 	UnimplementedProwServer
-	ConfigAgent       *config.Agent
-	ProwJobClient     ProwJobClient
+	ConfigAgent        *config.Agent
+	ProwJobClient      ProwJobClient
 	InRepoConfigGetter config.InRepoConfigGetter
 }
 
@@ -688,7 +688,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, ircg co
 		logger.Debug("Getting prow jobs.")
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
-		prowYAML, err := ircg.GetInRepoConfig(orgRepo, baseSHAGetter, headSHAGetters...)
+		prowYAML, err := ircg.GetInRepoConfig(orgRepo, branch, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get presubmits")
 		} else {
@@ -756,7 +756,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, ircg c
 		logger.Debug("Getting prow jobs.")
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
-		prowYAML, err := ircg.GetInRepoConfig(orgRepo, baseSHAGetter)
+		prowYAML, err := ircg.GetInRepoConfig(orgRepo, branch, baseSHAGetter)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get postsubmits from inrepoconfig")
 		} else {

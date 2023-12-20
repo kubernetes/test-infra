@@ -1,0 +1,327 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-gcp:
+  - name: pull-cluster-api-provider-gcp-test-release-1-5
+    always_run: true
+    optional: false
+    decorate: true
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        command:
+        - "./scripts/ci-test.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-test-release-1-5
+  - name: pull-cluster-api-provider-gcp-build-release-1-5
+    always_run: true
+    optional: false
+    decorate: true
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        command:
+        - "./scripts/ci-build.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-build-release-1-5
+  - name: pull-cluster-api-provider-gcp-make-release-1-5
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: false
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        command:
+        - "runner.sh"
+        - "./scripts/ci-make.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-make-release-1-5
+  - name: pull-cluster-api-provider-gcp-verify-release-1-5
+    always_run: true
+    optional: false
+    decorate: true
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    labels:
+      # required for shellcheck in container.
+      preset-dind-enabled: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.5$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        command:
+        - "runner.sh"
+        - "make"
+        - "verify"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-verify-release-1-5
+  - name: pull-cluster-api-provider-gcp-e2e-test-release-1-5
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-e2e-test-release-1-5
+  - name: pull-cluster-api-provider-gcp-conformance-release-1-5
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+          command:
+            - "runner.sh"
+            - "./scripts/ci-conformance.sh"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-conformance-release-1-5
+  - name: pull-cluster-api-provider-gcp-capi-e2e-release-1-5
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: GINKGO_FOCUS
+              value: "Cluster API E2E tests"
+            - name: GINKGO_SKIP
+              value: "\\[K8s-Upgrade\\]|API Version Upgrade"
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-capi-e2e-test-release-1-5
+  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade-release-1-5
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+          args:
+            - runner.sh
+            - "./scripts/ci-e2e.sh"
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: GINKGO_FOCUS
+              value: "\\[K8s-Upgrade\\]"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-e2e-upgrade-release-1-5
+  - name: pull-cluster-api-provider-gcp-apidiff-release-1-5
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    always_run: true
+    optional: true
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-service-account: "true"
+    branches:
+    - ^release-1.5$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-apidiff-main-release-1-5
+  - name: pull-cluster-api-provider-gcp-coverage-release-1-5
+    always_run: false
+    optional: true
+    decorate: true
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    extra_refs:
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          result=0
+          ./scripts/ci-test-coverage.sh || result=$?
+          cp coverage.* ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
+          GO111MODULE=on go build .
+          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          exit $result
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-coverage-release-1-5
+      testgrid-alert-email: k8s-infra-staging-cluster-api-gcp@kubernetes.io

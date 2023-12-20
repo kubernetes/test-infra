@@ -35,8 +35,9 @@ import (
 )
 
 func serveOnPort(ctx context.Context, storageClient *storage.Client, predictor *predictionClient, port int, timeout time.Duration) error {
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 		status, body, err := processRequest(ctx, storageClient, predictor, r)
@@ -53,12 +54,12 @@ func serveOnPort(ctx context.Context, storageClient *storage.Client, predictor *
 		}
 	})
 
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	log.Println("Listening for connections on port", port)
-	return http.ListenAndServe(":"+strconv.Itoa(port), nil)
+	return http.ListenAndServe(":"+strconv.Itoa(port), mux)
 }
 
 func processRequest(ctx context.Context, storageClient *storage.Client, predictor *predictionClient, r *http.Request) (int, string, error) {

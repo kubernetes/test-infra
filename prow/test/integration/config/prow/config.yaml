@@ -69,6 +69,7 @@ in_repo_config:
    "fakegitserver.default/repo/org1/repo7": true
    "fakegitserver.default/repo/some/org/gangway-test-repo-1": true
    "fakegitserver.default/repo/moonraker-burst": true
+   "fakegitserver.default/repo/moonraker-update-base-branch": true
 
 # Allowlist of Prow API clients.
 gangway:

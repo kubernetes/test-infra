@@ -38,7 +38,7 @@ var testQuery = TideQuery{
 	Orgs:                   []string{"org"},
 	Repos:                  []string{"k/k", "k/t-i"},
 	ExcludedRepos:          []string{"org/repo"},
-	Labels:                 []string{labels.LGTM, labels.Approved},
+	Labels:                 []string{labels.LGTM, labels.Approved, "this,or,that"},
 	MissingLabels:          []string{"foo"},
 	Author:                 "batman",
 	Milestone:              "milestone",
@@ -51,6 +51,7 @@ var expectedQueryComponents = []string{
 	"archived:false",
 	"label:\"lgtm\"",
 	"label:\"approved\"",
+	"label:\"this\",\"or\",\"that\"",
 	"-label:\"foo\"",
 	"author:\"batman\"",
 	"milestone:\"milestone\"",
@@ -2025,7 +2026,7 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 }
 
 func fakeProwYAMLGetterFactory(presubmits []Presubmit, postsubmits []Postsubmit) ProwYAMLGetter {
-	return func(_ *Config, _ git.ClientFactory, _, _ string, _ ...string) (*ProwYAML, error) {
+	return func(_ *Config, _ git.ClientFactory, _, _, _ string, _ ...string) (*ProwYAML, error) {
 		return &ProwYAML{
 			Presubmits:  presubmits,
 			Postsubmits: postsubmits,

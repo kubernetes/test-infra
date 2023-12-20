@@ -3,7 +3,7 @@ kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: 2.6.0
+    app.kubernetes.io/version: 2.10.0
   name: kube-state-metrics
   namespace: kube-system
 ---
@@ -12,7 +12,7 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: 2.6.0
+    app.kubernetes.io/version: 2.10.0
   name: kube-state-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -28,7 +28,7 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: 2.6.0
+    app.kubernetes.io/version: 2.10.0
   name: kube-state-metrics
 rules:
 - apiGroups:

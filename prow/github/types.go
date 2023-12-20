@@ -1155,8 +1155,9 @@ type Membership struct {
 type Organization struct {
 	// Login has the same meaning as Name, but it's more reliable to use as Name can sometimes be empty,
 	// see https://developer.github.com/v3/orgs/#list-organizations
-	Login string `json:"login"`
-	Id    int    `json:"id"`
+	Login  string `json:"login"`
+	Id     int    `json:"id"`
+	NodeId string `json:"node_id"`
 	// BillingEmail holds private billing address
 	BillingEmail string `json:"billing_email"`
 	Company      string `json:"company"`
@@ -1260,6 +1261,21 @@ const (
 	// GenericCommentActionDeleted means something was deleted/dismissed.
 	GenericCommentActionDeleted GenericCommentEventAction = "deleted" // "dismissed"
 )
+
+// GeneralizeCommentAction normalizes the action string to a GenericCommentEventAction or returns ""
+// if the action is unrelated to the comment text. (For example a PR 'label' action.)
+func GeneralizeCommentAction(action string) GenericCommentEventAction {
+	switch action {
+	case "created", "opened", "submitted":
+		return GenericCommentActionCreated
+	case "edited":
+		return GenericCommentActionEdited
+	case "deleted", "dismissed":
+		return GenericCommentActionDeleted
+	}
+	// The action is not related to the text body.
+	return ""
+}
 
 // GenericCommentEvent is a fake event type that is instantiated for any github event that contains
 // comment like content.

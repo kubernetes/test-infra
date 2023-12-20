@@ -28,13 +28,16 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/sirupsen/logrus"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/sets"
+	k8sFake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	k8sTesting "k8s.io/client-go/testing"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache/informertest"
@@ -384,7 +387,71 @@ func TestProwJobIndexer(t *testing.T) {
 // * Verifies that after the other one returns, its state is set to Pending, i.E. it blocked until it observed the state transition it made
 // * Verifies that there is exactly one pod
 func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
-	t.Parallel()
+	testConcurrency := func(pja, pjb *prowv1.ProwJob) func(*testing.T) {
+		return func(t *testing.T) {
+			t.Parallel()
+			pjClient := &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
+
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{
+					Controller: config.Controller{
+						JobURLTemplate: &template.Template{},
+					},
+					JobQueueCapacities: map[string]int{"queue-1": 1},
+				}}}
+			}
+
+			r := newReconciler(context.Background(), pjClient, nil, cfg, nil, "")
+			r.buildClients = map[string]buildClient{pja.Spec.Cluster: buildClient{Client: fakectrlruntimeclient.NewFakeClient()}}
+
+			wg := &sync.WaitGroup{}
+			wg.Add(2)
+			// Give capacity of two so this doesn't stuck the test if we have a bug that results in two reconcile afters
+			gotReconcileAfter := make(chan struct{}, 2)
+
+			startAsyncReconcile := func(pjName string) {
+				go func() {
+					defer wg.Done()
+					result, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
+					if err != nil {
+						t.Errorf("reconciliation of pj %s failed: %v", pjName, err)
+					}
+					if result.RequeueAfter == time.Second {
+						gotReconcileAfter <- struct{}{}
+						return
+					}
+					pj := &prowv1.ProwJob{}
+					if err := r.pjClient.Get(context.Background(), types.NamespacedName{Name: pjName}, pj); err != nil {
+						t.Errorf("failed to get prowjob %s after reconciliation: %v", pjName, err)
+					}
+					if pj.Status.State != prowv1.PendingState {
+						t.Error("pj wasn't in pending state, reconciliation didn't wait the change to appear in the cache")
+					}
+				}()
+			}
+			startAsyncReconcile(pja.Name)
+			startAsyncReconcile(pjb.Name)
+
+			wg.Wait()
+			close(gotReconcileAfter)
+
+			var numReconcielAfters int
+			for range gotReconcileAfter {
+				numReconcielAfters++
+			}
+			if numReconcielAfters != 1 {
+				t.Errorf("expected to get exactly one reconcileAfter, got %d", numReconcielAfters)
+			}
+
+			pods := &corev1.PodList{}
+			if err := r.buildClients[pja.Spec.Cluster].List(context.Background(), pods); err != nil {
+				t.Fatalf("failed to list pods: %v", err)
+			}
+			if n := len(pods.Items); n != 1 {
+				t.Errorf("expected exactly one pod, got %d", n)
+			}
+		}
+	}
 	pja := &prowv1.ProwJob{
 		ObjectMeta: metav1.ObjectMeta{Name: "a"},
 		Spec: prowv1.ProwJobSpec{
@@ -401,63 +468,15 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 	}
 	pjb := pja.DeepCopy()
 	pjb.Name = "b"
-	pjClient := &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient(pja, pjb)}
 
-	cfg := func() *config.Config {
-		return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{Controller: config.Controller{
-			JobURLTemplate: &template.Template{},
-		}}}}
-	}
+	t.Run("job level MaxConcurrency", testConcurrency(pja.DeepCopy(), pjb))
 
-	r := newReconciler(context.Background(), pjClient, nil, cfg, nil, "")
-	r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
-
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
-	// Give capacity of two so this doesn't stuck the test if we have a bug that results in two reconcile afters
-	gotReconcileAfter := make(chan struct{}, 2)
-
-	startAsyncReconcile := func(pjName string) {
-		go func() {
-			defer wg.Done()
-			result, err := r.Reconcile(context.Background(), reconcile.Request{NamespacedName: types.NamespacedName{Name: pjName}})
-			if err != nil {
-				t.Errorf("reconciliation of pj %s failed: %v", pjName, err)
-			}
-			if result.RequeueAfter == time.Second {
-				gotReconcileAfter <- struct{}{}
-				return
-			}
-			pj := &prowv1.ProwJob{}
-			if err := r.pjClient.Get(context.Background(), types.NamespacedName{Name: pjName}, pj); err != nil {
-				t.Errorf("failed to get prowjob %s after reconciliation: %v", pjName, err)
-			}
-			if pj.Status.State != prowv1.PendingState {
-				t.Error("pj wasn't in pending state, reconciliation didn't wait the change to appear in the cache")
-			}
-		}()
-	}
-	startAsyncReconcile(pja.Name)
-	startAsyncReconcile(pjb.Name)
-
-	wg.Wait()
-	close(gotReconcileAfter)
-
-	var numReconcielAfters int
-	for range gotReconcileAfter {
-		numReconcielAfters++
-	}
-	if numReconcielAfters != 1 {
-		t.Errorf("expected to get exactly one reconcileAfter, got %d", numReconcielAfters)
-	}
-
-	pods := &corev1.PodList{}
-	if err := r.buildClients[pja.Spec.Cluster].List(context.Background(), pods); err != nil {
-		t.Fatalf("failed to list pods: %v", err)
-	}
-	if n := len(pods.Items); n != 1 {
-		t.Errorf("expected exactly one pod, got %d", n)
-	}
+	pja.Spec.MaxConcurrency = 0
+	pja.Spec.JobQueueName = "queue-1"
+	pjb = pja.DeepCopy()
+	pjb.Name = "b"
+	pjb.Spec.Job = "max-1-same-queue"
+	t.Run("queue level JobQueueCapacities", testConcurrency(pja, pjb))
 }
 
 // eventuallyConsistentClient executes patch and create  operations with a delay but instantly returns, before applying the change.
@@ -492,9 +511,10 @@ func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj ctrlrunti
 func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	t.Parallel()
 	r := &reconciler{
-		log:          logrus.NewEntry(logrus.New()),
-		buildClients: map[string]ctrlruntimeclient.Client{"default": &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}},
-		config:       func() *config.Config { return &config.Config{} },
+		log: logrus.NewEntry(logrus.New()),
+		buildClients: map[string]buildClient{"default": buildClient{
+			Client: &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}}},
+		config: func() *config.Config { return &config.Config{} },
 	}
 	pj := &prowv1.ProwJob{
 		ObjectMeta: metav1.ObjectMeta{Name: "name"},
@@ -510,17 +530,6 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{Name: "name"}, &corev1.Pod{}); err != nil {
 		t.Errorf("couldn't get pod, this likely means startPod didn't block: %v", err)
 	}
-}
-
-type erroringFakeCtrlRuntimeClient struct {
-	ctrlruntimeclient.Client
-}
-
-func (p *erroringFakeCtrlRuntimeClient) List(
-	ctx context.Context,
-	objs ctrlruntimeclient.ObjectList,
-	opts ...ctrlruntimeclient.ListOption) error {
-	return errors.New("could not list resources")
 }
 
 type fakeOpener struct {
@@ -550,50 +559,83 @@ func TestSyncClusterStatus(t *testing.T) {
 		location         string
 		statuses         map[string]ClusterStatus
 		expectedStatuses map[string]ClusterStatus // This is set to statuses ^^ if unspecified.
-		knownClusters    sets.Set[string]
+		knownClusters    map[string]rest.Config
 		noWriteExpected  bool
 	}{
 		{
 			name:            "No location set, don't upload.",
 			statuses:        map[string]ClusterStatus{"default": ClusterStatusReachable},
-			knownClusters:   sets.New[string]("default"),
+			knownClusters:   map[string]rest.Config{"default": rest.Config{}},
 			noWriteExpected: true,
 		},
 		{
 			name:          "Single cluster reachable",
 			location:      "gs://my-bucket/build-cluster-statuses.json",
 			statuses:      map[string]ClusterStatus{"default": ClusterStatusReachable},
-			knownClusters: sets.New[string]("default"),
-		},
-		{
-			name:          "Single cluster unreachable",
-			location:      "gs://my-bucket/build-cluster-statuses.json",
-			statuses:      map[string]ClusterStatus{"default": ClusterStatusUnreachable},
-			knownClusters: sets.New[string]("default"),
+			knownClusters: map[string]rest.Config{"default": rest.Config{}},
 		},
 		{
 			name:             "Single cluster build manager creation failed",
 			location:         "gs://my-bucket/build-cluster-statuses.json",
 			expectedStatuses: map[string]ClusterStatus{"default": ClusterStatusNoManager},
-			knownClusters:    sets.New[string]("default"),
+			knownClusters:    map[string]rest.Config{"default": rest.Config{}},
 		},
 		{
 			name:     "Multiple clusters mixed reachability",
 			location: "gs://my-bucket/build-cluster-statuses.json",
 			statuses: map[string]ClusterStatus{
-				"default":            ClusterStatusReachable,
-				"test-infra-trusted": ClusterStatusReachable,
-				"sad-build-cluster":  ClusterStatusUnreachable,
+				"default":                     ClusterStatusReachable,
+				"test-infra-trusted":          ClusterStatusReachable,
+				"cluster-error":               ClusterStatusError,
+				"cluster-missing-permissions": ClusterStatusMissingPermissions,
 			},
 			expectedStatuses: map[string]ClusterStatus{
-				"default":                  ClusterStatusReachable,
-				"test-infra-trusted":       ClusterStatusReachable,
-				"sad-build-cluster":        ClusterStatusUnreachable,
-				"always-sad-build-cluster": ClusterStatusNoManager,
+				"default":                     ClusterStatusReachable,
+				"test-infra-trusted":          ClusterStatusReachable,
+				"always-sad-build-cluster":    ClusterStatusNoManager,
+				"cluster-error":               ClusterStatusError,
+				"cluster-missing-permissions": ClusterStatusMissingPermissions,
 			},
-			knownClusters: sets.New[string]("default", "test-infra-trusted", "sad-build-cluster", "always-sad-build-cluster"),
+			knownClusters: map[string]rest.Config{
+				"default":                     rest.Config{},
+				"test-infra-trusted":          rest.Config{},
+				"always-sad-build-cluster":    rest.Config{},
+				"cluster-error":               rest.Config{},
+				"cluster-missing-permissions": rest.Config{},
+			},
 		},
 	}
+	successfulFakeClient := &k8sFake.Clientset{}
+	successfulFakeClient.Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+		r := &authorizationv1.SelfSubjectAccessReview{
+			Status: authorizationv1.SubjectAccessReviewStatus{
+				Allowed: true,
+				Reason:  "Success!",
+			},
+		}
+		return true, r, nil
+	})
+
+	erroringFakeClient := &k8sFake.Clientset{}
+	erroringFakeClient.Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("could not create SelfSubjectAccessReview")
+
+	})
+
+	missingPermissionsFakeClient := &k8sFake.Clientset{}
+	missingPermissionsFakeClient.Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+		r := &authorizationv1.SelfSubjectAccessReview{
+			Status: authorizationv1.SubjectAccessReviewStatus{
+				Allowed: false,
+				Reason:  "Permissions missing!",
+			},
+		}
+		return true, r, nil
+	})
+
+	// Whether the authz client runs successfully or not depends on the use of
+	// the plain FakeAuthorizationV1 (always success) or erroringFakeAuthzClient
+	// (always fail).
 	for i := range tcs {
 		tc := tcs[i]
 		t.Run(tc.name, func(t *testing.T) {
@@ -601,13 +643,25 @@ func TestSyncClusterStatus(t *testing.T) {
 			cfg := func() *config.Config {
 				return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{BuildClusterStatusFile: tc.location}}}
 			}
-			clients := map[string]ctrlruntimeclient.Client{}
+
+			clients := map[string]buildClient{}
 			for alias, status := range tc.statuses {
 				switch status {
 				case ClusterStatusReachable:
-					clients[alias] = fakectrlruntimeclient.NewFakeClient()
-				case ClusterStatusUnreachable:
-					clients[alias] = &erroringFakeCtrlRuntimeClient{fakectrlruntimeclient.NewFakeClient()}
+					clients[alias] = buildClient{
+						Client: fakectrlruntimeclient.NewFakeClient(),
+						ssar:   successfulFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
+				case ClusterStatusError:
+					clients[alias] = buildClient{
+						Client: fakectrlruntimeclient.NewFakeClient(),
+						ssar:   erroringFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
+				case ClusterStatusMissingPermissions:
+					clients[alias] = buildClient{
+						Client: fakectrlruntimeclient.NewFakeClient(),
+						ssar:   missingPermissionsFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
 				}
 			}
 			// Test harness signals true to indicate completion of a write, false to indicate

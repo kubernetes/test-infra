@@ -14,7 +14,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
       resources:
         limits:
           cpu: 2
@@ -35,7 +35,7 @@ periodics:
     description: Runs unit tests
 
 - name: periodic-cluster-api-provider-vsphere-test-integration-main
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -52,7 +52,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -96,7 +96,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
       command:
       - runner.sh
       args:
@@ -139,7 +139,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
       command:
       - runner.sh
       args:
@@ -164,6 +164,7 @@ periodics:
     description: Runs conformance tests for CAPV
 
 - name: periodic-cluster-api-provider-vsphere-coverage-main
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   rerun_auth_config:
@@ -181,7 +182,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.27
       command:
       - runner.sh
       - bash
@@ -203,6 +204,9 @@ periodics:
           add: ["NET_ADMIN"]
       resources:
         requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
           cpu: "4000m"
           memory: "6Gi"
   annotations:

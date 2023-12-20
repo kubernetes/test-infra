@@ -31,10 +31,6 @@ import (
 
 var defaultBranch = localgit.DefaultBranch("")
 
-func TestDefaultProwYAMLGetter(t *testing.T) {
-	testDefaultProwYAMLGetter(localgit.New, t)
-}
-
 func TestDefaultProwYAMLGetterV2(t *testing.T) {
 	testDefaultProwYAMLGetter(localgit.NewV2, t)
 }
@@ -111,7 +107,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated presubmit job: hans"
+				expectedErrMsg := "duplicated presubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -132,7 +128,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated presubmit job: hans"
+				expectedErrMsg := "duplicated presubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -216,7 +212,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated postsubmit job: hans"
+				expectedErrMsg := "duplicated postsubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -237,7 +233,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := "duplicated postsubmit job: hans"
+				expectedErrMsg := "duplicated postsubmit jobs (consider both inrepo and central config): [hans]"
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -617,20 +613,28 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 
 			var p *ProwYAML
 			if headSHA == baseSHA {
-				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "main", baseSHA)
 			} else {
-				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "main", baseSHA, headSHA)
 			}
 
 			if err := tc.validate(p, err); err != nil {
 				t.Fatal(err)
 			}
+
+			// Empty base branch string shouldn't affect how we can fetch the configs.
+			if headSHA == baseSHA {
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "", baseSHA)
+			} else {
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "", baseSHA, headSHA)
+			}
+
+			if err := tc.validate(p, err); err != nil {
+				t.Fatal(err)
+			}
+
 		})
 	}
-}
-
-func TestDefaultProwYAMLGetter_RejectsJustOrg(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.New, t)
 }
 
 func TestDefaultProwYAMLGetter_RejectsJustOrgV2(t *testing.T) {

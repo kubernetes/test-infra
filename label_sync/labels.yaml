@@ -495,6 +495,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to SIG Etcd.
+      name: sig/etcd
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Instrumentation.
       name: sig/instrumentation
       target: both
@@ -1087,6 +1093,11 @@ repos:
         addedBy: anyone
         previously:
           - name: area/infra/terraform
+      - color: 0ffa16
+        description: Indicates a PR is trusted, used by tide for auto-merging PRs.
+        name: skip-review
+        target: prs
+        addedBy: autobump bot
   kubernetes/kubernetes:
     labels:
       - color: 0052cc
@@ -2121,6 +2132,12 @@ repos:
         name: kind/user-story
         target: issues
         addedBy: humans
+      - color: c7def8
+        description: PRs related to Gateway Enhancement Proposal(GEP)
+        name: kind/gep
+        prowPlugin: label
+        target: prs
+        addedBy: anyone
   kubernetes-sigs/kind:
     labels:
       - color: 19abff

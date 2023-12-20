@@ -3,6 +3,8 @@ postsubmits:
   - name: post-org-peribolos
     cluster: test-infra-trusted
     decorate: true
+    decoration_config:
+      timeout: 150m
     branches:
     - ^main$
     max_concurrency: 1
@@ -171,7 +173,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20230923-2d7622ba27
+      - image: gcr.io/k8s-prow/hmac:v20231219-5ff56c5221
         command:
         - hmac
         args:
@@ -221,7 +223,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-test-infra
         command:
         - runner.sh
         args:
@@ -387,7 +389,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20230923-2d7622ba27
+        image: gcr.io/k8s-prow/gencred:v20231219-5ff56c5221
         command:
         - gencred
         args:
@@ -434,7 +436,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20230923-2d7622ba27
+      - image: gcr.io/k8s-prow/configurator:v20231219-5ff56c5221
         command:
         - configurator
         args:
@@ -548,6 +550,8 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   cluster: test-infra-trusted
   decorate: true
+  decoration_config:
+    timeout: 150m
   max_concurrency: 1
   extra_refs:
   - org: kubernetes
@@ -582,7 +586,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230923-2d7622ba27
+    - image: gcr.io/k8s-prow/generic-autobumper:v20231219-5ff56c5221
       command:
       - generic-autobumper
       args:
@@ -619,7 +623,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230923-2d7622ba27
+    - image: gcr.io/k8s-prow/generic-autobumper:v20231219-5ff56c5221
       command:
       - generic-autobumper
       args:
@@ -689,7 +693,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20230923-2d7622ba27
+      image: gcr.io/k8s-prow/branchprotector:v20231219-5ff56c5221
       command:
       - branchprotector
       args:
@@ -723,7 +727,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20230923-2d7622ba27
+      image: gcr.io/k8s-prow/label_sync:v20231219-5ff56c5221
       command:
       - label_sync
       args:
@@ -767,7 +771,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20230923-2d7622ba27
+      image: gcr.io/k8s-prow/gencred:v20231219-5ff56c5221
       command:
       - gencred
       args:
@@ -846,7 +850,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20230923-2d7622ba27
+    - image: gcr.io/k8s-prow/checkconfig:v20231219-5ff56c5221
       command:
       - checkconfig
       args:

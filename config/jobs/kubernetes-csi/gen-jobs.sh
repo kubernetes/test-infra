@@ -24,29 +24,29 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.24
-1.25
 1.26
+1.27
+1.28
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.24
-1.25
 1.26
+1.27
+1.28
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.26"
+experimental_k8s_version="1.28"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.25" # TODO: bump to 1.26 after testing a pull job
+latest_stable_k8s_version="1.26" # TODO: bump to 1.26 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.11.0"
+hostpath_driver_version="v1.12.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -140,7 +140,7 @@ job_cluster() {
   local repo=$1
 
   case "$repo" in
-   # Add any jobs that should be excluded from the community clusters here 
+   # Add any jobs that should be excluded from the community clusters here
    "")
      echo "default"
      ;;
@@ -493,6 +493,7 @@ EOF
       cat >>"$base/$repo/$repo-config.yaml" <<EOF
 
   - name: $(job_name "pull" "$repo" "canary")
+    cluster: $(job_cluster "$repo")
     optional: true
     decorate: true
     skip_report: false
@@ -665,6 +666,7 @@ for deployment_suffix in "" "-test"; do
                 cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "$deployment$deployment_suffix" "$kubernetes")
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes-csi

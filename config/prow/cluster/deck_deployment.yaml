@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20230923-2d7622ba27
+        image: gcr.io/k8s-prow/deck:v20231219-5ff56c5221
         imagePullPolicy: Always
         ports:
         - name: http
@@ -63,7 +63,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig:/etc/kubeconfig-eks-prow-build-cluster/kubeconfig"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig:/etc/kubeconfig-eks-prow-build-cluster/kubeconfig::/etc/kubeconfig-k8s-infra-kops-prow-build/kubeconfig"
         # AWS_ variables needed to assume role to access the prow-build-cluster EKS cluster.
         - name: AWS_ROLE_ARN
           value: arn:aws:iam::468814281478:role/Prow-EKS-Admin
@@ -92,6 +92,9 @@ spec:
           readOnly: true
         - mountPath: /etc/kubeconfig-eks-prow-build-cluster
           name: kubeconfig-eks-prow-build-cluster
+          readOnly: true
+        - mountPath: /etc/kubeconfig-k8s-infra-kops-prow-build
+          name: kubeconfig-k8s-infra-kops-prow-build
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -152,6 +155,10 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig-eks-prow-build-cluster
+      - name: kubeconfig-k8s-infra-kops-prow-build
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-k8s-infra-kops-prow-build
       - name: config
         configMap:
           name: config

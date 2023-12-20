@@ -57,7 +57,7 @@ func (p *parsingSecretReloader[T]) reloadSecret(reloadCensor func()) {
 			// Check if the file changed to see if it needs to be re-read.
 			secretStat, err := os.Stat(p.path)
 			if err != nil {
-				logger.WithField("secret-path", p.path).WithError(err).Error("Error loading secret file.")
+				logger.WithField("secret-path", p.path).WithError(err).Warn("Error loading secret file.")
 				continue
 			}
 

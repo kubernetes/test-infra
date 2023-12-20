@@ -2,6 +2,10 @@ module k8s.io/test-infra/hack/tools
 
 go 1.21
 
+// Please DO NOT add any "replace" directives to go.mod files in this repo.
+// See the following for an explanation of why this is problematic for published
+// packages: https://github.com/golang/go/issues/44840#issuecomment-1651863470
+
 require (
 	github.com/bazelbuild/buildtools v0.0.0-20211007154642-8dd79e56e98e
 	github.com/client9/misspell v0.3.4

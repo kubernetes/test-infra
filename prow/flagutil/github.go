@@ -31,7 +31,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/git"
 	gitv2 "k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 )
@@ -337,57 +336,35 @@ func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client
 // TODO(chaodaiG): move this logic to somewhere more appropriate instead of in
 // github.go.
 func (o *GitHubOptions) GitClientFactory(cookieFilePath string, cacheDir *string, dryRun, persistCache bool) (gitv2.ClientFactory, error) {
-	var gitClientFactory gitv2.ClientFactory
-	if cookieFilePath != "" && o.TokenPath == "" && o.AppPrivateKeyPath == "" {
-		opts := gitv2.ClientFactoryOpts{
-			CookieFilePath: cookieFilePath,
-			Persist:        &persistCache,
-		}
-		if cacheDir != nil && *cacheDir != "" {
-			opts.CacheDirBase = cacheDir
-		}
-		var err error
-		gitClientFactory, err = gitv2.NewClientFactory(opts.Apply)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create git client from cookieFile: %v\n(cookieFile is only for Gerrit)", err)
-		}
-	} else {
-		gitClient, err := o.GitClient(dryRun)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting git client: %w", err)
-		}
-		gitClientFactory = gitv2.ClientFactoryFrom(gitClient)
+	opts := gitv2.ClientFactoryOpts{
+		Censor:         secret.Censor,
+		CookieFilePath: cookieFilePath,
+		Host:           o.Host,
+		Persist:        &persistCache,
+	}
+	if cacheDir != nil && *cacheDir != "" {
+		opts.CacheDirBase = cacheDir
 	}
 
+	if cookieFilePath == "" && (o.TokenPath != "" || o.AppPrivateKeyPath != "") {
+		// Make a client with auth suitable for GitHub
+		user, generator, err := o.getGitHubAuthentication(dryRun)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get git authentication: %w", err)
+		}
+		opts.Username = func() (string, error) { return user, nil }
+		opts.Token = generator
+	}
+	// If the client is for Gerrit we're already set with the cookie filepath.
+
+	gitClientFactory, err := gitv2.NewClientFactory(opts.Apply)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create git client factory: %w", err)
+	}
 	return gitClientFactory, nil
 }
 
-// GitClient returns a Git client.
-func (o *GitHubOptions) GitClient(dryRun bool) (client *git.Client, err error) {
-	client, err = git.NewClientWithHost(o.Host)
-	if err != nil {
-		return nil, err
-	}
-
-	// We must capture the value of client here to prevent issues related
-	// to the use of named return values when an error is encountered.
-	// Without this, we risk a nil pointer dereference.
-	defer func(client *git.Client) {
-		if err != nil {
-			client.Clean()
-		}
-	}(client)
-
-	user, generator, err := o.getGitAuthentication(dryRun)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get git authentication: %w", err)
-	}
-	client.SetCredentials(user, generator)
-
-	return client, nil
-}
-
-func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenGenerator, error) {
+func (o *GitHubOptions) getGitHubAuthentication(dryRun bool) (string, gitv2.TokenGetter, error) {
 	// the client must have been created at least once for us to have generators
 	if o.userGenerator == nil {
 		if _, err := o.GitHubClient(dryRun); err != nil {
@@ -399,7 +376,7 @@ func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenG
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting bot name: %w", err)
 	}
-	return login, git.GitTokenGenerator(o.tokenGenerator), nil
+	return login, gitv2.TokenGetter(o.tokenGenerator), nil
 }
 
 func (o *GitHubOptions) appPrivateKeyGenerator() (func() *rsa.PrivateKey, error) {

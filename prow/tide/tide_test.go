@@ -1005,10 +1005,6 @@ func TestDividePool(t *testing.T) {
 	}
 }
 
-func TestPickBatch(t *testing.T) {
-	testPickBatch(localgit.New, t)
-}
-
 func TestPickBatchV2(t *testing.T) {
 	testPickBatch(localgit.NewV2, t)
 }
@@ -1409,10 +1405,6 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestTakeAction(t *testing.T) {
-	testTakeAction(localgit.New, t)
 }
 
 func TestTakeActionV2(t *testing.T) {
@@ -3176,7 +3168,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "always"},
 			}},
-			prowYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+			prowYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 				if len(headRefs) == 1 && headRefs[0] == "1" {
 					return nil, errors.New("you shall not get jobs")
 				}
@@ -4011,7 +4003,7 @@ func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.Object
 }
 
 func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit) config.ProwYAMLGetter {
-	return func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+	return func(_ *config.Config, _ git.ClientFactory, _, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 		if len(headRefsToLookFor) != len(headRefs) {
 			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
 		}

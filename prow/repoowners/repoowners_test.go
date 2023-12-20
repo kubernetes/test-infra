@@ -293,10 +293,6 @@ labels:
 		nil
 }
 
-func TestOwnersDirDenylist(t *testing.T) {
-	testOwnersDirDenylist(localgit.New, t)
-}
-
 func TestOwnersDirDenylistV2(t *testing.T) {
 	testOwnersDirDenylist(localgit.NewV2, t)
 }
@@ -415,10 +411,6 @@ func testOwnersDirDenylist(clients localgit.Clients, t *testing.T) {
 	}
 }
 
-func TestOwnersRegexpFiltering(t *testing.T) {
-	testOwnersRegexpFiltering(localgit.New, t)
-}
-
 func TestOwnersRegexpFilteringV2(t *testing.T) {
 	testOwnersRegexpFiltering(localgit.NewV2, t)
 }
@@ -454,10 +446,6 @@ func testOwnersRegexpFiltering(clients localgit.Clients, t *testing.T) {
 
 func strP(str string) *string {
 	return &str
-}
-
-func TestLoadRepoOwners(t *testing.T) {
-	testLoadRepoOwners(localgit.New, t)
 }
 
 func TestLoadRepoOwnersV2(t *testing.T) {
@@ -1044,6 +1032,13 @@ func TestGetApprovers(t *testing.T) {
 			expectedOwnersPath: noParentsFilterDir,
 			expectedLeafOwners: ro.approvers[noParentsFilterDir][txtFileReg],
 			expectedAllOwners:  ro.approvers[noParentsFilterDir][txtFileReg],
+		},
+		{
+			name:               "Modified regexp not matched file in NoParentOwners Dir Only",
+			filePath:           filepath.Join(noParentsFilterDir, "testFile.go_to_parent"),
+			expectedOwnersPath: baseDir,
+			expectedLeafOwners: ro.approvers[baseDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil],
 		},
 		{
 			name:               "Modified Nonexistent Dir (Default to Base)",

@@ -20,7 +20,7 @@ periodics:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         args:
@@ -32,7 +32,7 @@ periodics:
           kind build node-image --image=dra/node:latest . &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
           kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation -ginkgo.skip=\[Serial\]
 
         # docker-in-docker needs privileged mode
         securityContext:
@@ -47,9 +47,10 @@ periodics:
 
   # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   - name: ci-node-e2e-crio-dra
+    cluster: k8s-infra-prow-build
     interval: 6h
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation
+      testgrid-dashboards: sig-node-cri-o, sig-node-dynamic-resource-allocation
       testgrid-tab-name: ci-node-e2e-crio-dra
       testgrid-alert-email: eduard.bartosh@intel.com
     labels:
@@ -70,14 +71,13 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project-type=node-e2e-project
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=resource.k8s.io/v1alpha2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -90,6 +90,13 @@ periodics:
           value: "1"
         - name: GOPATH
           value: /go
+        resources:
+          limits:
+            cpu: 2
+            memory: 9Gi
+          requests:
+            cpu: 2
+            memory: 9Gi
 
   # This job runs the same tests as ci-node-e2e-crio-dra with Containerd 1.7 runtime
   - name: ci-node-e2e-containerd-1-7-dra
@@ -116,7 +123,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

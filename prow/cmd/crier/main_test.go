@@ -188,6 +188,23 @@ func TestOptions(t *testing.T) {
 			name: "k8s-gcs with negative report fraction rejects",
 			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
 		},
+		{
+			name: "resultstore workers, sets workers",
+			args: []string{"--resultstore-workers=3", "--config-path=foo"},
+			expected: &options{
+				resultStoreWorkers: 3,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 200,
+				},
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+			},
+		},
 	}
 
 	for _, tc := range cases {

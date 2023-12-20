@@ -28,6 +28,10 @@ triggers:
   join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
   trigger_github_workflows: true
 - repos:
+  - etcd-io
+  join_org_url: "https://github.com/etcd-io/etcd/blob/main/CONTRIBUTING.md"
+  trigger_github_workflows: true
+- repos:
   - bazelbuild
 - repos:
   - kubernetes/utils
@@ -235,6 +239,7 @@ lgtm:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/prow
+  - kubernetes-sigs/release-actions
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
@@ -244,6 +249,7 @@ lgtm:
   - kubernetes/cloud-provider-aws
   - kubernetes/k8s.io
   - kubernetes/kops
+  - kubernetes/publishing-bot
   - kubernetes/release
   - kubernetes/repo-infra
   - kubernetes/sig-release
@@ -458,29 +464,28 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.29
+    master: v1.30
   kubernetes/kubernetes:
-    master: v1.29
+    master: v1.30
+    release-1.29: v1.29
     release-1.28: v1.28
     release-1.27: v1.27
     release-1.26: v1.26
-    release-1.25: v1.25
-    release-1.24: v1.24
-    release-1.23: v1.23
   kubernetes/org:
-    main: v1.29
+    main: v1.30
   kubernetes/release:
-    master: v1.29
+    master: v1.30
   kubernetes/sig-release:
-    master: v1.29
+    master: v1.30
   kubernetes/test-infra:
-    master: v1.29
+    master: v1.30
   kubernetes-sigs/kueue:
-    main: v0.5
+    main: v0.6
     release-0.3: v0.3
     release-0.4: v0.4
+    release-0.5: v0.5
   kubernetes/k8s.io:
-    main: v1.29
+    main: v1.30
   kubernetes/kops:
     master: v1.29
     release-1.28: v1.28
@@ -497,7 +502,8 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
-    main: v1.6
+    main: v1.7
+    release-1.6: v1.6
     release-1.5: v1.5
     release-1.4: v1.4
     release-1.3: v1.3
@@ -512,9 +518,9 @@ milestone_applier:
     release-0.7: v0.7.x
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.12
+    main: v1.13
+    release-1.12: v1.12
     release-1.11: v1.11
-    release-1.10: v1.10
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -1095,6 +1101,19 @@ cherry_pick_unapproved:
 
     For details on the patch release process and schedule, see the [Patch Releases](https://k8s.io/releases/patch-releases) page.
 
+cherry_pick_approved:
+- org: kubernetes
+  repo: kubernetes
+  approvers: # List taken from: https://github.com/kubernetes/kubernetes/blob/a8f6ea24209b332217f7baa7c14248e8d0266d28/OWNERS_ALIASES#L101-L108
+  - cpanato
+  - jeremyrickard
+  - justaugustus
+  - palnabarun
+  - puerco
+  - saschagrunert
+  - Verolop
+  - xmudrii
+
 # Enabled plugins per repo.
 # Keys: Full repo name: "org/repo".
 # Values: List of plugins to run against the repo.
@@ -1222,6 +1241,7 @@ plugins:
   kubernetes/kubernetes:
     plugins:
     - blockade
+    - cherry-pick-approved
     - cherry-pick-unapproved
     - mergecommitblocker
     - milestone
@@ -1559,10 +1579,25 @@ plugins:
     - size
     - trigger
 
+  etcd-io:
+    plugins:
+    - assign
+    - trigger
+    - label
+    - pony
+    - retitle
+    - skip
+    - wip
+    - yuks
+
   containerd/containerd:
     plugins:
     - assign  # Allow /assign and /cc
     - trigger # Allow people to configure CI jobs to /test
+    - label   # Allow people to label issues and PRs
+    - mergecommitblocker # Mark PRs with merge commits
+    - size    # Mark size of PRs
+    - wip     # Mark draft PRs
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
     plugins:
@@ -1855,3 +1890,12 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  containerd/containerd:
+  - name: needs-rebase
+    events:
+    - issue_comment
+    - pull_request
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request

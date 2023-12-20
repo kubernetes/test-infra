@@ -10,6 +10,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+
     annotations:
@@ -34,7 +35,7 @@ presubmits:
       path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -44,20 +45,21 @@ presubmits:
         - --extract=local
         # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
         # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-        - --env=KUBE_NODE_OS_DISTRIBUTION=gci
-        - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
-        - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
+        - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
         - --gcp-node-image=gci
         - --gcp-nodes=4
-        - --gcp-project=k8s-jkns-pr-gce-gpus
+        - --gcp-project-type=gpu-project
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
           requests:
+            cpu: 2
             memory: "6Gi"
         securityContext:
           privileged: true

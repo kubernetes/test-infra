@@ -100,10 +100,6 @@ func newFakeGitHubClient(changed map[string]string, pr int) *fakegithub.FakeClie
 	}
 }
 
-func TestHandle(t *testing.T) {
-	testHandle(localgit.New, t)
-}
-
 func TestHandleV2(t *testing.T) {
 	testHandle(localgit.NewV2, t)
 }

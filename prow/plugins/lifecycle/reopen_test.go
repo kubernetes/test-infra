@@ -39,7 +39,7 @@ func (c *fakeClientReopen) ReopenIssue(owner, repo string, number int) error {
 	return nil
 }
 
-func (c *fakeClientReopen) ReopenPR(owner, repo string, number int) error {
+func (c *fakeClientReopen) ReopenPullRequest(owner, repo string, number int) error {
 	c.open = true
 	return nil
 }

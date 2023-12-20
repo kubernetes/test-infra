@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
 installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
@@ -46,7 +46,7 @@ installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
-  capz_release="release-1.11"
+  capz_release="release-1.12"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
@@ -358,6 +358,104 @@ periodics:
   annotations:
     testgrid-dashboards: provider-azure-${release}-signal
     testgrid-tab-name: capz-conformance
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+
+- interval: 24h
+  name: capz-conformance-ipv6-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: ${capz_periodic_branch_name}
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: ${ccm_branch}
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+    - image: ${kubekins_e2e_image}-master
+      command:
+      - runner.sh
+      - ./scripts/ci-conformance.sh
+      env:
+      - name: E2E_ARGS
+        value: "-kubetest.use-ci-artifacts"
+      - name: KUBERNETES_VERSION
+        value: "${kubernetes_version}"
+      - name: CONFORMANCE_WORKER_MACHINE_COUNT
+        value: "2"
+      - name: IP_FAMILY
+        value: "IPv6"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-conformance-ipv6
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+
+- interval: 24h
+  name: capz-conformance-dual-stack-${release/./-}
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: ${capz_periodic_branch_name}
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: ${ccm_branch}
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+    - image: ${kubekins_e2e_image}-master
+      command:
+      - runner.sh
+      - ./scripts/ci-conformance.sh
+      env:
+      - name: E2E_ARGS
+        value: "-kubetest.use-ci-artifacts"
+      - name: KUBERNETES_VERSION
+        value: "${kubernetes_version}"
+      - name: CONFORMANCE_WORKER_MACHINE_COUNT
+        value: "2"
+      - name: IP_FAMILY
+        value: "dual"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 1
+          memory: "4Gi"
+  annotations:
+    testgrid-dashboards: provider-azure-${release}-signal
+    testgrid-tab-name: capz-conformance-dual-stack
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
@@ -680,7 +778,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -739,7 +837,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -800,7 +898,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -858,7 +956,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

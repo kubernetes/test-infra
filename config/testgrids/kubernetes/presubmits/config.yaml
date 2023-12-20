@@ -57,9 +57,6 @@ dashboards:
   - name: pull-kubernetes-verify-govet-levee
     test_group_name: pull-kubernetes-verify-govet-levee
     base_options: width=10
-  - name: pull-kubernetes-files-remake
-    test_group_name: pull-kubernetes-files-remake
-    base_options: width=10
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
@@ -74,8 +71,14 @@ dashboards:
   - name: pull-kubernetes-e2e-ec2
     test_group_name: pull-kubernetes-e2e-ec2
     base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-arm64
+    test_group_name: pull-kubernetes-e2e-ec2-arm64
+    base_options: width=10
   - name: pull-kubernetes-e2e-ec2-conformance
     test_group_name: pull-kubernetes-e2e-ec2-conformance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-ec2-conformance-arm64
+    test_group_name: pull-kubernetes-e2e-ec2-conformance-arm64
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-cos
     test_group_name: pull-kubernetes-e2e-gce-cos
@@ -101,6 +104,12 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-alpha-features
     test_group_name: pull-kubernetes-e2e-kind-alpha-features
     base_options: width=10
+  - name: pull-kubernetes-e2e-kind-beta-features
+    test_group_name: pull-kubernetes-e2e-kind-beta-features
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features
+    test_group_name: pull-kubernetes-e2e-kind-alpha-beta-features
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-cos-alpha-features
     test_group_name: pull-kubernetes-e2e-gce-cos-alpha-features
     base_options: width=10
@@ -118,9 +127,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-node-e2e-containerd-features
     test_group_name: pull-kubernetes-node-e2e-containerd-features
-    base_options: width=10
-  - name: pull-kubernetes-e2e-kops-aws
-    test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-storage-disruptive
     test_group_name: pull-kubernetes-e2e-gce-storage-disruptive

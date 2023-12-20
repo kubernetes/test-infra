@@ -1,6 +1,9 @@
 ---
 variant: fcos
 version: 1.4.0
+kernel_arguments:
+  should_not_exist:
+    - mitigations=auto,nosmt
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
@@ -27,6 +30,11 @@ storage:
       contents:
         local: 99-e2e-sysctl.conf
       mode: 0644
+    - path: /etc/ssh-key-secret/ssh-public
+      contents:
+        # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
+        source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
+      mode: 0644
 systemd:
   units:
     - name: configure-sysctl.service
@@ -48,7 +56,7 @@ systemd:
         [Unit]
         Description=Download and install required tools.
         Before=crio-install.service
-        After=network-online.target
+        After=NetworkManager-wait-online.service
 
         [Service]
         Type=oneshot
@@ -90,18 +98,39 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="COMMIT=0f501d4a7c33157e9662f2729c72f8c33baffe84"
+        Environment="SCRIPT_COMMIT=7cb9a19ff190abb04fa627b904fc7d352c250912"
+        Environment="CRIO_COMMIT=297d07c1c86f251fcb9c8c491a56508e6835cccb"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
-        ExecStartPre=mount -o remount,rw /usr
+        ExecStartPre=mount -o remount,rw /dev/sda4 /usr
         ExecStartPre=rm -f /usr/bin/runc
         ExecStartPre=bash -c '\
           curl --fail --retry 5 --retry-delay 3 --silent --show-error \
-            https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\
-              bash -s -- -t $COMMIT'
+            https://raw.githubusercontent.com/cri-o/packaging/$SCRIPT_COMMIT/get |\
+              bash -s -- -t $CRIO_COMMIT'
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
         ExecStart=systemctl enable --now crio.service
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - name: authorized-key.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Copy authorized keys
+        Before=crio-install.service
+        After=NetworkManager-wait-online.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c '\
+          /usr/bin/mkdir -m 0700 -p /home/core/.ssh && \
+          /usr/bin/cat /etc/ssh-key-secret/ssh-public \
+            >> /home/core/.ssh/authorized_keys && \
+          /usr/bin/chown -R core:core /home/core/.ssh && \
+          /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
 
         [Install]
         WantedBy=multi-user.target

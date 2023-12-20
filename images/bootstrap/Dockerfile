@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iproute2 \
     iputils-ping \
     jq \
+    kmod \
     mercurial \
     openssh-client \
     pkg-config \
@@ -43,6 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-distutils \
     python3-gflags \
     python3-pip \
+    python3-venv \
     python3-yaml \
     rsync \
     unzip \

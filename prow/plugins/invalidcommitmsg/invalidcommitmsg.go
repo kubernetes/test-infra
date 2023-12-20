@@ -83,7 +83,7 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
+	ListPullRequestCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 }
 
 type commentPruner interface {
@@ -117,7 +117,7 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 	}
 	hasInvalidCommitMsgLabel := github.HasLabel(invalidCommitMsgLabel, labels)
 
-	allCommits, err := gc.ListPRCommits(org, repo, number)
+	allCommits, err := gc.ListPullRequestCommits(org, repo, number)
 	if err != nil {
 		return fmt.Errorf("error listing commits for pull request: %w", err)
 	}

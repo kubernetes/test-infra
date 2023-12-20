@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -16,7 +17,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -33,11 +34,19 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -54,7 +63,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -71,11 +80,19 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -92,7 +109,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -109,11 +126,19 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-full
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
+  cluster: k8s-infra-prow-build
   interval: 3h
   labels:
     preset-service-account: "true"
@@ -130,7 +155,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -147,11 +172,19 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-service-account: "true"
@@ -168,7 +201,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -185,12 +218,20 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-updater
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -215,19 +256,26 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=3
-      - --gcp-project=k8s-jkns-gci-autoscaling
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gce-autoscaling
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa-cm
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -243,20 +291,27 @@ periodics:
       - --cluster=hpa
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gci-autoscaling
       - --gcp-zone=us-west1-b
       - --provider=gce
       # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
       - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gci-gce-autoscaling-hpa-cm
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -281,19 +336,26 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=3
-      - --gcp-project=k8s-jkns-gci-autoscaling-migs
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gce-autoscaling-migs
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -309,20 +371,27 @@ periodics:
       - --cluster=hpa
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-gci-autoscaling-migs
       - --gcp-zone=us-west1-b
       - --provider=gce
       # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
       - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gci-gce-autoscaling-migs-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-autoscaling-hpa-cpu
+  cluster: k8s-infra-prow-build
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -346,7 +415,14 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=1
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
 
   annotations:
     # TODO: add to release blocking dashboards once run is successful

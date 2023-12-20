@@ -25,6 +25,24 @@ describe('sparkLinePath', () => {
     expect('handles scaling', 'M0,8h0V7h2V6h1V4h1V0h1V8', [2,4,8,16,32], 1, 8);
 })
 
+describe('spyglassURLForBuild', () => {
+    function expect(name, expected, ...args) {
+        it(name, function() {
+            assert.deepEqual(render.spyglassURLForBuild(...args), expected);
+        });
+    }
+    builds = {
+      jobPaths: {
+        'pr:pull-kubernetes-verify': 'gs://kubernetes-jenkins/pr-logs/pull/122078/pull-kubernetes-verify',
+        'pr:cloud-provider-gcp-e2e-full': 'gs://kubernetes-jenkins/pr-logs/pull/cloud-provider-gcp/636/cloud-provider-gcp-e2e-full',
+        'pr:pull-cluster-api-provider-azure-e2e': 'gs://kubernetes-jenkins/pr-logs/pull/kubernetes-sigs_cluster-api-provider-azure/4302/pull-cluster-api-provider-azure-e2e',
+      }
+    };
+    expect('handles k/k jobs', 'https://prow.k8s.io/view/gs/kubernetes-jenkins/pr-logs/pull/122272/pull-kubernetes-verify/1734547176656211968', {job: 'pr:pull-kubernetes-verify', number: '1734547176656211968', pr: '122272'});
+    expect('handles non-k/k jobs in the kubernetes org', 'https://prow.k8s.io/view/gs/kubernetes-jenkins/pr-logs/pull/cloud-provider-gcp/638/cloud-provider-gcp-e2e-full/1734630461432401920', {job: 'pr:cloud-provider-gcp-e2e-full', number: '1734630461432401920', pr: '638'});
+    expect('handles non-kubernetes org jobs', 'https://prow.k8s.io/view/gs/kubernetes-jenkins/pr-logs/pull/kubernetes-sigs_cluster-api-provider-azure/4345/pull-cluster-api-provider-azure-e2e/1734613965410930688', {job: 'pr:pull-cluster-api-provider-azure-e2e', number: '1734613965410930688', pr: '4345'});
+})
+
 describe('Clusters', () => {
     describe('refilter', () => {
         function expect(name, expected, clustered, opts) {

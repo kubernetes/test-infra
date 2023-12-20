@@ -332,10 +332,6 @@ func addFilesToRepo(lg *localgit.LocalGit, paths []string, ownersFile string) er
 	return lg.AddCommit("org", "repo", origFiles)
 }
 
-func TestHandle(t *testing.T) {
-	testHandle(localgit.New, t)
-}
-
 func TestHandleV2(t *testing.T) {
 	testHandle(localgit.NewV2, t)
 }
@@ -548,10 +544,6 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestParseOwnersFile(t *testing.T) {
-	testParseOwnersFile(localgit.New, t)
 }
 
 func TestParseOwnersFileV2(t *testing.T) {
@@ -876,10 +868,6 @@ var ownersAliasesPatch = map[string]string{
 `,
 }
 
-func TestNonCollaborators(t *testing.T) {
-	testNonCollaborators(localgit.New, t)
-}
-
 func TestNonCollaboratorsV2(t *testing.T) {
 	testNonCollaborators(localgit.NewV2, t)
 }
@@ -1147,10 +1135,6 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestHandleGenericComment(t *testing.T) {
-	testHandleGenericComment(localgit.New, t)
 }
 
 func TestHandleGenericCommentV2(t *testing.T) {
@@ -1446,10 +1430,6 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestOwnersRemoval(t *testing.T) {
-	testOwnersRemoval(localgit.New, t)
 }
 
 func TestOwnersRemovalV2(t *testing.T) {

@@ -8,13 +8,13 @@ presubmits:
     always_run: true
     path_alias: sigs.k8s.io/csi-driver-iscsi
     branches:
-    - master
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         args:

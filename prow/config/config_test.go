@@ -1145,6 +1145,64 @@ gerrit:
 	}
 }
 
+func TestDisabledClustersRawYaml(t *testing.T) {
+	t.Parallel()
+	var testCases = []struct {
+		name        string
+		expectError bool
+		rawConfig   string
+		expected    []string
+	}{
+		{
+			name:        "default value",
+			expectError: false,
+			rawConfig:   `a: b`,
+		},
+		{
+			name:        "basic case",
+			expectError: false,
+			rawConfig: `disabled_clusters:
+- build01
+- build08
+`,
+			expected: []string{"build01", "build08"},
+		},
+		{
+			name:        "duplicates without ordering",
+			expectError: false,
+			rawConfig: `disabled_clusters:
+- build08
+- build08
+- build01
+`,
+			expected: []string{"build08", "build08", "build01"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// save the config
+			prowConfigDir := t.TempDir()
+
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := os.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			cfg, err := Load(prowConfig, "", nil, "")
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
+			}
+
+			if d := cmp.Diff(tc.expected, cfg.DisabledClusters); d != "" {
+				t.Errorf("got d: %s", d)
+			}
+		})
+	}
+}
+
 func TestValidateAgent(t *testing.T) {
 	jenk := string(prowapi.JenkinsAgent)
 	k := string(prowapi.KubernetesAgent)
@@ -7468,7 +7526,7 @@ func TestGetProwYAMLDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T
 	}
 
 	c := &Config{}
-	if _, err := c.getProwYAMLWithDefaults(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+	if _, err := c.getProwYAMLWithDefaults(nil, "test", "main", baseSHAGetter, headSHAGetter); err != nil {
 		t.Fatalf("error calling GetProwYAML: %v", err)
 	}
 	if baseSHAGetterCalled {
@@ -7505,7 +7563,7 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 		},
 	}
 
-	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, "main", func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPresubmits: %v", err)
 	}
@@ -7543,7 +7601,7 @@ func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
 		},
 	}
 
-	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, "main", func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPostsubmits: %v", err)
 	}
@@ -7799,7 +7857,7 @@ func TestValidatePresubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
-			expectedError: "duplicated presubmit job: a",
+			expectedError: "duplicated presubmit jobs (consider both inrepo and central config): [a]",
 		},
 		{
 			name: "Duplicate jobname on different branches doesn't cause error",
@@ -7898,7 +7956,7 @@ func TestValidatePostsubmits(t *testing.T) {
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "foo"}},
 				{JobBase: JobBase{Name: "a"}, Reporter: Reporter{Context: "bar"}},
 			},
-			expectedError: "duplicated postsubmit job: a",
+			expectedError: "duplicated postsubmit jobs (consider both inrepo and central config): [a]",
 		},
 		{
 			name:          "Invalid JobBase causes error",

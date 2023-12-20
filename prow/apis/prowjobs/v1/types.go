@@ -350,7 +350,19 @@ func (rac *RerunAuthConfig) IsAllowAnyone() bool {
 }
 
 type ReporterConfig struct {
-	Slack *SlackReporterConfig `json:"slack,omitempty"`
+	ResultStore *ResultStoreReporter `json:"resultstore,omitempty"`
+	Slack       *SlackReporterConfig `json:"slack,omitempty"`
+}
+
+// TODO: This config is used only for alpha testing and will
+// likely move to ProwJobDefaults for flexibility.
+type ResultStoreReporter struct {
+	// Specifies the ResultStore InvocationAttributes.ProjectId, used
+	// for various quota and GUI access control purposes.
+	// In practice, it is generally the same as the Google Cloud
+	// Project ID or number of the job's GCS storage bucket.
+	// Required to write job results to ResultStore.
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 type SlackReporterConfig struct {
@@ -979,8 +991,16 @@ func (pp ProwPath) Bucket() string {
 	return pp.Host
 }
 
+func (pp ProwPath) BucketWithScheme() string {
+	return fmt.Sprintf("%s://%s", pp.StorageProvider(), pp.Bucket())
+}
+
 func (pp ProwPath) FullPath() string {
 	return pp.Host + pp.Path
+}
+
+func (pp *ProwPath) String() string {
+	return (*url.URL)(pp).String()
 }
 
 // ParsePath tries to extract the ProwPath from, e.g.:

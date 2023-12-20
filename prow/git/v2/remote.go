@@ -35,19 +35,24 @@ type RemoteResolverFactory interface {
 	// is useful for fetching refs and cloning.
 	CentralRemote(org, repo string) RemoteResolver
 	// PublishRemote returns a resolver for a remote server with a
-	// personal fork of the repository. This type of remote is most
+	// personal fork of the central repository. This type of remote is most
 	// useful for publishing local changes.
-	PublishRemote(org, repo string) RemoteResolver
+	PublishRemote(org, centralRepo string) ForkRemoteResolver
 }
 
 // RemoteResolver knows how to construct a remote URL for git calls
 type RemoteResolver func() (string, error)
 
+// ForkRemoteResolver knows how to construct a remote URL for git calls
+// It accepts a fork name since this may be different than the parent
+// repo name. If the forkName is "", the parent repo name is assumed.
+type ForkRemoteResolver func(forkName string) (string, error)
+
 // LoginGetter fetches a GitHub login on-demand
 type LoginGetter func() (login string, err error)
 
 // TokenGetter fetches a GitHub OAuth token on-demand
-type TokenGetter func() []byte
+type TokenGetter func(org string) (string, error)
 
 type sshRemoteResolverFactory struct {
 	host     string
@@ -65,8 +70,12 @@ func (f *sshRemoteResolverFactory) CentralRemote(org, repo string) RemoteResolve
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *sshRemoteResolverFactory) PublishRemote(_, repo string) RemoteResolver {
-	return func() (string, error) {
+func (f *sshRemoteResolverFactory) PublishRemote(_, centralRepo string) ForkRemoteResolver {
+	return func(forkName string) (string, error) {
+		repo := centralRepo
+		if forkName != "" {
+			repo = forkName
+		}
 		org, err := f.username()
 		if err != nil {
 			return "", err
@@ -87,52 +96,59 @@ type httpResolverFactory struct {
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
 func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
-	return HttpResolver(func() (*url.URL, error) {
-		scheme := "https"
-		if f.http {
-			scheme = "http"
-		}
-		return &url.URL{Scheme: scheme, Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
-	}, f.username, f.token)
+	return func() (string, error) {
+		return f.resolve(org, repo)
+	}
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
-	return HttpResolver(func() (*url.URL, error) {
-		scheme := "https"
-		if f.http {
-			scheme = "http"
+func (f *httpResolverFactory) PublishRemote(_, centralRepo string) ForkRemoteResolver {
+	return func(forkName string) (string, error) {
+		// For the publsh remote we use:
+		// - the user login rather than the central org
+		// - the forkName rather than the central repo name, if specified.
+		repo := centralRepo
+		if forkName != "" {
+			repo = forkName
 		}
 		if f.username == nil {
-			return nil, errors.New("username not configured, no publish repo available")
+			return "", errors.New("username not configured, no publish repo available")
 		}
-		o, err := f.username()
+		org, err := f.username()
 		if err != nil {
-			return nil, err
+			return "", fmt.Errorf("could not resolve username: %w", err)
 		}
-		return &url.URL{Scheme: scheme, Host: f.host, Path: fmt.Sprintf("%s/%s", o, repo)}, nil
-	}, f.username, f.token)
+		remote, err := f.resolve(org, repo)
+		if err != nil {
+			err = fmt.Errorf("could not resolve remote: %w", err)
+		}
+		return remote, err
+	}
 }
 
-// HttpResolver builds http URLs that may optionally contain simple auth credentials, resolved dynamically.
-func HttpResolver(remote func() (*url.URL, error), username LoginGetter, token TokenGetter) RemoteResolver {
-	return func() (string, error) {
-		remote, err := remote()
-		if err != nil {
-			return "", fmt.Errorf("could not resolve remote: %w", err)
-		}
-
-		if username != nil {
-			name, err := username()
-			if err != nil {
-				return "", fmt.Errorf("could not resolve username: %w", err)
-			}
-			remote.User = url.UserPassword(name, string(token()))
-		}
-
-		return remote.String(), nil
+// resolve builds the URL string for the given org/repo remote identifier, it
+// respects the configured scheme, and the dynamic username and credentials.
+func (f *httpResolverFactory) resolve(org, repo string) (string, error) {
+	scheme := "https"
+	if f.http {
+		scheme = "http"
 	}
+	remote := &url.URL{Scheme: scheme, Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}
+
+	if f.username != nil {
+		name, err := f.username()
+		if err != nil {
+			return "", fmt.Errorf("could not resolve username: %w", err)
+		}
+		token, err := f.token(org)
+		if err != nil {
+			return "", fmt.Errorf("could not resolve token: %w", err)
+		}
+		remote.User = url.UserPassword(name, token)
+	}
+
+	return remote.String(), nil
 }
 
 // pathResolverFactory generates resolvers for local path-based repositories,
@@ -151,9 +167,9 @@ func (f *pathResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
-	return func() (string, error) {
-		return path.Join(f.baseDir, org, repo), nil
+func (f *pathResolverFactory) PublishRemote(org, centralRepo string) ForkRemoteResolver {
+	return func(_ string) (string, error) {
+		return path.Join(f.baseDir, org, centralRepo), nil
 	}
 }
 
@@ -169,8 +185,8 @@ func (f *gerritResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 	}
 }
 
-func (f *gerritResolverFactory) PublishRemote(org, repo string) RemoteResolver {
-	return func() (string, error) {
+func (f *gerritResolverFactory) PublishRemote(org, repo string) ForkRemoteResolver {
+	return func(_ string) (string, error) {
 		return gerritsource.CloneURIFromOrgRepo(org, repo), nil
 	}
 }

@@ -1,0 +1,106 @@
+{
+  "ignition": {
+    "version": "3.3.0"
+  },
+  "kernelArguments": {
+    "shouldExist": [
+      "systemd.unified_cgroup_hierarchy=0"
+    ],
+    "shouldNotExist": [
+      "mitigations=auto,nosmt"
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/etc/zincati/config.d/90-disable-auto-updates.toml",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bupdates%5D%0Aenabled%20%3D%20false%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/root/kubelet-e2e.te",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/6RRy07DMBC8+ytG4gwCjkT9lsp1BrTKxjbOWhWK+u+ItiFpE07scWcf83B9aqsSXT1QaY98JV6enhvnCj+rFGJ0uJZ9ZUKy+YNy2FtzC4SPkmpetevAsrd+DUgUWx9J0bzEn5UZCeqHAa0UjJAUTBEKvREpM+JYxIjT/fi7KDHC58zYTguaQofe58tmoW9RGH1P1KgSu/nYybmH3bKufHHT3Dmvmo4TNmt9++f7++cLX7YZLAcWNC6mbdq10vcb7B8aZ3yK+nz+nEjjvgMAAP//f1Vw5EkCAAA="
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/crio/crio.conf.d/10-log-level.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bcrio.runtime%5D%0Alog_level%20%3D%20%22debug%22%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/crio/crio.conf.d/20-runtimes.conf",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/4pOLsrM1ysqzSvJzE2N5UpJTUsszSmJhwoo2CooFZXmJStxcaEohNHFIEZyLE7ZktTiEt2MxLyUnNSiWC6ocHxBYkkGyGT90uIi/Zz85MQc/aTMPH2IRYAAAAD//zwQewWRAAAA"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/crio/crio.conf.d/30-infra-container.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bcrio.runtime%5D%0Adrop_infra_ctr%20%3D%20false%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/sysctl.d/99-e2e-sysctl.conf",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/2SQvU7DQBCEez/FSG7BduKf4Eh0NBR06dH6bo1P8d1F3r3EvD2KCJFQqpW+LWbmy/EezMIkjCMvgefi5OynpxUU7B/SaWGy8nzFGuFpdT75AofJCZwgMFu2GOOS5Tg5Cz47oy4GKIvKEwY2lIQh36LsLS5uniGsoBvCxVnGG4+UZj2QHOWD1izHQMIWMcA7n0LyiCN0YmGcaU4sRZZjXXjcY1I9yb4sv5xOaShM9OUt7X5N9N5pWVM1Vp1pNrTth11XjdyZ2tKu3fZmbPuW25eaqOqyHIeJYX9L3QJBC0NjxBwv18HXNo+Ti+y/zNdm0zd11WSPQu+vnwAAAP//xE8bG4oBAAA="
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/ssh-key-secret/ssh-public",
+        "contents": {
+          "source": "data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA=="
+        },
+        "mode": 420
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=Configure required sysctls.\n\n[Service]\nType=oneshot\nExecStart=/usr/lib/systemd/systemd-sysctl\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "configure-sysctl.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Download and install required tools.\nBefore=crio-install.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  dbus-tools \\\n  checkpolicy\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "tools-install.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Setup SELinux policy\nAfter=tools-install.service\n\n[Service]\nType=oneshot\nExecStartPre=setenforce 1\nExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te\nExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod\nExecStartPre=semodule -i /root/kubelet-e2e.pp\nExecStartPre=mkdir -p /var/lib/kubelet\nExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "selinux-install.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nEnvironment=\"SCRIPT_COMMIT=7cb9a19ff190abb04fa627b904fc7d352c250912\"\nEnvironment=\"CRIO_COMMIT=297d07c1c86f251fcb9c8c491a56508e6835cccb\"\n\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=mount -o remount,rw /dev/sda4 /usr\nExecStartPre=rm -f /usr/bin/runc\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/packaging/$SCRIPT_COMMIT/get |\\\n      bash -s -- -t $CRIO_COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf\nExecStart=systemctl enable --now crio.service\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "crio-install.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Copy authorized keys\nBefore=crio-install.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '\\\n  /usr/bin/mkdir -m 0700 -p /home/core/.ssh \u0026\u0026 \\\n  /usr/bin/cat /etc/ssh-key-secret/ssh-public \\\n    \u003e\u003e /home/core/.ssh/authorized_keys \u0026\u0026 \\\n  /usr/bin/chown -R core:core /home/core/.ssh \u0026\u0026 \\\n  /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "authorized-key.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Allocate 1G hugepages.\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '/usr/bin/echo 1 \u003e \\\n  /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages'\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "allocate-1G-hugepages.service"
+      }
+    ]
+  }
+}

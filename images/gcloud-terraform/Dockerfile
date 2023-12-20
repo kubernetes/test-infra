@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:v20210618-2814345
+FROM gcr.io/k8s-prow/alpine:v20231107-7fb7c64d33
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -25,6 +25,7 @@ ENV IMAGE=${IMAGE_ARG}
 RUN apk update && apk add --no-cache \
     bash \
     git \
+    jq \
     python3 \
     make \
     rsync \
@@ -48,8 +49,13 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
-# Install terraform
-# Doc: https://pkgs.alpinelinux.org/packages?name=terraform&branch=v3.14&arch=x86_64
-RUN apk add --no-cache terraform==0.14.9-r4 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
+# Install latest terraform version directly from HashiCorp, because Alpine Linux
+# packages lag behind the latest versions (and we get a warning from terraform
+# itself when it detects that it is not the latest version).
+RUN version=`curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | jq -r .tag_name` \
+    && version=${version#v} \
+    && wget https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip \
+    && unzip terraform_${version}_linux_amd64.zip \
+    && mv terraform /usr/bin/terraform
 
 ENTRYPOINT ["/bin/bash"]

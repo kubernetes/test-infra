@@ -17,7 +17,6 @@ limitations under the License.
 package git
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -39,7 +38,7 @@ type Publisher interface {
 type GitUserGetter func() (name, email string, err error)
 
 type remotes struct {
-	publishRemote RemoteResolver
+	publishRemote ForkRemoteResolver
 	centralRemote RemoteResolver
 }
 
@@ -70,12 +69,7 @@ func (p *publisher) Commit(title, body string) error {
 }
 
 func (p *publisher) PushToNamedFork(forkName, branch string, force bool) error {
-	return errors.New("pushToNamedFork is not implemented in the v2 client")
-}
-
-// PublishPush pushes the local state to the publish remote
-func (p *publisher) PushToFork(branch string, force bool) error {
-	remote, err := p.remotes.publishRemote()
+	remote, err := p.remotes.publishRemote(forkName)
 	if err != nil {
 		return err
 	}
@@ -91,6 +85,11 @@ func (p *publisher) PushToFork(branch string, force bool) error {
 		return fmt.Errorf("error pushing %q: %w %v", branch, err, string(out))
 	}
 	return nil
+}
+
+// PublishPush pushes the local state to the publish remote
+func (p *publisher) PushToFork(branch string, force bool) error {
+	return p.PushToNamedFork("", branch, force)
 }
 
 // CentralPush pushes the local state to the central remote

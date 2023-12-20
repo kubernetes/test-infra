@@ -108,6 +108,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+	o.kubernetes.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
 
 	metrics.ExposeMetrics("sinker", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
@@ -366,15 +367,15 @@ func (c *controller) clean() {
 			continue
 		}
 
+		if !prowJob.Complete() {
+			continue
+		}
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		latestPJ := latestPeriodics[prowJob.Spec.Job]
 		if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
 			// Ignore deleting this one.
 			continue
 		}
-		if !prowJob.Complete() {
-			continue
-		}
-		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}

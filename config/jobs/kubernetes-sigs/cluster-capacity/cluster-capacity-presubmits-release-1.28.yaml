@@ -11,7 +11,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.7
+      - image: public.ecr.aws/docker/library/golang:1.20.10
         command:
         - make
         args:
@@ -33,7 +33,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.7
+      - image: public.ecr.aws/docker/library/golang:1.20.10
         command:
         - make
         args:
@@ -55,7 +55,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.7
+      - image: public.ecr.aws/docker/library/golang:1.20.10
         command:
         - make
         args:
@@ -84,7 +84,7 @@ presubmits:
     - release-1.28
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -123,7 +123,7 @@ presubmits:
     - release-1.28
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -162,7 +162,7 @@ presubmits:
     - release-1.28
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

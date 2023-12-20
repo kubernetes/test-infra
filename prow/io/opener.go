@@ -62,6 +62,15 @@ type Attributes struct {
 	// ContentEncoding specifies the encoding used for the blob's content, if any.
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
 	ContentEncoding string
+	// ContentType is the MIME type of the blob, if any.
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
+	ContentType string
+	// ContentDisposition specifies whether the blob content is expected to be displayed inline or as an attachment.
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
+	ContentDisposition string
+	// ContentLanguage specifies the language used in the blob's content, if any.
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Language
+	ContentLanguage string
 	// Size is the size of the blob's content in bytes.
 	Size int64
 	// Metadata includes user-metadata associated with the file
@@ -326,9 +335,12 @@ func (o *opener) Attributes(ctx context.Context, path string) (Attributes, error
 			return Attributes{}, err
 		}
 		return Attributes{
-			ContentEncoding: attr.ContentEncoding,
-			Size:            attr.Size,
-			Metadata:        attr.Metadata,
+			ContentEncoding:    attr.ContentEncoding,
+			ContentType:        attr.ContentType,
+			ContentDisposition: attr.ContentDisposition,
+			ContentLanguage:    attr.ContentLanguage,
+			Size:               attr.Size,
+			Metadata:           attr.Metadata,
 		}, nil
 	}
 
@@ -342,9 +354,12 @@ func (o *opener) Attributes(ctx context.Context, path string) (Attributes, error
 		return Attributes{}, err
 	}
 	return Attributes{
-		ContentEncoding: attr.ContentEncoding,
-		Size:            attr.Size,
-		Metadata:        attr.Metadata,
+		ContentEncoding:    attr.ContentEncoding,
+		ContentType:        attr.ContentType,
+		ContentDisposition: attr.ContentDisposition,
+		ContentLanguage:    attr.ContentLanguage,
+		Size:               attr.Size,
+		Metadata:           attr.Metadata,
 	}, nil
 }
 
@@ -474,7 +489,8 @@ func (o *opener) Iterator(ctx context.Context, prefix, delimiter string) (Object
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasSuffix(relativePath, "/") {
+	// listing a directory requires the "/" suffix except if we try to list the bucket's root directory
+	if relativePath != "" && !strings.HasSuffix(relativePath, "/") {
 		relativePath += "/"
 	}
 	return openerObjectIterator{

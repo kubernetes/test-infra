@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -44,12 +44,17 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
-  - name: pull-kubernetes-verify-strict-lint
+  - name: pull-kubernetes-verify-lint
     cluster: eks-prow-build-cluster
     decorate: true
-    # This entire job is currently experimental. If it turns out to be useful,
-    # the job can be removed and the same check can run as part of pull-kubernetes-verify
-    # by removing the exclusion of verify-golangci-lint-pr.sh in hack/make-rules/verify.sh.
+    # This job is running all required linter checks:
+    # - baseline for all code
+    # - stricter configuration for new or modified code in a pull request
+    #
+    # Both run in the same job to reuse the build and (to some extend)
+    # golangci-lint cache. Testing the baseline is necessary because,
+    # for example, a linter config change or tool update might cause
+    # failures in existing, unmodified code.
     always_run: true
     optional: true
     skip_branches:
@@ -63,15 +68,16 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
-        - runner.sh
+        - make
         args:
-        - /bin/sh
-        - "-c"
-        - "hack/verify-golangci-lint.sh -r ${PULL_BASE_SHA} -s"
+        - verify
+        - WHAT=golangci-lint golangci-lint-pr
         resources:
+          # It peaks at around 7 cores of the EKS cluster. We can fit more jobs onto
+          # a node without much slowdown by requesting one third of a node
+          # (= 3 * 5 + 1 for kubelet).
           limits:
             cpu: 5
             memory: 12Gi
@@ -97,14 +103,12 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
-        - runner.sh
+        - make
         args:
-        - /bin/sh
-        - "-c"
-        - "hack/verify-golangci-lint.sh -r ${PULL_BASE_SHA} -n"
+        - verify
+        - WHAT=golangci-lint-pr-hints
         resources:
           # It peaks at around 7 cores of the EKS cluster. We can fit more jobs onto
           # a node without much slowdown by requesting one third of a node
@@ -131,7 +135,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -180,7 +184,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -228,7 +232,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       imagePullPolicy: Always
       command:
       - runner.sh

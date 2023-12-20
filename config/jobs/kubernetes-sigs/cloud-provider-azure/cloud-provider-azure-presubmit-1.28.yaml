@@ -11,7 +11,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
             args:
@@ -31,7 +31,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
-      skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
       decorate: true
       decoration_config:
         timeout: 4h
@@ -47,12 +47,12 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.11
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -84,7 +84,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-capz-1-28 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-capz-1-28
-      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -100,7 +100,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.11
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
         - org: kubernetes
@@ -110,7 +110,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -145,7 +145,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-1-28
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-28
-      skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
       decorate: true
       decoration_config:
         timeout: 4h
@@ -161,12 +161,12 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.11
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -194,7 +194,7 @@ presubmits:
         testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28 runs Azure specific e2e tests with cloud controller manager v1.28 and IP-based load balancer backend pools.
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28
-      skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+      skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
       decorate: true
       decoration_config:
         timeout: 3h
@@ -210,12 +210,12 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.10
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
             args:
@@ -261,7 +261,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-28 runs Azure specific e2e tests with cloud controller manager v1.28 and multiple standard load balancers.
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-28
-      skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
+      skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
       decorate: true
       decoration_config:
         timeout: 3h
@@ -277,12 +277,12 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.10
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
             args:
@@ -335,7 +335,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
             command:
               - runner.sh
             args:

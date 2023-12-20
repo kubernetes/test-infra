@@ -1,0 +1,25 @@
+postsubmits:
+  etcd-io/etcd:
+  - name: post-etcd-build
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-postsubmits
+      testgrid-tab-name: post-etcd-build
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - build
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"

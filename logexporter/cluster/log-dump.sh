@@ -197,7 +197,7 @@ function detect-node-names() {
     for group in "${INSTANCE_GROUPS[@]}"; do
       NODE_NAMES+=($(gcloud compute instance-groups managed list-instances \
         "${group}" --zone "${ZONE}" --project "${PROJECT}" \
-        --format='value(instance)'))
+        --format='value(name)'))
     done
   fi
   # Add heapster node name to the list too (if it exists).
@@ -208,7 +208,7 @@ function detect-node-names() {
     for group in "${WINDOWS_INSTANCE_GROUPS[@]}"; do
       WINDOWS_NODE_NAMES+=($(gcloud compute instance-groups managed \
         list-instances "${group}" --zone "${ZONE}" --project "${PROJECT}" \
-        --format='value(instance)'))
+        --format='value(name)'))
     done
   fi
 
@@ -317,7 +317,12 @@ function copy-logs-from-node() {
     if [[ "${gcloud_supported_providers}" =~ ${KUBERNETES_PROVIDER} ]]; then
       # get-serial-port-output lets you ask for ports 1-4, but currently (11/21/2016) only port 1 contains useful information
       gcloud compute instances get-serial-port-output --project "${PROJECT}" --zone "${ZONE}" --port 1 "${node}" > "${dir}/serial-1.log" || true
-      gcloud compute scp --recurse --project "${PROJECT}" --zone "${ZONE}" "${node}:${scp_files}" "${dir}" > /dev/null || true
+      # FIXME(dims): bug in gcloud prevents multiple source files specified using curly braces, so we just loop through for now
+      for single_file in "${files[@]}"; do
+        # gcloud scp doesn't work very well when trying to fetch constantly changing files such as logs, as it blocks forever sometimes.
+        # We set ConnectTimeout to 5s to avoid blocking for (default tested on 2023-11-17) 2m.
+        gcloud compute ssh --project "${PROJECT}" --zone "${ZONE}" "${node}" --command "tar -zcvf - ${single_file}" -- -o ConnectTimeout=5 | tar -zxf - --strip-components=2 -C "${dir}" || true
+      done
     elif  [[ "${KUBERNETES_PROVIDER}" == "aws" ]]; then
       local ip
       ip=$(get_ssh_hostname "${node}")

@@ -6,7 +6,7 @@ presubmits:
     - release-1.28
     decorate: true
     extra_refs:
-    - base_ref: release-1.11
+    - base_ref: release-1.12
       org: kubernetes-sigs
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       repo: cluster-api-provider-azure
@@ -39,7 +39,7 @@ presubmits:
         - "runner.sh"
         - "env"
         - "./capz/run-capz-e2e.sh"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.28
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-1.28
         name: ""
         resources:
           requests:

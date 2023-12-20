@@ -1,0 +1,32 @@
+periodics:
+- name: ci-etcd-e2e-amd64
+  interval: 4h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-e2e-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"

@@ -574,7 +574,11 @@ func (tq *TideQuery) constructQuery() (map[string][]string, string) {
 		queryString = append(queryString, fmt.Sprintf("base:\"%s\"", b))
 	}
 	for _, l := range tq.Labels {
-		queryString = append(queryString, fmt.Sprintf("label:\"%s\"", l))
+		var orOperands []string
+		for _, alt := range strings.Split(l, ",") {
+			orOperands = append(orOperands, fmt.Sprintf("\"%s\"", alt))
+		}
+		queryString = append(queryString, fmt.Sprintf("label:%s", strings.Join(orOperands, ",")))
 	}
 	for _, l := range tq.MissingLabels {
 		queryString = append(queryString, fmt.Sprintf("-label:\"%s\"", l))
@@ -885,7 +889,7 @@ func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, bra
 	headSHAGetter := func() (string, error) {
 		return headSHA, nil
 	}
-	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, branch, baseSHAGetter, headSHAGetter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits: %w", err)
 	}

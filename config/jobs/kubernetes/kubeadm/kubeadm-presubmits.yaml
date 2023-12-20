@@ -10,7 +10,7 @@ presubmits:
     run_if_changed: '^kinder\/.*$'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - "./kinder/hack/verify-all.sh"
 
@@ -32,7 +32,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         command:
         - runner.sh
         - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -44,72 +44,3 @@ presubmits:
           requests:
             memory: "9000Mi"
             cpu: 2000m
-
-  # kinder presubmits (canary on eks-prow-build-cluster)
-  - name: pull-kubeadm-kinder-verify-canary
-    cluster: eks-prow-build-cluster
-    path_alias: "k8s.io/kubeadm"
-    decorate: true
-    optional: true
-    run_if_changed: '^kinder\/.*$'
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
-        command:
-        - "./kinder/hack/verify-all.sh"
-        resources:
-          limits:
-            cpu: 2000m
-            memory: 9000Mi
-          requests:
-            cpu: 2000m
-            memory: 9000Mi
-      tolerations:
-      - key: "dedicated"
-        value: "kind-tests"
-        operator: "Equal"
-        effect: "NoSchedule"
-      nodeSelector:
-        kind-exclusive: "true"
-
-  - name: pull-kubeadm-kinder-upgrade-latest-canary
-    cluster: eks-prow-build-cluster
-    optional: true
-    decorate: true
-    run_if_changed: '^kinder\/.*$'
-    skip_branches:
-    - release-\d+\.\d+ # revisit once the k/kubeadm repo has branches
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decoration_config:
-      timeout: 40m
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
-        command:
-        - runner.sh
-        - "../kubeadm/kinder/ci/kinder-run.sh"
-        args:
-        - "presubmit-upgrade-latest"
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9000Mi"
-            cpu: 2000m
-          limits:
-            cpu: 2000m
-            memory: 9000Mi
-      tolerations:
-      - key: "dedicated"
-        value: "kind-tests"
-        operator: "Equal"
-        effect: "NoSchedule"
-      nodeSelector:
-        kind-exclusive: "true"

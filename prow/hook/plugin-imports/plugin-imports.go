@@ -27,6 +27,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/bugzilla"
 	_ "k8s.io/test-infra/prow/plugins/buildifier"
 	_ "k8s.io/test-infra/prow/plugins/cat"
+	_ "k8s.io/test-infra/prow/plugins/cherrypickapproved"
 	_ "k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	_ "k8s.io/test-infra/prow/plugins/cla"
 	_ "k8s.io/test-infra/prow/plugins/dco"

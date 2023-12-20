@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kind-kms
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       timeout: 150m
@@ -27,7 +28,7 @@ presubmits:
       description: Runs conformance tests on a cluster with KMS encryption enabled
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -37,10 +38,18 @@ presubmits:
         - "/bin/bash"
         - "-c"
         - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
 periodics:
 - interval: 6h
   name: periodic-kubernetes-e2e-kind-kms
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 150m
@@ -60,7 +69,7 @@ periodics:
     description: Runs conformance tests on a cluster with KMS encryption enabled at periodic intervals
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -70,3 +79,10 @@ periodics:
       - "/bin/bash"
       - "-c"
       - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
