@@ -268,11 +268,12 @@ func TestHandleInRepoConfigError(t *testing.T) {
 	instanceName := "instance"
 	changeHash := fmt.Sprintf("%s%s%s", instanceName, change.ID, change.CurrentRevision)
 	cases := []struct {
-		name             string
-		err              error
-		startingFailures map[string]bool
-		expectedFailures map[string]bool
-		expectedReview   bool
+		name                      string
+		err                       error
+		allowedPresubmitTriggerRe string
+		startingFailures          map[string]bool
+		expectedFailures          map[string]bool
+		expectedReview            bool
 	}{
 		{
 			name:             "No error. Do not send message",
@@ -282,7 +283,7 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			err:              nil,
 		},
 		{
-			name:             "First time error send review",
+			name:             "First time (or previously resolved) error send review",
 			err:              errors.New("InRepoConfigError"),
 			expectedReview:   true,
 			startingFailures: map[string]bool{},
@@ -296,26 +297,32 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			expectedFailures: map[string]bool{changeHash: true},
 		},
 		{
-			name:             "Resolved error sends error again, resend review",
-			err:              errors.New("InRepoConfigError"),
-			expectedReview:   true,
-			startingFailures: map[string]bool{},
-			expectedFailures: map[string]bool{changeHash: true},
-		},
-		{
 			name:             "Resolved error changes Failures map",
 			err:              nil,
 			expectedReview:   false,
 			startingFailures: map[string]bool{changeHash: true},
 			expectedFailures: map[string]bool{},
 		},
+		{
+			name:                      "second time error DO send review if irrelevant changes are being skipped",
+			err:                       errors.New("InRepoConfigError"),
+			allowedPresubmitTriggerRe: "^/test.*",
+			expectedReview:            true,
+			startingFailures:          map[string]bool{changeHash: true},
+			expectedFailures:          map[string]bool{changeHash: true},
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			gc := &fgc{reviews: 0}
+			gerritConfig := config.Gerrit{AllowedPresubmitTriggerReRawString: tc.allowedPresubmitTriggerRe}
+			if err := gerritConfig.DefaultAndValidate(); err != nil {
+				t.Fatalf("Failed to default and validate the gerrit config: %v", err)
+			}
 			controller := &Controller{
 				inRepoConfigFailuresTracker: tc.startingFailures,
 				gc:                          gc,
+				config:                      func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Gerrit: gerritConfig}} },
 			}
 
 			ret := controller.handleInRepoConfigError(tc.err, instanceName, change)
