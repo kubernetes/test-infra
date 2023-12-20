@@ -416,12 +416,9 @@ func CreateRefs(instance, project, branch, baseSHA string, changes ...client.Cha
 	var refs prowapi.Refs
 	cloneURI := source.CloneURIFromOrgRepo(instance, project)
 
-	var codeHost string // Something like https://android.googlesource.com
-	parts := strings.SplitN(instance, ".", 2)
-	codeHost = strings.TrimSuffix(parts[0], "-review")
-	if len(parts) > 1 {
-		codeHost += "." + parts[1]
-	}
+	// Something like https://android.googlesource.com
+	codeHost := source.EnsureCodeURL(instance)
+
 	refs = prowapi.Refs{
 		Org:      instance, // Something like android-review.googlesource.com
 		Repo:     project,  // Something like platform/build

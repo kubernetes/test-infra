@@ -29,6 +29,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	gerrit "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -242,19 +243,10 @@ func startedProperties(started *metadata.Started) []*resultstore.Property {
 	for _, r := range repos {
 		ps = append(ps, &resultstore.Property{
 			Key:   "Repo",
-			Value: fixRepo(r),
+			Value: gerrit.EnsureCodeURL(r),
 		})
 	}
 	return ps
-}
-
-// fixRepo deletes the "-review" segment present in some Gerrit Repos to
-// produce a valid URL. Cf. CreateRefs() in gerrit/adapter/adapter.go.
-func fixRepo(repo string) string {
-	if ps := strings.SplitN(repo, ".", 2); len(ps) > 1 {
-		return strings.TrimSuffix(ps[0], "-review") + "." + ps[1]
-	}
-	return repo
 }
 
 const defaultConfigurationId = "default"
