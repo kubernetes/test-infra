@@ -550,7 +550,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=60m" \
+          --test-args="-test.timeout=60m --service-proxy-type=ipvs" \
           --test-package-marker=stable.txt \
           --parallel=25
       env:

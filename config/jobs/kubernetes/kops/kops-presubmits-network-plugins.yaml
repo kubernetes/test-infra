@@ -721,7 +721,7 @@ presubmits:
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
-            --test-args="-test.timeout=60m" \
+            --test-args="-test.timeout=60m --service-proxy-type=ipvs" \
             --test-package-marker=stable.txt \
             --parallel=25
         securityContext:

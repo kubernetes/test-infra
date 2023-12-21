@@ -1294,6 +1294,9 @@ def generate_network_plugins():
         focus_regex = None
         if plugin == 'cilium-eni':
             focus_regex = r'\[Conformance\]|\[NodeConformance\]'
+        test_args = None
+        if plugin == 'kuberouter':
+            test_args = '--service-proxy-type=ipvs'
         results.append(
             build_test(
                 distro=distro,
@@ -1304,7 +1307,8 @@ def generate_network_plugins():
                 extra_flags=['--node-size=t3.large'],
                 extra_dashboards=['kops-network-plugins'],
                 runs_per_day=3,
-                focus_regex=focus_regex
+                focus_regex=focus_regex,
+                test_args=test_args
             )
         )
     return results
@@ -1651,6 +1655,7 @@ def generate_presubmits_network_plugins():
         optional = False
         distro = 'u2204arm64'
         focus_regex = None
+        test_args = None
         if plugin == 'cilium-eni':
             focus_regex = r'\[Conformance\]|\[NodeConformance\]'
             optional = True
@@ -1663,6 +1668,7 @@ def generate_presubmits_network_plugins():
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             optional = True
+            test_args = '--service-proxy-type=ipvs'
         extra_flags = ['--node-size=t3.large']
         if 'arm64' in distro:
             extra_flags = ["--node-size=t4g.large"]
@@ -1678,6 +1684,7 @@ def generate_presubmits_network_plugins():
                 focus_regex=focus_regex,
                 run_if_changed=run_if_changed,
                 optional=optional,
+                test_args=test_args,
             )
         )
         if plugin in supports_ipv6:
