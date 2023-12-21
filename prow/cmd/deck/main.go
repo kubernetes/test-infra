@@ -1517,7 +1517,7 @@ func HandleGitProviderLink(githubHost string, secure bool) http.HandlerFunc {
 				http.Redirect(w, r, "", http.StatusNotFound)
 				return
 			}
-			orgCodeURL, err := gerritsource.CodeRootURL(org)
+			orgCodeURL, err := gerritsource.CodeURL(org)
 			if err != nil {
 				logrus.WithError(err).WithField("cloneURI", repo).Warn("Failed deriving source code URL from cloneURI.")
 				http.Redirect(w, r, "", http.StatusNotFound)

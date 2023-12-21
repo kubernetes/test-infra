@@ -194,7 +194,7 @@ func TestOrgRepoFromCloneURI(t *testing.T) {
 	}
 }
 
-func TestCodeRootURL(t *testing.T) {
+func TestCodeURL(t *testing.T) {
 	tests := []struct {
 		name    string
 		in      string
@@ -216,12 +216,17 @@ func TestCodeRootURL(t *testing.T) {
 			in:      "https://foo.googlesource.com",
 			wantErr: true,
 		},
+		{
+			name:    "non-url",
+			in:      "other-review",
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got, gotErr := CodeRootURL(tc.in)
+			got, gotErr := CodeURL(tc.in)
 			if tc.wantErr {
 				if gotErr == nil {
 					t.Fatal("Want error, got nil")
@@ -233,6 +238,49 @@ func TestCodeRootURL(t *testing.T) {
 			}
 			if want, got := tc.want, got; want != got {
 				t.Fatalf("Want: %s, got: %s", want, got)
+			}
+		})
+	}
+}
+
+func TestEnsureCodeURL(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{
+			name: "base",
+			in:   "https://foo-review.googlesource.com",
+			want: "https://foo.googlesource.com",
+		},
+		{
+			name: "with-repo",
+			in:   "https://foo-review.googlesource.com/bar",
+			want: "https://foo.googlesource.com/bar",
+		},
+		{
+			name: "other",
+			in:   "https://foo.googlesource.com",
+			want: "https://foo.googlesource.com",
+		},
+		{
+			name: "wrong-place",
+			in:   "https://foo.googlesource-review.com",
+			want: "https://foo.googlesource-review.com",
+		},
+		{
+			name: "non-url",
+			in:   "other-review",
+			want: "other-review",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := EnsureCodeURL(tc.in)
+			if want, got := tc.want, got; want != got {
+				t.Errorf("Want: %s, got: %s", want, got)
 			}
 		})
 	}
