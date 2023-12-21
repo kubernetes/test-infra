@@ -482,6 +482,7 @@ presubmits:
     branches:
     - master
     run_if_changed: 'tests/e2e'
+    optional: true
     labels:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"

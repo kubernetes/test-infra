@@ -867,6 +867,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--set=spec.nodeProblemDetector.enabled=true",
+                       "--gce-service-account=default",
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
@@ -917,6 +918,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--set=spec.networking.networkID=default",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
@@ -955,6 +957,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
@@ -1043,6 +1046,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-count=3",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
@@ -1061,7 +1065,8 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
-                       "--node-count=3"
+                       "--node-count=3",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Feature:Reboot\]',
                    skip_regex=r'\[FOOBAR\]',
@@ -1096,6 +1101,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-volume-size=100",
+                       "--gce-service-account=default",
                    ],
                    storage_e2e_cred=True,
                    focus_regex=r'\[Serial\]',
@@ -1121,7 +1127,6 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
-                   test_args="--master-os-distro=ubuntu --node-os-distro=ubuntu",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=4),
 
@@ -2098,6 +2103,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--node-volume-size=100",
+                "--gce-service-account=default",
             ],
             build_cluster="k8s-infra-prow-build",
             focus_regex=r'\[Serial\]',
@@ -2118,6 +2124,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--node-volume-size=100",
+                "--gce-service-account=default",
             ],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=40,
@@ -2135,6 +2142,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--set=spec.networking.networkID=default",
+                "--gce-service-account=default",
             ],
             focus_regex=r'\[Slow\]',
             skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
