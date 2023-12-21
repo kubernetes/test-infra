@@ -1021,7 +1021,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeProxy.enabled=false",
-                       "--set=networking.cilium.enableNodePort=true",
+                       "--set=spec.networking.cilium.enableNodePort=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Conformance\]',
@@ -1096,8 +1096,6 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-volume-size=100",
-                       "--set=spec.cloudConfig.manageStorageClasses=false",
-                       "--set=spec.cloudProvider.gce.pdCSIDriver.enabled=false",
                    ],
                    storage_e2e_cred=True,
                    focus_regex=r'\[Serial\]',
@@ -1507,7 +1505,7 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-scale-kubenet-using-cl2',
+            name='presubmit-kops-gce-scale-calico-using-cl2',
             scenario='scalability',
             build_cluster="k8s-infra-prow-build",
             # only helps with setting the right anotation test.kops.k8s.io/networking
@@ -1518,7 +1516,7 @@ def generate_presubmits_scale():
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
-                'CNI_PLUGIN': "kubenet",
+                'CNI_PLUGIN': "calico",
                 'KUBE_NODE_COUNT': "5000",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
@@ -1532,7 +1530,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "pd-ssd",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
@@ -1543,17 +1541,17 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-small-scale-kubenet-using-cl2',
+            name='presubmit-kops-gce-small-scale-calico-using-cl2',
             scenario='scalability',
             build_cluster="k8s-infra-prow-build",
             # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='kubenet',
+            networking='calico',
             cloud="gce",
             always_run=False,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
-                'CNI_PLUGIN': "kubenet",
+                'CNI_PLUGIN': "calico",
                 'KUBE_NODE_COUNT': "500",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "1",
@@ -1568,7 +1566,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
