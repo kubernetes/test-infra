@@ -355,7 +355,7 @@ presubmits:
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "pd-ssd"
+          value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
@@ -460,7 +460,7 @@ presubmits:
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "pd-ssd"
+          value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
