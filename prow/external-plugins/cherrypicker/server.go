@@ -46,6 +46,8 @@ var cherryPickRe = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$
 var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 var titleTargetBranchIndicatorTemplate = `[%s] `
 
+var notOrgMemberMessageTemplate = "only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. If you are already part of the org, make sure to [change](https://github.com/orgs/%s/people?query=%s) your membership to public. Otherwise you can still do the cherry-pick manually. "
+
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	AssignIssue(org, repo string, number int, logins []string) error
@@ -197,7 +199,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 				return err
 			}
 			if !ok {
-				resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry-picks. You can still do the cherry-pick manually.", org, org)
+				resp := fmt.Sprintf(notOrgMemberMessageTemplate, org, org, org, commentAuthor)
 				l.Info(resp)
 				return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 			}
@@ -236,7 +238,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 			return err
 		}
 		if !ok {
-			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+			resp := fmt.Sprintf(notOrgMemberMessageTemplate, org, org, org, commentAuthor)
 			l.Info(resp)
 			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 		}
