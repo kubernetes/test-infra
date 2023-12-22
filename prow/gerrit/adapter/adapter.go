@@ -515,7 +515,12 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 	key := fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)
 	if err != nil {
 		// Only report back to Gerrit if we have not reported previously.
-		if _, alreadyReported := c.inRepoConfigFailuresTracker[key]; !alreadyReported {
+		// If any new `/test` commands are given and fail for the same reason we won't post another error message
+		// which can be confusing to users. This behavior is to prevent us from reporting the failure again
+		// on unrelated comments (including the error message itself!), but we don't need this behavior if
+		// we don't process irrelevant comments which is the case if AllowedPresubmitTriggerRe is specified.
+		skipIrrelevantComments := c.config().Gerrit.AllowedPresubmitTriggerReRawString != ""
+		if _, alreadyReported := c.inRepoConfigFailuresTracker[key]; !alreadyReported || skipIrrelevantComments {
 			msg := fmt.Sprintf("%s: %v", inRepoConfigFailed, err)
 			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, msg, nil); setReviewWerr != nil {
 				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)

@@ -942,6 +942,23 @@ type Gerrit struct {
 	AllowedPresubmitTriggerReRawString string          `json:"allowed_presubmit_trigger_re,omitempty"`
 }
 
+func (g *Gerrit) DefaultAndValidate() error {
+	if g.TickInterval == nil {
+		g.TickInterval = &metav1.Duration{Duration: time.Minute}
+	}
+
+	if g.RateLimit == 0 {
+		g.RateLimit = 5
+	}
+
+	re, err := regexp.Compile(g.AllowedPresubmitTriggerReRawString)
+	if err != nil {
+		return fmt.Errorf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
+	}
+	g.AllowedPresubmitTriggerRe = &CopyableRegexp{re}
+	return nil
+}
+
 func (g *Gerrit) IsAllowedPresubmitTrigger(message string) bool {
 	return g.AllowedPresubmitTriggerRe.MatchString(message)
 }
@@ -2457,19 +2474,9 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 5 * time.Minute}
 	}
 
-	if c.Gerrit.TickInterval == nil {
-		c.Gerrit.TickInterval = &metav1.Duration{Duration: time.Minute}
+	if err := c.Gerrit.DefaultAndValidate(); err != nil {
+		return fmt.Errorf("validating gerrit config: %w", err)
 	}
-
-	if c.Gerrit.RateLimit == 0 {
-		c.Gerrit.RateLimit = 5
-	}
-
-	re, err := regexp.Compile(c.Gerrit.AllowedPresubmitTriggerReRawString)
-	if err != nil {
-		return fmt.Errorf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
-	}
-	c.Gerrit.AllowedPresubmitTriggerRe = &CopyableRegexp{re}
 
 	if c.Tide.Gerrit != nil {
 		if c.Tide.Gerrit.RateLimit == 0 {
