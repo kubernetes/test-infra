@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: pull-node-feature-discovery-verify-master
-    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^master
