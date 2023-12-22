@@ -117,7 +117,8 @@ var TimeNow = func() time.Time {
 
 func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 	now := TimeNow()
-	expiresAt := now.Add(10 * time.Minute)
+	// GitHub's clock may lag a few seconds, so we do not use 10min here.
+	expiresAt := now.Add(9 * time.Minute)
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, &jwt.StandardClaims{
 		IssuedAt:  jwt.NewTime(float64(now.Unix())),
 		ExpiresAt: jwt.NewTime(float64(expiresAt.Unix())),
