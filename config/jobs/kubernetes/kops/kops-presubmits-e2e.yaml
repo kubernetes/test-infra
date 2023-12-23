@@ -1318,7 +1318,7 @@ presubmits:
     branches:
     - master
     always_run: false
-    optional: false
+    optional: true
     skip_report: false
     labels:
       preset-k8s-ssh: "true"

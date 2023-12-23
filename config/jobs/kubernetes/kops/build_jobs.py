@@ -1918,6 +1918,7 @@ def generate_presubmits_e2e():
             networking="calico",
             build_cluster="k8s-infra-prow-build",
             extra_flags=["--dns=none", "--gce-service-account=default"],
+            optional=True,
         ),
 
         presubmit_test(
