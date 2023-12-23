@@ -1296,6 +1296,8 @@ def generate_network_plugins():
             distro = 'u2004'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
+        if plugin in ['kuberouter']:
+            k8s_version = 'ci'
         focus_regex = None
         if plugin == 'cilium-eni':
             focus_regex = r'\[Conformance\]|\[NodeConformance\]'
@@ -1667,6 +1669,7 @@ def generate_presubmits_network_plugins():
             k8s_version = '1.27'
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
+            k8s_version = 'ci'
             optional = True
         extra_flags = ['--node-size=t3.large']
         if 'arm64' in distro:
