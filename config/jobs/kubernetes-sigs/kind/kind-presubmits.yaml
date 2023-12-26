@@ -59,6 +59,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -103,6 +104,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -147,6 +149,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -193,6 +196,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -239,6 +243,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -283,6 +288,7 @@ presubmits:
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -326,6 +332,7 @@ presubmits:
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -369,6 +376,7 @@ presubmits:
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
+    skip_report: false
     decorate: true
     decoration_config:
       grace_period: 15m0s
