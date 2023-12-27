@@ -738,7 +738,7 @@ func TestParseBucket(t *testing.T) {
 				testCase.wantOptions.bucketAliases = bucketAliases{}
 			}
 			o := &options{bucketAliases: bucketAliases{}}
-			err := o.parseBucket(testCase.bucket)
+			_, err := o.parseBucket(testCase.bucket)
 
 			if err != nil && testCase.wantErr == nil {
 				t.Fatalf("want err nil but got: %v", err)

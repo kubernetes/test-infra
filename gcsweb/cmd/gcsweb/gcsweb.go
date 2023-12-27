@@ -81,12 +81,13 @@ type options struct {
 	flIcons  string
 	flStyles string
 	flagutil.StorageClientOptions
-	oauthTokenFile string
-	// deprecated and ineffective
+	oauthTokenFile     string
 	defaultCredentials bool
 
 	flVersion bool
 
+	// the provider of the first configured bucket (only one provider is supported for now)
+	provider string
 	// Only buckets in this list will be served.
 	allowedBuckets strslice
 	// allowedProwPaths is the parsed list of allowedBuckets
@@ -109,11 +110,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.flStyles, "s", "", "path to the styles directory")
 
 	o.StorageClientOptions.AddFlags(fs)
-	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
-	// StorageClientOptions.StorageClient / io.NewOpener automatically uses application default credentials as a fallback.
-	// Mark this flag as ineffective but don't remove it for backward-compatibility.
-	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials "+
-		"(deprecated and ineffective, is assumed to be true if --gcs-credentials-file is not set)")
+	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret (only supported for GCS buckets)")
+	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials (only supported for GCS buckets)")
 
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
@@ -133,8 +131,17 @@ func (o *options) validate() error {
 	// validate and parse bucket list
 	o.bucketAliases = bucketAliases{}
 	for _, bucket := range o.allowedBuckets {
-		if err := o.parseBucket(bucket); err != nil {
+		prowPath, err := o.parseBucket(bucket)
+		if err != nil {
 			return err
+		}
+
+		if o.provider == "" {
+			o.provider = prowPath.StorageProvider()
+		} else if o.provider != prowPath.StorageProvider() {
+			// If GCS buckets are served, we create a GCS-only client in getStorageClient, hence we cannot serve S3 buckets in
+			// this case.
+			return fmt.Errorf("serving buckets of different storage providers at the same time is not supported")
 		}
 	}
 
@@ -176,25 +183,25 @@ func (o *options) validate() error {
 	return nil
 }
 
-func (o *options) parseBucket(bucket string) error {
+func (o *options) parseBucket(bucket string) (*prowv1.ProwPath, error) {
 	bucketParts := strings.Split(bucket, "=")
 	bucketName := strings.TrimSpace(bucketParts[0])
 
 	if bucketName == "" {
-		return errors.New("empty bucket name is not allowed")
+		return nil, errors.New("empty bucket name is not allowed")
 	}
 
 	// canonicalize buckets: adds the gs:// prefix if omitted
 	prowPath, err := prowv1.ParsePath(bucketName)
 	if err != nil {
-		return fmt.Errorf("bucket %q is not a valid bucket: %w", bucketName, err)
+		return nil, fmt.Errorf("bucket %q is not a valid bucket: %w", bucketName, err)
 	}
 
 	o.allowedProwPaths = append(o.allowedProwPaths, prowPath)
 
 	if len(bucketParts) <= 1 {
 		// No aliases
-		return nil
+		return prowPath, nil
 	}
 
 	// handle aliases
@@ -202,18 +209,18 @@ func (o *options) parseBucket(bucket string) error {
 	bucketAliases := strings.Split(bucketParts[1], ",")
 
 	if len(bucketAliases) == 0 {
-		return fmt.Errorf("no aliases for bucket %q have been set", bucketName)
+		return nil, fmt.Errorf("no aliases for bucket %q have been set", bucketName)
 	}
 
 	for _, alias := range bucketAliases {
 		alias := strings.TrimSpace(alias)
 		if alias == "" {
-			return fmt.Errorf("empty alias for bucket %q is not a allowed", bucketName)
+			return nil, fmt.Errorf("empty alias for bucket %q is not a allowed", bucketName)
 		}
 
 		aliasProwPath, err := prowv1.ParsePath(alias)
 		if err != nil {
-			return fmt.Errorf("bucket alias %q is not a valid bucket: %w", alias, err)
+			return nil, fmt.Errorf("bucket alias %q is not a valid bucket: %w", alias, err)
 		}
 
 		aliasProwPathPrefixed := pathPrefix(aliasProwPath)
@@ -226,29 +233,44 @@ func (o *options) parseBucket(bucket string) error {
 		o.bucketAliases[pathPrefix(aliasProwPath)] = bucketPrefix
 	}
 
-	return nil
+	return prowPath, nil
 }
 
 func getStorageClient(o options) (pkgio.Opener, error) {
 	ctx := context.Background()
 
-	// prow/io doesn't support oauth token files, gcsweb is the only component supporting this.
-	// If --oauth-token-file is set create a storage client manually and pass it to NewGCSOpener.
+	if o.provider != providers.GS {
+		return o.StorageClientOptions.StorageClient(ctx)
+	}
+
+	// Handle GCS separately for backwards-compatibility, see https://github.com/kubernetes/test-infra/issues/31349.
+	// StorageClientOptions.StorageClient() tries using application default credentials which isn't the default in gcsweb.
+	// If gcsweb is running on GCE, we might not be able to access public buckets unless we configure anonymous auth,
+	// see https://cloud.google.com/storage/docs/access-public-data#client-libraries.
+	var clientOption []option.ClientOption
+
+	if !o.defaultCredentials {
+		clientOption = []option.ClientOption{option.WithoutAuthentication()}
+	}
+
 	if o.oauthTokenFile != "" {
 		b, err := os.ReadFile(o.oauthTokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
-
-		storageClient, err := storage.NewClient(ctx, option.WithAPIKey(string(bytes.TrimSpace(b))))
-		if err != nil {
-			return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
-		}
-
-		return pkgio.NewGCSOpener(storageClient), nil
+		clientOption = []option.ClientOption{option.WithAPIKey(string(bytes.TrimSpace(b)))}
 	}
 
-	return o.StorageClient(ctx)
+	if o.GCSCredentialsFile != "" {
+		clientOption = []option.ClientOption{option.WithCredentialsFile(o.GCSCredentialsFile)}
+	}
+
+	storageClient, err := storage.NewClient(ctx, clientOption...)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create gcs storage client: %w", err)
+	}
+
+	return pkgio.NewGCSOpener(storageClient), nil
 }
 
 func main() {
