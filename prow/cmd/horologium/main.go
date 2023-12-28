@@ -25,11 +25,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 
-	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
+	pkgflagutil "k8s.io/test-infra/pkg/flagutil"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
@@ -39,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 )
 
 const (
@@ -69,7 +69,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.config, &o.controllerManager} {
+	for _, group := range []pkgflagutil.OptionGroup{&o.kubernetes, &o.config, &o.controllerManager} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -101,24 +101,24 @@ func main() {
 	}
 	cluster, err := cluster.New(cfg, func(o *cluster.Options) { o.Namespace = configAgent.Config().ProwJobNamespace })
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to construct prowjob client")
+		logrus.WithError(err).Fatal("Failed to construct prowjob client")
 	}
 	// Trigger cache creation for ProwJobs so the following cacheSync actually does something. If we don't
 	// do this here, the first List request for ProwJobs will transiently trigger cache creation and sync,
 	// which doesn't allow us to fail the binary if it doesn't work.
 	if _, err := cluster.GetCache().GetInformer(interrupts.Context(), &prowapi.ProwJob{}); err != nil {
-		logrus.WithError(err).Fatal("failed to get a prowjob informer")
+		logrus.WithError(err).Fatal("Failed to get a prowjob informer")
 	}
 	interrupts.Run(func(ctx context.Context) {
 		if err := cluster.Start(ctx); err != nil {
-			logrus.WithError(err).Fatal("Cache failed to start")
+			logrus.WithError(err).Fatal("Cluster failed to start")
 		}
-		logrus.Info("Cache finished gracefully.")
+		logrus.Info("Cluster finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), o.controllerManager.TimeoutListingProwJobs)
 	defer mgrSyncCtxCancel()
 	if synced := cluster.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
-		logrus.Fatal("Timed out waiting for cachesync")
+		logrus.Fatal("Timed out waiting for cache sync")
 	}
 
 	// start a cron
@@ -205,7 +205,7 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 					"should-trigger": shouldTrigger,
 					"name":           p.Name,
 					"job":            p.JobBase.Name,
-				}).Info("skipping cron periodic")
+				}).Info("Skipping cron periodic")
 			}
 		}
 	}
