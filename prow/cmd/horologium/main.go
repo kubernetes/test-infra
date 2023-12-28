@@ -169,8 +169,9 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 			"previous-found": previousFound,
 		})
 
-		if p.Cron == "" {
-			shouldTrigger := false
+		var shouldTrigger = false
+		switch {
+		case p.Cron == "": // no cron expression is set, we use interval to trigger
 			if j.Complete() {
 				intervalRef := j.Status.StartTime.Time
 				intervalDuration := p.GetInterval()
@@ -180,26 +181,10 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 				}
 				shouldTrigger = now.Sub(intervalRef) > intervalDuration
 			}
-			logger = logger.WithField("should-trigger", shouldTrigger)
-			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
-				prowJob.Namespace = cfg.ProwJobNamespace
-				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
-				if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
-					errs = append(errs, err)
-				}
-			}
-		} else if cronTriggers.Has(p.Name) {
-			shouldTrigger := j.Complete()
-			logger = logger.WithField("should-trigger", shouldTrigger)
-			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
-				prowJob.Namespace = cfg.ProwJobNamespace
-				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
-				if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
-					errs = append(errs, err)
-				}
-			} else {
+		case cronTriggers.Has(p.Name):
+			shouldTrigger = j.Complete()
+		default:
+			if !cronTriggers.Has(p.Name) {
 				logger.WithFields(logrus.Fields{
 					"previous-found": previousFound,
 					"should-trigger": shouldTrigger,
@@ -207,12 +192,23 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 					"job":            p.JobBase.Name,
 				}).Info("Skipping cron periodic")
 			}
+			continue
+		}
+		if shouldTrigger {
+			logger = logger.WithField("should-trigger", shouldTrigger)
+		}
+		if !previousFound || shouldTrigger {
+			prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+			prowJob.Namespace = cfg.ProwJobNamespace
+			logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
+			if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
+				errs = append(errs, err)
+			}
 		}
 	}
 
 	if len(errs) > 0 {
 		return fmt.Errorf("failed to create %d prowjobs: %v", len(errs), errs)
 	}
-
 	return nil
 }
