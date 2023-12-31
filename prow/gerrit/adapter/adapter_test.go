@@ -165,7 +165,7 @@ func fakeProwYAMLGetter(
 	return &res, nil
 }
 
-func TestSkipChangeProcessingChecks(t *testing.T) {
+func TestShouldTriggerJobs(t *testing.T) {
 	now := time.Now()
 	instance := "gke-host"
 	project := "private-cloud"
@@ -188,17 +188,17 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 		result   bool
 	}{
 		{
-			name:     "should not skip change processing when revision is new",
+			name:     "trigger jobs when revision is new",
 			instance: instance,
 			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
 				Revisions: map[string]gerrit.RevisionInfo{
 					"10": {Created: makeStamp(now)},
 				}},
 			latest: lastUpdateTime,
-			result: false,
+			result: true,
 		},
 		{
-			name:     "should not skip change processing when comment contains test related commands",
+			name:     "trigger jobs when comment contains test related commands",
 			instance: instance,
 			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
 				Revisions: map[string]gerrit.RevisionInfo{
@@ -211,10 +211,10 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 					},
 				}},
 			latest: lastUpdateTime,
-			result: false,
+			result: true,
 		},
 		{
-			name:     "should not skip change processing when comment contains custom test name",
+			name:     "trigger jobs when comment contains /test with custom test name",
 			instance: instance,
 			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
 				Revisions: map[string]gerrit.RevisionInfo{
@@ -227,10 +227,10 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 					},
 				}},
 			latest: lastUpdateTime,
-			result: false,
+			result: true,
 		},
 		{
-			name:     "should skip change processing when command does not conform to requirements",
+			name:     "do not trigger when command does not conform to requirements",
 			instance: instance,
 			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
 				Revisions: map[string]gerrit.RevisionInfo{
@@ -243,21 +243,43 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 					},
 				}},
 			latest: lastUpdateTime,
-			result: true,
+			result: false,
 		},
 		{
-			name:     "should not skip change processing for postsubmit jobs",
+			name:     "trigger jobs for merge events (in order to trigger postsubmit jobs)",
 			instance: instance,
 			change:   gerrit.ChangeInfo{Status: client.Merged},
 			latest:   lastUpdateTime,
-			result:   false,
+			result:   true,
+		},
+		{
+			name:     "trigger jobs for previously-seen change coming out of WIP status",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {
+						Number: 10,
+						// The associated revision is old (predates
+						// lastUpdateTime)...
+						Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date: makeStamp(now),
+						// ...but we shouldn't skip triggering jobs for it
+						// because the message says this is no longer WIP.
+						Message:        noLongerWIP,
+						RevisionNumber: 10,
+					},
+				}},
+			latest: lastUpdateTime,
+			result: true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := c.shouldSkipProcessingChange(tc.change, tc.latest); got != tc.result {
-				t.Errorf("expected skip change processing checks returns %t, got %t", tc.result, got)
+			if got := c.shouldTriggerJobs(tc.change, tc.latest); got != tc.result {
+				t.Errorf("want %t, got %t", tc.result, got)
 			}
 		})
 	}
@@ -268,11 +290,12 @@ func TestHandleInRepoConfigError(t *testing.T) {
 	instanceName := "instance"
 	changeHash := fmt.Sprintf("%s%s%s", instanceName, change.ID, change.CurrentRevision)
 	cases := []struct {
-		name             string
-		err              error
-		startingFailures map[string]bool
-		expectedFailures map[string]bool
-		expectedReview   bool
+		name                      string
+		err                       error
+		allowedPresubmitTriggerRe string
+		startingFailures          map[string]bool
+		expectedFailures          map[string]bool
+		expectedReview            bool
 	}{
 		{
 			name:             "No error. Do not send message",
@@ -282,7 +305,7 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			err:              nil,
 		},
 		{
-			name:             "First time error send review",
+			name:             "First time (or previously resolved) error send review",
 			err:              errors.New("InRepoConfigError"),
 			expectedReview:   true,
 			startingFailures: map[string]bool{},
@@ -296,26 +319,32 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			expectedFailures: map[string]bool{changeHash: true},
 		},
 		{
-			name:             "Resolved error sends error again, resend review",
-			err:              errors.New("InRepoConfigError"),
-			expectedReview:   true,
-			startingFailures: map[string]bool{},
-			expectedFailures: map[string]bool{changeHash: true},
-		},
-		{
 			name:             "Resolved error changes Failures map",
 			err:              nil,
 			expectedReview:   false,
 			startingFailures: map[string]bool{changeHash: true},
 			expectedFailures: map[string]bool{},
 		},
+		{
+			name:                      "second time error DO send review if irrelevant changes are being skipped",
+			err:                       errors.New("InRepoConfigError"),
+			allowedPresubmitTriggerRe: "^/test.*",
+			expectedReview:            true,
+			startingFailures:          map[string]bool{changeHash: true},
+			expectedFailures:          map[string]bool{changeHash: true},
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			gc := &fgc{reviews: 0}
+			gerritConfig := config.Gerrit{AllowedPresubmitTriggerReRawString: tc.allowedPresubmitTriggerRe}
+			if err := gerritConfig.DefaultAndValidate(); err != nil {
+				t.Fatalf("Failed to default and validate the gerrit config: %v", err)
+			}
 			controller := &Controller{
 				inRepoConfigFailuresTracker: tc.startingFailures,
 				gc:                          gc,
+				config:                      func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Gerrit: gerritConfig}} },
 			}
 
 			ret := controller.handleInRepoConfigError(tc.err, instanceName, change)

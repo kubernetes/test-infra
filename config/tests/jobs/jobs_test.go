@@ -706,7 +706,7 @@ func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[stri
 			}
 		}
 
-		if scenario == "kubenetes_e2e" {
+		if scenario == "kubernetes_e2e" {
 			ssh = false
 			for key, val := range labels {
 				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {

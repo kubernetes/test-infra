@@ -867,6 +867,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--set=spec.nodeProblemDetector.enabled=true",
+                       "--gce-service-account=default",
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
                    test_timeout_minutes=60,
@@ -917,6 +918,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--set=spec.networking.networkID=default",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
@@ -955,6 +957,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
@@ -1021,7 +1024,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeProxy.enabled=false",
-                       "--set=networking.cilium.enableNodePort=true",
+                       "--set=spec.networking.cilium.enableNodePort=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Conformance\]',
@@ -1043,6 +1046,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-count=3",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Disruptive\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
@@ -1061,7 +1065,8 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
-                       "--node-count=3"
+                       "--node-count=3",
+                       "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Feature:Reboot\]',
                    skip_regex=r'\[FOOBAR\]',
@@ -1096,8 +1101,7 @@ def generate_misc():
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-156-49",
                        "--node-volume-size=100",
-                       "--set=spec.cloudConfig.manageStorageClasses=false",
-                       "--set=spec.cloudProvider.gce.pdCSIDriver.enabled=false",
+                       "--gce-service-account=default",
                    ],
                    storage_e2e_cred=True,
                    focus_regex=r'\[Serial\]',
@@ -1123,7 +1127,6 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
-                   test_args="--master-os-distro=ubuntu --node-os-distro=ubuntu",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=4),
 
@@ -1293,6 +1296,8 @@ def generate_network_plugins():
             distro = 'u2004'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
+        if plugin in ['kuberouter']:
+            k8s_version = 'ci'
         focus_regex = None
         if plugin == 'cilium-eni':
             focus_regex = r'\[Conformance\]|\[NodeConformance\]'
@@ -1507,7 +1512,7 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-scale-kubenet-using-cl2',
+            name='presubmit-kops-gce-scale-calico-using-cl2',
             scenario='scalability',
             build_cluster="k8s-infra-prow-build",
             # only helps with setting the right anotation test.kops.k8s.io/networking
@@ -1518,7 +1523,7 @@ def generate_presubmits_scale():
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
-                'CNI_PLUGIN': "kubenet",
+                'CNI_PLUGIN': "calico",
                 'KUBE_NODE_COUNT': "5000",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
@@ -1532,7 +1537,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "pd-ssd",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
@@ -1543,17 +1548,17 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-small-scale-kubenet-using-cl2',
+            name='presubmit-kops-gce-small-scale-calico-using-cl2',
             scenario='scalability',
             build_cluster="k8s-infra-prow-build",
             # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='kubenet',
+            networking='calico',
             cloud="gce",
             always_run=False,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
-                'CNI_PLUGIN': "kubenet",
+                'CNI_PLUGIN': "calico",
                 'KUBE_NODE_COUNT': "500",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "1",
@@ -1568,7 +1573,7 @@ def generate_presubmits_scale():
                 'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CL2_ALLOWED_SLOW_API_CALLS': "1",
                 'ENABLE_PROMETHEUS_SERVER': "true",
-                'PROMETHEUS_PVC_STORAGE_CLASS': "gp2",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
@@ -1664,6 +1669,7 @@ def generate_presubmits_network_plugins():
             k8s_version = '1.27'
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
+            k8s_version = 'ci'
             optional = True
         extra_flags = ['--node-size=t3.large']
         if 'arm64' in distro:
@@ -1912,6 +1918,7 @@ def generate_presubmits_e2e():
             networking="calico",
             build_cluster="k8s-infra-prow-build",
             extra_flags=["--dns=none", "--gce-service-account=default"],
+            optional=True,
         ),
 
         presubmit_test(
@@ -2100,6 +2107,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--node-volume-size=100",
+                "--gce-service-account=default",
             ],
             build_cluster="k8s-infra-prow-build",
             focus_regex=r'\[Serial\]',
@@ -2120,6 +2128,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--node-volume-size=100",
+                "--gce-service-account=default",
             ],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
             test_timeout_minutes=40,
@@ -2137,6 +2146,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--image=cos-cloud/cos-105-17412-156-49",
                 "--set=spec.networking.networkID=default",
+                "--gce-service-account=default",
             ],
             focus_regex=r'\[Slow\]',
             skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long

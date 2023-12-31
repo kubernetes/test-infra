@@ -2061,7 +2061,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-selinux
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-canary
   cron: '16 1-23/3 * * *'
   labels:
@@ -2091,7 +2091,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true" \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2119,7 +2119,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2262,7 +2262,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: ci-kubernetes-e2e-ubuntu-aws-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.networking.networkID=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.networking.networkID=default --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-slow-canary
   cron: '9 1-23/4 * * *'
   labels:
@@ -2292,7 +2292,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.networking.networkID=default" \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.networking.networkID=default --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2321,7 +2321,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.networking.networkID=default
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.networking.networkID=default --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2398,7 +2398,7 @@ periodics:
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-slow-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-conformance-canary
   cron: '58 3-23/4 * * *'
   labels:
@@ -2428,7 +2428,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2457,7 +2457,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2603,7 +2603,7 @@ periodics:
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary
   cron: '6 2-23/4 * * *'
   labels:
@@ -2633,7 +2633,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.3.20231218.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20231218.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2663,7 +2663,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
-    test.kops.k8s.io/extra_flags: --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2672,7 +2672,7 @@ periodics:
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-count=3", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-count=3 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-disruptive-canary
   cron: '20 6-23/8 * * *'
   labels:
@@ -2702,7 +2702,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --node-count=3" \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2731,7 +2731,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-count=3
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-count=3 --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2740,7 +2740,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-cos-gce-disruptive-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-count=3", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "gce"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-count=3 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "gce"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-reboot-canary
   cron: '46 5-23/8 * * *'
   labels:
@@ -2770,7 +2770,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=gce --image=cos-cloud/cos-105-17412-156-49 --node-count=3" \
+          --create-args="--channel=alpha --networking=gce --image=cos-cloud/cos-105-17412-156-49 --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2799,7 +2799,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-count=3
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-count=3 --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2876,7 +2876,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-disruptive-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100 --set=spec.cloudConfig.manageStorageClasses=false --set=spec.cloudProvider.gce.pdCSIDriver.enabled=false", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-serial-canary
   cron: '31 4-23/6 * * *'
   labels:
@@ -2907,7 +2907,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100 --set=spec.cloudConfig.manageStorageClasses=false --set=spec.cloudProvider.gce.pdCSIDriver.enabled=false" \
+          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2936,7 +2936,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100 --set=spec.cloudConfig.manageStorageClasses=false --set=spec.cloudProvider.gce.pdCSIDriver.enabled=false
+    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-156-49 --node-volume-size=100 --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -2980,7 +2980,7 @@ periodics:
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
-          --test-args="-test.timeout=600m --master-os-distro=ubuntu --node-os-distro=ubuntu" \
+          --test-args="-test.timeout=600m" \
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \

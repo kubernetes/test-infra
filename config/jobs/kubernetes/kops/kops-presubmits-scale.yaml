@@ -287,7 +287,7 @@ presubmits:
       testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
 
 # {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
-  - name: presubmit-kops-gce-scale-kubenet-using-cl2
+  - name: presubmit-kops-gce-scale-calico-using-cl2
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -327,7 +327,7 @@ presubmits:
         - name: ARTIFACTS
           value: $(ARTIFACTS)
         - name: CNI_PLUGIN
-          value: "kubenet"
+          value: "calico"
         - name: KUBE_NODE_COUNT
           value: "5000"
         - name: CL2_LOAD_TEST_THROUGHPUT
@@ -355,7 +355,7 @@ presubmits:
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "pd-ssd"
+          value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
@@ -387,10 +387,10 @@ presubmits:
       test.kops.k8s.io/networking: kubenet
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-scale-kubenet-using-cl2
+      testgrid-tab-name: presubmit-kops-gce-scale-calico-using-cl2
 
-# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
-  - name: presubmit-kops-gce-small-scale-kubenet-using-cl2
+# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+  - name: presubmit-kops-gce-small-scale-calico-using-cl2
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -430,7 +430,7 @@ presubmits:
         - name: ARTIFACTS
           value: $(ARTIFACTS)
         - name: CNI_PLUGIN
-          value: "kubenet"
+          value: "calico"
         - name: KUBE_NODE_COUNT
           value: "500"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
@@ -460,7 +460,7 @@ presubmits:
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "gp2"
+          value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
@@ -481,7 +481,7 @@ presubmits:
       test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kubenet
+      test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-small-scale-kubenet-using-cl2
+      testgrid-tab-name: presubmit-kops-gce-small-scale-calico-using-cl2
