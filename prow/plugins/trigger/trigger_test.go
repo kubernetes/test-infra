@@ -360,7 +360,13 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: true,
 		},
 		{
-			name:            "user is not org member or trusted org member",
+			name:            "user is collaborator (only org members enabled)",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
+		},
+		{
+			name:            "user is not org member",
 			onlyOrgMembers:  false,
 			user:            "test-2",
 			org:             "kubernetes",
@@ -392,6 +398,13 @@ func TestTrustedUser(t *testing.T) {
 			user:            "github-app[bot]",
 			trustedApps:     []string{"github-app"},
 			expectedTrusted: true,
+		},
+		{
+			name:            "github-app[bot] is not in trusted list",
+			user:            "github-app[bot]",
+			trustedApps:     []string{"other-app"},
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
 		},
 	}
 

@@ -404,8 +404,6 @@ func TestSetTriggerDefaults(t *testing.T) {
 			},
 		}
 
-		// c.setDefaults()
-
 		if c.Triggers[0].JoinOrgURL != test.expectedJoinOrgURL {
 			t.Errorf("unexpected join_org_url: %s, expected: %s", c.Triggers[0].JoinOrgURL, test.expectedJoinOrgURL)
 		}

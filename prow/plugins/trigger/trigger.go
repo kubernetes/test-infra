@@ -80,11 +80,7 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
 	for _, repo := range enabledRepos {
-		trigger := config.TriggerFor(repo.Org, repo.Repo)
 		org := repo.Org
-		if trigger.JoinOrgURL != "" {
-			org = trigger.JoinOrgURL
-		}
 		configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
 	}
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
@@ -265,14 +261,6 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []strin
 		if tUser := strings.TrimSuffix(user, "[bot]"); tUser == trustedApp {
 			return okResponse, nil
 		}
-	}
-
-	// Check the second trusted org.
-	member, err := ghc.IsMember(org, user)
-	if err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", org, err)
-	} else if member {
-		return okResponse, nil
 	}
 
 	// the if/else is only to improve error messaging

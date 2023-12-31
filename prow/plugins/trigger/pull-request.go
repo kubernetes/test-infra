@@ -253,11 +253,13 @@ func welcomeMsg(ghc githubClient, trigger plugins.Trigger, pr github.PullRequest
 	author := string(a)
 	encodedRepoFullName := url.QueryEscape(pr.Base.Repo.FullName)
 
+	var more string
 	var joinOrgURL string
 	if trigger.JoinOrgURL != "" {
 		joinOrgURL = trigger.JoinOrgURL
 	} else {
 		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
+		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", org, repo)
 	}
 
 	var comment string
@@ -276,7 +278,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 	} else {
 		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
 
-I'm waiting for a (https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with `+"`/ok-to-test`"+` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
+I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with `+"`/ok-to-test`"+` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
 
 Once the patch is verified, the new status will be reflected by the `+"`%s`"+` label.
 
@@ -286,7 +288,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 
 %s
 </details>
-`, author, org, org, joinOrgURL, labels.OkToTest, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
+`, author, org, org, more, joinOrgURL, labels.OkToTest, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
 
 		l, err := ghc.GetIssueLabels(org, repo, pr.Number)
 		if err != nil {

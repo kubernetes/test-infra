@@ -647,6 +647,34 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>
 `,
 		},
+		{
+			name: "should succeed as skip dco is enabled",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+			},
+			commentEvent: github.GenericCommentEvent{
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/check-dco",
+				IsPR:       true,
+				Number:     3,
+			},
+			pullRequests: map[int]*github.PullRequest{
+				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not a sign off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+
+			expectedStatus: github.StatusSuccess,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

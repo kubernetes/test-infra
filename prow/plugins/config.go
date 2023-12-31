@@ -898,7 +898,6 @@ func (c *Configuration) TriggerFor(org, repo string) Trigger {
 		}
 	}
 	var tr Trigger
-	// tr.SetDefaults()
 	return tr
 }
 
