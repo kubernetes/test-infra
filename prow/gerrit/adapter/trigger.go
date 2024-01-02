@@ -55,6 +55,11 @@ func currentMessages(change gerrit.ChangeInfo, since time.Time) []gerrit.ChangeM
 	return messages
 }
 
+func indicatesChangeFromDraftToActiveState(s string) bool {
+	return strings.HasSuffix(s, client.ReadyForReviewMessageFixed) ||
+		strings.HasSuffix(s, client.ReadyForReviewMessageCustomizable)
+}
+
 // messageFilter returns filter that matches all /test all, /test foo, /retest comments since lastUpdate.
 //
 // The behavior of each message matches the behavior of pjutil.PresubmitFilter.
@@ -77,7 +82,7 @@ func messageFilter(messages []gerrit.ChangeMessageInfo, failingContexts, allCont
 		})
 		// If the Gerrit Change changed from draft to active state, trigger all
 		// presubmit Prow jobs.
-		if strings.HasSuffix(message.Message, client.ReadyForReviewMessageFixed) || strings.HasSuffix(message.Message, client.ReadyForReviewMessageCustomizable) {
+		if indicatesChangeFromDraftToActiveState(message.Message) {
 			filters = append(filters, &timeAnnotationFilter{
 				Filter:       pjutil.NewTestAllFilter(),
 				eventTime:    message.Date.Time,
