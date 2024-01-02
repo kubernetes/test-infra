@@ -321,13 +321,6 @@ blockades:
   - ^README\.md$
   explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 - repos:
-  - kubernetes/test-infra
-  blockregexps:
-  - ^prow/.+\.md$
-  exceptionregexps:
-  - ^prow/(ANNOUNCEMENTS|README)\.md$
-  explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4. Instructions for updating existing docs are at https://docs.prow.k8s.io/docs/contribution-guidelines/#updating-existing-docs."
-- repos:
   - kubernetes/k8s.io
   blockregexps:
   - ^k8s.gcr.io/
