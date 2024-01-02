@@ -206,7 +206,7 @@ presubmits:
           args:
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.7
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -272,7 +272,7 @@ presubmits:
             - bash
             - -c
             - |
-              ARGS="--set=spec.containerd.runc.version=1.1.9 --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.5"
+              ARGS="--set=spec.containerd.runc.version=1.1.9 --set=spec.packages=nfs-common --set=spec.containerd.version=1.7.7"
               make -C $GOPATH/src/k8s.io/kops test-e2e-install
               kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
@@ -390,7 +390,7 @@ presubmits:
           args:
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.7
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -706,7 +706,7 @@ periodics:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.7
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
