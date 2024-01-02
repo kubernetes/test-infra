@@ -574,48 +574,45 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
-#  The below is commented out to prevent Prow from automatically deploying itself during the holidays.
-#  This should be removed on or after January 2nd, 2024.
-#
-# - cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
-#   # Save for daylight saving:
-#   # cron: "30 17-22/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (17:05 UTC, spring) Mon-Fri
-#   name: ci-test-infra-autobump-prow-for-auto-deploy
-#   cluster: test-infra-trusted
-#   decorate: true
-#   extra_refs:
-#   - org: kubernetes
-#     repo: test-infra
-#     base_ref: master
-#   spec:
-#     containers:
-#     - image: gcr.io/k8s-prow/generic-autobumper:v20231221-73538ad97a
-#       command:
-#       - generic-autobumper
-#       args:
-#       - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
-#       - --labels-override=skip-review # This label is used by tide for identifying trusted PR
-#       - --skip-if-no-oncall # Only apply `skip-review` label when oncall is active
-#       volumeMounts:
-#       - name: github
-#         mountPath: /etc/github-token
-#         readOnly: true
-#       - name: ssh
-#         mountPath: /root/.ssh
-#     volumes:
-#     - name: github
-#       secret:
-#         secretName: oauth-token
-#     - name: ssh
-#       secret:
-#         secretName: k8s-ci-robot-ssh-keys
-#         defaultMode: 0400
-#   annotations:
-#     testgrid-dashboards: sig-testing-prow
-#     testgrid-tab-name: autobump-prow-for-auto-deploy
-#     testgrid-alert-email: k8s-infra-oncall@google.com
-#     testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
-#     description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
+- cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
+  # Save for daylight saving:
+  # cron: "30 17-22/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (17:05 UTC, spring) Mon-Fri
+  name: ci-test-infra-autobump-prow-for-auto-deploy
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/generic-autobumper:v20231221-73538ad97a
+      command:
+      - generic-autobumper
+      args:
+      - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
+      - --labels-override=skip-review # This label is used by tide for identifying trusted PR
+      - --skip-if-no-oncall # Only apply `skip-review` label when oncall is active
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: autobump-prow-for-auto-deploy
+    testgrid-alert-email: k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
+    description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
 - cron: "15 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
