@@ -176,12 +176,61 @@ presubmits:
               value: "true"
             - name: ENABLE_BLOBFUSE_PROXY
               value: "true"
-            - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/capz-template-prow-workload-identity.yaml
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pull-blob-csi-driver-e2e-proxy
       description: "Run E2E tests for Azure Blob Storage CSI driver based on blobfuse-proxy"
+      testgrid-num-columns-recent: '30'
+  - name: pull-blob-csi-driver-e2e-proxy-managed-identity
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/blob-csi-driver
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.12
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.28
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/blob-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.28"
+            - name: DISABLE_ZONE
+              value: "true"
+            - name: ENABLE_BLOBFUSE_PROXY
+              value: "true"
+            - name: CLUSTER_TEMPLATE # CAPZ config
+              value: https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/capz-template-prow-workload-identity.yaml
+    annotations:
+      testgrid-dashboards: provider-azure-blobfuse-csi-driver
+      testgrid-tab-name: pull-blob-csi-driver-e2e-proxy-managed-identity
+      description: "Run E2E tests for Azure Blob Storage CSI driver based on blobfuse-proxy-managed-identity"
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-external-e2e-blobfuse
     decorate: true
