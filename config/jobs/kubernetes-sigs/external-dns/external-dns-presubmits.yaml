@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/external-dns:
-  - name: pull-external-dns-lint
+  - name: pull-external-dns-licensecheck
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
@@ -13,7 +13,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - lint
+        - licensecheck
         resources:
           limits:
             cpu: 1
@@ -23,8 +23,8 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-external-dns
-      testgrid-tab-name: lint
-      description: external-dns code lint
+      testgrid-tab-name: licensecheck
+      description: external-dns code license check
       testgrid-num-columns-recent: '30'
   - name: pull-external-dns-unit-test
     cluster: eks-prow-build-cluster
