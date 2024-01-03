@@ -1416,6 +1416,10 @@ plugins:
     - milestone
     - override
 
+  kubernetes-sigs/kernel-module-management:
+    plugins:
+    - override
+
   kubernetes-sigs/kind:
     plugins:
     - override
@@ -1804,6 +1808,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/kernel-module-management:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/kueue:
   - name: cherrypicker
