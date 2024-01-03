@@ -111,9 +111,9 @@ func main() {
 	}
 	interrupts.Run(func(ctx context.Context) {
 		if err := cluster.Start(ctx); err != nil {
-			logrus.WithError(err).Fatal("Cluster failed to start")
+			logrus.WithError(err).Fatal("Controller failed to start")
 		}
-		logrus.Info("Cluster finished gracefully.")
+		logrus.Info("Controller finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), o.controllerManager.TimeoutListingProwJobs)
 	defer mgrSyncCtxCancel()
@@ -194,13 +194,22 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 			}
 			continue
 		}
-		if shouldTrigger {
-			logger = logger.WithField("should-trigger", shouldTrigger)
+		if !shouldTrigger {
+			logger.WithFields(logrus.Fields{
+				"previous-found": previousFound,
+				"name":           p.Name,
+				"job":            p.JobBase.Name,
+			}).Debug("Trigger time has not yet been reached.")
 		}
 		if !previousFound || shouldTrigger {
 			prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
 			prowJob.Namespace = cfg.ProwJobNamespace
-			logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
+			logger.WithFields(logrus.Fields{
+				"should-trigger": shouldTrigger,
+				"previous-found": previousFound,
+			}).WithFields(
+				pjutil.ProwJobFields(&prowJob),
+			).Info("Triggering new run.")
 			if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
 				errs = append(errs, err)
 			}
