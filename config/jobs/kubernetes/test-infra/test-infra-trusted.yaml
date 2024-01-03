@@ -4,7 +4,7 @@ postsubmits:
     cluster: test-infra-trusted
     decorate: true
     decoration_config:
-      timeout: 150m
+      timeout: 180m
     branches:
     - ^main$
     max_concurrency: 1
@@ -551,7 +551,7 @@ periodics:
   cluster: test-infra-trusted
   decorate: true
   decoration_config:
-    timeout: 150m
+    timeout: 180m
   max_concurrency: 1
   extra_refs:
   - org: kubernetes
