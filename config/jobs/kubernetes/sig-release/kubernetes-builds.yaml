@@ -52,7 +52,7 @@ periodics:
       - /krel
       - ci-build
       - --configure-docker
-      - --allow-dup
+      - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
       - --extra-version-markers=k8s-master
@@ -97,7 +97,7 @@ periodics:
       - /krel
       - ci-build
       - --configure-docker
-      - --allow-dup
+      - --allow-dup=false
       - --fast
       - --bucket=k8s-release-dev
       # docker-in-docker needs privileged mode
