@@ -10,7 +10,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)'
     always_run: false
-    optional: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -546,14 +546,14 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-cilium-etcd
 
-# {"cloud": "aws", "distro": "u2004", "extra_flags": "--node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-eni"}
+# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--node-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium-eni"}
   - name: pull-kops-e2e-cni-cilium-eni
     cluster: default
     branches:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
     always_run: false
-    optional: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -579,7 +579,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208' --channel=alpha --networking=cilium-eni --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20231207' --channel=alpha --networking=cilium-eni --node-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -606,8 +606,8 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/extra_flags: --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery
+      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/extra_flags: --node-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium-eni
