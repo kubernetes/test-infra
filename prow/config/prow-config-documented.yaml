@@ -359,6 +359,11 @@ deck:
         # each spyglass page. Using HTML in the template is acceptable.
         # Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
         announcement: ' '
+        # BucketAliases permits a naive URL rewriting functionality.
+        # Keys represent aliases and their values are the authoritative
+        # bucket names they will be substituted with
+        bucket_aliases:
+            "": ""
         # GCSBrowserPrefix is used to generate a link to a human-usable GCS browser.
         # If left empty, the link will be not be shown. Otherwise, a GCS path (with no
         # prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
