@@ -435,10 +435,13 @@ def generate_grid():
                 for kops_version in kops_versions:
                     extra_flags = []
                     if networking == 'cilium-eni':
+                        # Cilium ENI bug fixed in newer kops versions but not backported to 1.27
+                        if kops_version == '1.27':
+                            continue
                         extra_flags = ['--node-size=t3.large']
                     # remove flannel from list of tested CNIs after k8s version < 1.28 is not tested
                     if networking == 'flannel' and k8s_version in ['1.28', '1.29']:
-                        break
+                        continue
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro,
