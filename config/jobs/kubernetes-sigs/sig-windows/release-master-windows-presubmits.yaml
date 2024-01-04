@@ -260,6 +260,7 @@ presubmits:
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-azure-capz-sa-cred: "true"
+      preset-capz-windows-2022: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -286,8 +287,6 @@ presubmits:
               cpu: 2
               memory: "9Gi"
           env:
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
     annotations:
@@ -311,6 +310,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-2022: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -337,8 +337,6 @@ presubmits:
               cpu: 2
               memory: "9Gi"
           env:
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
           - name: HYPERV
             value: "true"
           - name: GINKGO_FOCUS
@@ -366,6 +364,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-2022: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -392,8 +391,6 @@ presubmits:
               cpu: 2
               memory: "9Gi"
           env:
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
           - name: GINKGO_NODES
             value: "1"
           - name: GMSA
