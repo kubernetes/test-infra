@@ -121,18 +121,14 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-nftables-e2e.sh
         env:
-        - name: FEATURE_GATES
-          value: '{"NFTablesProxyMode":true}'
         - name: PARALLEL
           value: "true"
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
           value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -801,12 +797,8 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-nftables-e2e.sh
       env:
-      - name: FEATURE_GATES
-        value: '{"NFTablesProxyMode":true}'
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
