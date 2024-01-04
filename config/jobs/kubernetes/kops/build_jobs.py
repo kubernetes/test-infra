@@ -1292,7 +1292,7 @@ def generate_network_plugins():
         k8s_version = 'stable'
         distro = 'u2204'
         # https://github.com/kubernetes/kops/issues/15720
-        if plugin in ('amazon-vpc', 'cilium-eni'):
+        if plugin == 'amazon-vpc':
             distro = 'u2004'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
@@ -1660,11 +1660,9 @@ def generate_presubmits_network_plugins():
         focus_regex = None
         if plugin == 'cilium-eni':
             focus_regex = r'\[Conformance\]|\[NodeConformance\]'
-            optional = True
         # https://github.com/kubernetes/kops/issues/15720
-        if plugin in ('amazonvpc', 'cilium-eni'):
+        if plugin == 'amazonvpc':
             distro = 'u2004'
-            optional = True
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin == 'kuberouter':
