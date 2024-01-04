@@ -148,7 +148,9 @@ presets:
     value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
-    value: "Intel Skylake"
+    value: "Intel Ice Lake"
+  - name: MASTER_SIZE
+    value: "n2-standard-32"
   # Turn on profiling for various components and
   # increase throughput in master components.
   - name: ETCD_EXTRA_ARGS
