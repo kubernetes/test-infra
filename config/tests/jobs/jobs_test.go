@@ -1179,8 +1179,8 @@ func TestSigReleaseMasterBlockingOrInformingJobsMustUseFastBuilds(t *testing.T) 
 		for _, arg := range job.Spec.Containers[0].Args {
 			if strings.HasPrefix(arg, "--extract=") {
 				extract = strings.TrimPrefix(arg, "--extract=")
-				if extract != "ci/latest-fast" {
-					errs = append(errs, fmt.Errorf("release-master-blocking e2e jobs must use --extract=ci/latest-fast, found --extract=%s instead", extract))
+				if extract != "ci/fast/latest-fast" {
+					errs = append(errs, fmt.Errorf("release-master-blocking e2e jobs must use --extract=ci/fast/latest-fast, found --extract=%s instead", extract))
 				}
 			}
 		}
@@ -1225,7 +1225,7 @@ func extractUsesReleaseBucket(extract string) bool {
 }
 
 // To help with migration to community-owned buckets for CI and release artifacts:
-// - jobs using --extract=ci/latest-fast MUST pull from gs://k8s-release-dev
+// - jobs using --extract=ci/fast/latest-fast MUST pull from gs://k8s-release-dev
 // - release-blocking jobs using --extract=ci/*  MUST from pull gs://k8s-release-dev
 // TODO(https://github.com/kubernetes/k8s.io/issues/846): switch from SHOULD to MUST once all jobs migrated
 // - jobs using --extract=ci/* SHOULD pull from gs://k8s-release-dev
@@ -1263,7 +1263,7 @@ func TestKubernetesE2eJobsMustExtractFromK8sInfraBuckets(t *testing.T) {
 				if extractUsesCIBucket(extract) && ciBucket != expectedCIBucket {
 					needsFix = true
 					jobDesc := "jobs"
-					fail = extract == "ci/latest-fast"
+					fail = extract == "ci/fast/latest-fast"
 					if isKubernetesReleaseBlocking(job) {
 						fail = true
 						jobDesc = "release-blocking jobs"
