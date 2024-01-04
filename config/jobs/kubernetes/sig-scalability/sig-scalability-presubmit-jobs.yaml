@@ -716,7 +716,7 @@ presubmits:
         # TODO(mborsz): Adjust or remove this change once we understand coredns
         # memory usage regression.
         - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-        - --extract=ci/latest-fast
+        - --extract=ci/fast/latest-fast
         - --extract-ci-bucket=k8s-release-dev
         - --gcp-nodes=5000
         - --gcp-project-type=scalability-presubmit-5k-project
