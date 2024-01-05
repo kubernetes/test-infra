@@ -225,6 +225,8 @@ presubmits:
               value: "true"
             - name: ENABLE_BLOBFUSE_PROXY
               value: "true"
+            - name: AZWI # CAPZ config
+              value: "true"
             - name: CLUSTER_TEMPLATE # CAPZ config
               value: https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/test/manifest/capz-template-prow-workload-identity.yaml
     annotations:
