@@ -107,7 +107,7 @@ create_cluster() {
   fi
 
   # JSON map injected into featureGates config
-  feature_gates="{"NFTablesProxyMode":true}"
+  feature_gates='{"NFTablesProxyMode":"true"}'
   # --runtime-config argument value passed to the API server
   runtime_config="{}"
 
