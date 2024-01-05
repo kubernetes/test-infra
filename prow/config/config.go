@@ -1168,6 +1168,10 @@ type Spyglass struct {
 	// PRHistLinkTemplate is the template for constructing href of `PR History` button,
 	// by default it's "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
 	PRHistLinkTemplate string `json:"pr_history_link_template,omitempty"`
+	// BucketAliases permits a naive URL rewriting functionality.
+	// Keys represent aliases and their values are the authoritative
+	// bucket names they will be substituted with
+	BucketAliases map[string]string `json:"bucket_aliases,omitempty"`
 }
 
 type GCSBrowserPrefixes map[string]string
@@ -1294,7 +1298,9 @@ func (c *Config) ValidateStorageBucket(bucketName string) error {
 	if !c.Deck.shouldValidateStorageBuckets() {
 		return nil
 	}
-
+	if alias, exists := c.Deck.Spyglass.BucketAliases[bucketName]; exists {
+		bucketName = alias
+	}
 	if !c.Deck.AllKnownStorageBuckets.Has(bucketName) {
 		return NotAllowedBucketError(fmt.Errorf("bucket %q not in allowed list (%v)", bucketName, sets.List(c.Deck.AllKnownStorageBuckets)))
 	}
@@ -2622,6 +2628,10 @@ func parseProwConfig(c *Config) error {
 	}
 	if !defaultByBucketExists {
 		c.Deck.Spyglass.GCSBrowserPrefixesByBucket["*"] = c.Deck.Spyglass.GCSBrowserPrefix
+	}
+
+	if c.Deck.Spyglass.BucketAliases == nil {
+		c.Deck.Spyglass.BucketAliases = make(map[string]string)
 	}
 
 	if c.PushGateway.Interval == nil {
