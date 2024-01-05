@@ -114,6 +114,11 @@ presubmits:
       timeout: 60m
       grace_period: 15m
     path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: "k8s.io/test-infra"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/krte:v20231208-8b9fd88e88-master
@@ -790,6 +795,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: "k8s.io/test-infra"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20231208-8b9fd88e88-master
