@@ -942,6 +942,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
+      - --env=NODE_SIZE=n2-standard-2
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci

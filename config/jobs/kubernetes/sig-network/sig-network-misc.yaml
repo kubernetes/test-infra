@@ -767,6 +767,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
+      - --env=NODE_SIZE=n2-standard-2
       - --env=CLUSTER_DNS_CORE_DNS=false,
       - --extract=ci/latest
       - --gcp-master-image=gci
@@ -801,6 +802,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
+      - --env=NODE_SIZE=n2-standard-2
       - --env=CLUSTER_DNS_CORE_DNS=false,
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --env=KUBE_ENABLE_NODE_PROBLEM_DETECTOR=none

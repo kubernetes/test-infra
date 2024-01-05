@@ -12,7 +12,7 @@ periodics:
     testgrid-create-test-group: 'true'
     testgrid-dashboards: sig-k8s-infra-groups
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '3'
   rerun_auth_config:
     github_team_slugs:
     # proxy for sig-k8s-infra-oncall
