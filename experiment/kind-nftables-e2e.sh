@@ -22,9 +22,6 @@ set -o errexit -o nounset -o xtrace
 # Settings:
 # SKIP: ginkgo skip regex
 # FOCUS: ginkgo focus regex
-# GA_ONLY: true  - limit to GA APIs/features as much as possible
-#          false - (default) APIs and features left at defaults
-#
 
 # cleanup logic for cleanup on exit
 CLEANED_UP=false
@@ -113,35 +110,6 @@ create_cluster() {
   feature_gates="{"NFTablesProxyMode":true}"
   # --runtime-config argument value passed to the API server
   runtime_config="{}"
-
-  case "${GA_ONLY:-false}" in
-  false)
-    feature_gates="{}"
-    runtime_config="{}"
-    ;;
-  true)
-    case "${KUBE_VERSION}" in
-    v1.1[0-7].*)
-      echo "GA_ONLY=true is only supported on versions >= v1.18, got ${KUBE_VERSION}"
-      exit 1
-      ;;
-    v1.18.*)
-      echo "Limiting to GA APIs and features (plus certificates.k8s.io/v1beta1 and RotateKubeletClientCertificate) for ${KUBE_VERSION}"
-      feature_gates='{"AllAlpha":false,"AllBeta":false,"RotateKubeletClientCertificate":true}'
-      runtime_config='{"api/alpha":"false", "api/beta":"false", "certificates.k8s.io/v1beta1":"true"}'
-      ;;
-    *)
-      echo "Limiting to GA APIs and features for ${KUBE_VERSION}"
-      feature_gates='{"AllAlpha":false,"AllBeta":false}'
-      runtime_config='{"api/alpha":"false", "api/beta":"false"}'
-      ;;
-    esac
-    ;;
-  *)
-    echo "\$GA_ONLY set to '${GA_ONLY}'; supported values are true and false (default)"
-    exit 1
-    ;;
-  esac
 
   # create the config file
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
