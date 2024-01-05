@@ -2,8 +2,11 @@ presets:
 - labels:
     preset-ci-gce-device-plugin-gpu: "true"
   env:
+  # K80s will be uncreatable after 1st of May 2024
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-k80,count=2
+  - name: NODE_SIZE
+    value: n1-standard-2
 
 periodics:
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
