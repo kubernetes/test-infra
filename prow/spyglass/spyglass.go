@@ -187,10 +187,6 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 		if keyType == api.GCSKeyType {
 			keyType = providers.GS
 		}
-		potentialAlias := strings.Split(key, "/")[0]
-		if bucket, exists := sg.cfg().Deck.Spyglass.BucketAliases[potentialAlias]; exists {
-			key = strings.Replace(key, potentialAlias, bucket, 1)
-		}
 		reader, err := sg.opener.Reader(context.TODO(), fmt.Sprintf("%s://%s.txt", keyType, key))
 		if err != nil {
 			if pkgio.IsNotExist(err) {
