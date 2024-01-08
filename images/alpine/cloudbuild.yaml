@@ -19,4 +19,4 @@ steps:
     - gcr.io/$PROJECT_ID/alpine:latest
 substitutions:
   _GIT_TAG: '12345'
-# Manual bump to pick up alpine security fixes: 2023-11-07
+# Manual bump to pick up alpine release: 3.19.0
