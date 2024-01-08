@@ -240,6 +240,7 @@ periodics:
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-windows-private-registry-cred: "true"
+    preset-capz-windows-2022: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -269,9 +270,6 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
-        env:
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
@@ -291,6 +289,7 @@ periodics:
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
     preset-windows-private-registry-cred: "true"
+    preset-capz-windows-2022: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -321,8 +320,6 @@ periodics:
             cpu: 2
             memory: "9Gi"
         env:
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
@@ -345,6 +342,7 @@ periodics:
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
+    preset-capz-windows-2022: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -375,8 +373,6 @@ periodics:
             cpu: 2
             memory: "9Gi"
         env:
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
           - name: GINKGO_SKIP
@@ -398,6 +394,7 @@ periodics:
     preset-windows-private-registry-cred: "true"
     preset-capz-windows-common: "true"
     preset-azure-capz-sa-cred: "true"
+    preset-capz-windows-2022: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
