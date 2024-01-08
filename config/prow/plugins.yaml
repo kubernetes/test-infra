@@ -689,7 +689,7 @@ require_matching_label:
   repo: kubernetes
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -700,7 +700,7 @@ require_matching_label:
   org: kubernetes
   repo: website
   issues: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -711,7 +711,7 @@ require_matching_label:
   org: kubernetes
   repo: kubectl
   issues: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -723,7 +723,7 @@ require_matching_label:
   repo: cloud-provider-gcp
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -815,7 +815,7 @@ require_matching_label:
   repo: ingress-nginx
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -875,7 +875,7 @@ require_matching_label:
   repo: cluster-api
   issues: true
   prs: false
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -887,7 +887,7 @@ require_matching_label:
   repo: cluster-api-operator
   issues: true
   prs: false
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -899,7 +899,7 @@ require_matching_label:
   repo: cluster-api-provider-aws
   issues: true
   prs: false
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -928,7 +928,7 @@ require_matching_label:
   repo: cloud-provider-aws
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -940,7 +940,7 @@ require_matching_label:
   repo: custom-metrics-apiserver
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -952,7 +952,7 @@ require_matching_label:
   repo: instrumentation-addons
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -964,7 +964,7 @@ require_matching_label:
   repo: instrumentation-tools
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -976,7 +976,7 @@ require_matching_label:
   repo: klog
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -988,7 +988,7 @@ require_matching_label:
   repo: kube-state-metrics
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1000,7 +1000,7 @@ require_matching_label:
   repo: metrics
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1012,7 +1012,7 @@ require_matching_label:
   repo: gateway-api
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1030,7 +1030,7 @@ require_matching_label:
   repo: metrics-server
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1042,7 +1042,7 @@ require_matching_label:
   repo: prometheus-adapter
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1054,7 +1054,7 @@ require_matching_label:
   repo: logtools
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1066,7 +1066,7 @@ require_matching_label:
   repo: usage-metrics-collector
   issues: true
   prs: true
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
