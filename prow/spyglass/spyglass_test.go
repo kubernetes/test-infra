@@ -1474,6 +1474,11 @@ func TestResolveSymlink(t *testing.T) {
 			result: "gs/test-bucket/better-logs/42",
 		},
 		{
+			name:   "non-symlink with aliased bucket is replaced",
+			path:   "gcs/alias/better-logs/42",
+			result: "gs/test-bucket/better-logs/42",
+		},
+		{
 			name:   "prowjob without trailing slash is unchanged",
 			path:   "prowjob/better-logs/42",
 			result: "prowjob/better-logs/42",
@@ -1496,7 +1501,17 @@ func TestResolveSymlink(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		fakeConfigAgent := fca{}
+		fakeConfigAgent := fca{
+			c: config.Config{
+				ProwConfig: config.ProwConfig{
+					Deck: config.Deck{
+						Spyglass: config.Spyglass{
+							BucketAliases: map[string]string{"alias": "test-bucket"}},
+					},
+				},
+			},
+		}
+		//fakeConfigAgent.Config().Deck.Spyglass.BucketAliases = map[string]string{"alias": "test-bucket"}
 		fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 
