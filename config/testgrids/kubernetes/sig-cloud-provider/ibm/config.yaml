@@ -3,6 +3,7 @@ dashboard_groups:
   dashboard_names:
     - ibm-conformance-ppc64le
     - ibm-unit-tests-ppc64le
+    - ibm-etcd-tests-ppc64le
 
 dashboards:
 - name: ibm-conformance-ppc64le
@@ -15,6 +16,11 @@ dashboards:
     - name: Periodic unit test suite on ppc64le
       description: Runs unit tests on ibm ppc64le architecture
       test_group_name: ppc64le-unit
+- name: ibm-etcd-tests-ppc64le
+  dashboard_tab:
+    - name: Periodic etcd test suite on ppc64le
+      description: Runs etcd repo's test suites on ppc64le architecture
+      test_group_name: ppc64le-etcd-tests
 
 
 test_groups:
@@ -25,3 +31,5 @@ test_groups:
   - configuration_value: k8s-build-version
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-unit-test-ppc64le
+- name: ppc64le-etcd-tests
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-etcd-test-ppc64le
