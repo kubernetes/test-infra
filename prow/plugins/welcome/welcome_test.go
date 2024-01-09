@@ -363,7 +363,6 @@ func TestHandlePR(t *testing.T) {
 		}
 
 		tr := plugins.Trigger{
-			TrustedOrg:     "kubernetes",
 			OnlyOrgMembers: tc.onlyOrgMembers,
 		}
 

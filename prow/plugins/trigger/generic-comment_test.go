@@ -1343,7 +1343,6 @@ func TestHandleGenericComment(t *testing.T) {
 			trigger := plugins.Trigger{
 				IgnoreOkToTest: tc.IgnoreOkToTest,
 			}
-			trigger.SetDefaults()
 
 			log.Printf("running case %s", tc.name)
 			// In some cases handleGenericComment can be called twice for the same event.

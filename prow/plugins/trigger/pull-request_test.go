@@ -57,12 +57,6 @@ func TestTrusted(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "trust member of other trusted org",
-			author:   sister,
-			labels:   []string{},
-			expected: true,
-		},
-		{
 			name:     "accept random PR with ok-to-test",
 			author:   rando,
 			labels:   []string{labels.OkToTest},
@@ -94,7 +88,6 @@ func TestTrusted(t *testing.T) {
 			g.Collaborators = []string{friend}
 			g.IssueComments = map[int][]github.IssueComment{}
 			trigger := plugins.Trigger{
-				TrustedOrg:     "kubernetes",
 				OnlyOrgMembers: tc.onlyOrg,
 			}
 			var labels []github.Label
@@ -492,10 +485,8 @@ func TestHandlePullRequest(t *testing.T) {
 				pr.Changes = (json.RawMessage)(data)
 			}
 			trigger := plugins.Trigger{
-				TrustedOrg:     "org",
 				OnlyOrgMembers: true,
 			}
-			trigger.SetDefaults()
 			if err := handlePR(c, trigger, pr); err != nil {
 				t.Fatalf("Didn't expect error: %s", err)
 			}

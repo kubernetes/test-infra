@@ -76,7 +76,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "/ok-to-test". There's no need to look for previous
 		// "/ok-to-test" comments since the PR was just opened!
-		trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, author, org, repo)
+		trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedApps, author, org, repo)
 		member := trustedResponse.IsTrusted
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
@@ -252,16 +252,14 @@ func welcomeMsg(ghc githubClient, trigger plugins.Trigger, pr github.PullRequest
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
 	encodedRepoFullName := url.QueryEscape(pr.Base.Repo.FullName)
-	var more string
-	if trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
-		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", trigger.TrustedOrg, trigger.TrustedOrg)
-	}
 
+	var more string
 	var joinOrgURL string
 	if trigger.JoinOrgURL != "" {
 		joinOrgURL = trigger.JoinOrgURL
 	} else {
 		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
+		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", org, repo)
 	}
 
 	var comment string
@@ -327,7 +325,7 @@ func draftMsg(ghc githubClient, pr github.PullRequest) error {
 // If already known, GitHub labels should be provided to save tokens. Otherwise, it fetches them.
 func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
-	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, author, org, repo); err != nil {
+	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedApps, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %w", author, err)
 	} else if trustedResponse.IsTrusted {
 		return l, true, nil

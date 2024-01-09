@@ -80,11 +80,7 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
 	for _, repo := range enabledRepos {
-		trigger := config.TriggerFor(repo.Org, repo.Repo)
 		org := repo.Org
-		if trigger.TrustedOrg != "" {
-			org = trigger.TrustedOrg
-		}
 		configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
 	}
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
@@ -227,7 +223,7 @@ type TrustedUserResponse struct {
 
 // TrustedUser returns true if user is trusted in repo.
 // Trusted users are either repo collaborators, org members or trusted org members.
-func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []string, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []string, user, org, repo string) (TrustedUserResponse, error) {
 	errorResponse := TrustedUserResponse{IsTrusted: false}
 	okResponse := TrustedUserResponse{IsTrusted: true}
 
@@ -265,24 +261,6 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []strin
 		if tUser := strings.TrimSuffix(user, "[bot]"); tUser == trustedApp {
 			return okResponse, nil
 		}
-	}
-
-	// Determine if there is a second org to check. If there is no secondary org or they are the same, the result
-	// is the same because the user already failed the check for the primary org.
-	if trustedOrg == "" || trustedOrg == org {
-		// the if/else is only to improve error messaging
-		if onlyOrgMembers {
-			return TrustedUserResponse{IsTrusted: false, Reason: notMember.String()}, nil // No trusted org and/or it is the same
-		}
-		return TrustedUserResponse{IsTrusted: false, Reason: (notMember | notCollaborator).String()}, nil // No trusted org and/or it is the same
-	}
-
-	// Check the second trusted org.
-	member, err := ghc.IsMember(trustedOrg, user)
-	if err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", trustedOrg, err)
-	} else if member {
-		return okResponse, nil
 	}
 
 	// the if/else is only to improve error messaging
