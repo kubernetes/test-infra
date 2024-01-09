@@ -216,6 +216,7 @@ presubmits:
             - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
             - --extract=local
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
