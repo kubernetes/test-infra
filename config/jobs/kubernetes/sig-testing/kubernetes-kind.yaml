@@ -623,7 +623,7 @@ periodics:
         cp -f "${GCE_SSH_PRIVATE_KEY_FILE}" ~/.ssh/google_compute_engine
         cp -f "${GCE_SSH_PUBLIC_KEY_FILE}" ~/.ssh/google_compute_engine.pub
         exec kubetest2 kindinv \
-          --gcp-project=k8s-prow-builds \
+          --boskos-location=http://boskos.test-pods.svc.cluster.local \
           --gcp-zone=us-west1-b \
           --instance-image=ubuntu-os-cloud/ubuntu-2204-lts \
           --instance-type=n2-standard-4 \
