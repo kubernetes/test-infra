@@ -29,7 +29,8 @@ cleanup_dind() {
     if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
         echo "Cleaning up after docker"
         docker ps -aq | xargs -r docker rm -f || true
-        service docker stop || true
+        echo "Waiting for docker to stop for 30 seconds"
+        timeout 30 service docker stop || true
     fi
 }
 
