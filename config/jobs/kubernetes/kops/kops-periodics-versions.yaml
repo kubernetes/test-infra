@@ -39,7 +39,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25

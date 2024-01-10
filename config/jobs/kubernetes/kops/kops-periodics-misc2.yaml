@@ -170,7 +170,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25
@@ -236,7 +236,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25
@@ -1139,7 +1139,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25
@@ -1205,7 +1205,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -1273,7 +1273,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -2028,7 +2028,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=120m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:SELinux\]" \
@@ -2097,7 +2097,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
@@ -2164,7 +2164,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
@@ -2231,7 +2231,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=60m --master-os-distro=ubuntu --node-os-distro=ubuntu" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
@@ -2298,7 +2298,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=150m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Slow\]" \
@@ -2366,7 +2366,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=150m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Slow\]" \
@@ -2434,7 +2434,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -2502,7 +2502,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]" \
@@ -2571,7 +2571,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]" \
@@ -2640,7 +2640,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]" \
@@ -2708,7 +2708,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=600m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Disruptive\]" \
@@ -2776,7 +2776,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=300m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:Reboot\]" \
@@ -2844,7 +2844,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=500m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Disruptive\]" \
@@ -2913,7 +2913,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=600m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Serial\]" \
@@ -2981,7 +2981,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=600m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Serial\]" \
@@ -3050,7 +3050,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=240m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
@@ -3119,7 +3119,7 @@ periodics:
           --test=kops \
           -- \
           --test-args="-test.timeout=240m" \
-          --test-package-bucket=k8s-release-dev \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
