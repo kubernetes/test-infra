@@ -121,7 +121,7 @@ def build_test(cloud='aws',
             extra_flags = []
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
-    marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
+    marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     node_ig_overrides = ""
@@ -173,7 +173,7 @@ def build_test(cloud='aws',
         skip_regex=skip_regex,
         kops_feature_flags=','.join(feature_flags),
         terraform_version=terraform_version,
-        test_package_bucket=test_package_bucket,
+        test_package_url=test_package_url,
         test_package_dir=test_package_dir,
         focus_regex=focus_regex,
         publish_version_marker=publish_version_marker,
@@ -294,7 +294,7 @@ def presubmit_test(branch='master',
     if irsa and cloud == "aws" and scenario is None:
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
-    marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
+    marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     # Scenario-specific parameters
@@ -331,7 +331,7 @@ def presubmit_test(branch='master',
         skip_regex=skip_regex,
         kops_feature_flags=','.join(feature_flags),
         terraform_version=terraform_version,
-        test_package_bucket=test_package_bucket,
+        test_package_url=test_package_url,
         test_package_dir=test_package_dir,
         focus_regex=focus_regex,
         run_if_changed=run_if_changed,

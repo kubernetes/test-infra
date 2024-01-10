@@ -41,7 +41,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -111,7 +111,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -511,7 +511,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --parallel=25
@@ -648,7 +648,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --parallel=25
@@ -2362,7 +2362,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=500m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Serial\]" \
@@ -2432,7 +2432,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=40m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
@@ -2501,7 +2501,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=70m" \
-            --test-package-bucket=k8s-release-dev \
+            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Slow\]" \
