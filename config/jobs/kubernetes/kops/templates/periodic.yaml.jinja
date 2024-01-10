@@ -80,8 +80,8 @@
           {%- else %}
           --test-args="-test.timeout={{test_timeout}}" \
           {%- endif %}
-          {%- if test_package_bucket %}
-          --test-package-bucket={{test_package_bucket}} \
+          {%- if test_package_url %}
+          --test-package-url={{test_package_url}} \
           {%- endif %}
           {%- if test_package_dir %}
           --test-package-dir={{test_package_dir}} \
