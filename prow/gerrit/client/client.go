@@ -553,13 +553,13 @@ func (c *Client) GetMergeableInfo(instance, changeID, revisionID string) (*gerri
 	h, ok := c.handlers[instance]
 	c.lock.RUnlock()
 	if !ok {
-		return &gerrit.MergeableInfo{}, fmt.Errorf("not activated Gerrit instance: %s", instance)
+		return nil, fmt.Errorf("not activated Gerrit instance: %s", instance)
 	}
 
 	mergeableInfo, resp, err := h.revisionService.GetMergeable(changeID, revisionID, nil)
 
 	if err != nil {
-		return &gerrit.MergeableInfo{}, responseBodyError(err, resp)
+		return nil, responseBodyError(err, resp)
 	}
 	return mergeableInfo, nil
 }

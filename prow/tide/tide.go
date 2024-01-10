@@ -24,13 +24,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
@@ -1581,6 +1582,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 
 			presubmits[pr.Number] = append(presubmits[pr.Number], ps)
 		}
+		log.WithField("required-presubmit-count", len(presubmits[pr.Number])).Debug("Determined required presubmits for PR.")
 	}
 
 	sp.prs = filteredPRs
