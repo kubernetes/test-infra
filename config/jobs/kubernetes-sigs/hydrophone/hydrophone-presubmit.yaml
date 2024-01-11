@@ -1,0 +1,46 @@
+presubmits:
+  kubernetes-sigs/hydrophone:
+    - name: pull-hydrophone-build
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            imagePullPolicy: Always
+            command:
+              - make
+              - build
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-build
+    - name: pull-hydrophone-test
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            imagePullPolicy: Always
+            command:
+              - make
+              - test
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-test
