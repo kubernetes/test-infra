@@ -88,7 +88,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
     labels:
       preset-service-account: "true"
@@ -132,7 +132,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-vmss
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
     labels:
       preset-service-account: "true"
