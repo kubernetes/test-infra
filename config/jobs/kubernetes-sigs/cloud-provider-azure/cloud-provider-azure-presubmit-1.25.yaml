@@ -47,7 +47,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.11
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
@@ -243,7 +243,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.11
+          base_ref: release-1.12
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
