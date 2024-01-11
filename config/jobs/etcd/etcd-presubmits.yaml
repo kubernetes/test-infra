@@ -50,7 +50,7 @@ presubmits:
             cpu: "4"
             memory: "4Gi"
 
-  - name: pull-etcd-verify-lint
+  - name: pull-etcd-verify
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -58,7 +58,7 @@ presubmits:
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
-      testgrid-tab-name: pull-etcd-verify-lint
+      testgrid-tab-name: pull-etcd-verify
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
@@ -66,7 +66,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - verify-lint
+        - verify
         resources:
           requests:
             cpu: "4"
