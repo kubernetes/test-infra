@@ -151,6 +151,8 @@ ${kubelet_extra_args}
   ---
   kind: KubeProxyConfiguration
   mode: "nftables"
+  conntrack:
+    tcpBeLiberal: true
 EOF
   # NOTE: must match the number of workers above
   NUM_NODES=2
