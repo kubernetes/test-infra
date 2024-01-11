@@ -138,6 +138,8 @@ presubmits:
                 value: "capz"
               - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
                 value: "30"
+              - name: CLUSTER_TEMPLATE
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/2cc50db38324857cfcf4a59b8ed06fdd8de986c9/templates/test/ci/cluster-template-prow-ci-version.yaml
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-25-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-25
@@ -187,6 +189,8 @@ presubmits:
                 value: "latest-1.25"
               - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
+              - name: CLUSTER_TEMPLATE
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/2cc50db38324857cfcf4a59b8ed06fdd8de986c9/templates/test/ci/cluster-template-prow-ci-version.yaml
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-25-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-25
