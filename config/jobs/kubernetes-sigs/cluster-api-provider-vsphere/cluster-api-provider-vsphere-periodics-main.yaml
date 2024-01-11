@@ -148,7 +148,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "\\[Conformance\\]"
+        value: "testing K8S conformance \\[Conformance\\]"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -164,6 +164,50 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
+
+
+- name: periodic-cluster-api-provider-vsphere-conformance-ci-latest-main
+  labels:
+    preset-dind-enabled: "true"
+    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds: "true"
+    preset-kind-volume-mounts: "true"
+  interval: 24h
+  decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-1.27
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "testing K8S conformance with K8S latest ci \\[Conformance\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-conformance-ci-latest-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs conformance tests with K8S ci latest for CAPV
 
 - name: periodic-cluster-api-provider-vsphere-coverage-main
   cluster: eks-prow-build-cluster
