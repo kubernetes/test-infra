@@ -351,6 +351,9 @@ func Test_getJobHistory(t *testing.T) {
 		ProwConfig: config.ProwConfig{
 			Deck: config.Deck{
 				SkipStoragePathValidation: &boolTrue,
+				Spyglass: config.Spyglass{
+					BucketAliases: map[string]string{"kubernetes-jenkins-old": "kubernetes-jenkins"},
+				},
 			},
 		},
 	})
@@ -379,6 +382,11 @@ func Test_getJobHistory(t *testing.T) {
 		{
 			name: "get job history logs (new format)",
 			url:  "https://prow.k8s.io/job-history/gs/kubernetes-jenkins/logs/post-cluster-api-provider-openstack-push-images",
+			want: wantedLogsJobHistoryTemplate,
+		},
+		{
+			name: "get job history logs through a bucket alias (new format)",
+			url:  "https://prow.k8s.io/job-history/gs/kubernetes-jenkins-old/logs/post-cluster-api-provider-openstack-push-images",
 			want: wantedLogsJobHistoryTemplate,
 		},
 	}
