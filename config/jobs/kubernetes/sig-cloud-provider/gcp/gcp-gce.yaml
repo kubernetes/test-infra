@@ -55,7 +55,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           requests:
             cpu: 4
@@ -102,7 +102,7 @@ presubmits:
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           requests:
             cpu: 4
@@ -160,7 +160,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -227,7 +227,7 @@ presubmits:
             - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
           resources:
             limits:
               cpu: 4
@@ -286,7 +286,7 @@ presubmits:
                 --timeout=80m \
                 --use-built-binaries=true \
                 --parallel=30
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
           resources:
             limits:
               cpu: 4
@@ -342,7 +342,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-cos-alpha-features
         - --test_args=--ginkgo.focus=\[Feature:(WatchList|InPlacePodVerticalScaling|APIServerTracing|SidecarContainers|StorageVersionAPI|PodPreset|ClusterTrustBundle|ClusterTrustBundleProjection)\] --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0|\[KubeUp\] --minStartupPods=8
         - --timeout=180m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           limits:
             cpu: 4
@@ -409,7 +409,7 @@ presubmits:
             - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-serial
             - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=500m
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
           resources:
             limits:
               cpu: 4
@@ -469,7 +469,7 @@ presubmits:
                 --timeout=500m \
                 --use-built-binaries=true \
                 --parallel=1
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
           resources:
             limits:
               cpu: 4
@@ -529,7 +529,7 @@ presubmits:
                 --timeout=500m \
                 --use-built-binaries=true \
                 --parallel=1
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
           resources:
             limits:
               cpu: 4
@@ -588,7 +588,7 @@ presubmits:
             - --stage=gs://kubernetes-release-pull/ci/pull-e2e-gce-cloud-provider-disabled
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
           resources:
             limits:
               cpu: 4
@@ -632,7 +632,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -675,7 +675,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -726,7 +726,7 @@ periodics:
           - --provider=gce
           - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
           - --timeout=50m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           limits:
             cpu: 2
@@ -769,7 +769,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
       - --timeout=70m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -808,7 +808,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 1
@@ -847,7 +847,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -881,7 +881,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-flaky
@@ -910,7 +910,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 1
@@ -950,7 +950,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 1
@@ -989,7 +989,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 1
@@ -1031,7 +1031,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -1070,7 +1070,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -1108,7 +1108,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -1146,7 +1146,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2
@@ -1184,7 +1184,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       resources:
         limits:
           cpu: 2

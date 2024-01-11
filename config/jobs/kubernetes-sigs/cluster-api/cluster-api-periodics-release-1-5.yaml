@@ -14,7 +14,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -45,7 +45,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -93,7 +93,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -137,7 +137,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -184,7 +184,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"

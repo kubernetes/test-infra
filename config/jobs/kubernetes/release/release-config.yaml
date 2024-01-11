@@ -32,7 +32,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           requests:
             memory: "6Gi"
@@ -77,7 +77,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231208-8b9fd88e88-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           requests:
             cpu: 4
