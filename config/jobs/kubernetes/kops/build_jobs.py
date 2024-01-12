@@ -64,6 +64,7 @@ def build_test(cloud='aws',
                scenario=None,
                env=None,
                kubernetes_feature_gates=None,
+               pod_service_account=None,
                build_cluster="default",
                cluster_name=None,
                template_path=None,
@@ -144,9 +145,12 @@ def build_test(cloud='aws',
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
+        build_cluster = "k8s-infra-kops-prow-build"
         env['CLOUD_PROVIDER'] = cloud
-        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.test-cncf-aws.k8s.io"
-        env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
+        env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
+        env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
+        env['KOPS_STATE_STORE'] = "s3://k8s-ci-prow-state-store"
         env['KUBE_SSH_USER'] = kops_ssh_user
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
@@ -184,6 +188,7 @@ def build_test(cloud='aws',
         build_cluster=build_cluster,
         kubernetes_feature_gates=kubernetes_feature_gates,
         test_args=test_args,
+        pod_service_account=pod_service_account,
         cluster_name=cluster_name,
         storage_e2e_cred=storage_e2e_cred,
     )
@@ -526,6 +531,7 @@ def generate_misc():
         # A special test for Calico CNI on Debian 11
         build_test(name_override="kops-aws-cni-calico-deb11",
                    cloud="aws",
+                   build_cluster="k8s-infra-kops-prow-build",
                    distro="deb11",
                    k8s_version="stable",
                    networking="calico",
@@ -1420,6 +1426,7 @@ def generate_upgrades():
 def generate_scale():
     results = [
         build_test(
+            cluster_name='default',
             name_override='kops-aws-scale-amazonvpc',
             extra_dashboards=[],
             runs_per_day=1,

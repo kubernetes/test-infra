@@ -68,12 +68,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-artifacts-sandbox
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '1 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -86,6 +85,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -105,9 +105,13 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-622a77307c-4bdbd.test-cncf-aws.k8s.io"
+        value: "e2e-622a77307c-4bdbd.tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -273,7 +277,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1373,12 +1377,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-aws-load-balancer-controller
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '37 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1391,6 +1394,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1400,9 +1404,13 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-4342699135-9b4dd.test-cncf-aws.k8s.io"
+        value: "e2e-4342699135-9b4dd.tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1431,12 +1439,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-keypair-rotation-ha
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '26 12-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1449,6 +1456,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1460,9 +1468,13 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-349a115d39-16181.test-cncf-aws.k8s.io"
+        value: "e2e-349a115d39-16181.tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1491,12 +1503,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-metrics-server
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '42 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1509,6 +1520,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1518,9 +1530,13 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-127cbce38e-b114d.test-cncf-aws.k8s.io"
+        value: "e2e-127cbce38e-b114d.tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1549,12 +1565,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-pod-identity-webhook
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '50 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1567,6 +1582,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1576,9 +1592,13 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-49d63c55eb-ac683.test-cncf-aws.k8s.io"
+        value: "e2e-49d63c55eb-ac683.tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1607,12 +1627,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-addon-resource-tracking
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '43 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1625,6 +1644,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1634,9 +1654,13 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-c0d41e2af2-13250.test-cncf-aws.k8s.io"
+        value: "e2e-c0d41e2af2-13250.tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
