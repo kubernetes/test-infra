@@ -63,10 +63,20 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         command:
-        - runner.sh
+        - /bin/bash
         args:
-        - make
-        - verify
+        - -c
+        - |
+          make verify
+          make fix
+          DIFF=$(git status --porcelain)
+          if [ -n "$DIFF" ]; then
+            echo "These files were modified:"
+            echo
+            echo "$DIFF"
+            echo
+            exit 1
+          fi
         resources:
           requests:
             cpu: "4"
