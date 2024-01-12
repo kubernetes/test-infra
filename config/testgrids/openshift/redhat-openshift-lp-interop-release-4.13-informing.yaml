@@ -110,11 +110,11 @@ dashboards:
     test_group_name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.13-acceptance-lp-interop
   name: redhat-openshift-lp-interop-release-4.13-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.13-lp-interop-3scale-amp-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.13-lp-interop-3scale-amp-interop-aws
   name: periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.13-lp-interop-3scale-amp-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.13-lp-interop-odo-scenario-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.13-lp-interop-odo-scenario-aws
   name: periodic-ci-redhat-developer-odo-main-odo-ocp4.13-lp-interop-odo-scenario-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.13-acceptance-lp-interop
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.13-acceptance-lp-interop
   name: periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.13-acceptance-lp-interop
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.13-acceptance-lp-interop
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.13-acceptance-lp-interop
   name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.13-acceptance-lp-interop

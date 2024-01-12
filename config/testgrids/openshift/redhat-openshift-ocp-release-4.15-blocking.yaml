@@ -408,43 +408,43 @@ dashboards:
   name: redhat-openshift-ocp-release-4.15-blocking
 test_groups:
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/aggregated-aws-ovn-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
+  gcs_prefix: test-platform-results/logs/aggregated-aws-ovn-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
   name: aggregated-aws-ovn-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/aggregated-aws-sdn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
+  gcs_prefix: test-platform-results/logs/aggregated-aws-sdn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
   name: aggregated-aws-sdn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/aggregated-azure-ovn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
+  gcs_prefix: test-platform-results/logs/aggregated-azure-ovn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
   name: aggregated-azure-ovn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/aggregated-azure-sdn-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
+  gcs_prefix: test-platform-results/logs/aggregated-azure-sdn-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
   name: aggregated-azure-sdn-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/aggregated-gcp-ovn-rt-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
+  gcs_prefix: test-platform-results/logs/aggregated-gcp-ovn-rt-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
   name: aggregated-gcp-ovn-rt-upgrade-4.15-minor-release-openshift-release-analysis-aggregator
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/aggregated-gcp-ovn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
+  gcs_prefix: test-platform-results/logs/aggregated-gcp-ovn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
   name: aggregated-gcp-ovn-upgrade-4.15-micro-release-openshift-release-analysis-aggregator
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-heterogeneous
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-heterogeneous
   name: periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-heterogeneous
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-sdn-serial-aws-arm64
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-sdn-serial-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-sdn-serial-aws-arm64
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.15-e2e-aws-sdn-serial
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.15-e2e-aws-sdn-serial
   name: periodic-ci-openshift-release-master-ci-4.15-e2e-aws-sdn-serial
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-aws-ovn-serial
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-aws-ovn-serial
   name: periodic-ci-openshift-release-master-nightly-4.15-e2e-aws-ovn-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-dualstack
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-dualstack
   name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-dualstack
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-ipv6
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-ipv6
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-sdn-bm
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-sdn-bm
   name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-sdn-bm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.15-install-analysis-all
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-install-analysis-all
   name: periodic-ci-openshift-release-master-nightly-4.15-install-analysis-all
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.15-overall-analysis-all
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-overall-analysis-all
   name: periodic-ci-openshift-release-master-nightly-4.15-overall-analysis-all

@@ -812,66 +812,66 @@ dashboards:
     test_group_name: release-openshift-origin-installer-launch-ovirt
   name: redhat-openshift-ocp-release-4.5-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-ovn
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-aws-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-sdn-multitenant
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-sdn-multitenant
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-aws-sdn-multitenant
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-serial
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-aws-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-upgrade-rollback
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-aws-upgrade-rollback
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-azure-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-azure-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-ovirt-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-ovirt-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-cluster-logging-operator-e2e
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-cluster-logging-operator-e2e
   name: periodic-ci-openshift-release-master-nightly-4.5-cluster-logging-operator-e2e
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-console-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.5-console-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-fips-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-proxy
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-proxy
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-aws-proxy
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-azure
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-azure-fips-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-gcp-fips-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi-compact
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi-compact
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi-compact
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi-ipv4
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi-ipv4
   name: periodic-ci-openshift-release-master-nightly-4.5-e2e-metal-ipi-ipv4
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5
+  gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5
   name: promote-release-openshift-machine-os-content-e2e-aws-4.5
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5-ppc64le
+  gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5-ppc64le
   name: promote-release-openshift-machine-os-content-e2e-aws-4.5-ppc64le
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5-s390x
+  gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.5-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.5-s390x
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3-to-4.4-to-4.5-ci
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3-to-4.4-to-4.5-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3-to-4.4-to-4.5-ci
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-ovirt
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-ovirt
   name: release-openshift-origin-installer-launch-ovirt

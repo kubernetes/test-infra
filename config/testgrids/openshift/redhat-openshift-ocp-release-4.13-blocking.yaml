@@ -191,21 +191,21 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-nightly-4.13-install-analysis-all
   name: redhat-openshift-ocp-release-4.13-blocking
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-heterogeneous
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-heterogeneous
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-heterogeneous
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-sdn-serial-aws-arm64
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-sdn-serial-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-sdn-serial-aws-arm64
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.13-e2e-aws-sdn-serial
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.13-e2e-aws-sdn-serial
   name: periodic-ci-openshift-release-master-ci-4.13-e2e-aws-sdn-serial
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.13-e2e-aws-sdn-serial
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.13-e2e-aws-sdn-serial
   name: periodic-ci-openshift-release-master-nightly-4.13-e2e-aws-sdn-serial
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.13-e2e-metal-ipi-ovn-ipv6
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.13-e2e-metal-ipi-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.13-e2e-metal-ipi-ovn-ipv6
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.13-e2e-metal-ipi-sdn-bm
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.13-e2e-metal-ipi-sdn-bm
   name: periodic-ci-openshift-release-master-nightly-4.13-e2e-metal-ipi-sdn-bm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.13-install-analysis-all
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.13-install-analysis-all
   name: periodic-ci-openshift-release-master-nightly-4.13-install-analysis-all

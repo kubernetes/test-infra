@@ -272,23 +272,23 @@ dashboards:
     test_group_name: periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm
   name: redhat-openshift-olm
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-console-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-console-olm
   name: periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-console-olm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-olm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-olm-flaky
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-olm-flaky
   name: periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-olm-flaky
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-ovn
   name: periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-gcp-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-upgrade
   name: periodic-ci-openshift-operator-framework-olm-master-periodics-e2e-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-release-4.11-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.11-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.11-periodics-e2e-gcp-olm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-release-4.12-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.12-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.12-periodics-e2e-gcp-olm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.13-periodics-e2e-gcp-olm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.14-periodics-e2e-gcp-olm
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm
   name: periodic-ci-openshift-operator-framework-olm-release-4.15-periodics-e2e-gcp-olm

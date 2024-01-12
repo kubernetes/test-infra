@@ -29,5 +29,5 @@ dashboards:
     test_group_name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.15-stage-co-exist-rosa-rhoai-rhoam
   name: redhat-openshift-CSPI-QE-MSI-release-4.15-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.15-stage-co-exist-rosa-rhoai-rhoam
+- gcs_prefix: test-platform-results/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.15-stage-co-exist-rosa-rhoai-rhoam
   name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.15-stage-co-exist-rosa-rhoai-rhoam

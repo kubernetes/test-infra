@@ -920,71 +920,71 @@ dashboards:
     test_group_name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.14-lp-interop-mtr-interop-aws
   name: redhat-openshift-lp-interop-release-4.14-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.14-lp-interop-3scale-amp-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.14-lp-interop-3scale-amp-interop-aws
   name: periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.14-lp-interop-3scale-amp-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-4
+- gcs_prefix: test-platform-results/logs/periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-4
   name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-4
-- gcs_prefix: origin-ci-test/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.14-lp-interop-amq-streams-2-6
+- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.14-lp-interop-amq-streams-2-6
   name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.14-lp-interop-amq-streams-2-6
-- gcs_prefix: origin-ci-test/logs/periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
   name: periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
   name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.14-lp-interop-cost-management-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.14-lp-interop-cost-management-interop-aws
   name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.14-lp-interop-cost-management-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.14-lp-interop-camel-k-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.14-lp-interop-camel-k-interop-aws
   name: periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.14-lp-interop-camel-k-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.14-lp-interop-camel-quarkus-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.14-lp-interop-camel-quarkus-interop-aws
   name: periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.14-lp-interop-camel-quarkus-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-jboss-fuse-csb-tnb-tests-container-main-csb-ocp4.14-lp-interop-csb-interop-aws-latest
+- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-csb-tnb-tests-container-main-csb-ocp4.14-lp-interop-csb-interop-aws-latest
   name: periodic-ci-jboss-fuse-csb-tnb-tests-container-main-csb-ocp4.14-lp-interop-csb-interop-aws-latest
-- gcs_prefix: origin-ci-test/logs/periodic-ci-jboss-fuse-fuse-xpaas-qe-container-main-jboss-fuse-ocp4.14-lp-interop-jboss-fuse-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-fuse-xpaas-qe-container-main-jboss-fuse-ocp4.14-lp-interop-jboss-fuse-interop-aws
   name: periodic-ci-jboss-fuse-fuse-xpaas-qe-container-main-jboss-fuse-ocp4.14-lp-interop-jboss-fuse-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.14-lp-interop-rhba-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.14-lp-interop-rhba-interop-aws
   name: periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.14-lp-interop-rhba-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-konveyor-tackle-ui-tests-mta_6.1.1-mta-ocp4.14-lp-interop-mta-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-mta_6.1.1-mta-ocp4.14-lp-interop-mta-interop-aws
   name: periodic-ci-konveyor-tackle-ui-tests-mta_6.1.1-mta-ocp4.14-lp-interop-mta-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.14-lp-interop-servicemesh-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.14-lp-interop-servicemesh-interop-aws
   name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.14-lp-interop-servicemesh-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-interop-mtc-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-interop-mtc-interop-aws
   name: periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.14-lp-interop-mtc-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.2-ocp4.14-lp-interop-oadp-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.2-ocp4.14-lp-interop-oadp-interop-aws
   name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.2-ocp4.14-lp-interop-oadp-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-jenkins-release-4.14-jenkins-ocp4.14-lp-interop-jenkins-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-jenkins-release-4.14-jenkins-ocp4.14-lp-interop-jenkins-interop-aws
   name: periodic-ci-openshift-jenkins-release-4.14-jenkins-ocp4.14-lp-interop-jenkins-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-ocp4.14-lp-interop-operator-e2e-interop-aws-ocp414
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-knative-serverless-operator-main-ocp4.14-lp-interop-operator-e2e-interop-aws-ocp414
   name: periodic-ci-openshift-knative-serverless-operator-main-ocp4.14-lp-interop-operator-e2e-interop-aws-ocp414
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.11-openshift-pipelines-ocp4.14-lp-interop-openshift-pipelines-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.11-openshift-pipelines-ocp4.14-lp-interop-openshift-pipelines-interop-aws
   name: periodic-ci-openshift-pipelines-release-tests-release-v1.11-openshift-pipelines-ocp4.14-lp-interop-openshift-pipelines-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.14-lp-interop-quarkus-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.14-lp-interop-quarkus-interop-aws
   name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.14-lp-interop-quarkus-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.14-lp-interop-devspaces-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.14-lp-interop-devspaces-interop-aws
   name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.14-lp-interop-devspaces-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
   name: periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-helm-release-3.11-helm-ocp4.14-lp-interop-helm-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-helm-release-3.11-helm-ocp4.14-lp-interop-helm-interop-aws
   name: periodic-ci-redhat-developer-helm-release-3.11-helm-ocp4.14-lp-interop-helm-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.14-lp-interop-odo-scenario-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.14-lp-interop-odo-scenario-aws
   name: periodic-ci-redhat-developer-odo-main-odo-ocp4.14-lp-interop-odo-scenario-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.14-acceptance-lp-interop
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.14-acceptance-lp-interop
   name: periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.14-acceptance-lp-interop
-- gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-interop
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-interop
   name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.14-acceptance-lp-interop
-- gcs_prefix: origin-ci-test/logs/periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.14-lp-interop-amq-broker-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.14-lp-interop-amq-broker-interop-aws
   name: periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.14-lp-interop-amq-broker-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.14-lp-interop-openjdk-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.14-lp-interop-openjdk-interop-aws
   name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.14-lp-interop-openjdk-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.14-lp-interop-springboot-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.14-lp-interop-springboot-interop-aws
   name: periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.14-lp-interop-springboot-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
   name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.14-lp-interop-rhscl-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.14-lp-interop-rhscl-interop-aws
   name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.14-lp-interop-rhscl-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.14-lp-interop-rhsi-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.14-lp-interop-rhsi-interop-aws
   name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.14-lp-interop-rhsi-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws
   name: periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.14-lp-interop-acm-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-syndesisio-syndesis-qe-1.15.x-fuse-online-ocp4.14-lp-interop-fuse-online-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-syndesisio-syndesis-qe-1.15.x-fuse-online-ocp4.14-lp-interop-fuse-online-interop-aws
   name: periodic-ci-syndesisio-syndesis-qe-1.15.x-fuse-online-ocp4.14-lp-interop-fuse-online-interop-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.14-lp-interop-mtr-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.14-lp-interop-mtr-interop-aws
   name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.14-lp-interop-mtr-interop-aws
