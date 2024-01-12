@@ -107,8 +107,8 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
