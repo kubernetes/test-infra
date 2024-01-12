@@ -123,7 +123,7 @@ func (in *JobBase) DeepCopyInto(out *JobBase) {
 	if in.ProwJobDefault != nil {
 		in, out := &in.ProwJobDefault, &out.ProwJobDefault
 		*out = new(prowjobsv1.ProwJobDefault)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	in.UtilityConfig.DeepCopyInto(&out.UtilityConfig)
 	return

@@ -83,10 +83,14 @@ func (r *Reporter) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.P
 }
 
 func projectID(pj *v1.ProwJob) string {
-	if pj.Spec.ReporterConfig == nil || pj.Spec.ReporterConfig.ResultStore == nil {
-		return ""
+	if d := pj.Spec.ProwJobDefault; d != nil && d.ResultStoreConfig != nil {
+		return d.ResultStoreConfig.ProjectID
 	}
-	return pj.Spec.ReporterConfig.ResultStore.ProjectID
+	// Fall back to ReporterConfig, if present, for Alpha testing.
+	if c := pj.Spec.ReporterConfig; c != nil && c.ResultStore != nil {
+		return c.ResultStore.ProjectID
+	}
+	return ""
 }
 
 // Report reports results for this job to ResultStore.
