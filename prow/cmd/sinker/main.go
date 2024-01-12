@@ -18,9 +18,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
+	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -109,6 +113,10 @@ func main() {
 	}
 	cfg := configAgent.Config
 	o.kubernetes.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
+
+	if o.config.JobConfigPath != "" {
+		go jobConfigMapMonitor(5*time.Minute, o.config.JobConfigPath)
+	}
 
 	metrics.ExposeMetrics("sinker", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
@@ -254,6 +262,7 @@ var (
 		prowJobsCreated        prometheus.Gauge
 		prowJobsCleaned        *prometheus.GaugeVec
 		prowJobsCleaningErrors *prometheus.GaugeVec
+		jobConfigMapSize       *prometheus.GaugeVec
 	}{
 		podsCreated: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "sinker_pods_existing",
@@ -291,6 +300,12 @@ var (
 		}, []string{
 			"reason",
 		}),
+		jobConfigMapSize: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "job_configmap_size",
+			Help: "Size of ConfigMap storing central job configuration files (gzipped) in bytes.",
+		}, []string{
+			"name",
+		}),
 	}
 )
 
@@ -302,6 +317,7 @@ func init() {
 	prometheus.MustRegister(sinkerMetrics.prowJobsCreated)
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaned)
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaningErrors)
+	prometheus.MustRegister(sinkerMetrics.jobConfigMapSize)
 }
 
 func (m *sinkerReconciliationMetrics) getTimeUsed() time.Duration {
@@ -543,4 +559,137 @@ func podNeedsKubernetesFinalizerCleanup(log *logrus.Entry, pj *prowapi.ProwJob, 
 	}
 
 	return false
+}
+
+// jobConfigMapMonitor reports metrics for the size of the ConfigMap(s) found
+// under the the directory specified with --job-config-path (example:
+// "--job-config-path=/etc/job-config"). There are two possibilities --- either
+// the job ConfigMap is mounted directly at that path, or the ConfigMap was
+// partitioned (see https://github.com/kubernetes/test-infra/pull/28835) and
+// there are multiple subdirs underneath this one.
+func jobConfigMapMonitor(interval time.Duration, jobConfigPath string) {
+	logger := logrus.WithField("sync-loop", "job-configmap-monitor")
+	ticker := time.NewTicker(interval)
+
+	for ; true; <-ticker.C {
+		dirs, err := getConfigMapDirs(jobConfigPath)
+		if err != nil {
+			logger.WithField("dir", jobConfigPath).Error("could not resolve ConfigMap dirs")
+			continue
+		}
+		for _, dir := range dirs {
+			bytes, err := getConfigMapSize(dir)
+			if err != nil {
+				logger.WithField("dir", dir).WithError(err).Error("Failed to get configmap metrics")
+				continue
+			}
+			sinkerMetrics.jobConfigMapSize.WithLabelValues(dir).Set(float64(bytes))
+		}
+	}
+}
+
+// getDataDir gets the "..data" symlink which points to a timestamped directory.
+// See the comment for getConfigMapSize() for details.
+func getDataDir(toplevel string) string {
+	return path.Join(toplevel, "..data")
+}
+
+func getConfigMapDirs(toplevel string) ([]string, error) {
+	dataDir := getDataDir(toplevel)
+	dirs := []string{}
+
+	// If the data dir (symlink) does not exist directly, then assume that this
+	// path is a partition holding multiple ConfigMap-mounted dirs. We use
+	// os.Stat(), which means that both the "..data" symlink and its target
+	// folder must exist. Of course, nothing stops the folder from having
+	// "..data" as a folder or regular file, which would count as false
+	// positives, but we ignore these cases because exhaustive checking here is
+	// not our concern. We just want metrics.
+	if _, err := os.Stat(dataDir); errors.Is(err, os.ErrNotExist) {
+		files, err := os.ReadDir(toplevel)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, file := range files {
+			if !file.IsDir() {
+				continue
+			}
+			dirs = append(dirs, filepath.Join(toplevel, file.Name()))
+		}
+	} else {
+		dirs = append(dirs, toplevel)
+	}
+
+	return dirs, nil
+}
+
+// getConfigMapSize expects a path to the filesystem where a Kubernetes
+// ConfigMap has been mounted. It iterates over every key (file) found in that
+// directory, adding up the sizes of each of the files by calling
+// "syscall.Stat".
+//
+// When ConfigMaps are mounted to disk, all of its keys will become files
+// and the value (data) for each key will be the contents of the respective
+// files. Another special symlink, `..data`, will also be at the same level
+// as the keys and this symlink will point to yet another folder at the same
+// level like `..2024_01_11_22_52_09.1709975282`. This timestamped folder is
+// where the actual files will be located. So the layout looks like:
+//
+// folder-named-after-configmap-name
+// folder-named-after-configmap-name/..2024_01_11_22_52_09.1709975282
+// folder-named-after-configmap-name/..data (symlinked to ..2024_01_11... above)
+// folder-named-after-configmap-name/key1 (symlinked to ..data/key1)
+// folder-named-after-configmap-name/key2 (symlinked to ..data/key2)
+//
+// The above layout with the timestamped folder and the "..data" symlink is a
+// Kubernetes construct, and is applicable to every ConfigMap mounted to disk by
+// Kubernetes.
+//
+// For our purposes the exact details of this doesn't matter too much ---
+// our call to syscall.Stat() will still work for key1 and key2 above even
+// though they are symlinks. What we do care about though is the existence
+// of such `..data` and `..<timestamp>` files. We have to exclude these
+// files from our totals because otherwise we'd be double counting.
+func getConfigMapSize(configmapDir string) (int64, error) {
+	var total int64
+
+	// Look into the "..data" symlinked folder, which should contain the actual
+	// files where each file is a key in the ConfigMap.
+	dataDir := getDataDir(configmapDir)
+	if _, err := os.Stat(dataDir); errors.Is(err, os.ErrNotExist) {
+		return 0, fmt.Errorf("%q is not a ConfigMap-mounted dir", configmapDir)
+	}
+
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
+	var walkDirFunc = func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		// Don't process directories (that is, only process files). We don't
+		// expect any directories to exist at this level, but it doesn't hurt to
+		// skip any we encounter.
+		if d.IsDir() {
+			return nil
+		}
+		// Skip any symbolic links.
+		if d.Type() == fs.ModeSymlink {
+			return nil
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		logger.Infof("file %q is %v bytes", path, info.Size())
+		total += info.Size()
+		return nil
+	}
+
+	if err := filepath.WalkDir(configmapDir, walkDirFunc); err != nil {
+		return 0, nil
+	}
+
+	return total, nil
 }
