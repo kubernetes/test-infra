@@ -137,13 +137,13 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-gcp
   name: redhat-openshift-okd-release-4.10-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.10-e2e-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.10-e2e-aws
   name: periodic-ci-openshift-release-master-okd-4.10-e2e-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.10-e2e-vsphere
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.10-e2e-vsphere
   name: periodic-ci-openshift-release-master-okd-4.10-e2e-vsphere
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.10-e2e-vsphere-upi
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.10-e2e-vsphere-upi
   name: periodic-ci-openshift-release-master-okd-4.10-e2e-vsphere-upi
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-aws
   name: periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-gcp
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-gcp
   name: periodic-ci-openshift-release-master-okd-4.10-upgrade-from-okd-4.9-e2e-upgrade-gcp

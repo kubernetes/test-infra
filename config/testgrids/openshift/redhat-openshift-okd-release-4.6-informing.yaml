@@ -56,8 +56,8 @@ dashboards:
     test_group_name: promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
   name: redhat-openshift-okd-release-4.6-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.6-e2e-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.6-e2e-aws
   name: periodic-ci-openshift-release-master-okd-4.6-e2e-aws
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
+  gcs_prefix: test-platform-results/logs/promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
   name: promote-release-openshift-okd-machine-os-content-e2e-aws-4.6
