@@ -169,6 +169,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-nodes=100
+      - --kubemark-master-size=n2-standard-8
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
@@ -247,6 +248,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-nodes=100
+      - --kubemark-master-size=n2-standard-8
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --test=false
@@ -314,7 +316,7 @@ periodics:
       args:
       - --cluster=kubemark-100-scheduler-highqps
       - --extract=ci/latest
-      - --gcp-master-size=n1-standard-2
+      - --gcp-master-size=n2-standard-2
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-4
       - --gcp-nodes=4
@@ -322,6 +324,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-nodes=100
+      - --kubemark-master-size=n2-standard-8
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
@@ -397,7 +400,7 @@ periodics:
       args:
       - --cluster=kubemark-500
       - --extract=ci/latest
-      - --gcp-master-size=n1-standard-4
+      - --gcp-master-size=n2-standard-4
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=8
@@ -405,6 +408,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=500
+      - --kubemark-master-size=n2-standard-16
       - --metadata-sources=cl2-metadata.json
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --provider=gce
@@ -485,6 +489,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-nodes=5000
+      - --kubemark-master-size=n2-standard-64
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
@@ -571,6 +576,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-nodes=5000
+      - --kubemark-master-size=n2-standard-64
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --test=false
@@ -645,7 +651,7 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --kubemark
-      - --kubemark-master-size=n1-standard-32
+      - --kubemark-master-size=n2-standard-32
       - --kubemark-nodes=600
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
