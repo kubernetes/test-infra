@@ -354,8 +354,9 @@ type ReporterConfig struct {
 	Slack       *SlackReporterConfig `json:"slack,omitempty"`
 }
 
-// TODO: This config is used only for alpha testing and will
-// likely move to ProwJobDefaults for flexibility.
+// TODO: This config was used for alpha testing and is now replaced
+// by ProwJobDefault.ResultStoreConfig. Use that instead. This is
+// retained for fallback until existing configs are updated.
 type ResultStoreReporter struct {
 	// Specifies the ResultStore InvocationAttributes.ProjectId, used
 	// for various quota and GUI access control purposes.
@@ -452,7 +453,19 @@ func (d *Duration) MarshalJSON() ([]byte, error) {
 // ProwJobDefault is used for Prowjob fields we want to set as defaults
 // in Prow config
 type ProwJobDefault struct {
+	ResultStoreConfig *ResultStoreConfig `json:"resultstore_config,omitempty"`
 	TenantID string `json:"tenant_id,omitempty"`
+}
+
+// ResultStoreConfig specifies parameters for uploading results to
+// the ResultStore service.
+type ResultStoreConfig struct {
+	// ProjectID specifies the ResultStore InvocationAttributes.ProjectID, used
+	// for various quota and GUI access control purposes.
+	// In practice, it is generally the same as the Google Cloud Project ID or
+	// number of the job's GCS storage bucket.
+	// Required to upload results to ResultStore.
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 // DecorationConfig specifies how to augment pods.
@@ -679,6 +692,9 @@ func (d *ProwJobDefault) ApplyDefault(def *ProwJobDefault) *ProwJobDefault {
 	}
 	if d == nil || def == nil {
 		return &merged
+	}
+	if merged.ResultStoreConfig == nil {
+		merged.ResultStoreConfig = def.ResultStoreConfig 
 	}
 	if merged.TenantID == "" {
 		merged.TenantID = def.TenantID

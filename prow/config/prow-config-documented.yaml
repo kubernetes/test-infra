@@ -1012,6 +1012,13 @@ prowjob_default_entries:
       # by sequentially merging with later entries overriding fields from earlier
       # entries.
       config:
+        resultstore_config:
+            # ProjectID specifies the ResultStore InvocationAttributes.ProjectID, used
+            # for various quota and GUI access control purposes.
+            # In practice, it is generally the same as the Google Cloud Project ID or
+            # number of the job's GCS storage bucket.
+            # Required to upload results to ResultStore.
+            project_id: ' '
         tenant_id: ' '
       # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
       # is associated with. If the job is a periodic, extra_refs[0] is used. If the
