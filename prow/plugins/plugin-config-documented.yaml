@@ -294,6 +294,18 @@ bugzilla:
 cat:
     # Path to file containing an api key for thecatapi.com
     key_path: ' '
+cherry_pick_approved:
+    - # Approvers is the list of GitHub logins allowed to approve a cherry-pick.
+      approvers:
+        - ""
+      # BranchRegexp is the regular expression for branch names such that
+      # the plugin treats only PRs against these branch names as cherrypick PRs.
+      # Compiles into BranchRe during config load.
+      branchregexp: ' '
+      # Org is the GitHub organization that this config applies to.
+      org: ' '
+      # Repo is the GitHub repository within Org that this config applies to.
+      repo: ' '
 cherry_pick_unapproved:
     # BranchRegexp is the regular expression for branch names such that
     # the plugin treats only PRs against these branch names as cherrypick PRs.
@@ -302,18 +314,6 @@ cherry_pick_unapproved:
     # Comment is the comment added by the plugin while adding the
     # `do-not-merge/cherry-pick-not-approved` label.
     comment: ' '
-cherry_pick_approved:
-    # Org is the GitHub organization that this config applies to.
-    org: ' '
-    # Repo is the GitHub repository within Org that this config applies to.
-    repo: ' '
-    # BranchRegexp is the regular expression for branch names such that
-    # the plugin treats only PRs against these branch names as cherrypick PRs.
-    # Compiles into BranchRe during config load.
-    branchregexp: ' '
-    # Approvers is the list of GitHub logins allowed to approve a cherry-pick.
-    approvers:
-      - ""
 config_updater:
     # ClusterGroups is a map of ClusterGroups that can be used as a target
     # in the map config.
