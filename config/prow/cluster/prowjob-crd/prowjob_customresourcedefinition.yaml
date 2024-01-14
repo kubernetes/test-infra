@@ -92,6 +92,10 @@ spec:
                 description: DecorationConfig holds configuration options for decorating
                   PodSpecs that users provide
                 properties:
+                  blobless_fetch:
+                    description: BloblessFetch tells Prow to avoid fetching objects
+                      when cloning using the --filter=blob:none flag.
+                    type: boolean
                   censor_secrets:
                     description: CensorSecrets enables censoring output logs and artifacts.
                     type: boolean
@@ -484,6 +488,10 @@ spec:
                       type: string
                     base_sha:
                       type: string
+                    blobless_fetch:
+                      description: BloblessFetch tells prow to avoid fetching objects
+                        when cloning using the --filter=blob:none flag.
+                      type: boolean
                     clone_depth:
                       description: CloneDepth is the depth of the clone that will
                         be used. A depth of zero will do a full clone.
@@ -29338,6 +29346,10 @@ spec:
                     type: string
                   base_sha:
                     type: string
+                  blobless_fetch:
+                    description: BloblessFetch tells prow to avoid fetching objects
+                      when cloning using the --filter=blob:none flag.
+                    type: boolean
                   clone_depth:
                     description: CloneDepth is the depth of the clone that will be
                       used. A depth of zero will do a full clone.

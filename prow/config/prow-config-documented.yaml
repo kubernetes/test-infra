@@ -591,6 +591,9 @@ plank:
           # by sequentially merging with later entries overriding fields from earlier
           # entries.
           config:
+            # BloblessFetch tells Prow to avoid fetching objects when cloning using
+            # the --filter=blob:none flag.
+            blobless_fetch: false
             # CensorSecrets enables censoring output logs and artifacts.
             censor_secrets: false
             # CensoringOptions exposes options for censoring output logs and artifacts.
@@ -782,6 +785,9 @@ plank:
     # This field is mutually exclusive with the DefaultDecorationConfigEntries field.
     default_decoration_configs:
         "":
+            # BloblessFetch tells Prow to avoid fetching objects when cloning using
+            # the --filter=blob:none flag.
+            blobless_fetch: false
             # CensorSecrets enables censoring output logs and artifacts.
             censor_secrets: false
             # CensoringOptions exposes options for censoring output logs and artifacts.

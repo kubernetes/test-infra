@@ -571,6 +571,42 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 		},
 		{
+			name: "blobless refs with pr ref override",
+			refs: prowapi.Refs{
+				Org:     "org",
+				Repo:    "repo",
+				BaseRef: "master",
+				Pulls: []prowapi.Pull{
+					{Number: 1, Ref: "pull-me"},
+				},
+				BloblessFetch: true,
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					fetchRetries,
+				},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "pull-me"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
 			name: "refs with pr ref with specific sha",
 			refs: prowapi.Refs{
 				Org:     "org",

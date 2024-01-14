@@ -119,6 +119,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.BloblessFetch != nil {
+		in, out := &in.BloblessFetch, &out.BloblessFetch
+		*out = new(bool)
+		**out = **in
+	}
 	if in.SkipCloning != nil {
 		in, out := &in.SkipCloning, &out.SkipCloning
 		*out = new(bool)

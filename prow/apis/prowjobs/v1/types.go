@@ -506,6 +506,9 @@ type DecorationConfig struct {
 	// that the cloning process can trust.
 	// Create with ssh-keyscan [-t rsa] host
 	SSHHostFingerprints []string `json:"ssh_host_fingerprints,omitempty"`
+	// BloblessFetch tells Prow to avoid fetching objects when cloning using
+	// the --filter=blob:none flag.
+	BloblessFetch *bool `json:"blobless_fetch,omitempty"`
 	// SkipCloning determines if we should clone source code in the
 	// initcontainers for jobs that specify refs
 	SkipCloning *bool `json:"skip_cloning,omitempty"`
@@ -800,6 +803,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.FsGroup == nil {
 		merged.FsGroup = def.FsGroup
+	}
+
+	if merged.BloblessFetch == nil {
+		merged.BloblessFetch = def.BloblessFetch
 	}
 	return &merged
 }
@@ -1160,6 +1167,9 @@ type Refs struct {
 	// Multiheaded repos may need to not make this call.
 	// The git fetch <remote> <BaseRef> call occurs regardless.
 	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
+	// BloblessFetch tells prow to avoid fetching objects when cloning
+	// using the --filter=blob:none flag.
+	BloblessFetch bool `json:"blobless_fetch,omitempty"`
 }
 
 func (r Refs) String() string {
