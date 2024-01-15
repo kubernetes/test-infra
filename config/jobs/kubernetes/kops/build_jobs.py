@@ -1420,22 +1420,6 @@ def generate_upgrades():
         )
     return results
 
-################################
-# kops-periodics-scale.yaml #
-################################
-def generate_scale():
-    results = [
-        build_test(
-            cluster_name='default',
-            name_override='kops-aws-scale-amazonvpc',
-            extra_dashboards=[],
-            runs_per_day=1,
-            networking='amazonvpc',
-            scenario='scalability',
-        )
-    ]
-    return results
-
 ###############################
 # kops-presubmits-scale.yaml #
 ###############################
@@ -2174,7 +2158,6 @@ periodics_files = {
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
     'kops-periodics-network-plugins.yaml': generate_network_plugins,
-    'kops-periodics-scale.yaml': generate_scale,
     'kops-periodics-upgrades.yaml': generate_upgrades,
     'kops-periodics-versions.yaml': generate_versions,
     'kops-periodics-pipeline.yaml': generate_pipeline,
