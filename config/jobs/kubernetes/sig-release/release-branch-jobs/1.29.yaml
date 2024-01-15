@@ -198,7 +198,7 @@ periodics:
     repo: perf-tests
   labels:
     preset-dind-enabled: "true"
-    preset-e2e-kubemark-common: "true"
+    preset-e2e-kubemark-common-legacy: "true"
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -1572,7 +1572,7 @@ presubmits:
       repo: release
     labels:
       preset-dind-enabled: "true"
-      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-common-legacy: "true"
       preset-e2e-scalability-presubmits: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -1651,7 +1651,7 @@ presubmits:
       repo: release
     labels:
       preset-dind-enabled: "true"
-      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-common-legacy: "true"
       preset-e2e-kubemark-gce-scale: "true"
       preset-e2e-scalability-presubmits: "true"
       preset-k8s-ssh: "true"
@@ -2250,7 +2250,7 @@ presubmits:
       repo: release
     labels:
       preset-dind-enabled: "true"
-      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-common-legacy: "true"
       preset-e2e-scalability-presubmits: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
