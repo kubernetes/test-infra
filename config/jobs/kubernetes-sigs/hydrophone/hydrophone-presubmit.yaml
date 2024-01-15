@@ -44,3 +44,25 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-testing-misc
         testgrid-tab-name: hydrophone-test
+    - name: pull-hydrophone-verify
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            imagePullPolicy: Always
+            command:
+              - make
+              - verify
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-verify
