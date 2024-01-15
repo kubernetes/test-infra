@@ -66,3 +66,40 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-testing-misc
         testgrid-tab-name: hydrophone-verify
+    - name: pull-hydrophone-dry-run
+      cluster: eks-prow-build-cluster
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-dry-run
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+            command:
+              - runner.sh
+            env:
+              - name: K8S_VERSION
+                value: "v1.29.0"
+              - name: KIND_VERSION
+                value: "v0.20.0"
+            args:
+              - bash
+              - -c
+              - |
+                make build
+                hack/dryrun-e2e.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: 4Gi
+              limits:
+                cpu: 2
+                memory: 4Gi
