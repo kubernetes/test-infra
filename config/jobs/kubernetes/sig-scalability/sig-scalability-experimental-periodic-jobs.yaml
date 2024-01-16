@@ -165,7 +165,7 @@ periodics:
           - --env=KUBE_GCE_PRIVATE_CLUSTER=false #TODO(#29500): revert when private cluster setup is fixed
           - --extract=ci/latest
           - --gcp-node-image=gci
-          - --gcp-master-size=n1-standard-32
+          - --gcp-master-size=n2-standard-32
           - --gcp-node-size=e2-standard-16
           - --gcp-nodes=1
           - --gcp-project-type=scalability-project
@@ -231,7 +231,7 @@ periodics:
           - --env=KUBE_FEATURE_GATES=WatchList=true
           - --extract=ci/latest
           - --gcp-node-image=gci
-          - --gcp-master-size=n1-standard-32
+          - --gcp-master-size=n2-standard-32
           - --gcp-node-size=e2-standard-16
           - --gcp-nodes=1
           - --gcp-project-type=scalability-project
