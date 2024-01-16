@@ -161,7 +161,7 @@ periodics:
       args:
       - --cluster=kubemark-100
       - --extract=ci/latest
-      - --gcp-master-size=n1-standard-2
+      - --gcp-master-size=n2-standard-2
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-4
       - --gcp-nodes=4
@@ -240,7 +240,7 @@ periodics:
       args:
       - --cluster=kubemark-100
       - --extract=ci/latest
-      - --gcp-master-size=n1-standard-2
+      - --gcp-master-size=n2-standard-2
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-4
       - --gcp-nodes=4
@@ -484,6 +484,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
+      - --gcp-master-size=n2-standard-64
       - --gcp-nodes=84
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -571,6 +572,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
+      - --gcp-master-size=n2-standard-2
       - --gcp-nodes=84
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -647,6 +649,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
+      - --gcp-master-size=n2-standard-2
       - --gcp-nodes=9
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
@@ -970,7 +973,7 @@ periodics:
       - --env=CL2_BENCHMARK_INFLIGHT=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps/benchmark-config-map-0?resourceVersion=0
       - --extract=ci/latest
-      - --gcp-master-size=n1-standard-96
+      - --gcp-master-size=n2-standard-96
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=1
