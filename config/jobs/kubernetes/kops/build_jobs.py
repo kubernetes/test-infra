@@ -150,7 +150,7 @@ def build_test(cloud='aws',
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
         env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
-        env['KOPS_STATE_STORE'] = "s3://k8s-ci-prow-state-store"
+        env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
         env['KUBE_SSH_USER'] = kops_ssh_user
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
