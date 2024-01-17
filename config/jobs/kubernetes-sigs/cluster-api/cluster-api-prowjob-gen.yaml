@@ -1,0 +1,150 @@
+# This is the configuration file for cluster-apis prowjob-gen which is located
+# at: https://github.com/kubernetes-sigs/cluster-api/blob/main/hack/tools/prowjob-gen/
+# This configuration is used to generate the presubmits and periodics for cluster-api.
+
+# prow_ignored is a well known, unparsed field where non-Prow fields can
+# be defined without conflicting with unknown field validation.
+prow_ignored:
+  # Branch specific configuration: for each configured branch the generator will create three
+  # prowjob configuration files (presubmits, periodics, periodics for upgrade tests)
+  branches:
+    main:
+      # The kubekins "minor version" should match the minor version of Kubernetes dependencies used on this branch.
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29"
+      interval: "2h"
+      upgradesInterval: "24h"
+      # This value should be the minimum Kubernetes supported version for Cluster API management cluster
+      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
+      # Please also make sure to refer a version where a kindest/node image exists for (see https://github.com/kubernetes-sigs/kind/releases/)
+      kubernetesVersionManagement: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
+      # This value determines the minimum Kubernetes
+      # supported version for Cluster API management cluster
+      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
+      # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
+      # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
+      kubebuilderEnvtestKubernetesVersion: "1.26.1"
+      upgrades:
+      - from: "1.24"
+        to: "1.25"
+      - from: "1.25"
+        to: "1.26"
+      - from: "1.26"
+        to: "1.27"
+      - from: "1.27"
+        to: "1.28"
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
+    release-1.6:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28"
+      interval: "4h"
+      upgradesInterval: "24h"
+      kubernetesVersionManagement: "v1.25.11@sha256:227fa11ce74ea76a0474eeefb84cb75d8dad1b08638371ecf0e86259b35be0c8"
+      kubebuilderEnvtestKubernetesVersion: "1.25.0"
+      upgrades:
+      - from: "1.23"
+        to: "1.24"
+      - from: "1.24"
+        to: "1.25"
+      - from: "1.25"
+        to: "1.26"
+      - from: "1.26"
+        to: "1.27"
+      - from: "1.27"
+        to: "1.28"
+      - from: "1.28"
+        to: "1.29"
+    release-1.5:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27"
+      interval: "4h"
+      upgradesInterval: "24h"
+      kubernetesVersionManagement: "v1.24.15"
+      kubebuilderEnvtestKubernetesVersion: "1.24.2"
+      upgrades:
+      - from: "1.22"
+        to: "1.23"
+      - from: "1.23"
+        to: "1.24"
+      - from: "1.24"
+        to: "1.25"
+      - from: "1.25"
+        to: "1.26"
+      - from: "1.26"
+        to: "1.27"
+      - from: "1.27"
+        to: "1.28"
+    release-1.4:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.26"
+      interval: "4h"
+      upgradesInterval: "24h"
+      kubernetesVersionManagement: "v1.23.17"
+      kubebuilderEnvtestKubernetesVersion: "1.23.5"
+      upgrades:
+      - from: "1.21"
+        to: "1.22"
+      - from: "1.22"
+        to: "1.23"
+      - from: "1.23"
+        to: "1.24"
+      - from: "1.24"
+        to: "1.25"
+      - from: "1.25"
+        to: "1.26"
+      - from: "1.26"
+        to: "1.27"
+
+  # The generator will run each template per branch and use a filename friendly
+  # branch variable to format the target filename.
+  templates:
+  - name: "cluster-api-periodics.yaml.tpl"
+    template: 'cluster-api-periodics-{{ ReplaceAll .branch "." "-" }}.yaml'
+  - name: "cluster-api-periodics-upgrades.yaml.tpl"
+    template: 'cluster-api-periodics-{{ ReplaceAll .branch "." "-" }}-upgrades.yaml'
+  - name: "cluster-api-presubmits.yaml.tpl"
+    template: 'cluster-api-presubmits-{{ ReplaceAll .branch "." "-" }}.yaml'
+
+  # Versions provides kubernetes minor version to key-value pairs mapping.
+  versions:
+    "1.21":
+      etcd: "3.5.3-0"
+      coreDNS: "v1.8.4"
+      k8sRelease: "stable-1.21"
+    "1.22":
+      etcd: "3.5.3-0"
+      coreDNS: "v1.8.4"
+      k8sRelease: "stable-1.22"
+    "1.23":
+      etcd: "3.5.3-0"
+      coreDNS: "v1.8.6"
+      k8sRelease: "stable-1.23"
+    "1.24":
+      etcd: "3.5.3-0"
+      coreDNS: "v1.8.6"
+      k8sRelease: "stable-1.24"
+    "1.25":
+      etcd: "3.5.4-0"
+      coreDNS: "v1.9.3"
+      k8sRelease: "stable-1.25"
+    "1.26":
+      etcd: "3.5.6-0"
+      coreDNS: "v1.9.3"
+      k8sRelease: "stable-1.26"
+    "1.27":
+      etcd: "3.5.6-0"
+      coreDNS: "v1.9.3"
+      k8sRelease: "stable-1.27"
+    "1.28":
+      etcd: "3.5.9-0"
+      coreDNS: "v1.10.1"
+      k8sRelease: "stable-1.28"
+    "1.29":
+      etcd: "3.5.10-0"
+      coreDNS: "v1.11.1"
+      k8sRelease: "stable-1.29"
+    "1.30":
+      etcd: "3.5.10-0"
+      coreDNS: "v1.11.1"
+      k8sRelease: "ci/latest-1.30"
