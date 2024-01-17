@@ -1,6 +1,7 @@
 periodics:
   - interval: 6h
     name: hydrophone-conformance-check
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 3h
@@ -41,6 +42,7 @@ periodics:
       testgrid-tab-name: hydrophone-conformance-check
   - interval: 6h
     name: hydrophone-e2e-check
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 3h
