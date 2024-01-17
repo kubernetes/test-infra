@@ -292,7 +292,7 @@ presubmits:
             - --provider=gce
             # Panic if anything mutates a shared informer cache
             - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
+            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-providerless
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
