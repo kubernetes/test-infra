@@ -5,7 +5,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 3h
-    path_alias: "sigs.k8s.io/hydrophone"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: hydrophone
+        base_ref: main
+        workdir: true
+        path_alias: sigs.k8s.io/hydrophone
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -46,7 +51,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 3h
-    path_alias: "sigs.k8s.io/hydrophone"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: hydrophone
+        base_ref: main
+        workdir: true
+        path_alias: sigs.k8s.io/hydrophone
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
