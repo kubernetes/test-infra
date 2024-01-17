@@ -1,0 +1,83 @@
+periodics:
+  - interval: 6h
+    name: hydrophone-conformance-check
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/hydrophone"
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+          command:
+            - runner.sh
+          env:
+            - name: K8S_VERSION
+              value: "v1.29.0"
+            - name: KIND_VERSION
+              value: "v0.20.0"
+            - name: CONFORMANCE
+              value: "true"
+          args:
+            - bash
+            - -c
+            - |
+              make build
+              hack/run-e2e.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: 4Gi
+            limits:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: hydrophone-conformance-check
+  - interval: 6h
+    name: hydrophone-e2e-check
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/hydrophone"
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+          command:
+            - runner.sh
+          env:
+            - name: K8S_VERSION
+              value: "v1.29.0"
+            - name: KIND_VERSION
+              value: "v0.20.0"
+            - name: EXTRA_ARGS
+              value: "--parallel=25"
+            - name: SKIP
+              value: '\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist'
+          args:
+            - bash
+            - -c
+            - |
+              make build
+              hack/run-e2e.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: 4Gi
+            limits:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: hydrophone-e2e-check
