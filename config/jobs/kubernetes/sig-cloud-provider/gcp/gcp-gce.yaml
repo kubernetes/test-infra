@@ -397,7 +397,8 @@ presubmits:
         - --ginkgo-parallel=1
         - --build=quick
         - --cluster=
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,EventedPLEG=false
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true

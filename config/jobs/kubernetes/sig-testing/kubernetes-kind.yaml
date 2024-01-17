@@ -305,8 +305,9 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
-          value: '{"AllAlpha":true}'
+          value: '{"AllAlpha":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: FOCUS
@@ -401,8 +402,9 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"AllBeta":true}'
+          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: FOCUS
