@@ -44,7 +44,7 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/nginx
-    - name: post-ingress-nginx-build-nginx1.25-image
+    - name: post-ingress-nginx-build-nginx-1-25-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
