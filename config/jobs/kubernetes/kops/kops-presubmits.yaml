@@ -2,9 +2,6 @@ presubmits:
   kubernetes/kops:
   - name: pull-kops-build
     cluster: eks-prow-build-cluster
-    skip_branches:
-    - release-1.23
-    - release-1.22
     always_run: true
     skip_report: false
     labels:
@@ -33,9 +30,6 @@ presubmits:
       testgrid-tab-name: build
   - name: pull-kops-test
     cluster: eks-prow-build-cluster
-    skip_branches:
-    - release-1.23
-    - release-1.22
     always_run: true
     skip_report: false
     labels:
@@ -330,37 +324,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gofmt
-  - name: pull-kops-verify-gofmt-go118
-    cluster: eks-prow-build-cluster
-    branches:
-    - release-1.24
-    - release-1.23
-    - release-1.22
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-gofmt"
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: 2
-          limits:
-            memory: "2Gi"
-            cpu: 2
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-gofmt-go118
   - name: pull-kops-verify-govet
     cluster: eks-prow-build-cluster
     always_run: true
