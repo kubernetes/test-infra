@@ -1,0 +1,38 @@
+# This is the configuration file for cluster-apis prowjob-generator which is located
+# at: https://github.com/kubernetes-sigs/cluster-api/blob/main/hack/tools/prowjob-generator/
+# This configuration is used to generate the presubmits and periodics for cluster-api-provider-vsphere.
+
+# prow_ignored is a well known, unparsed field where non-Prow fields can
+# be defined without conflicting with unknown field validation.
+prow_ignored:
+  # Branch specific configuration: for each configured branch the generator will create two
+  # prowjob configuration files (presubmits, periodics)
+  branches:
+    main:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28"
+      # interval for e2e jobs
+      interval: "24h"
+    release-1.8:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27"
+      # interval for e2e jobs
+      interval: "24h"
+    release-1.7:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.26"
+      # interval for e2e jobs
+      interval: "24h"
+    release-1.6:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25"
+      # interval for e2e jobs
+      interval: "24h"
+    release-1.5:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24"
+      # interval for e2e jobs
+      interval: "24h"
+
+  # The generator will run each template per branch and use a the name template
+  # to generate the target filename.
+  templates:
+  - name: "cluster-api-provider-vsphere-periodics.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics.yaml'
+  - name: "cluster-api-provider-vsphere-presubmits.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-presubmits.yaml'
