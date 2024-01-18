@@ -32,6 +32,8 @@ prow_ignored:
   # The generator will run each template per branch and use a the name template
   # to generate the target filename.
   templates:
+  - name: "cluster-api-provider-vsphere-periodics-kubetest.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics-kubetest.yaml'
   - name: "cluster-api-provider-vsphere-periodics.yaml.tpl"
     template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics.yaml'
   - name: "cluster-api-provider-vsphere-presubmits.yaml.tpl"
