@@ -1,3 +1,4 @@
+{{- if eq .branch "main" }}
 periodics:
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L713
@@ -18,11 +19,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-vsphere
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
+    - image: {{ $.config.TestImage }}
       command:
       - runner.sh
       args:
@@ -68,11 +69,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-vsphere
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
+    - image: {{ $.config.TestImage }}
       command:
       - runner.sh
       args:
@@ -118,11 +119,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-vsphere
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
+    - image: {{ $.config.TestImage }}
       command:
       - runner.sh
       args:
@@ -168,11 +169,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-vsphere
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27
+    - image: {{ $.config.TestImage }}
       command:
       - runner.sh
       args:
@@ -199,3 +200,4 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs upstream e2e tests
+{{ end -}}
