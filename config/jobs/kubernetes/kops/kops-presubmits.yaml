@@ -383,7 +383,7 @@ presubmits:
   - name: pull-kops-verify-hashes
     cluster: eks-prow-build-cluster
     skip_report: false
-    run_if_changed: '^upup\/pkg\/fi\/cloudup\/(containerd|runc)'
+    run_if_changed: '^upup\/pkg\/fi\/cloudup\/runc'
     labels:
       preset-service-account: "true"
     decorate: true
