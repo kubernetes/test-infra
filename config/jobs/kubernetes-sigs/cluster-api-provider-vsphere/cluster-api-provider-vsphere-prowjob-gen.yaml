@@ -12,6 +12,10 @@ prow_ignored:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28"
       # interval for e2e jobs
       interval: "24h"
+    release-1.9:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28"
+      # interval for e2e jobs
+      interval: "24h"
     release-1.8:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27"
       # interval for e2e jobs
@@ -22,10 +26,6 @@ prow_ignored:
       interval: "24h"
     release-1.6:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25"
-      # interval for e2e jobs
-      interval: "24h"
-    release-1.5:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24"
       # interval for e2e jobs
       interval: "24h"
 
