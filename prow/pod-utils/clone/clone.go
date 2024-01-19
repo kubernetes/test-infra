@@ -243,10 +243,16 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	if d := refs.CloneDepth; d > 0 {
 		depthArgs = append(depthArgs, "--depth", strconv.Itoa(d))
 	}
+	var filterArgs []string
+	if refs.BloblessFetch {
+		filterArgs = append(filterArgs, "--filter=blob:none")
+	}
 
 	if !refs.SkipFetchHead {
-		fetchArgs := []string{g.repositoryURI, "--tags", "--prune"}
+		var fetchArgs []string
 		fetchArgs = append(fetchArgs, depthArgs...)
+		fetchArgs = append(fetchArgs, filterArgs...)
+		fetchArgs = append(fetchArgs, g.repositoryURI, "--tags", "--prune")
 		commands = append(commands, g.gitFetch(fetchArgs...))
 	}
 
@@ -261,7 +267,9 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	}
 
 	{
-		fetchArgs := append([]string{}, depthArgs...)
+		var fetchArgs []string
+		fetchArgs = append(fetchArgs, depthArgs...)
+		fetchArgs = append(fetchArgs, filterArgs...)
 		fetchArgs = append(fetchArgs, g.repositoryURI, fetchRef)
 		commands = append(commands, g.gitFetch(fetchArgs...))
 	}
@@ -328,6 +336,10 @@ func (g *gitCtx) gitRevParse() (string, error) {
 func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []runnable {
 	var commands []runnable
 	for _, prRef := range refs.Pulls {
+		var fetchArgs []string
+		if refs.BloblessFetch {
+			fetchArgs = append(fetchArgs, "--filter=blob:none")
+		}
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
 		if prRef.SHA != "" {
 			ref = prRef.SHA
@@ -335,7 +347,8 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []run
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, g.gitFetch(g.repositoryURI, ref))
+		fetchArgs = append(fetchArgs, g.repositoryURI, ref)
+		commands = append(commands, g.gitFetch(fetchArgs...))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA

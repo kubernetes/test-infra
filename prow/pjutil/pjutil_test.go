@@ -280,6 +280,8 @@ func TestBatchSpec(t *testing.T) {
 }
 
 func TestCompletePrimaryRefs(t *testing.T) {
+	trueVar := true
+
 	cases := []struct {
 		name     string
 		refs     prowapi.Refs
@@ -315,6 +317,9 @@ func TestCompletePrimaryRefs(t *testing.T) {
 					SkipSubmodules: true,
 					CloneDepth:     2,
 					SkipFetchHead:  true,
+					DecorationConfig: &prowapi.DecorationConfig{
+						BloblessFetch: &trueVar,
+					},
 				},
 			},
 			expected: prowapi.Refs{
@@ -323,6 +328,7 @@ func TestCompletePrimaryRefs(t *testing.T) {
 				SkipSubmodules: true,
 				CloneDepth:     2,
 				SkipFetchHead:  true,
+				BloblessFetch: true,
 			},
 		},
 		{

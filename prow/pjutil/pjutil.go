@@ -235,6 +235,9 @@ func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 	if jb.SkipFetchHead {
 		refs.SkipFetchHead = jb.SkipFetchHead
 	}
+	if dc := jb.DecorationConfig; dc != nil && dc.BloblessFetch != nil {
+		refs.BloblessFetch = *dc.BloblessFetch
+	}
 	return &refs
 }
 
