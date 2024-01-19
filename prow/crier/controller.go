@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -66,7 +67,8 @@ func New(
 		// Is used for metrics, hence must be unique per controller instance
 		Named(fmt.Sprintf("crier_%s", reporter.GetName())).
 		For(&prowv1.ProwJob{}).
-		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers}).
+		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers,
+			RateLimiter: workqueue.DefaultControllerRateLimiter()}).
 		Complete(&reconciler{
 			pjclientset:       mgr.GetClient(),
 			reporter:          reporter,
