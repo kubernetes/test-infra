@@ -26,11 +26,11 @@ readonly OUTPUT="${SCRIPT_DIR}/sync-ar-repos.yaml"
 readonly AR_REGIONS=(
 	asia-east2
 	europe-west3
-	eureope-west10
-	eureope-west12
+	europe-west10
+	europe-west12
 	us-west3
 	us-west4
-	southamerica-west1
+	southamerica-east1
 )
 
 cat >"${OUTPUT}" <<EOF
@@ -49,7 +49,6 @@ for ar_region in "${AR_REGIONS[@]}"; do
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-${ar_region}
       testgrid-description: 'Sync AR repo from us-central1 to ${ar_region}'
-      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '3'
     rerun_auth_config:
       github_team_slugs:
