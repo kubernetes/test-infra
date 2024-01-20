@@ -3,6 +3,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-asia-east2
@@ -20,8 +22,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
@@ -30,6 +34,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-europe-west3
@@ -47,8 +53,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
@@ -57,6 +65,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-eureope-west10
@@ -74,8 +84,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
@@ -84,6 +96,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-eureope-west12
@@ -101,8 +115,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
@@ -111,6 +127,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-us-west3
@@ -128,8 +146,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
@@ -138,6 +158,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-us-west4
@@ -155,8 +177,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
@@ -165,6 +189,8 @@ periodics:
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-southamerica-west1
@@ -182,8 +208,10 @@ periodics:
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
