@@ -43,6 +43,8 @@ for ar_region in "${AR_REGIONS[@]}"; do
     cluster: k8s-infra-prow-build-trusted
     interval: 2h
     decorate: true
+    decoration_config:
+      timeout: 100m
     annotations:
       testgrid-dashboards: sig-k8s-infra-registry
       testgrid-tab-name: sync-to-ar-repo-${ar_region}
@@ -60,8 +62,10 @@ for ar_region in "${AR_REGIONS[@]}"; do
       containers:
       - image: gcr.io/go-containerregistry/gcrane:latest
         imagePullPolicy: Always
+        command:
+        - gcrane
         args:
-        - cp
+        - copy
         - --recursive
         - --allow-nondistributable-artifacts
         - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
