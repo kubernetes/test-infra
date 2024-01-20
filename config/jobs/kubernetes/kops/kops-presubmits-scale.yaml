@@ -286,8 +286,8 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
 
-# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
-  - name: presubmit-kops-gce-scale-calico-using-cl2
+# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  - name: presubmit-kops-gce-scale-ipalias-using-cl2
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -327,7 +327,7 @@ presubmits:
         - name: ARTIFACTS
           value: $(ARTIFACTS)
         - name: CNI_PLUGIN
-          value: "calico"
+          value: "gce"
         - name: KUBE_NODE_COUNT
           value: "5000"
         - name: CL2_LOAD_TEST_THROUGHPUT
@@ -341,7 +341,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "e2-standard-32"
+          value: "c3-standard-88"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -384,13 +384,13 @@ presubmits:
       test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kubenet
+      test.kops.k8s.io/networking: gce
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-scale-calico-using-cl2
+      testgrid-tab-name: presubmit-kops-gce-scale-ipalias-using-cl2
 
-# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: presubmit-kops-gce-small-scale-calico-using-cl2
+# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  - name: presubmit-kops-gce-small-scale-ipalias-using-cl2
     cluster: k8s-infra-prow-build
     branches:
     - master
@@ -430,7 +430,7 @@ presubmits:
         - name: ARTIFACTS
           value: $(ARTIFACTS)
         - name: CNI_PLUGIN
-          value: "calico"
+          value: "gce"
         - name: KUBE_NODE_COUNT
           value: "500"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
@@ -438,7 +438,7 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "e2-standard-32"
+          value: "c3-standard-88"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -481,7 +481,7 @@ presubmits:
       test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: calico
+      test.kops.k8s.io/networking: gce
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: presubmit-kops-gce-small-scale-calico-using-cl2
+      testgrid-tab-name: presubmit-kops-gce-small-scale-ipalias-using-cl2

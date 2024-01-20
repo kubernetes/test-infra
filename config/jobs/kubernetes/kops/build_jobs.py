@@ -1037,7 +1037,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Conformance\]',
-                   skip_regex=r'should.serve.endpoints.on.same.port.and.different.protocols',
+                   skip_regex=r'should.serve.endpoints.on.same.port.and.different.protocols|same.hostPort.but.different.hostIP.and.protocol', # pylint: disable=line-too-long
                    # https://github.com/cilium/cilium/pull/29524
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
@@ -1506,25 +1506,25 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-scale-calico-using-cl2',
+            name='presubmit-kops-gce-scale-ipalias-using-cl2',
             scenario='scalability',
             build_cluster="k8s-infra-prow-build",
             # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='kubenet',
+            networking='gce',
             cloud="gce",
             always_run=False,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
-                'CNI_PLUGIN': "calico",
+                'CNI_PLUGIN': "gce",
                 'KUBE_NODE_COUNT': "5000",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
                 'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "e2-standard-32",
+                'CONTROL_PLANE_SIZE': "c3-standard-88",
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
@@ -1542,21 +1542,21 @@ def generate_presubmits_scale():
             }
         ),
         presubmit_test(
-            name='presubmit-kops-gce-small-scale-calico-using-cl2',
+            name='presubmit-kops-gce-small-scale-ipalias-using-cl2',
             scenario='scalability',
             build_cluster="k8s-infra-prow-build",
             # only helps with setting the right anotation test.kops.k8s.io/networking
-            networking='calico',
+            networking='gce',
             cloud="gce",
             always_run=False,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
-                'CNI_PLUGIN': "calico",
+                'CNI_PLUGIN': "gce",
                 'KUBE_NODE_COUNT': "500",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "e2-standard-32",
+                'CONTROL_PLANE_SIZE': "c3-standard-88",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
