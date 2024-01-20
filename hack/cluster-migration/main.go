@@ -32,11 +32,13 @@ import (
 )
 
 type Config struct {
-	configPath    string
-	jobConfigPath string
-	repoReport    bool
-	repo          string
-	output        string
+	configPath       string
+	jobConfigPath    string
+	repoReport       bool
+	repo             string
+	output           string
+	ineligibleReport bool
+	eligibleReport   bool
 }
 
 type status struct {
@@ -64,6 +66,7 @@ type jobStatus struct {
 	JobName    string      `json:"jobName"`
 	JobDetails cfg.JobBase `json:"jobDetails"`
 	Eligible   bool        `json:"eligible"`
+	Reason     string      `json:"reason"`
 }
 
 var config Config
@@ -84,6 +87,7 @@ var allowedLabelNames = []string{
 
 var allowedVolumeNames = []string{
 	"aws-cred",
+	"ssh",
 }
 
 var allowedEnvironmentVariables = []string{
@@ -178,6 +182,18 @@ func getTotalJobs(allStats []clusterStatus) int {
 	return total
 }
 
+func getAllRepos(s status) []string {
+	repos := []string{}
+	for _, cluster := range s.Clusters {
+		for _, repo := range cluster.RepoStatus {
+			if !slices.Contains(repos, repo.RepoName) {
+				repos = append(repos, repo.RepoName)
+			}
+		}
+	}
+	return repos
+}
+
 // The function `printRepoStatistics` prints statistics for repositories, including completion status,
 // eligibility, remaining jobs, and percentage complete.
 func printRepoStatistics(s status) {
@@ -228,7 +244,7 @@ func getStatus(jobs map[string][]cfg.JobBase) status {
 	s := status{}
 	for repo, jobConfigs := range jobs {
 		for _, job := range jobConfigs {
-			cluster, eligible := getJobStatus(job)
+			cluster, eligible, ineligibleReason := getJobStatus(job)
 			s.TotalJobs++
 			if cluster != "" && cluster != "default" {
 				s.CompletedJobs++
@@ -256,7 +272,7 @@ func getStatus(jobs map[string][]cfg.JobBase) status {
 							if eligible {
 								s.Clusters[i].RepoStatus[j].EligibleJobs++
 							}
-							s.Clusters[i].RepoStatus[j].Jobs = append(s.Clusters[i].RepoStatus[j].Jobs, jobStatus{JobName: job.Name, JobDetails: job, Eligible: eligible})
+							s.Clusters[i].RepoStatus[j].Jobs = append(s.Clusters[i].RepoStatus[j].Jobs, jobStatus{JobName: job.Name, JobDetails: job, Eligible: eligible, Reason: ineligibleReason})
 						}
 					}
 				}
@@ -266,11 +282,14 @@ func getStatus(jobs map[string][]cfg.JobBase) status {
 	return s
 }
 
-func getJobStatus(job cfg.JobBase) (string, bool) {
+func getJobStatus(job cfg.JobBase) (string, bool, string) {
 	if job.Cluster != "default" {
-		return job.Cluster, true
+		return job.Cluster, true, ""
 	}
-	return "", checkIfEligible(job)
+
+	eligible, ineligibleReason := checkIfEligible(job)
+
+	return "", eligible, ineligibleReason
 }
 
 func containsCluster(clusters []clusterStatus, cluster string) bool {
@@ -292,19 +311,26 @@ func containsRepo(repos []repoStatus, repo string) bool {
 }
 
 // The function `printJobStats` prints the status of jobs in a given repository,
-func printJobStats(repo string, status status) {
+func printJobStats(repo string, status status, onlyIneligible bool, onlyEligible bool) {
 	format := "%-70v is %s%v\033[0m\n" // \033[0m resets color back to default after printing
 
 	for _, cluster := range status.Clusters {
 		for _, repoStatus := range cluster.RepoStatus {
 			if repoStatus.RepoName == repo {
 				for _, job := range repoStatus.Jobs {
+					if onlyIneligible && job.Eligible {
+						continue
+					}
+					if onlyEligible && !job.Eligible || cluster.ClusterName != "default" {
+						continue
+					}
+
 					if cluster.ClusterName != "default" {
 						fmt.Printf(format, job.JobName, "\033[33m", "done") // \033[33m sets text color to yellow
 					} else if job.Eligible {
 						fmt.Printf(format, job.JobName, "\033[32m", "eligible") // \033[32m sets text color to green
 					} else {
-						fmt.Printf(format, job.JobName, "\033[31m", "not eligible") // \033[31m sets text color to red
+						fmt.Printf(format, job.JobName, "\033[31m", "not eligible ("+job.Reason+")") // \033[31m sets text color to red
 					}
 				}
 			}
@@ -358,30 +384,36 @@ func printPercentage(f float64) string {
 // - The job's volumes must not contain any disallowed volumes. Volumes are considered disallowed if:
 //   - Their name contains the substring "cred".
 //   - They are of type Secret but their name is not in the list of allowed secret names.
-func checkIfEligible(job cfg.JobBase) bool {
+func checkIfEligible(job cfg.JobBase) (bool, string) {
 	validClusters := []string{"test-infra-trusted", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster"}
 	if slices.Contains(validClusters, job.Cluster) {
-		return true
+		return true, ""
 	}
-	if containsDisallowedLabel(job.Labels) {
-		return false
+	if ok, reason := containsDisallowedLabel(job.Labels); ok {
+		return false, reason
 	}
+
 	for _, container := range job.Spec.Containers {
-		if containsDisallowedAttributes(container) {
-			return false
+		if ok, reason := containsDisallowedAttributes(container); ok {
+			return false, reason
 		}
 	}
-	return !containsDisallowedVolume(job.Spec.Volumes)
+
+	if ok, reason := containsDisallowedVolume(job.Spec.Volumes); ok {
+		return false, reason
+	}
+
+	return true, ""
 }
 
 // The function checks if any label in a given map contains the substring "cred".
-func containsDisallowedLabel(labels map[string]string) bool {
+func containsDisallowedLabel(labels map[string]string) (bool, string) {
 	for key := range labels {
 		if checkContains(key, "cred") && !labelIsAllowed(key) {
-			return true
+			return true, "disallowed label - " + key
 		}
 	}
-	return false
+	return false, ""
 }
 
 func checkContains(s string, substring string) bool {
@@ -426,27 +458,20 @@ func envVarIsAllowed(envVar string) bool {
 
 // The function checks if a container contains any disallowed attributes such as environment variables,
 // arguments, or commands.
-func containsDisallowedAttributes(container v1.Container) bool {
+func containsDisallowedAttributes(container v1.Container) (bool, string) {
 	for _, env := range container.Env {
 		if checkContains(env.Name, "cred") && !envVarIsAllowed(env.Name) {
-			return true
+			return true, "disallowed environment variable - " + env.Name
 		}
 		if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil && !secretIsAllowed(env.ValueFrom.SecretKeyRef.Key) {
-			return true
+			return true, "disallowed environment variable - " + env.Name
 		}
 	}
-	disallowedArgs := []string{"gcloud", "gcp", "gce"}
-	for _, arg := range container.Args {
-		if containsAny(arg, disallowedArgs) {
-			return true
-		}
+	if ok, reason := containsDisallowedVolumeMount(container.VolumeMounts); ok {
+		return true, reason
 	}
-	for _, cmd := range container.Command {
-		if containsAny(cmd, disallowedArgs) {
-			return true
-		}
-	}
-	return containsDisallowedVolumeMount(container.VolumeMounts)
+
+	return false, ""
 }
 
 // The function "containsAny" checks if a given string contains any of the words in a given slice of
@@ -462,25 +487,25 @@ func containsAny(s string, disallowed []string) bool {
 
 // The function checks if any volume mount in a given list contains disallowed words in its name or
 // mount path.
-func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) bool {
+func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) (bool, string) {
 	disallowedWords := []string{"cred", "secret"}
 	for _, vol := range volumeMounts {
 		if (containsAny(vol.Name, disallowedWords) || containsAny(vol.MountPath, disallowedWords)) && !volumeIsAllowed(vol.Name) {
-			return true
+			return true, "disallowed volume mount - " + vol.Name
 		}
 	}
-	return false
+	return false, ""
 }
 
 // The function checks if a list of volumes contains any disallowed volumes based on their name or if
 // they are of type Secret.
-func containsDisallowedVolume(volumes []v1.Volume) bool {
+func containsDisallowedVolume(volumes []v1.Volume) (bool, string) {
 	for _, vol := range volumes {
 		if (checkContains(vol.Name, "cred") && !volumeIsAllowed(vol.Name)) || (vol.Secret != nil && !secretIsAllowed(vol.Secret.SecretName)) {
-			return true
+			return true, "disallowed volume - " + vol.Name
 		}
 	}
-	return false
+	return false, ""
 }
 
 func main() {
@@ -489,6 +514,8 @@ func main() {
 	flag.StringVar(&config.repo, "repo", "", "Find eligible jobs for a specific repo")
 	flag.StringVar(&config.output, "output", "", "Output format (default, json)")
 	flag.BoolVar(&config.repoReport, "repo-report", false, "Detailed report of all repo status")
+	flag.BoolVar(&config.ineligibleReport, "ineligible-report", false, "Get a detailed report of ineligible jobs")
+	flag.BoolVar(&config.eligibleReport, "eligible-report", false, "Get a detailed report of eligible jobs")
 	flag.Parse()
 
 	if err := config.validate(); err != nil {
@@ -516,8 +543,24 @@ func main() {
 		return
 	}
 
+	if config.ineligibleReport {
+		for _, repo := range getAllRepos(status) {
+			fmt.Println("\nRepo: " + repo)
+			printJobStats(repo, status, true, false)
+		}
+		return
+	}
+
+	if config.eligibleReport {
+		for _, repo := range getAllRepos(status) {
+			fmt.Println("\nRepo: " + repo)
+			printJobStats(repo, status, false, true)
+		}
+		return
+	}
+
 	if config.repo != "" {
-		printJobStats(config.repo, status)
+		printJobStats(config.repo, status, false, false)
 		return
 	}
 
