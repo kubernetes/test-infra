@@ -90,6 +90,8 @@ presubmits:
                 value: "true"
               - name: CHECK_DURATION
                 value: "true"
+              - name: EXPECTED_NUM_TESTS
+                value: "1" # This is the number of specs expected to run.
             args:
               - bash
               - -c
@@ -131,6 +133,8 @@ presubmits:
                 value: "Simple pod should contain last line of the log"
               - name: CHECK_DURATION
                 value: "true"
+              - name: EXPECTED_NUM_TESTS
+                value: "1" # This is the number of specs expected to run.
             args:
               - bash
               - -c
