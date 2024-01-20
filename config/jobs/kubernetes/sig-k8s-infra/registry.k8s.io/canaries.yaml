@@ -108,12 +108,12 @@ periodics:
           --cloud-provider=aws \
           --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-marker=stable-1.27.txt \
+          --test-package-marker=stable.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]" \
           --parallel=25
