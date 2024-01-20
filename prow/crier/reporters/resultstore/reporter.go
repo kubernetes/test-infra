@@ -86,10 +86,6 @@ func projectID(pj *v1.ProwJob) string {
 	if d := pj.Spec.ProwJobDefault; d != nil && d.ResultStoreConfig != nil {
 		return d.ResultStoreConfig.ProjectID
 	}
-	// Fall back to ReporterConfig, if present, for Alpha testing.
-	if c := pj.Spec.ReporterConfig; c != nil && c.ResultStore != nil {
-		return c.ResultStore.ProjectID
-	}
 	return ""
 }
 

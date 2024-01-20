@@ -29425,20 +29425,6 @@ spec:
               reporter_config:
                 description: ReporterConfig holds reporter-specific configuration
                 properties:
-                  resultstore:
-                    description: 'TODO: This config was used for alpha testing and
-                      is now replaced by ProwJobDefault.ResultStoreConfig. Use that
-                      instead. This is retained for fallback until existing configs
-                      are updated.'
-                    properties:
-                      project_id:
-                        description: Specifies the ResultStore InvocationAttributes.ProjectId,
-                          used for various quota and GUI access control purposes.
-                          In practice, it is generally the same as the Google Cloud
-                          Project ID or number of the job's GCS storage bucket. Required
-                          to write job results to ResultStore.
-                        type: string
-                    type: object
                   slack:
                     properties:
                       channel:
