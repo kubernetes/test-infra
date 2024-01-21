@@ -85,6 +85,7 @@ presets:
 presubmits:
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     labels:
@@ -101,11 +102,19 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: pull-ingress-gce-test
 
   - name: pull-ingress-gce-verify
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     branches:
@@ -124,11 +133,19 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: pull-ingress-gce-verify
 
   - name: pull-ingress-gce-e2e
+    cluster: k8s-infra-prow-build
     always_run: true
     optional: false
     decorate: true
