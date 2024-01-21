@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/blob-csi-driver:
   - name: pull-blob-csi-driver-verify
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -16,12 +17,20 @@ presubmits:
         - verify
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-verify
       description: "Run code verification tests for Azure Blob Storage CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-unit
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
@@ -37,6 +46,13 @@ presubmits:
         - unit-test
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-unit
