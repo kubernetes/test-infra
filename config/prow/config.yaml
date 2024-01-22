@@ -679,7 +679,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-rebase
   - repos:
     - kubernetes/kubernetes
     labels:
@@ -698,7 +697,6 @@ tide:
     - do-not-merge/needs-sig
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-rebase
   - author: k8s-ci-robot
     labels: # k8s-ci-robot should only create autobump PR with this label
     - skip-review
@@ -712,7 +710,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-rebase
     repos:
     - kubernetes/test-infra
   - author: k8s-infra-ci-robot
@@ -728,7 +725,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-rebase
     repos:
     - kubernetes/k8s.io
     - kubernetes/test-infra
@@ -750,7 +746,6 @@ tide:
     - do-not-merge/needs-sig
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-rebase
     - needs-kind
   - repos:
     - kubernetes-sigs/cluster-api
@@ -768,7 +763,6 @@ tide:
       - do-not-merge/needs-area
       - do-not-merge/release-note-label-needed
       - do-not-merge/work-in-progress
-      - needs-rebase
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
