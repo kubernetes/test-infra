@@ -1,13 +1,13 @@
 # sigs.k8s.io/cluster-capacity presubmits
 presubmits:
   kubernetes-sigs/cluster-capacity:
-  - name: pull-cluster-capacity-verify-gofmt
+  - name: pull-cluster-capacity-verify-gofmt-release-1-29
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.29$
     always_run: true
     spec:
       containers:
@@ -23,13 +23,13 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-verify-build
+  - name: pull-cluster-capacity-verify-build-release-1-29
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.29$
     always_run: true
     spec:
       containers:
@@ -45,13 +45,13 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-unit-test
+  - name: pull-cluster-capacity-unit-test-release-1-29
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.29$
     always_run: true
     spec:
       containers:
@@ -67,11 +67,11 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-29
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-29-1-29
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.29
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.29-1.29
     decorate: true
     decoration_config:
       timeout: 20m
@@ -81,7 +81,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.29
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
@@ -106,11 +106,11 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-28
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-29-1-28
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.28
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.29-1.28
     decorate: true
     decoration_config:
       timeout: 20m
@@ -120,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.29
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
@@ -145,11 +145,11 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-27
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-29-1-27
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.27
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.29-1.27
     decorate: true
     decoration_config:
       timeout: 20m
@@ -159,7 +159,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.29
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
