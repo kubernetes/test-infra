@@ -12,7 +12,7 @@ periodics:
   spec:
     containers:
     - name: apisnoop-gate
-      image: gcr.io/k8s-staging-apisnoop/snoopdb:v20220407-0.2.0-147-gcc8be61
+      image: gcr.io/k8s-staging-apisnoop/snoopdb:v20240121-auditlogger-1.2.11-4-gb17b29c
       command:
       - /usr/local/bin/docker-entrypoint.sh
       - postgres
