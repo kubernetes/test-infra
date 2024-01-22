@@ -757,9 +757,17 @@ type DefaultDecorationConfigEntry struct {
 // TODO(mpherman): Make a Matcher struct embedded in both ProwJobDefaultEntry and
 // DefaultDecorationConfigEntry and DefaultRerunAuthConfigEntry.
 func matches(givenOrgRepo, givenCluster, orgRepo, cluster string) bool {
-	orgRepoMatch := givenOrgRepo == "" || givenOrgRepo == "*" || givenOrgRepo == strings.Split(orgRepo, "/")[0] || givenOrgRepo == orgRepo
-	clusterMatch := givenCluster == "" || givenCluster == "*" || givenCluster == cluster
-	return orgRepoMatch && clusterMatch
+	if givenCluster != "" && givenCluster != "*" && givenCluster != cluster {
+		return false
+	}
+	if givenOrgRepo == "" || givenOrgRepo == "*" || givenOrgRepo == orgRepo {
+		return true
+	}
+	// Ensure a bare given repo name matches the http-prefixed repo
+	// that arises in pre/postsubmit jobs.
+	orgRepo = strings.TrimPrefix(orgRepo, "https://")
+	orgRepo = strings.TrimPrefix(orgRepo, "http://")
+	return givenOrgRepo == orgRepo || givenOrgRepo == strings.Split(orgRepo, "/")[0]
 }
 
 // matches returns true iff all the filters for the entry match a job.
