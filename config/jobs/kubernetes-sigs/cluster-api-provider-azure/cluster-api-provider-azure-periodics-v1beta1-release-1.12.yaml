@@ -1,9 +1,9 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-11
+- name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-12
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 72h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -32,13 +32,13 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-11
+    testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-12
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-11
+- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-12
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 72h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -67,13 +67,13 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-11
+    testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-12
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-11
+- name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-12
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 72h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -102,5 +102,5 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-11
+    testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-12
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
