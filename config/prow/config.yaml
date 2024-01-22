@@ -36,6 +36,7 @@ plank:
         sidecar:
           requests:
             cpu: 100m
+      blobless_fetch: true
   - cluster: gke_rules-k8s_us-central1-f_testing
     config:
       gcs_credentials_secret: ""
