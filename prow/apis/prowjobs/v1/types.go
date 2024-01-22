@@ -350,20 +350,7 @@ func (rac *RerunAuthConfig) IsAllowAnyone() bool {
 }
 
 type ReporterConfig struct {
-	ResultStore *ResultStoreReporter `json:"resultstore,omitempty"`
 	Slack       *SlackReporterConfig `json:"slack,omitempty"`
-}
-
-// TODO: This config was used for alpha testing and is now replaced
-// by ProwJobDefault.ResultStoreConfig. Use that instead. This is
-// retained for fallback until existing configs are updated.
-type ResultStoreReporter struct {
-	// Specifies the ResultStore InvocationAttributes.ProjectId, used
-	// for various quota and GUI access control purposes.
-	// In practice, it is generally the same as the Google Cloud
-	// Project ID or number of the job's GCS storage bucket.
-	// Required to write job results to ResultStore.
-	ProjectID string `json:"project_id,omitempty"`
 }
 
 type SlackReporterConfig struct {

@@ -84,38 +84,6 @@ func TestShouldReport(t *testing.T) {
 			shouldReport: true,
 		},
 		{
-			name: "ReporterConfig fallback",
-			job: &prowv1.ProwJob{
-				Spec: prowv1.ProwJobSpec{
-					Type:   prowv1.PostsubmitJob,
-					Agent:  prowv1.KubernetesAgent,
-					Job:    "prow-job",
-					Report: true,
-					Refs: &prowv1.Refs{
-						Org:  "org",
-						Repo: "repo",
-					},
-					DecorationConfig: &prowv1.DecorationConfig{
-						GCSConfiguration: &prowv1.GCSConfiguration{
-							Bucket: "gs://bucket",
-						},
-					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
-							ProjectID: "cloud-project-id",
-						},
-					},
-				},
-				Status: prowv1.ProwJobStatus{
-					State:          prowv1.SuccessState,
-					StartTime:      metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 0, time.UTC)},
-					CompletionTime: &metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 25, time.UTC)},
-					BuildID:        "build-id",
-				},
-			},
-			shouldReport: true,
-		},
-		{
 			name: "Failed job reported",
 			job: &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
