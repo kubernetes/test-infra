@@ -100,11 +100,11 @@ prow_ignored:
   # branch variable to format the target filename.
   templates:
   - name: "cluster-api-periodics.yaml.tpl"
-    template: 'cluster-api-periodics-{{ ReplaceAll .branch "." "-" }}.yaml'
+    template: 'cluster-api-{{ ReplaceAll .branch "." "-" }}-periodics.yaml'
   - name: "cluster-api-periodics-upgrades.yaml.tpl"
-    template: 'cluster-api-periodics-{{ ReplaceAll .branch "." "-" }}-upgrades.yaml'
+    template: 'cluster-api-{{ ReplaceAll .branch "." "-" }}-periodics-upgrades.yaml'
   - name: "cluster-api-presubmits.yaml.tpl"
-    template: 'cluster-api-presubmits-{{ ReplaceAll .branch "." "-" }}.yaml'
+    template: 'cluster-api-{{ ReplaceAll .branch "." "-" }}-presubmits.yaml'
 
   # Versions provides kubernetes minor version to key-value pairs mapping.
   versions:
