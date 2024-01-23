@@ -32,7 +32,7 @@ spec:
             sysctl -w fs.inotify.max_user_watches=524288
             sleep 10
           done
-        image: gcr.io/k8s-prow/alpine:latest
+        image: alpine:20231219
         imagePullPolicy: IfNotPresent
         resources: {}
         securityContext:
