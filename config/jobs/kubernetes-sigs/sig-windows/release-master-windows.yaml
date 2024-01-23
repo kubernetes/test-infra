@@ -501,6 +501,7 @@ periodics:
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
+    preset-capz-containerd-1-7-latest: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -537,8 +538,6 @@ periodics:
             value: \[Serial\]|\[Slow\]
           - name: NODE_FEATURE_GATES
             value: "NodeLogQuery=true"
-          - name: WINDOWS_CONTAINERD_URL
-            value: "https://github.com/kubernetes-sigs/sig-windows-tools/releases/download/windows-containerd-nightly/windows-containerd.tar.gz"
   annotations:
     testgrid-alert-email: sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
