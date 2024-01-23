@@ -26,6 +26,8 @@ periodics:
               value: "v0.20.0"
             - name: CONFORMANCE
               value: "true"
+            - name: EXPECTED_NUM_TESTS
+              value: "388" # This is the number of specs expected to run. This will change with each version of Kubernetes.
           args:
             - bash
             - -c
@@ -74,6 +76,8 @@ periodics:
               value: "--parallel=25"
             - name: SKIP
               value: '\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist'
+            - name: EXPECTED_NUM_TESTS
+              value: "354" # This is the number of specs expected to run. This may change with each version of Kubernetes.
           args:
             - bash
             - -c
