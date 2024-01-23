@@ -9,6 +9,7 @@
 presubmits:
   kubernetes/perf-tests:
   - name: pull-perf-tests-100-adhoc
+    cluster: k8s-infra-prow-build
     always_run: false # This test needs to be triggered manually via `/test pull-perf-tests-100-adhoc`
     max_concurrency: 1 # Keep at 1 until we figure out a proper reservation system.
     skip_report: false # Report the status on github.
@@ -42,7 +43,7 @@ presubmits:
         - --cluster=
         - --extract=ci/latest
         - --gcp-nodes=100
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --tear-down-previous

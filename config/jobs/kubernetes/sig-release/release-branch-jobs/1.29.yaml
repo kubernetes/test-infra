@@ -2189,6 +2189,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 3
     name: pull-perf-tests-clusterloader2
+    cluster: k8s-infra-prow-build
     path_alias: k8s.io/perf-tests
     run_if_changed: ^clusterloader2/.*$
     spec:
@@ -2198,7 +2199,7 @@ presubmits:
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=ci/latest
         - --gcp-nodes=100
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --tear-down-previous
@@ -2256,6 +2257,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 3
     name: pull-perf-tests-clusterloader2-kubemark
+    cluster: k8s-infra-prow-build
     path_alias: k8s.io/perf-tests
     run_if_changed: ^clusterloader2/.*$
     spec:
@@ -2266,7 +2268,7 @@ presubmits:
         - --gcp-master-size=n1-standard-2
         - --gcp-node-size=e2-standard-4
         - --gcp-nodes=4
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=100

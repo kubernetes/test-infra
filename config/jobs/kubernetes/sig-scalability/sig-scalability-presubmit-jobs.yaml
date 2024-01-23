@@ -493,6 +493,7 @@ presubmits:
 
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
+    cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
     max_concurrency: 3
@@ -534,8 +535,16 @@ presubmits:
         - --test-cmd-args=$(ARTIFACTS)
         - --test-cmd-name=KubeDnsBenchmark
         - --timeout=120m
+        resources:
+          limits:
+            cpu: 4
+            memory: "12Gi"
+          requests:
+            cpu: 4
+            memory: "12Gi"
 
   - name: pull-perf-tests-clusterloader2
+    cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
     max_concurrency: 3
@@ -571,7 +580,7 @@ presubmits:
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=ci/latest
         - --gcp-nodes=100
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --tear-down-previous
@@ -606,6 +615,7 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-perf-tests-clusterloader2-kubemark
+    cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
     max_concurrency: 3
@@ -643,7 +653,7 @@ presubmits:
         - --gcp-master-size=n2-standard-2
         - --gcp-node-size=e2-standard-4
         - --gcp-nodes=4
-        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=100
@@ -772,6 +782,7 @@ presubmits:
           privileged: true
 
   - name: pull-perf-tests-util-images
+    cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
     max_concurrency: 10
@@ -807,6 +818,7 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-all-python
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -831,6 +843,7 @@ presubmits:
               memory: "2Gi"
 
   - name: pull-perf-tests-verify-test
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
@@ -853,6 +866,7 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-dashboard
+    cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: ^clusterloader2/pkg/prometheus/manifests/dashboards/.*\.json$
     skip_branches:
@@ -877,6 +891,7 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-perf-tests-verify-lint
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     skip_branches:
