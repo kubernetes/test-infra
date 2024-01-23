@@ -40,7 +40,7 @@ spec:
             done
             sleep 100000000
           done
-        image: gcr.io/k8s-prow/alpine:latest
+        image: alpine:20231219
         imagePullPolicy: IfNotPresent
         resources: {}
         securityContext:
