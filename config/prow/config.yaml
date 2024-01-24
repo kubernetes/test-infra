@@ -564,6 +564,9 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        hydrophone:
+          exclude:
+            - "^dependencies/" # don't protect branches created by github action that updates dependencies
         kernel-module-management:
           required_status_checks:
             contexts:
@@ -608,6 +611,9 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        provider-aws-test-infra:
+          exclude:
+            - "^dependencies/" # don't protect branches created by github action that updates dependencies
         secrets-store-csi-driver:
           branches:
             gh-pages:
