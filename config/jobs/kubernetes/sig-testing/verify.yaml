@@ -216,7 +216,7 @@ periodics:
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
-    timeout: 10m
+    timeout: 20m
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
