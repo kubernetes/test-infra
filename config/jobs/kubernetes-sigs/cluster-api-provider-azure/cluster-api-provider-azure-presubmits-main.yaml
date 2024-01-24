@@ -597,7 +597,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
-    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
+    run_if_changed: 'scripts\/ci-entrypoint.sh|scripts\/ci-build-azure-ccm.sh|scripts\/ci-build-kubernetes.sh|^hack/|templates\/test'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
