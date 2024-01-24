@@ -1854,7 +1854,7 @@ func TestValidateClusterField(t *testing.T) {
 									Cluster: "build1",
 								},
 							}}}}},
-			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusError),
 		},
 		{
 			name: "cluster validates with multiple clusters, specified is unreachable (just warn)",
@@ -1871,7 +1871,7 @@ func TestValidateClusterField(t *testing.T) {
 									Cluster: "build2",
 								},
 							}}}}},
-			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusError),
 		},
 		{
 			name: "cluster fails validation with multiple clusters, specified is unrecognized",
@@ -1888,7 +1888,7 @@ func TestValidateClusterField(t *testing.T) {
 									Cluster: "build3",
 								},
 							}}}}},
-			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusError),
 			expectedError:     "org1/repo1: job configuration for \"my-job\" specifies unknown 'cluster' value \"build3\"",
 		},
 		{
