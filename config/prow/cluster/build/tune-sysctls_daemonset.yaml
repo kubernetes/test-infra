@@ -11,6 +11,10 @@ spec:
   selector:
     matchLabels:
       name: tune-sysctls
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: "10%"
   template:
     metadata:
       labels:
