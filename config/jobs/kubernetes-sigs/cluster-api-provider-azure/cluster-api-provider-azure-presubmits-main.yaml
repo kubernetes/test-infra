@@ -242,7 +242,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decorate: true
     decoration_config:
       timeout: 4h
@@ -277,7 +277,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
@@ -318,7 +318,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
@@ -361,7 +361,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
@@ -403,7 +403,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decorate: true
     decoration_config:
       timeout: 4h
@@ -632,7 +632,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
@@ -677,7 +677,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|scripts\/ci-conformance.sh|scripts\/ci-build-kubernetes.sh|scripts\/ci-build-azure-ccm.sh|conformance.mk'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
