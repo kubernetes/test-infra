@@ -280,8 +280,6 @@ func TestBatchSpec(t *testing.T) {
 }
 
 func TestCompletePrimaryRefs(t *testing.T) {
-	trueVar := true
-
 	cases := []struct {
 		name     string
 		refs     prowapi.Refs
@@ -318,7 +316,7 @@ func TestCompletePrimaryRefs(t *testing.T) {
 					CloneDepth:     2,
 					SkipFetchHead:  true,
 					DecorationConfig: &prowapi.DecorationConfig{
-						BloblessFetch: &trueVar,
+						BloblessFetch: boolPtr(true),
 					},
 				},
 			},
@@ -1150,8 +1148,6 @@ func TestSpecFromJobBase(t *testing.T) {
 		GitHubUsers:   permittedUsers,
 		GitHubOrgs:    permittedOrgs,
 	}
-	falseVar := false
-	trueVar := true
 	testCases := []struct {
 		name    string
 		jobBase config.JobBase
@@ -1218,7 +1214,7 @@ func TestSpecFromJobBase(t *testing.T) {
 			jobBase: config.JobBase{
 				UtilityConfig: config.UtilityConfig{
 					DecorationConfig: &prowapi.DecorationConfig{
-						BloblessFetch: &trueVar,
+						BloblessFetch: boolPtr(true),
 					},
 					ExtraRefs: []prowapi.Refs{
 						{
@@ -1246,7 +1242,7 @@ func TestSpecFromJobBase(t *testing.T) {
 			jobBase: config.JobBase{
 				UtilityConfig: config.UtilityConfig{
 					DecorationConfig: &prowapi.DecorationConfig{
-						BloblessFetch: &falseVar,
+						BloblessFetch: boolPtr(false),
 					},
 					ExtraRefs: []prowapi.Refs{
 						{
