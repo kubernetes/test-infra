@@ -20,4 +20,4 @@ steps:
     - gcr.io/$PROJECT_ID/git-custom-k8s-auth:latest
 substitutions:
   _GIT_TAG: '12345'
-  _AWS_IAM_AUTHENTICATOR_VERSION: '0.5.12'
+  _AWS_IAM_AUTHENTICATOR_VERSION: '0.5.21'
