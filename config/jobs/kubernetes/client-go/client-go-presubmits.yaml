@@ -7,7 +7,7 @@ presubmits:
     path_alias: k8s.io/client-go
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.15.8
+      - image: public.ecr.aws/docker/library/golang:1.21
         env:
         - name: GO111MODULE
           value: "on"
