@@ -54,6 +54,54 @@ presubmits:
             cpu: "2"
             memory: "6Gi"
 
+  # This jobs runs e2e.test with a focus on tests for the VolumeAttributesClass feature (currently alpha)
+  # on a kind cluster
+  - name: pull-kubernetes-e2e-storage-kind-vac-feature
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-vac-feature
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run storage tests that need the VolumeAttributesClass feature in a KIND cluster.
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+        - name: FEATURE_GATES
+          value: '{"VolumeAttributesClass":true, "EventedPLEG":false}'
+        - name: RUNTIME_CONFIG
+          value: '{"api/alpha":"true", "api/ga":"true"}'
+        - name: FOCUS
+          value: VolumeAttributesClass
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+
 periodics:
   # This jobs runs storage tests that need Kubernetes In Docker (kind).
   - name: ci-kubernetes-e2e-storage-kind-disruptive
@@ -91,6 +139,55 @@ periodics:
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].*\[Feature:Kind\].*\[Disruptive\]"
 
         # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+
+  # This jobs runs e2e.test with a focus on tests for the VolumeAttributesClass feature (currently alpha)
+  # on a kind cluster
+  - name: ci-kubernetes-e2e-storage-kind-vac-feature
+    interval: 12h
+    annotations:
+      testgrid-dashboards: sig-storage-kubernetes
+      testgrid-tab-name: kind-vac-feature
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run storage tests that need the VolumeAttributesClass feature in a KIND cluster.
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+        - name: FEATURE_GATES
+          value: '{"VolumeAttributesClass":true, "EventedPLEG":false}'
+        - name: RUNTIME_CONFIG
+          value: '{"api/alpha":"true", "api/ga":"true"}'
+        - name: FOCUS
+          value: VolumeAttributesClass
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
