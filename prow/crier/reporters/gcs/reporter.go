@@ -19,7 +19,6 @@ package gcs
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"path"
 	"time"
@@ -161,18 +160,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
 func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
-	if !pj.Complete() {
-		return errors.New("cannot report finished.json for incomplete job")
-	}
-	completion := pj.Status.CompletionTime.Unix()
-	passed := pj.Status.State == prowv1.SuccessState
-	f := metadata.Finished{
-		Timestamp: &completion,
-		Passed:    &passed,
-		Metadata:  metadata.Metadata{"uploader": "crier"},
-		Result:    string(pj.Status.State),
-	}
-	output, err := json.MarshalIndent(f, "", "\t")
+	output, err := util.MarshalFinishedJSON(pj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal finished metadata: %w", err)
 	}
