@@ -490,7 +490,8 @@ spec:
                       type: string
                     blobless_fetch:
                       description: BloblessFetch tells prow to avoid fetching objects
-                        when cloning using the --filter=blob:none flag.
+                        when cloning using the --filter=blob:none flag. If unspecified,
+                        defaults to DecorationConfig.BloblessFetch.
                       type: boolean
                     clone_depth:
                       description: CloneDepth is the depth of the clone that will
@@ -29348,7 +29349,8 @@ spec:
                     type: string
                   blobless_fetch:
                     description: BloblessFetch tells prow to avoid fetching objects
-                      when cloning using the --filter=blob:none flag.
+                      when cloning using the --filter=blob:none flag. If unspecified,
+                      defaults to DecorationConfig.BloblessFetch.
                     type: boolean
                   clone_depth:
                     description: CloneDepth is the depth of the clone that will be

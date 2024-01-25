@@ -1155,7 +1155,8 @@ type Refs struct {
 	// The git fetch <remote> <BaseRef> call occurs regardless.
 	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 	// BloblessFetch tells prow to avoid fetching objects when cloning
-	// using the --filter=blob:none flag.
+	// using the --filter=blob:none flag. If unspecified, defaults to
+	// DecorationConfig.BloblessFetch.
 	BloblessFetch *bool `json:"blobless_fetch,omitempty"`
 }
 
