@@ -1156,7 +1156,7 @@ type Refs struct {
 	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
 	// BloblessFetch tells prow to avoid fetching objects when cloning
 	// using the --filter=blob:none flag.
-	BloblessFetch bool `json:"blobless_fetch,omitempty"`
+	BloblessFetch *bool `json:"blobless_fetch,omitempty"`
 }
 
 func (r Refs) String() string {

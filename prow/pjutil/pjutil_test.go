@@ -326,7 +326,7 @@ func TestCompletePrimaryRefs(t *testing.T) {
 				SkipSubmodules: true,
 				CloneDepth:     2,
 				SkipFetchHead:  true,
-				BloblessFetch:  true,
+				BloblessFetch:  boolPtr(true),
 			},
 		},
 		{
@@ -1219,19 +1219,25 @@ func TestSpecFromJobBase(t *testing.T) {
 					ExtraRefs: []prowapi.Refs{
 						{
 							Org:           "true-org",
-							BloblessFetch: true,
+							BloblessFetch: boolPtr(true),
 						},
 						{
 							Org:           "false-org",
-							BloblessFetch: false,
+							BloblessFetch: boolPtr(false),
+						},
+						{
+							Org: "default-org",
+							BloblessFetch: nil,
 						},
 					},
 				},
 			},
 			verify: func(pj prowapi.ProwJobSpec) error {
 				for _, r := range pj.ExtraRefs {
-					if !r.BloblessFetch {
-						return fmt.Errorf("ExtraRefs BloblessFetch for %s got false, want true", r.Org)
+					got := r.BloblessFetch
+					want := boolPtr(r.Org != "false-org")
+					if diff := cmp.Diff(want, got); diff != "" {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s differs (-want +got)\n%s", r.Org, diff)
 					}
 				}
 				return nil
@@ -1247,19 +1253,25 @@ func TestSpecFromJobBase(t *testing.T) {
 					ExtraRefs: []prowapi.Refs{
 						{
 							Org:           "true-org",
-							BloblessFetch: true,
+							BloblessFetch: boolPtr(true),
 						},
 						{
 							Org:           "false-org",
-							BloblessFetch: false,
+							BloblessFetch: boolPtr(false),
+						},
+						{
+							Org: "default-org",
+							BloblessFetch: nil,
 						},
 					},
 				},
 			},
 			verify: func(pj prowapi.ProwJobSpec) error {
 				for _, r := range pj.ExtraRefs {
-					if r.BloblessFetch {
-						return fmt.Errorf("ExtraRefs BloblessFetch for %s got true, want false", r.Org)
+					got := r.BloblessFetch
+					want := boolPtr(r.Org == "true-org")
+					if diff := cmp.Diff(want, got); diff != "" {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s differs (-want +got)\n%s", r.Org, diff)
 					}
 				}
 				return nil
@@ -1272,19 +1284,34 @@ func TestSpecFromJobBase(t *testing.T) {
 					ExtraRefs: []prowapi.Refs{
 						{
 							Org:           "true-org",
-							BloblessFetch: true,
+							BloblessFetch: boolPtr(true),
 						},
 						{
 							Org:           "false-org",
-							BloblessFetch: false,
+							BloblessFetch: boolPtr(false),
+						},
+						{
+							Org: "default-org",
+							BloblessFetch: nil,
 						},
 					},
 				},
 			},
 			verify: func(pj prowapi.ProwJobSpec) error {
 				for _, r := range pj.ExtraRefs {
-					if got, want := r.BloblessFetch, r.Org == "true-org"; got != want {
-						return fmt.Errorf("ExtraRefs BloblessFetch for %s got %v, want %v", r.Org, got, want)
+					got := r.BloblessFetch
+					var want *bool
+					switch r.Org {
+					case "true-org":
+						want = boolPtr(true)
+					case "false-org":
+						want = boolPtr(false)
+					case "default-org":
+						// Keep the unset default value.
+						want = nil
+					}
+					if diff := cmp.Diff(want, got); diff != "" {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s differs (-want +got)\n%s", r.Org, diff)
 					}
 				}
 				return nil

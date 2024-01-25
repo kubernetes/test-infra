@@ -231,8 +231,12 @@ func DecorateExtraRefs(refs []prowapi.Refs, jb config.JobBase) []prowapi.Refs {
 }
 
 func DecorateRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
-	if dc := jb.DecorationConfig; dc != nil && dc.BloblessFetch != nil {
-		refs.BloblessFetch = *dc.BloblessFetch
+	dc := jb.DecorationConfig
+	if dc == nil {
+		return &refs
+	}
+	if refs.BloblessFetch == nil {
+		refs.BloblessFetch = dc.BloblessFetch
 	}
 	return &refs
 }
