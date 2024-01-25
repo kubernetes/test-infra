@@ -1,6 +1,7 @@
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-proto
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -23,12 +24,20 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
 
 - interval: 2h
   name: ci-kubernetes-e2e-gci-gce-network-proxy-http-connect
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -54,10 +63,18 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 - interval: 2h
   name: ci-kubernetes-e2e-gci-gce-network-proxy-grpc
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -83,6 +100,13 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
       - --timeout=60m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-api-machinery-network-proxy
 
