@@ -278,7 +278,10 @@ def main(args):
 
     cluster = cluster_name(args.cluster, args.tear_down_previous)
     runner_args.append('--cluster=%s' % cluster)
-    runner_args.append('--gcp-network=%s' % cluster)
+    network = args.network
+    if not network:
+        network = cluster
+    runner_args.append('--gcp-network=%s' % network)
     runner_args.extend(args.kubetest_args)
 
     if args.use_logexporter:
@@ -341,6 +344,8 @@ def create_parser():
         help='Get shared build from this bucket')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
+    parser.add_argument(
+        '--network', default=None, help='Name of the network')
     parser.add_argument(
         '--stage', default=None, help='Stage release to GCS path provided')
     parser.add_argument(
