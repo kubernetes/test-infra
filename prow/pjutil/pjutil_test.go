@@ -328,7 +328,7 @@ func TestCompletePrimaryRefs(t *testing.T) {
 				SkipSubmodules: true,
 				CloneDepth:     2,
 				SkipFetchHead:  true,
-				BloblessFetch: true,
+				BloblessFetch:  true,
 			},
 		},
 		{
@@ -1150,6 +1150,8 @@ func TestSpecFromJobBase(t *testing.T) {
 		GitHubUsers:   permittedUsers,
 		GitHubOrgs:    permittedOrgs,
 	}
+	falseVar := false
+	trueVar := true
 	testCases := []struct {
 		name    string
 		jobBase config.JobBase
@@ -1207,6 +1209,87 @@ func TestSpecFromJobBase(t *testing.T) {
 			verify: func(pj prowapi.ProwJobSpec) error {
 				if !pj.Hidden {
 					return errors.New("hidden property didnt get copied")
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify DecorateExtraRefs default true",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					DecorationConfig: &prowapi.DecorationConfig{
+						BloblessFetch: &trueVar,
+					},
+					ExtraRefs: []prowapi.Refs{
+						{
+							Org:           "true-org",
+							BloblessFetch: true,
+						},
+						{
+							Org:           "false-org",
+							BloblessFetch: false,
+						},
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				for _, r := range pj.ExtraRefs {
+					if !r.BloblessFetch {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s got false, want true", r.Org)
+					}
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify DecorateExtraRefs default false",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					DecorationConfig: &prowapi.DecorationConfig{
+						BloblessFetch: &falseVar,
+					},
+					ExtraRefs: []prowapi.Refs{
+						{
+							Org:           "true-org",
+							BloblessFetch: true,
+						},
+						{
+							Org:           "false-org",
+							BloblessFetch: false,
+						},
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				for _, r := range pj.ExtraRefs {
+					if r.BloblessFetch {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s got true, want false", r.Org)
+					}
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify DecorateExtraRefs no decoration preserves existing",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					ExtraRefs: []prowapi.Refs{
+						{
+							Org:           "true-org",
+							BloblessFetch: true,
+						},
+						{
+							Org:           "false-org",
+							BloblessFetch: false,
+						},
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				for _, r := range pj.ExtraRefs {
+					if got, want := r.BloblessFetch, r.Org == "true-org"; got != want {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s got %v, want %v", r.Org, got, want)
+					}
 				}
 				return nil
 			},

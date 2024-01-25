@@ -204,7 +204,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		MaxConcurrency:  jb.MaxConcurrency,
 		ErrorOnEviction: jb.ErrorOnEviction,
 
-		ExtraRefs:        jb.ExtraRefs,
+		ExtraRefs:        DecorateExtraRefs(jb.ExtraRefs, jb),
 		DecorationConfig: jb.DecorationConfig,
 
 		PodSpec:               jb.Spec,
@@ -217,6 +217,24 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ProwJobDefault:  jb.ProwJobDefault,
 		JobQueueName:    jb.JobQueueName,
 	}
+}
+
+func DecorateExtraRefs(refs []prowapi.Refs, jb config.JobBase) []prowapi.Refs {
+	if jb.DecorationConfig == nil {
+		return refs
+	}
+	var rs []prowapi.Refs
+	for _, r := range refs {
+		rs = append(rs, *DecorateRefs(r, jb))
+	}
+	return rs
+}
+
+func DecorateRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
+	if dc := jb.DecorationConfig; dc != nil && dc.BloblessFetch != nil {
+		refs.BloblessFetch = *dc.BloblessFetch
+	}
+	return &refs
 }
 
 func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
@@ -235,10 +253,7 @@ func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 	if jb.SkipFetchHead {
 		refs.SkipFetchHead = jb.SkipFetchHead
 	}
-	if dc := jb.DecorationConfig; dc != nil && dc.BloblessFetch != nil {
-		refs.BloblessFetch = *dc.BloblessFetch
-	}
-	return &refs
+	return DecorateRefs(refs, jb)
 }
 
 // PartitionActive separates the provided prowjobs into pending and triggered
