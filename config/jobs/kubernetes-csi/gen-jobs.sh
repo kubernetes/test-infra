@@ -727,6 +727,7 @@ for deployment_suffix in "" "-test"; do
             cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "canary$deployment_suffix" "$kubernetes")
+  cluster: $(job_cluster "$repo")
   decorate: true
   extra_refs:
   - org: kubernetes-csi

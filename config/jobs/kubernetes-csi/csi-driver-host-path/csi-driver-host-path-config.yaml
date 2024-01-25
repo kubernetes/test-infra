@@ -1589,6 +1589,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-26
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1642,6 +1643,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-27
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1695,6 +1697,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-28
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1748,6 +1751,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-master
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1801,6 +1805,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-alpha-canary-on-kubernetes-master
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1854,6 +1859,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-26
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1907,6 +1913,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-27
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -1960,6 +1967,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-28
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -2013,6 +2021,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-master
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -2066,6 +2075,7 @@ periodics:
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-alpha-canary-test-on-kubernetes-master
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-csi
