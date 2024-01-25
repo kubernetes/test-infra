@@ -4,17 +4,17 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/branchprotector: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
   k8s.io/test-infra/prow/cmd/checkconfig: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/clonerefs: gcr.io/k8s-prow/git:v20230817-0485b825c2
-  k8s.io/test-infra/prow/cmd/config-bootstrapper: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
-  k8s.io/test-infra/prow/cmd/deck: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
+  k8s.io/test-infra/prow/cmd/config-bootstrapper: gcr.io/k8s-prow/git-custom-k8s-auth:v20240125-32d3286cca
+  k8s.io/test-infra/prow/cmd/deck: gcr.io/k8s-prow/git-custom-k8s-auth:v20240125-32d3286cca
   k8s.io/test-infra/prow/cmd/exporter: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
-  k8s.io/test-infra/prow/cmd/crier: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
+  k8s.io/test-infra/prow/cmd/crier: gcr.io/k8s-prow/git-custom-k8s-auth:v20240125-32d3286cca
   k8s.io/test-infra/prow/cmd/entrypoint: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/gangway: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/generic-autobumper: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/gerrit: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/grandmatriarch: gcr.io/cloud-builders/gcloud@sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd
   k8s.io/test-infra/prow/cmd/gcsupload: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
-  k8s.io/test-infra/prow/cmd/hook: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
+  k8s.io/test-infra/prow/cmd/hook: gcr.io/k8s-prow/git-custom-k8s-auth:v20240125-32d3286cca
   k8s.io/test-infra/prow/cmd/hmac: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
   k8s.io/test-infra/prow/cmd/horologium: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
   k8s.io/test-infra/prow/cmd/initupload: gcr.io/k8s-prow/git:v20230817-0485b825c2
@@ -23,12 +23,12 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/moonraker: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/peribolos: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
   k8s.io/test-infra/prow/cmd/sidecar: gcr.io/k8s-prow/git:v20230817-0485b825c2
-  k8s.io/test-infra/prow/cmd/sinker: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
+  k8s.io/test-infra/prow/cmd/sinker: gcr.io/k8s-prow/git-custom-k8s-auth:v20240125-32d3286cca
   k8s.io/test-infra/prow/cmd/status-reconciler: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
   k8s.io/test-infra/prow/cmd/sub: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/tide: gcr.io/k8s-prow/git:v20230817-0485b825c2
   k8s.io/test-infra/prow/cmd/tot: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
-  k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
+  k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/git-custom-k8s-auth:v20240125-32d3286cca
   k8s.io/test-infra/prow/cmd/admission: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
   k8s.io/test-infra/prow/cmd/webhook-server: gcr.io/distroless/static:nonroot@sha256:9ecc53c269509f63c69a266168e4a687c7eb8c0cfd753bd8bfcaa4f58a90876f
   k8s.io/test-infra/prow/cmd/mkpj: gcr.io/k8s-prow/alpine:v20240108-a28886d2bd
