@@ -174,7 +174,7 @@ presubmits:
   - name: pull-cluster-api-provider-azure-capi-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-e2e.sh|Makefile'
+    run_if_changed: 'test\/e2e\/capi_test.go|scripts\/ci-e2e.sh|^go.mod'
     optional: true
     decorate: true
     decoration_config:
