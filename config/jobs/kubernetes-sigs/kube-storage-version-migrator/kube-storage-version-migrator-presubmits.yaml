@@ -22,6 +22,7 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-test
   - name: pull-kube-storage-version-migrator-manually-launched-e2e
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     labels:
@@ -50,10 +51,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: 6Gi
+            cpu: 2
+          limits:
+            memory: 6Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-manually-launched
   - name: pull-kube-storage-version-migrator-fully-automated-e2e
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     labels:
@@ -83,6 +92,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: 6Gi
+            cpu: 2
+          limits:
+            memory: 6Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: pr-e2e-fully-automated

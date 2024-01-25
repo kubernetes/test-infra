@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kube-storage-version-migrator:
   - name: pull-kube-storage-version-migrator-disruptive
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     labels:
@@ -30,6 +31,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: 6Gi
+            cpu: 2
+          limits:
+            memory: 6Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
       testgrid-tab-name: ci-disruptive
