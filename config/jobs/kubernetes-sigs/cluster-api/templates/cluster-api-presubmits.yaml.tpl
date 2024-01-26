@@ -155,7 +155,7 @@ presubmits:
         - ./scripts/ci-e2e.sh
         env:
         - name: GINKGO_SKIP
-          value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+          value: "\\[Conformance\\]|\\[IPv6\\]"
         # This value determines the minimum Kubernetes
         # supported version for Cluster API management cluster
         # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
@@ -178,7 +178,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
 {{- end }}
-  - name: pull-cluster-api-e2e-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -210,7 +210,7 @@ presubmits:
             memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
-      testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: capi-pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
 {{- if eq $.branch "release-1.4" "release-1.5" }}
   - name: pull-cluster-api-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -252,7 +252,7 @@ presubmits:
       testgrid-tab-name: capi-pr-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
 {{- end }}
 {{- if eq $.branch "release-1.4" | not }}
-  - name: pull-cluster-api-e2e-full-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-e2e-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -273,11 +273,8 @@ presubmits:
             # enable IPV6 in bootstrap image
             - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
               value: "true"
-            # Since the PR-Blocking tests are run as part of the cluster-api-e2e job
-            # and the upgrade tests are being run as part of the periodic upgrade jobs.
-            # This jobs ends up running all the other tests in the E2E suite
             - name: GINKGO_SKIP
-              value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
+              value: "\\[Conformance\\]"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -290,7 +287,7 @@ presubmits:
               memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
-      testgrid-tab-name: capi-pr-e2e-full-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: capi-pr-e2e-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
 {{ else }}
   - name: pull-cluster-api-e2e-informing-ipv6-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -332,7 +329,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-informing-ipv6-{{ ReplaceAll $.branch "." "-" }}
 {{- end }}
-  - name: pull-cluster-api-e2e-full-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-e2e-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -350,11 +347,8 @@ presubmits:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
-          # Since the PR-Blocking tests are run as part of the cluster-api-e2e job
-          # and the upgrade tests are being run as part of the periodic upgrade jobs.
-          # This jobs ends up running all the other tests in the E2E suite
           - name: GINKGO_SKIP
-            value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+            value: "\\[Conformance\\]|\\[IPv6\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -367,8 +361,8 @@ presubmits:
             memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
-      testgrid-tab-name: capi-pr-e2e-full-{{ ReplaceAll $.branch "." "-" }}
-  - name: pull-cluster-api-e2e-workload-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -402,7 +396,7 @@ presubmits:
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "{{ index (index $.versions ((last $.config.Upgrades).To)) "coreDNS" }}"
           - name: GINKGO_FOCUS
-            value: "\\[K8s-Upgrade\\]"
+            value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -416,3 +410,71 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
+{{ if eq $.branch "release-1.4" "release-1.5" "release-1.6" | not }}
+  - name: pull-cluster-api-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^{{ $.branch }}$
+    path_alias: sigs.k8s.io/cluster-api
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[Conformance\\] \\[K8s-Install\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-tab-name: capi-pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^{{ $.branch }}$
+    path_alias: sigs.k8s.io/cluster-api
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[Conformance\\] \\[K8s-Install-ci-latest\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+{{ end -}}

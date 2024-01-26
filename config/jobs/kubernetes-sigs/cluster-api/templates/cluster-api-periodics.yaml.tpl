@@ -99,7 +99,7 @@ periodics:
           - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_SKIP
-            value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+            value: "\\[Conformance\\]|\\[IPv6\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -147,7 +147,7 @@ periodics:
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
           - name: GINKGO_SKIP
-            value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
+            value: "\\[Conformance\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -192,7 +192,7 @@ periodics:
       - "./scripts/ci-e2e.sh"
       env:
       - name: GINKGO_SKIP
-        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+        value: "\\[Conformance\\]|\\[IPv6\\]"
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster
       # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
@@ -216,3 +216,93 @@ periodics:
     testgrid-tab-name: capi-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
+{{ if eq $.branch "release-1.4" "release-1.5" "release-1.6" | not }}
+- name: periodic-cluster-api-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
+  cluster: eks-prow-build-cluster
+  interval: {{ $.config.Interval }}
+  decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: {{ $.branch }}
+    path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: {{ $.config.TestImage }}
+      args:
+      - runner.sh
+      - "./scripts/ci-e2e.sh"
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[Conformance\\] \\[K8s-Install\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+          memory: 32Gi
+        limits:
+          cpu: 7300m
+          memory: 32Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-tab-name: capi-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+- name: periodic-cluster-api-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+  cluster: eks-prow-build-cluster
+  interval: {{ $.config.Interval }}
+  decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: {{ $.branch }}
+    path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: {{ $.config.TestImage }}
+      args:
+      - runner.sh
+      - "./scripts/ci-e2e.sh"
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[Conformance\\] \\[K8s-Install-ci-latest\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+          memory: 32Gi
+        limits:
+          cpu: 7300m
+          memory: 32Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-tab-name: capi-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+{{ end -}}
