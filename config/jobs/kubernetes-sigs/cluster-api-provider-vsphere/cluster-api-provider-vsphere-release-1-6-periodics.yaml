@@ -78,7 +78,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs integration tests
 
-- name: periodic-cluster-api-provider-vsphere-e2e-full-release-1-6
+- name: periodic-cluster-api-provider-vsphere-e2e-release-1-6
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -118,12 +118,12 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-full-release-1-6
+    testgrid-tab-name: periodic-e2e-release-1-6
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 
-- name: periodic-cluster-api-provider-vsphere-conformance-release-1-6
+- name: periodic-cluster-api-provider-vsphere-e2e-conformance-release-1-6
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -161,7 +161,7 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-conformance-release-1-6
+    testgrid-tab-name: periodic-e2e-conformance-release-1-6
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
