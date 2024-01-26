@@ -403,6 +403,10 @@ func checkIfEligible(job cfg.JobBase) (bool, string) {
 		return false, reason
 	}
 
+	if job.Spec.ServiceAccountName != "" && job.Spec.ServiceAccountName != "prowjob-default-sa" {
+		return false, "disallowed service account - " + job.Spec.ServiceAccountName
+	}
+
 	return true, ""
 }
 
