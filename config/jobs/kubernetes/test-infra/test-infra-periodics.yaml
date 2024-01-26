@@ -1,5 +1,6 @@
 periodics:
 - name: ci-test-infra-continuous-test
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -21,6 +22,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: continuous
@@ -52,46 +60,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-broken-column-threshold: '0.5'
     description: Monitors Kettle's BigQuery database freshness.
-
-- name: test-infra-fuzz
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  interval: 1h
-  spec:
-    serviceAccountName: fuzz-test
-    containers:
-    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
-      command:
-        - runner.sh
-      args:
-        - python3
-        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      env:
-      - name: MODE
-        value: batch
-      - name: REPO_NAME
-        value: test-infra
-      - name: SANITIZER
-        value: 'address'
-      - name: CLOUD_BUCKET
-        value: gs://prow-cifuzz-test/
-      - name: CFL_PLATFORM
-        value: prow
-      - name: LANGUAGE
-        value: go
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: test-infra-fuzz
-    testgrid-broken-column-threshold: '0.5'
-    description: Runs clusterfuzzlite every hour
 
 - name: test-infra-cfl-coverage-report
   labels:
