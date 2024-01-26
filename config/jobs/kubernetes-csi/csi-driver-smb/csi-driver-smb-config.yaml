@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-csi/csi-driver-smb:
   - name: pull-csi-driver-smb-verify
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-smb
@@ -18,12 +19,20 @@ presubmits:
         - verify
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-verify
       description: "Run code verification tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-unit
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: github.com/kubernetes-csi/csi-driver-smb
@@ -41,6 +50,13 @@ presubmits:
         - unit-test
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-unit
@@ -97,6 +113,7 @@ presubmits:
       description: "Run integration tests for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-windows-build
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: github.com/kubernetes-csi/csi-driver-smb
@@ -112,6 +129,13 @@ presubmits:
         args:
         - make
         - smb-windows
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-windows-build
