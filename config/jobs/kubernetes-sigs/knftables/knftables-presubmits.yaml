@@ -1,0 +1,39 @@
+# sigs.k8s.io/knftables presubmits
+presubmits:
+  kubernetes-sigs/knftables:
+  - name: pull-kind-test
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/knftables
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20
+        command:
+        - make
+        - test
+        resources:
+          limits:
+            cpu: "2"
+            memory: 4Gi
+          requests:
+            cpu: "2"
+            memory: 4Gi
+  - name: pull-kind-verify
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20
+        command:
+        - make
+        - verify
+        resources:
+          limits:
+            cpu: "2"
+            memory: 4Gi
+          requests:
+            cpu: "2"
+            memory: 4Gi
