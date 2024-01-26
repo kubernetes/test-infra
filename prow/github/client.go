@@ -1033,6 +1033,8 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 		} else if errors.Is(err, &appsAuthError{}) {
 			c.logger.WithError(err).Error("Stopping retry due to appsAuthError")
 			return resp, err
+		} else if strings.Contains(err.Error(), "Unable to retry this workflow run because it was created over a month ago") {
+			return resp, err
 		} else if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return resp, err
 		} else {
