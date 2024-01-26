@@ -85,7 +85,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
-    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|Makefile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -156,7 +156,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 4h
-    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|Makefile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
