@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
@@ -82,4 +83,20 @@ func gcsConfig(cfg config.Getter, pj *prowv1.ProwJob) (*prowv1.GCSConfiguration,
 // MarshalProwJob marshals the ProwJob in the format written to GCS.
 func MarshalProwJob(pj *prowv1.ProwJob) ([]byte, error) {
 	return json.MarshalIndent(pj, "", "\t")
+}
+
+// MarshalFinished marshals the finished.json format written to GCS.
+func MarshalFinishedJSON(pj *prowv1.ProwJob) ([]byte, error) {
+	if !pj.Complete() {
+		return nil, errors.New("cannot report finished.json for incomplete job")
+	}
+	completion := pj.Status.CompletionTime.Unix()
+	passed := pj.Status.State == prowv1.SuccessState
+	f := metadata.Finished{
+		Timestamp: &completion,
+		Passed:    &passed,
+		Metadata:  metadata.Metadata{"uploader": "crier"},
+		Result:    string(pj.Status.State),
+	}
+	return json.MarshalIndent(f, "", "\t")
 }
