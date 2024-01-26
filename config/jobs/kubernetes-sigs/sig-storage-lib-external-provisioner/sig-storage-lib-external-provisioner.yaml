@@ -22,27 +22,3 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
-
-  - name: pull-sig-storage-lib-external-provisioner-unit
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/sig-storage-lib-external-provisioner
-    annotations:
-      testgrid-dashboards: sig-storage-lib-external-provisioner
-      testgrid-tab-name: unit
-      description: Unit tests in sig-storage-lib-external-provisioner repo.
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
-        command:
-        - make
-        args:
-        - test
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
