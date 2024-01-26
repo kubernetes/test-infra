@@ -136,7 +136,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
       testgrid-tab-name: capi-pr-test-mink8s-release-1-4
-  - name: pull-cluster-api-e2e-release-1-4
+  - name: pull-cluster-api-e2e-blocking-release-1-4
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -168,7 +168,7 @@ presubmits:
             memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
-      testgrid-tab-name: capi-pr-e2e-release-1-4
+      testgrid-tab-name: capi-pr-e2e-blocking-release-1-4
   - name: pull-cluster-api-e2e-informing-release-1-4
     cluster: eks-prow-build-cluster
     labels:
@@ -244,7 +244,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
       testgrid-tab-name: capi-pr-e2e-informing-ipv6-release-1-4
-  - name: pull-cluster-api-e2e-full-release-1-4
+  - name: pull-cluster-api-e2e-release-1-4
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -262,11 +262,8 @@ presubmits:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
-          # Since the PR-Blocking tests are run as part of the cluster-api-e2e job
-          # and the upgrade tests are being run as part of the periodic upgrade jobs.
-          # This jobs ends up running all the other tests in the E2E suite
           - name: GINKGO_SKIP
-            value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+            value: "\\[Conformance\\]|\\[IPv6\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -279,8 +276,8 @@ presubmits:
             memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
-      testgrid-tab-name: capi-pr-e2e-full-release-1-4
-  - name: pull-cluster-api-e2e-workload-upgrade-1-26-1-27-release-1-4
+      testgrid-tab-name: capi-pr-e2e-release-1-4
+  - name: pull-cluster-api-e2e-upgrade-1-26-1-27-release-1-4
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -314,7 +311,7 @@ presubmits:
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.9.3"
           - name: GINKGO_FOCUS
-            value: "\\[K8s-Upgrade\\]"
+            value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

@@ -1,6 +1,6 @@
 periodics:
 {{- range $_, $upgrade := $.config.Upgrades }}
-- name: periodic-cluster-api-e2e-workload-upgrade-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-e2e-upgrade-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
   interval: {{ $.config.UpgradesInterval }}
   decorate: true
@@ -38,7 +38,7 @@ periodics:
       - name: COREDNS_VERSION_UPGRADE_TO
         value: "{{ index (index $.versions $upgrade.To) "coreDNS" }}"
       - name: GINKGO_FOCUS
-        value: "\\[K8s-Upgrade\\]"
+        value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
