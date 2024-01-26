@@ -12,10 +12,22 @@ prow_ignored:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28"
       # interval for e2e jobs
       interval: "24h"
+      upgradesInterval: "24h"
+      upgrades:
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
     release-1.9:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28"
       # interval for e2e jobs
       interval: "24h"
+      upgradesInterval: "24h"
+      upgrades:
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
     release-1.8:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.27"
       # interval for e2e jobs
@@ -36,5 +48,16 @@ prow_ignored:
     template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics-kubetest.yaml'
   - name: "cluster-api-provider-vsphere-periodics.yaml.tpl"
     template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics.yaml'
+  - name: "cluster-api-provider-vsphere-periodics-upgrades.yaml.tpl"
+    template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-periodics-upgrades.yaml'
   - name: "cluster-api-provider-vsphere-presubmits.yaml.tpl"
     template: 'cluster-api-provider-vsphere-{{ ReplaceAll .branch "." "-" }}-presubmits.yaml'
+
+  # Versions provides kubernetes minor version to key-value pairs mapping.
+  versions:
+    "1.28":
+      k8sRelease: "stable-1.28"
+    "1.29":
+      k8sRelease: "stable-1.29"
+    "1.30":
+      k8sRelease: "ci/latest-1.30"

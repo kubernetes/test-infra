@@ -2,7 +2,7 @@
 periodics:
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L713
-- name: periodic-cluster-api-provider-vsphere-upstream-e2e-alpha-features
+- name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-alpha-features
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -30,7 +30,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "\\[Conformance\\]"
+        value: "\\[Conformance\\] \\[K8s-Install\\]"
       - name: KUBETEST_CONFIGURATION
         value: ./data/kubetest/upstream-e2e-alpha-features.yaml
       - name: KUBETEST_GINKGO_NODES
@@ -46,13 +46,13 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-upstream-e2e-alpha-features
+    testgrid-tab-name: periodic-e2e-exp-kk-alpha-features
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs upstream e2e alpha-features tests
 
 # original jobs: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L857
-- name: periodic-cluster-api-provider-vsphere-upstream-e2e-serial
+- name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-serial
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -80,7 +80,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "\\[Conformance\\]"
+        value: "\\[Conformance\\] \\[K8s-Install\\]"
       - name: KUBETEST_CONFIGURATION
         value: ./data/kubetest/upstream-e2e-serial.yaml
       - name: KUBETEST_GINKGO_NODES
@@ -96,13 +96,13 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-upstream-e2e-serial
+    testgrid-tab-name: periodic-e2e-exp-kk-serial
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs upstream e2e serial tests
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L896
-- name: periodic-cluster-api-provider-vsphere-upstream-e2e-slow
+- name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-slow
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -130,7 +130,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "\\[Conformance\\]"
+        value: "\\[Conformance\\] \\[K8s-Install\\]"
       - name: KUBETEST_CONFIGURATION
         value: ./data/kubetest/upstream-e2e-slow.yaml
       - name: KUBETEST_GINKGO_NODES
@@ -146,13 +146,13 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-upstream-e2e-slow
+    testgrid-tab-name: periodic-e2e-exp-kk-slow
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs upstream e2e slow tests
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L581
-- name: periodic-cluster-api-provider-vsphere-upstream-e2e
+- name: periodic-cluster-api-provider-vsphere-e2e-exp-kk
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -180,7 +180,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "\\[Conformance\\]"
+        value: "\\[Conformance\\] \\[K8s-Install\\]"
       - name: KUBETEST_CONFIGURATION
         value: ./data/kubetest/upstream-e2e.yaml
       - name: KUBETEST_GINKGO_NODES
@@ -196,7 +196,7 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-upstream-e2e
+    testgrid-tab-name: periodic-e2e-exp-kk
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs upstream e2e tests

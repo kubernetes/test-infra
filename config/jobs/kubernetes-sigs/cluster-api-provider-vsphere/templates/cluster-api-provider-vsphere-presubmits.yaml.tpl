@@ -126,7 +126,7 @@ presubmits:
       testgrid-tab-name: pr-test-integration-{{ ReplaceAll $.branch "." "-" }}
       description: Runs integration tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-provider-vsphere-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -161,10 +161,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
       description: Runs only PR Blocking e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-full-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-provider-vsphere-e2e-{{ ReplaceAll $.branch "." "-" }}
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -199,10 +199,49 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-full-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: pr-e2e-{{ ReplaceAll $.branch "." "-" }}
       description: Runs all e2e tests
-
-  - name: pull-cluster-api-provider-vsphere-conformance-{{ ReplaceAll $.branch "." "-" }}
+{{ if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" | not }}
+  - name: pull-cluster-api-provider-vsphere-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^{{ $.branch }}$
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "{{ index (index $.versions ((last $.config.Upgrades).From)) "k8sRelease" }}"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "{{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
+{{ end }}
+  - name: pull-cluster-api-provider-vsphere-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -226,7 +265,7 @@ presubmits:
 {{- if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" }}
           value: "\\[Conformance\\]"
 {{- else }}
-          value: "testing K8S conformance \\[Conformance\\]"
+          value: "\\[Conformance\\] \\[K8s-Install\\]"
 {{- end }}
         # we need privileged mode in order to do docker in docker
         securityContext:
@@ -239,10 +278,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-conformance-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
       description: Runs conformance tests for CAPV
 {{ if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" | not }}
-  - name: pull-cluster-api-provider-vsphere-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+  - name: pull-cluster-api-provider-vsphere-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -263,7 +302,7 @@ presubmits:
         - ./hack/e2e.sh
         env:
         - name: GINKGO_FOCUS
-          value: "testing K8S conformance with K8S latest ci \\[Conformance\\]"
+          value: "\\[Conformance\\] \\[K8s-Install-ci-latest\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -275,6 +314,6 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-tab-name: pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
       description: Runs conformance tests with K8S ci latest for CAPV
-{{ end }}
+{{ end -}}

@@ -77,7 +77,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs integration tests
 
-- name: periodic-cluster-api-provider-vsphere-e2e-full-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -117,12 +117,12 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-full-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 
-- name: periodic-cluster-api-provider-vsphere-conformance-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -151,7 +151,7 @@ periodics:
 {{- if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" }}
         value: "\\[Conformance\\]"
 {{- else }}
-        value: "testing K8S conformance \\[Conformance\\]"
+        value: "\\[Conformance\\] \\[K8s-Install\\]"
 {{- end }}
       # we need privileged mode in order to do docker in docker
       securityContext:
@@ -164,12 +164,12 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-conformance-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
 {{ if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" | not }}
-- name: periodic-cluster-api-provider-vsphere-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -195,7 +195,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "testing K8S conformance with K8S latest ci \\[Conformance\\]"
+        value: "\\[Conformance\\] \\[K8s-Install-ci-latest\\]"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -207,11 +207,11 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests with K8S ci latest for CAPV
-{{ end }}
+{{ end -}}
 {{- if eq $.branch "main" }}
 - name: periodic-cluster-api-provider-vsphere-coverage-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
@@ -265,4 +265,4 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Shows test coverage for CAPV
-{{ end }}
+{{ end -}}
