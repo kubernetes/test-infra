@@ -547,6 +547,11 @@ func (in *Refs) DeepCopyInto(out *Refs) {
 		*out = make([]Pull, len(*in))
 		copy(*out, *in)
 	}
+	if in.BloblessFetch != nil {
+		in, out := &in.BloblessFetch, &out.BloblessFetch
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

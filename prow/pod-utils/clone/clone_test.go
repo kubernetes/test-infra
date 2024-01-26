@@ -59,6 +59,10 @@ func TestPathForRefs(t *testing.T) {
 	}
 }
 
+func boolPtr(v bool) *bool {
+	return &v
+}
+
 func TestCommandsForRefs(t *testing.T) {
 	fakeTimestamp := 100200300
 	var testCases = []struct {
@@ -579,7 +583,7 @@ func TestCommandsForRefs(t *testing.T) {
 				Pulls: []prowapi.Pull{
 					{Number: 1, Ref: "pull-me"},
 				},
-				BloblessFetch: true,
+				BloblessFetch: boolPtr(true),
 			},
 			dir: "/go",
 			expectedBase: []runnable{

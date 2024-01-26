@@ -244,7 +244,7 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 		depthArgs = append(depthArgs, "--depth", strconv.Itoa(d))
 	}
 	var filterArgs []string
-	if refs.BloblessFetch {
+	if refs.BloblessFetch != nil && *refs.BloblessFetch {
 		filterArgs = append(filterArgs, "--filter=blob:none")
 	}
 
@@ -337,7 +337,7 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []run
 	var commands []runnable
 	for _, prRef := range refs.Pulls {
 		var fetchArgs []string
-		if refs.BloblessFetch {
+		if refs.BloblessFetch != nil && *refs.BloblessFetch {
 			fetchArgs = append(fetchArgs, "--filter=blob:none")
 		}
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
