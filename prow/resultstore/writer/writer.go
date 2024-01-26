@@ -81,10 +81,12 @@ type writer struct {
 	finalized   bool
 }
 
-// persistentError returns whether the error status code is not
-// retryable per the ResultStore maintainers. Any codes not
-// listed here should be retried with exponential backoff.
-func persistentError(err error) bool {
+// PermanentError returns whether the error status code is permanent based on
+// the ResultStore implementation, according to the ResultStore maintainers.
+// (No external documentation is known.) Permanent errors will never succeed
+// and should not be retried. Transient errors should be retried with
+// exponential backoff.
+func PermanentError(err error) bool {
 	status, _ := status.FromError(err)
 	switch status.Code() {
 	case codes.AlreadyExists:
@@ -103,6 +105,11 @@ func persistentError(err error) bool {
 	return false
 }
 
+// New creates Invocation inv in ResultStore and returns a writer to add
+// resource protos and finalize the Invocation. The create is retried with
+// exponential backoff unless there is a permanent error, which is returned
+// immediately. The caller should check whether a returned error is permanent
+// using PermanentError() and only retry transient errors.
 func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
 	invID := inv.Id.InvocationId
 	inv.Id = nil
@@ -119,7 +126,10 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
 		if err != nil {
 			log.Errorf("resultstore.CreateInvocation: %v", err)
-			if persistentError(err) {
+			// TODO: In the event codes.AlreadyExists is returned, fall back
+			// to UpdateInvocation(). If that succeeds, we should be able to
+			// repeat the batch since resource Updates are idempotent.
+			if PermanentError(err) {
 				// End retries by returning error.
 				return false, err
 			}
@@ -184,7 +194,7 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		if _, err := w.client.UploadBatch(ctx, b); err != nil {
 			w.log.Errorf("resultstore.UploadBatch: %v", err)
-			if persistentError(err) {
+			if PermanentError(err) {
 				// End retries by returning error.
 				return false, err
 			}
