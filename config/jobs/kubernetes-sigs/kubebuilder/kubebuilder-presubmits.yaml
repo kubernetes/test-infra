@@ -24,7 +24,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e-k8s-1-29-0
+  - name: pull-kubebuilder-e2e-k8s-1-28-0
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -41,7 +41,7 @@ presubmits:
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.29.0"
+              value: "v1.28.0"
           resources:
             limits:
               cpu: 4000m
@@ -53,11 +53,11 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-29-0
+      testgrid-tab-name: kubebuilder-e2e-1-28-0
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-28-6
+  - name: pull-kubebuilder-e2e-k8s-1-27-3
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -74,7 +74,7 @@ presubmits:
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.28.6"
+              value: "v1.27.3"
           resources:
             limits:
               cpu: 4000m
@@ -86,11 +86,11 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-28-6
+      testgrid-tab-name: kubebuilder-e2e-1-27-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-27-10
+  - name: pull-kubebuilder-e2e-k8s-1-26-6
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -107,7 +107,7 @@ presubmits:
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.27.10"
+              value: "v1.26.6"
           resources:
             limits:
               cpu: 4000m
@@ -119,7 +119,7 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-27-10
+      testgrid-tab-name: kubebuilder-e2e-1-26-6
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
