@@ -343,7 +343,7 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-cri-o, sig-node-release-blocking
+    testgrid-dashboards: sig-node-cri-o, sig-release-master-informing, sig-node-release-blocking
     testgrid-tab-name: ci-crio-cgroupv2-node-e2e-conformance
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
