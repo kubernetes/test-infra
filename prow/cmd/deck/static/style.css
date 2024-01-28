@@ -485,6 +485,7 @@ span.label:not(.merge-table-label):hover {
 
 .table-container {
     overflow-x: auto;
+    height: 100%;
 }
 
 /**
