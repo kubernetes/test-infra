@@ -9,6 +9,7 @@ dashboard_groups:
       - provider-azure-cloud-provider-azure-1-26-presubmit
       - provider-azure-cloud-provider-azure-1-27-presubmit
       - provider-azure-cloud-provider-azure-1-28-presubmit
+      - provider-azure-cloud-provider-azure-1-29-presubmit
       - provider-azure-presubmit
       - provider-azure-master-signal
       - provider-azure-1.28-signal
@@ -24,6 +25,7 @@ dashboards:
   - name: provider-azure-cloud-provider-azure-1-26-presubmit
   - name: provider-azure-cloud-provider-azure-1-27-presubmit
   - name: provider-azure-cloud-provider-azure-1-28-presubmit
+  - name: provider-azure-cloud-provider-azure-1-29-presubmit
   - name: provider-azure-presubmit
   - name: provider-azure-master-signal
   - name: provider-azure-1.28-signal
