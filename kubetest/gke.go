@@ -610,17 +610,17 @@ func (g *gkeDeployer) setupBastion() error {
 	filtersToTry = append(filtersToTry, exactFilter)
 	// As a fallback - use proxy instance name as a regex but check only cluster nodes
 	var igFilters []string
-	// filter out VMs not belonging to the GKE cluster
+	// Filter out VMs not belonging to the GKE cluster
 	for _, ig := range g.instanceGroups {
 		igFilters = append(igFilters, fmt.Sprintf("(metadata.created-by ~ %s)", ig.path))
 	}
-	// match VM name or wildcard passed by kubetest parameters
+	// Match VM name or wildcard passed by kubetest parameters
 	fuzzyFilter := fmt.Sprintf("(name ~ %s) AND (%s)",
 		g.sshProxyInstanceName,
 		strings.Join(igFilters, " OR "))
 	filtersToTry = append(filtersToTry, fuzzyFilter)
 
-	// find hostname of VM that matches criteria
+	// Find hostname of VM that matches criteria
 	var bastion, zone string
 	for _, filter := range filtersToTry {
 		log.Printf("Checking for proxy instance with filter: %q", filter)
