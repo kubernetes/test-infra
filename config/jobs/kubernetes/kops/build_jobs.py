@@ -1709,6 +1709,18 @@ def generate_presubmits_e2e():
     jobs = [
         presubmit_test(
             distro='u2204arm64',
+            k8s_version='stable',
+            kops_channel='alpha',
+            networking='amazonvpc',
+            extra_flags=["--node-size=t4g.large"],
+            name=f"pull-kops-e2e-cni-amazonvpc-u2204",
+            tab_name=f"e2e-amazonvpc-u2204",
+            always_run=False,
+            optional=True,
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+        ),
+        presubmit_test(
+            distro='u2204arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci',
