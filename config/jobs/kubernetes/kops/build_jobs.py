@@ -1709,6 +1709,18 @@ def generate_presubmits_e2e():
     jobs = [
         presubmit_test(
             distro='u2204arm64',
+            k8s_version='stable',
+            kops_channel='alpha',
+            networking='amazonvpc',
+            extra_flags=["--node-size=t4g.large"],
+            name=f"pull-kops-e2e-cni-amazonvpc-u2204",
+            tab_name=f"e2e-amazonvpc-u2204",
+            always_run=False,
+            optional=True,
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+        ),
+        presubmit_test(
+            distro='u2204arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci',
@@ -2045,8 +2057,8 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.27",
-                'K8S_VERSION_A': "v1.27.0",
+                'KOPS_VERSION_A': "1.28",
+                'K8S_VERSION_A': "v1.28.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
@@ -2069,10 +2081,10 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             env={
-                'KOPS_VERSION_A': "1.27",
-                'K8S_VERSION_A': "v1.27.0",
+                'KOPS_VERSION_A': "1.28",
+                'K8S_VERSION_A': "v1.28.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.28.0",
+                'K8S_VERSION_B': "v1.29.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }
