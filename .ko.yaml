@@ -12,7 +12,7 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/gangway: gcr.io/k8s-prow/git:v20240129-a0a4e743bf
   k8s.io/test-infra/prow/cmd/generic-autobumper: gcr.io/k8s-prow/git:v20240129-a0a4e743bf
   k8s.io/test-infra/prow/cmd/gerrit: gcr.io/k8s-prow/git:v20240129-a0a4e743bf
-  k8s.io/test-infra/prow/cmd/grandmatriarch: gcr.io/cloud-builders/gcloud@sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd
+  k8s.io/test-infra/prow/cmd/grandmatriarch: gcr.io/cloud-builders/gcloud@sha256:66d12ecfe21e565af386706bd51d7777e13b471b433cdac7147fb3f3f57e0fc4
   k8s.io/test-infra/prow/cmd/gcsupload: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
   k8s.io/test-infra/prow/cmd/hook: gcr.io/k8s-prow/git-custom-k8s-auth:v20240129-a0a4e743bf
   k8s.io/test-infra/prow/cmd/hmac: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
