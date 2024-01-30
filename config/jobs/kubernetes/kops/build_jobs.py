@@ -2045,8 +2045,8 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.27",
-                'K8S_VERSION_A': "v1.27.0",
+                'KOPS_VERSION_A': "1.28",
+                'K8S_VERSION_A': "v1.28.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
@@ -2069,10 +2069,10 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             env={
-                'KOPS_VERSION_A': "1.27",
-                'K8S_VERSION_A': "v1.27.0",
+                'KOPS_VERSION_A': "1.28",
+                'K8S_VERSION_A': "v1.28.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.28.0",
+                'K8S_VERSION_B': "v1.29.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }
