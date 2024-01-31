@@ -344,12 +344,24 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 		// Objects can be deleted from the API while being in our workqueue
 		return reconcile.Result{}, nil
 	}
+	originalPJ := pj.DeepCopy()
 
 	res, err := r.serializeIfNeeded(ctx, pj)
 	if IsTerminalError(err) {
 		// Unfixable cases like missing build clusters, do not return an error to prevent requeuing
-		r.log.WithError(err).WithFields(pjutil.ProwJobFields(pj)).
-			Error("Reconciliation failed with terminal error and will not be requeued")
+		log := r.log.WithError(err).WithFields(pjutil.ProwJobFields(pj))
+		log.Error("Reconciliation failed with terminal error and will not be requeued")
+		if !pj.Complete() {
+			pj.SetComplete()
+			pj.Status.State = prowv1.ErrorState
+			pj.Status.Description = fmt.Sprintf("Terminal error: %v.", err)
+			if err := r.pjClient.Patch(ctx, pj, ctrlruntimeclient.MergeFrom(originalPJ)); err != nil {
+				// If we fail to complete and mark the job as errorer we will try again on the next sync loop.
+				log.Errorf("Error marking job with terminal failure as errored: %v.", err)
+			} else {
+				log.Info("Marked job with terminal failure as errored.")
+			}
+		}
 		return reconcile.Result{}, nil
 	}
 	if res == nil {
@@ -455,7 +467,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got evicted, deleting & next sync loop will restart pod")
 			client, ok := r.buildClients[pj.ClusterAlias()]
 			if !ok {
-				return nil, fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+				return nil, TerminalError(fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias()))
 			}
 			if finalizers := sets.New[string](pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
 				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
@@ -474,7 +486,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & next sync loop will restart pod")
 		client, ok := r.buildClients[pj.ClusterAlias()]
 		if !ok {
-			return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			return nil, TerminalError(fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias()))
 		}
 
 		if finalizers := sets.New[string](pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
@@ -496,7 +508,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is in unknown state, deleting & restarting pod")
 			client, ok := r.buildClients[pj.ClusterAlias()]
 			if !ok {
-				return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+				return nil, TerminalError(fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias()))
 			}
 
 			if finalizers := sets.New[string](pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
@@ -739,7 +751,7 @@ func (r *reconciler) syncAbortedJob(ctx context.Context, pj *prowv1.ProwJob) err
 
 	buildClient, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
-		return fmt.Errorf("no build client available for cluster %s", pj.ClusterAlias())
+		return TerminalError(fmt.Errorf("no build client available for cluster %s", pj.ClusterAlias()))
 	}
 
 	// Just optimistically delete and swallow the potential 404
