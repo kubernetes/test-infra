@@ -133,3 +133,35 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-mink8s-main
+  - name: pull-cluster-api-addon-provider-helm-capi-e2e-main
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "Cluster API E2E tests"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+            memory: 32Gi
+          limits:
+            cpu: 7300m
+            memory: 32Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-capi-e2e-main
