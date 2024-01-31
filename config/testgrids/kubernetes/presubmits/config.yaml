@@ -107,6 +107,9 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-alpha-features
     test_group_name: pull-kubernetes-e2e-kind-alpha-features
     base_options: width=10
+  - name: pull-kubernetes-e2e-kind-evented-pleg
+    test_group_name: pull-kubernetes-e2e-kind-evented-pleg
+    base_options: width=10
   - name: pull-kubernetes-e2e-kind-beta-features
     test_group_name: pull-kubernetes-e2e-kind-beta-features
     base_options: width=10
