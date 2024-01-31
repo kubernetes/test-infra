@@ -459,7 +459,7 @@ periodics:
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: FEATURE_GATES
-        value: '{"AllAlpha":true}'
+        value: '{"AllAlpha":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
         value: '{"api/alpha":"true", "api/ga":"true"}'
       - name: FOCUS
@@ -563,7 +563,7 @@ periodics:
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: FEATURE_GATES
-        value: '{"AllAlpha":true,"AllBeta":true}'
+        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
       - name: FOCUS
