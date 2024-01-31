@@ -455,6 +455,11 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
     path_alias: sigs.k8s.io/cluster-api
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
