@@ -109,6 +109,10 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 	var changes []github.PullRequestChange
 	var version string
 
+	// Pretend that all files found in the sourcePaths are newly added
+	// (github.PullRequestFileAdded). This is because we are running against a
+	// static set of files and are not sure how these files came to be. So we
+	// pretend that these files are newly added.
 	for _, sourcePath := range sourcePaths {
 
 		versionFilePath := filepath.Join(sourcePath, config.ConfigVersionFileName)
