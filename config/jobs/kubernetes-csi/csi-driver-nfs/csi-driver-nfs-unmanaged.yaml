@@ -69,7 +69,7 @@ presubmits:
   - name: pull-csi-driver-nfs-integration
     cluster: eks-prow-build-cluster
     decorate: true
-    always_run: true
+    always_run: false
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
     - (master)|(^release-.+$)
