@@ -43,11 +43,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29
         resources:
           requests:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: 7300m
+            memory: 9Gi
           limits:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-apidiff-main
