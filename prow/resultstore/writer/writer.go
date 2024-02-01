@@ -53,12 +53,6 @@ var (
 	rpcRetryDuration = 5 * time.Minute
 )
 
-func authorizationToken() string {
-	// ResultStore authorization tokens "must be set to a RFC 4122-
-	// compliant v3, v4, or v5 UUID."
-	return uuid.New().String()
-}
-
 func resumeToken() string {
 	// ResultStore resume tokens must be unique and be "web safe
 	// Base64 encoded bytes."
@@ -109,14 +103,15 @@ func PermanentError(err error) bool {
 // resource protos and finalize the Invocation. The create is retried with
 // exponential backoff unless there is a permanent error, which is returned
 // immediately. The caller should check whether a returned error is permanent
-// using PermanentError() and only retry transient errors.
-func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation) (*writer, error) {
+// using PermanentError() and only retry transient errors. The authToken is a
+// UUID and must be identical across all calls for the same Invocation.
+func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation, authToken string) (*writer, error) {
 	invID := inv.Id.InvocationId
 	inv.Id = nil
 	w := &writer{
 		log:         log,
 		client:      client,
-		authToken:   authorizationToken(),
+		authToken:   authToken,
 		resumeToken: resumeToken(),
 		updates:     []*resultstore.UploadRequest{},
 	}

@@ -17,8 +17,12 @@ limitations under the License.
 package resultstore
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"sync"
 
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/resultstore/writer"
 )
@@ -44,7 +48,7 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 		log.Errorf("p.Invocation: %v", err)
 		return nil
 	}
-	w, err := writer.New(ctx, log, u.client, inv)
+	w, err := writer.New(ctx, log, u.client, inv, authToken.From(inv.Id.InvocationId))
 	if err != nil {
 		if writer.PermanentError(err) {
 			return nil
@@ -63,4 +67,47 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 	// since attempting to upload an existing invocation is a permanent error.
 	w.Finalize(ctx)
 	return nil
+}
+
+type tokenGenerator struct {
+	mu   sync.Mutex
+	seed []byte
+}
+
+func (g *tokenGenerator) From(id string) string {
+	g.mu.Lock()
+	seed := g.seed
+	g.mu.Unlock()
+
+	digest := sha256.New()
+	digest.Write(seed)
+	digest.Write([]byte(id))
+	r := bytes.NewReader(digest.Sum(nil))
+	// error cannot occur since we read from a 256-bit digest.
+	u, _ := uuid.NewRandomFromReader(r)
+	return u.String()
+}
+
+func (g *tokenGenerator) Reseed(seed string) {
+	digest := sha256.New()
+	digest.Write([]byte(seed))
+
+	g.mu.Lock()
+	g.seed = digest.Sum(nil)
+	g.mu.Unlock()
+}
+
+var authToken *tokenGenerator
+
+func init() {
+	authToken = &tokenGenerator{}
+	SeedAuthToken("Avast ye, Matey!")
+}
+
+// SeedAuthToken sets the seed for computing AuthenticationToken values for
+// ResultStore uploads. This is just one of many layers of protection, but if
+// ever needed, a Crier secret string could be used to rule out unintended
+// writers from interfering with in-progress uploads.
+func SeedAuthToken(seed string) {
+	authToken.Reseed(seed)
 }
