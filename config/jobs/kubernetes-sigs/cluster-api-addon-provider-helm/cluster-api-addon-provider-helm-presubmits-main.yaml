@@ -139,10 +139,11 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29
