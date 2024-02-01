@@ -453,7 +453,7 @@ presubmits:
         - name: FEATURE_GATES
           value: '{"EventedPLEG":true}'
         - name: RUNTIME_CONFIG
-          value: '{"api/all":"true"}'
+          value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: FOCUS
           value: "."
         - name: SKIP
