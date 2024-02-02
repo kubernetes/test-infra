@@ -695,6 +695,7 @@ presubmits:
 
   # Fork of kubernetes/kubernetes: pull-kubernetes-e2e-gce-scale-performance-manual
   - name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance-manual
+    cluster: k8s-infra-prow-build
     always_run: false
     max_concurrency: 1
     branches:
@@ -732,7 +733,7 @@ presubmits:
         - --extract=ci/fast/latest-fast
         - --extract-ci-bucket=k8s-release-dev
         - --gcp-nodes=5000
-        - --gcp-project-type=scalability-presubmit-5k-project
+        - --gcp-project-type=scalability-scale-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --metadata-sources=cl2-metadata.json
@@ -771,8 +772,6 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=420m
-        - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
           limits:
             # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
