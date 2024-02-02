@@ -24,39 +24,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e-k8s-1-29-0
-    cluster: eks-prow-build-cluster
-    decorate: true
-    always_run: true
-    optional: false
-    path_alias: sigs.k8s.io/kubebuilder
-    branches:
-      - ^master$
-      - ^feature/plugins-.+$
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
-          command:
-            - runner.sh
-            - ./test_e2e.sh
-          env:
-            - name: KIND_K8S_VERSION
-              value: "v1.29.0"
-          resources:
-            limits:
-              cpu: 4000m
-              memory: 8Gi
-            requests:
-              cpu: 4000m
-              memory: 8Gi
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-29-0
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-28-0
     cluster: eks-prow-build-cluster
     decorate: true
