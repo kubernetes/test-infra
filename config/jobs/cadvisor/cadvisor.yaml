@@ -65,6 +65,7 @@ presubmits:
 
   kubernetes/kubernetes: # Temporary test for https://github.com/kubernetes/kubernetes/pull/116517
   - name: pull-cadvisor-e2e-kubernetes
+    cluster: k8s-infra-prow-build
     always_run: false
     labels:
       preset-service-account: "true"
