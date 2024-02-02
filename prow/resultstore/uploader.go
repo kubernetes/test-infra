@@ -62,10 +62,13 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 	w.WriteTarget(ctx, p.OverallTarget())
 	w.WriteConfiguredTarget(ctx, p.ConfiguredTarget())
 	w.WriteAction(ctx, p.OverallAction())
-	// TODO: When writer.New() is emended to resume uploads (see TODO there),
-	// return non-permanent errors from Finalize(). Doing this now is futile,
-	// since attempting to upload an existing invocation is a permanent error.
-	w.Finalize(ctx)
+
+	if err := w.Finalize(ctx); err != nil {
+		if writer.PermanentError(err) {
+			return nil
+		}
+		return err
+	}
 	return nil
 }
 
