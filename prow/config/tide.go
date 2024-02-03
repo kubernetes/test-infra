@@ -861,7 +861,7 @@ func mergeTideContextPolicy(a, b TideContextPolicy) TideContextPolicy {
 	return c
 }
 
-func parseTideContextPolicyOptions(org, repo, branch string, options TideContextPolicyOptions) TideContextPolicy {
+func ParseTideContextPolicyOptions(org, repo, branch string, options TideContextPolicyOptions) TideContextPolicy {
 	option := options.TideContextPolicy
 	if o, ok := options.Orgs[org]; ok {
 		option = mergeTideContextPolicy(option, o.TideContextPolicy)
@@ -880,7 +880,7 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
 func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
 	var requireManuallyTriggeredJobs *bool
-	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
+	options := ParseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.New[string](options.RequiredContexts...)
 	requiredIfPresent := sets.New[string](options.RequiredIfPresentContexts...)

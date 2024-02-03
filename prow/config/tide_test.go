@@ -1284,7 +1284,7 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		policy := parseTideContextPolicyOptions(org, repo, branch, tc.config)
+		policy := ParseTideContextPolicyOptions(org, repo, branch, tc.config)
 		if !reflect.DeepEqual(policy, tc.expected) {
 			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(tc.expected, policy))
 		}
