@@ -1193,7 +1193,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.28', '1.27']:
+    for version in ['1.29', '1.28', '1.27']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -1299,20 +1299,13 @@ def generate_network_plugins():
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
         k8s_version = 'stable'
-        distro = 'u2204'
-        # https://github.com/kubernetes/kops/issues/15720
-        if plugin == 'amazon-vpc':
-            distro = 'u2004'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin in ['kuberouter']:
             k8s_version = 'ci'
-        focus_regex = None
-        if plugin == 'cilium-eni':
-            focus_regex = r'\[Conformance\]|\[NodeConformance\]'
         results.append(
             build_test(
-                distro=distro,
+                distro='u2204',
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -1320,7 +1313,6 @@ def generate_network_plugins():
                 extra_flags=['--node-size=t3.large'],
                 extra_dashboards=['kops-network-plugins'],
                 runs_per_day=3,
-                focus_regex=focus_regex
             )
         )
     return results
@@ -1331,8 +1323,8 @@ def generate_network_plugins():
 def generate_upgrades():
 
     kops26 = 'v1.26.6'
-    kops27 = 'v1.27.2'
-    kops28 = 'v1.28.1'
+    kops27 = 'v1.27.3'
+    kops28 = 'v1.28.4'
 
     versions_list = [
         #  kops    k8s          kops      k8s
@@ -1592,7 +1584,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.28', '1.27', '1.26', '1.25']:
+    for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -1650,32 +1642,21 @@ def generate_presubmits_network_plugins():
         k8s_version = 'stable'
         networking_arg = plugin
         optional = False
-        distro = 'u2204arm64'
-        focus_regex = None
-        if plugin == 'cilium-eni':
-            focus_regex = r'\[Conformance\]|\[NodeConformance\]'
-        # https://github.com/kubernetes/kops/issues/15720
-        if plugin == 'amazonvpc':
-            distro = 'u2004'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             k8s_version = 'ci'
             optional = True
-        extra_flags = ['--node-size=t3.large']
-        if 'arm64' in distro:
-            extra_flags = ["--node-size=t4g.large"]
         results.append(
             presubmit_test(
-                distro=distro,
+                distro='u2204arm64',
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
-                extra_flags=extra_flags,
-                focus_regex=focus_regex,
+                extra_flags=["--node-size=t4g.large"],
                 run_if_changed=run_if_changed,
                 optional=optional,
             )
@@ -1687,13 +1668,14 @@ def generate_presubmits_network_plugins():
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
-                    distro=distro,
+                    distro='u2204arm64',
                     tab_name=f"e2e-{plugin}-ipv6",
                     networking=networking_arg,
                     extra_flags=['--ipv6',
                                  '--topology=private',
                                  '--bastion',
                                  '--zones=us-west-2a',
+                                 '--dns=public',
                                  ],
                     run_if_changed=run_if_changed,
                     optional=optional,
@@ -1707,18 +1689,6 @@ def generate_presubmits_network_plugins():
 ############################
 def generate_presubmits_e2e():
     jobs = [
-        presubmit_test(
-            distro='u2204arm64',
-            k8s_version='stable',
-            kops_channel='alpha',
-            networking='amazonvpc',
-            extra_flags=["--node-size=t4g.large"],
-            name=f"pull-kops-e2e-cni-amazonvpc-u2204",
-            tab_name=f"e2e-amazonvpc-u2204",
-            always_run=False,
-            optional=True,
-            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-        ),
         presubmit_test(
             distro='u2204arm64',
             k8s_version='ci',
