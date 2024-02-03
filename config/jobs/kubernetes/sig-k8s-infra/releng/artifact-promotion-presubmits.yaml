@@ -14,7 +14,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.4-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.5-0
         command:
         - /kpromo
         args:
@@ -45,7 +45,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-vuln-scanning
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.4-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.5-0
         command:
         - /kpromo
         args:
@@ -91,7 +91,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.4-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.5-0
         command:
         - /kpromo
         args:
@@ -119,7 +119,7 @@ presubmits:
       - name: promote-to-primary
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
-        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.4-0
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.5-0
         command:
         - /kpromo
         args:
@@ -129,7 +129,7 @@ presubmits:
       - name: promote-to-mirrors
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
-        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.4-0
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.5-0
         command:
         - /kpromo
         args:
@@ -139,7 +139,7 @@ presubmits:
       - name: promote-to-mirrors-staging
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
-        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.4-0
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.5-0
         command:
         - /kpromo
         args:
