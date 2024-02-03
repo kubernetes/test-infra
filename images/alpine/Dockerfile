@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:latest
+# Update the date below (check https://hub.docker.com/_/alpine/tags) to get the
+# alpine edge base image, which has a faster release cadence than alpine:latest
+# (which tracks alpine stable), to pick up security patches more quickly.
+FROM alpine:20231219
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}

@@ -2,6 +2,7 @@
 
 reviewers:
 - CecileRobertMichon
+- chrischdi
 - fabriziopandini
 - JoelSpeed
 - justinsb
@@ -11,6 +12,7 @@ reviewers:
 - vincepri
 approvers:
 - CecileRobertMichon
+- chrischdi
 - fabriziopandini
 - justinsb
 - sbueringer

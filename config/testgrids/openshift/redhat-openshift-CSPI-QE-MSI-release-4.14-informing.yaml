@@ -83,9 +83,9 @@ dashboards:
     test_group_name: periodic-ci-CSPI-QE-MSI-single-cluster-smoke-v4.14-single-cluster-hypershift-4-14-candidate-smoke
   name: redhat-openshift-CSPI-QE-MSI-release-4.14-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.14-production-co-exist-rosa-rhoai-rhoam
+- gcs_prefix: test-platform-results/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.14-production-co-exist-rosa-rhoai-rhoam
   name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.14-production-co-exist-rosa-rhoai-rhoam
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.14-stage-co-exist-rosa-rhoai-rhoam
+- gcs_prefix: test-platform-results/logs/periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.14-stage-co-exist-rosa-rhoai-rhoam
   name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.14-stage-co-exist-rosa-rhoai-rhoam
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-single-cluster-smoke-v4.14-single-cluster-hypershift-4-14-candidate-smoke
+- gcs_prefix: test-platform-results/logs/periodic-ci-CSPI-QE-MSI-single-cluster-smoke-v4.14-single-cluster-hypershift-4-14-candidate-smoke
   name: periodic-ci-CSPI-QE-MSI-single-cluster-smoke-v4.14-single-cluster-hypershift-4-14-candidate-smoke

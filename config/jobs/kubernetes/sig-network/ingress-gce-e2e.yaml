@@ -85,6 +85,7 @@ presets:
 presubmits:
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     labels:
@@ -93,7 +94,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         command:
         - runner.sh
         - make
@@ -101,11 +102,19 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: pull-ingress-gce-test
 
   - name: pull-ingress-gce-verify
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     branches:
@@ -116,7 +125,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         command:
         - runner.sh
         - make
@@ -124,11 +133,19 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: pull-ingress-gce-verify
 
   - name: pull-ingress-gce-e2e
+    cluster: default # https://github.com/kubernetes/test-infra/pull/31681d
     always_run: true
     optional: false
     decorate: true
@@ -140,7 +157,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           limits:
             cpu: 4
@@ -171,7 +188,7 @@ periodics:
     timeout: 340m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py

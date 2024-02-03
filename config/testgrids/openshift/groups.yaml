@@ -11,7 +11,6 @@ dashboard_groups:
   - redhat-openshift-lp-rosa-hypershift-release-4.12-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.13-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.14-informing
-  - redhat-openshift-ocp-release-3.11-informing
   - redhat-openshift-ocp-release-4.1-blocking
   - redhat-openshift-ocp-release-4.1-informing
   - redhat-openshift-ocp-release-4.10-blocking

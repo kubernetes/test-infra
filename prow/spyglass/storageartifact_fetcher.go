@@ -113,6 +113,10 @@ func (af *StorageArtifactFetcher) newStorageJobSource(storagePath string) (*stor
 	}
 	buildID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
+	potentialAlias := storageURL.Host
+	if bucket, exists := af.cfg().Deck.Spyglass.BucketAliases[potentialAlias]; exists {
+		storageURL.Host = bucket
+	}
 	return &storageJobSource{
 		source:     storageURL.String(),
 		linkPrefix: storageURL.Scheme + "://",

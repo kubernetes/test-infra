@@ -758,9 +758,17 @@ type DefaultDecorationConfigEntry struct {
 // TODO(mpherman): Make a Matcher struct embedded in both ProwJobDefaultEntry and
 // DefaultDecorationConfigEntry and DefaultRerunAuthConfigEntry.
 func matches(givenOrgRepo, givenCluster, orgRepo, cluster string) bool {
-	orgRepoMatch := givenOrgRepo == "" || givenOrgRepo == "*" || givenOrgRepo == strings.Split(orgRepo, "/")[0] || givenOrgRepo == orgRepo
-	clusterMatch := givenCluster == "" || givenCluster == "*" || givenCluster == cluster
-	return orgRepoMatch && clusterMatch
+	if givenCluster != "" && givenCluster != "*" && givenCluster != cluster {
+		return false
+	}
+	if givenOrgRepo == "" || givenOrgRepo == "*" || givenOrgRepo == orgRepo {
+		return true
+	}
+	// Ensure a bare given repo name matches the http-prefixed repo
+	// that arises in pre/postsubmit jobs.
+	orgRepo = strings.TrimPrefix(orgRepo, "https://")
+	orgRepo = strings.TrimPrefix(orgRepo, "http://")
+	return givenOrgRepo == orgRepo || givenOrgRepo == strings.Split(orgRepo, "/")[0]
 }
 
 // matches returns true iff all the filters for the entry match a job.
@@ -941,6 +949,23 @@ type Gerrit struct {
 	// AllowedPresubmitTriggerRe is used to match presubmit test related commands in comments
 	AllowedPresubmitTriggerRe          *CopyableRegexp `json:"-"`
 	AllowedPresubmitTriggerReRawString string          `json:"allowed_presubmit_trigger_re,omitempty"`
+}
+
+func (g *Gerrit) DefaultAndValidate() error {
+	if g.TickInterval == nil {
+		g.TickInterval = &metav1.Duration{Duration: time.Minute}
+	}
+
+	if g.RateLimit == 0 {
+		g.RateLimit = 5
+	}
+
+	re, err := regexp.Compile(g.AllowedPresubmitTriggerReRawString)
+	if err != nil {
+		return fmt.Errorf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
+	}
+	g.AllowedPresubmitTriggerRe = &CopyableRegexp{re}
+	return nil
 }
 
 func (g *Gerrit) IsAllowedPresubmitTrigger(message string) bool {
@@ -1152,6 +1177,10 @@ type Spyglass struct {
 	// PRHistLinkTemplate is the template for constructing href of `PR History` button,
 	// by default it's "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
 	PRHistLinkTemplate string `json:"pr_history_link_template,omitempty"`
+	// BucketAliases permits a naive URL rewriting functionality.
+	// Keys represent aliases and their values are the authoritative
+	// bucket names they will be substituted with
+	BucketAliases map[string]string `json:"bucket_aliases,omitempty"`
 }
 
 type GCSBrowserPrefixes map[string]string
@@ -1278,7 +1307,9 @@ func (c *Config) ValidateStorageBucket(bucketName string) error {
 	if !c.Deck.shouldValidateStorageBuckets() {
 		return nil
 	}
-
+	if alias, exists := c.Deck.Spyglass.BucketAliases[bucketName]; exists {
+		bucketName = alias
+	}
 	if !c.Deck.AllKnownStorageBuckets.Has(bucketName) {
 		return NotAllowedBucketError(fmt.Errorf("bucket %q not in allowed list (%v)", bucketName, sets.List(c.Deck.AllKnownStorageBuckets)))
 	}
@@ -2543,19 +2574,9 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodUnscheduledTimeout = &metav1.Duration{Duration: 5 * time.Minute}
 	}
 
-	if c.Gerrit.TickInterval == nil {
-		c.Gerrit.TickInterval = &metav1.Duration{Duration: time.Minute}
+	if err := c.Gerrit.DefaultAndValidate(); err != nil {
+		return fmt.Errorf("validating gerrit config: %w", err)
 	}
-
-	if c.Gerrit.RateLimit == 0 {
-		c.Gerrit.RateLimit = 5
-	}
-
-	re, err := regexp.Compile(c.Gerrit.AllowedPresubmitTriggerReRawString)
-	if err != nil {
-		return fmt.Errorf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
-	}
-	c.Gerrit.AllowedPresubmitTriggerRe = &CopyableRegexp{re}
 
 	if c.Tide.Gerrit != nil {
 		if c.Tide.Gerrit.RateLimit == 0 {
@@ -2701,6 +2722,10 @@ func parseProwConfig(c *Config) error {
 	}
 	if !defaultByBucketExists {
 		c.Deck.Spyglass.GCSBrowserPrefixesByBucket["*"] = c.Deck.Spyglass.GCSBrowserPrefix
+	}
+
+	if c.Deck.Spyglass.BucketAliases == nil {
+		c.Deck.Spyglass.BucketAliases = make(map[string]string)
 	}
 
 	if c.PushGateway.Interval == nil {

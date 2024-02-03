@@ -24,7 +24,7 @@ import (
 )
 
 // IsGerritOrg tells whether the org is a Gerrit org or not. It returns true
-// when the org string starts with https://.
+// when the org string starts with https:// or http://.
 func IsGerritOrg(org string) bool {
 	return strings.HasPrefix(org, "https://") || strings.HasPrefix(org, "http://")
 }
@@ -90,17 +90,27 @@ func orgRepo(org, repo string) string {
 	return org + "/" + repo
 }
 
-// CodeRootURL converts code review URL into source code URL, simply
+const reviewSuffix = "-review"
+
+// CodeURL converts code review URL into source code URL, simply
 // trimming the `-review` suffix from the name of the org.
 //
 // Gerrit URL for sourcecode looks like
 // https://android.googlesource.com, and the code review URL looks like
 // https://android-review.googlesource.com/c/platform/frameworks/support/+/2260382.
-func CodeRootURL(reviewURL string) (string, error) {
-	orgParts := strings.Split(reviewURL, ".")
-	if !strings.HasSuffix(orgParts[0], "-review") {
-		return "", fmt.Errorf("cannot find '-review' suffix from the first part of url %v", orgParts)
+func CodeURL(reviewURL string) (string, error) {
+	ps := strings.SplitN(reviewURL, ".", 2)
+	if len(ps) == 1 || !strings.HasSuffix(ps[0], reviewSuffix) {
+		return "", fmt.Errorf("cannot find %q suffix from the first part of url %v", reviewSuffix, ps)
 	}
-	orgParts[0] = strings.TrimSuffix(orgParts[0], "-review")
-	return strings.Join(orgParts, "."), nil
+	ps[0] = strings.TrimSuffix(ps[0], reviewSuffix)
+	return strings.Join(ps, "."), nil
+}
+
+// EnsureCodeURL works as CodeRootURL, without errors.
+func EnsureCodeURL(url string) string {
+	if u, err := CodeURL(url); err == nil {
+		return u
+	}
+	return url
 }

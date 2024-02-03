@@ -650,51 +650,51 @@ dashboards:
     test_group_name: release-openshift-origin-installer-launch-vsphere-modern
   name: redhat-openshift-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
+- gcs_prefix: test-platform-results/logs/release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
   name: release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
+- gcs_prefix: test-platform-results/logs/release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
   name: release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
+- gcs_prefix: test-platform-results/logs/release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
   name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
+- gcs_prefix: test-platform-results/logs/release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
   name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
+- gcs_prefix: test-platform-results/logs/release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
   name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
+- gcs_prefix: test-platform-results/logs/release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
   name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-assemble
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-assemble
   name: release-openshift-origin-assemble
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade
   name: release-openshift-origin-installer-e2e-aws-upgrade
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-azure-upgrade
   name: release-openshift-origin-installer-e2e-azure-upgrade
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-gcp-upgrade
   name: release-openshift-origin-installer-e2e-gcp-upgrade
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-aws-2-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-aws-2-modern
   name: release-openshift-origin-installer-launch-aws-2-modern
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-aws-arm64
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-aws-arm64
   name: release-openshift-origin-installer-launch-aws-arm64
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-aws-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-aws-modern
   name: release-openshift-origin-installer-launch-aws-modern
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-azure-arm64
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-azure-arm64
   name: release-openshift-origin-installer-launch-azure-arm64
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-azure-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-azure-modern
   name: release-openshift-origin-installer-launch-azure-modern
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-azurestack-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-azurestack-modern
   name: release-openshift-origin-installer-launch-azurestack-modern
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-gcp-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-gcp-modern
   name: release-openshift-origin-installer-launch-gcp-modern
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-hypershift
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-hypershift
   name: release-openshift-origin-installer-launch-hypershift
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-hypershift-hosted
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-hypershift-hosted
   name: release-openshift-origin-installer-launch-hypershift-hosted
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-hypershift-powervs
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-hypershift-powervs
   name: release-openshift-origin-installer-launch-hypershift-powervs
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-metal
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-metal
   name: release-openshift-origin-installer-launch-metal
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-nutanix-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-nutanix-modern
   name: release-openshift-origin-installer-launch-nutanix-modern
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-osd-ephemeral
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-osd-ephemeral
   name: release-openshift-origin-installer-launch-osd-ephemeral
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-launch-vsphere-modern
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-launch-vsphere-modern
   name: release-openshift-origin-installer-launch-vsphere-modern

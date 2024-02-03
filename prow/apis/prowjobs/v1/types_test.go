@@ -47,35 +47,110 @@ func TestProwJobDefaulting(t *testing.T) {
 			expected: &ProwJobDefault{},
 		},
 		{
-			name: "TenantID provided, no default",
+			name: "All provided, no default",
 			provided: &ProwJobDefault{
-				TenantID: "Provided",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "project",
+				},
+				TenantID: "tenant",
 			},
 			def: &ProwJobDefault{},
 			expected: &ProwJobDefault{
-				TenantID: "Provided",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "project",
+				},
+				TenantID: "tenant",
 			},
 		},
 		{
-			name: "TenantID provided, No Override",
+			name: "All provided, no override",
 			provided: &ProwJobDefault{
-				TenantID: "Provided",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "project",
+				},
+				TenantID: "tenant",
 			},
 			def: &ProwJobDefault{
-				TenantID: "Default",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "default-project",
+				},
+				TenantID: "default-tenant",
+
 			},
 			expected: &ProwJobDefault{
-				TenantID: "Provided",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "project",
+				},
+				TenantID: "tenant",
 			},
 		},
 		{
-			name:     "TenantID not Provided, Uses default",
+			name: "Empty provided, no default",
+			provided: &ProwJobDefault{},
+			def: &ProwJobDefault{},
+			expected: &ProwJobDefault{},
+		},
+		{
+			name: "Empty provided, use default",
 			provided: &ProwJobDefault{},
 			def: &ProwJobDefault{
-				TenantID: "Default",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "default-project",
+				},
+				TenantID: "default-tenant",
+
 			},
 			expected: &ProwJobDefault{
-				TenantID: "Default",
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "default-project",
+				},
+				TenantID: "default-tenant",
+			},
+		},
+		{
+			name: "Nil provided, empty default",
+			provided: nil,
+			def: &ProwJobDefault{},
+			expected: &ProwJobDefault{},
+		},
+		{
+			name: "Nil provided, use default",
+			provided: nil,
+			def: &ProwJobDefault{
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "default-project",
+				},
+				TenantID: "default-tenant",
+
+			},
+			expected: &ProwJobDefault{
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "default-project",
+				},
+				TenantID: "default-tenant",
+			},
+		},
+		{
+			name: "Nil provided, nil default",
+			provided: nil,
+			def: nil,
+			expected: nil,
+		},
+		{
+			name: "This provided, that default",
+			provided: &ProwJobDefault{
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "project",
+				},
+			},
+			def: &ProwJobDefault{
+				TenantID: "default-tenant",
+			},
+			expected: &ProwJobDefault{
+				ResultStoreConfig: &ResultStoreConfig{
+					ProjectID: "project",
+				},
+				TenantID: "default-tenant",
 			},
 		},
 	}

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:latest as builder
+FROM google/cloud-sdk:461.0.0 as builder
 # https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 
 ARG AWS_IAM_AUTHENTICATOR_VERSION
@@ -21,7 +21,10 @@ RUN curl -fsSL \
     chmod +x /aws-iam-authenticator
 
 
-FROM alpine:latest
+# Update the date below (check https://hub.docker.com/_/alpine/tags) to get the
+# alpine edge base image, which has a faster release cadence than alpine:latest
+# (which tracks alpine stable), to pick up security patches more quickly.
+FROM alpine:20231219
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}

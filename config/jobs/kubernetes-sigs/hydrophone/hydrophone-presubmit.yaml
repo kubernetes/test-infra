@@ -1,0 +1,156 @@
+presubmits:
+  kubernetes-sigs/hydrophone:
+    - name: pull-hydrophone-build
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            imagePullPolicy: Always
+            command:
+              - make
+              - build
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-build
+    - name: pull-hydrophone-test
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            imagePullPolicy: Always
+            command:
+              - make
+              - test
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-test
+    - name: pull-hydrophone-verify
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      cluster: eks-prow-build-cluster
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            imagePullPolicy: Always
+            command:
+              - make
+              - verify
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-verify
+    - name: pull-hydrophone-dry-run
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+            command:
+              - runner.sh
+            env:
+              - name: K8S_VERSION
+                value: "v1.29.0"
+              - name: KIND_VERSION
+                value: "v0.20.0"
+              - name: FOCUS
+                value: "Simple pod should contain last line of the log"
+              - name: DRYRUN
+                value: "true"
+              - name: CHECK_DURATION
+                value: "true"
+              - name: EXPECTED_NUM_TESTS
+                value: "1" # This is the number of specs expected to run.
+            args:
+              - bash
+              - -c
+              - |
+                make build
+                hack/run-e2e.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: 4Gi
+              limits:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-dry-run
+    - name: pull-hydrophone-simple-run
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+            command:
+              - runner.sh
+            env:
+              - name: K8S_VERSION
+                value: "v1.29.0"
+              - name: KIND_VERSION
+                value: "v0.20.0"
+              - name: FOCUS
+                value: "Simple pod should contain last line of the log"
+              - name: CHECK_DURATION
+                value: "true"
+              - name: EXPECTED_NUM_TESTS
+                value: "1" # This is the number of specs expected to run.
+            args:
+              - bash
+              - -c
+              - |
+                make build
+                hack/run-e2e.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: 4Gi
+              limits:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-simple-run

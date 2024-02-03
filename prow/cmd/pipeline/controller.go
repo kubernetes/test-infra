@@ -350,7 +350,7 @@ func (c *controller) createPipelineRun(pContext, namespace string, p *pipelinev1
 	}
 	// Block until the pipelinerun is in the lister, otherwise we may attempt to create it again
 	var errOut error
-	wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+	wait.Poll(time.Second, 10*time.Second, func() (bool, error) {
 		_, errOut = c.getPipelineRun(pContext, namespace, p.Name)
 		return errOut == nil, nil
 	})

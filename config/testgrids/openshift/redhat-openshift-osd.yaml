@@ -245,21 +245,21 @@ dashboards:
     test_group_name: periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-postinstall
   name: redhat-openshift-osd
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-addon-example
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-addon-example
   name: periodic-ci-openshift-osde2e-main-addon-example
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-aws-prod-cleanup
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-aws-prod-cleanup
   name: periodic-ci-openshift-osde2e-main-aws-prod-cleanup
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-aws-stage-informing-default
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-aws-stage-informing-default
   name: periodic-ci-openshift-osde2e-main-aws-stage-informing-default
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-minus-1-to-latest-default-y
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-minus-1-to-latest-default-y
   name: periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-minus-1-to-latest-default-y
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-plus-1-to-latest-y
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-plus-1-to-latest-y
   name: periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-plus-1-to-latest-y
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-to-latest-y-plus-1
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-to-latest-y-plus-1
   name: periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-y-to-latest-y-plus-1
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-z-minus-1-to-latest-default-z
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-z-minus-1-to-latest-default-z
   name: periodic-ci-openshift-osde2e-main-osd-aws-upgrade-latest-default-z-minus-1-to-latest-default-z
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-install
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-install
   name: periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-install
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-postinstall
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-postinstall
   name: periodic-ci-openshift-osde2e-main-rosa-stage-e2e-byo-vpc-proxy-postinstall

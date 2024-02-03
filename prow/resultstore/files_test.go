@@ -41,24 +41,11 @@ type fakeFileFinder struct {
 var _ fileFinder = &fakeFileFinder{}
 
 var (
-	// A file with this value causes Attributes() to return error.
-	wantAttrErr = pio.Attributes{ContentEncoding: "__wantAttrErr__"}
 	// A file with this value causes Iterator() to return error.
 	wantIterErr = pio.Attributes{ContentEncoding: "__wantIterErr__"}
 	// A file with this value causes Iterator.Next() to return error.
 	wantNextErr = pio.Attributes{ContentEncoding: "__wantNextErr__"}
 )
-
-func (f *fakeFileFinder) Attributes(_ context.Context, name string) (pio.Attributes, error) {
-	a, ok := f.files[name]
-	if !ok {
-		return a, fmt.Errorf("%q not found", name)
-	}
-	if a.ContentEncoding == wantAttrErr.ContentEncoding {
-		return pio.Attributes{}, fmt.Errorf("attributes error at %q", name)
-	}
-	return a, nil
-}
 
 // Iterator iterates at a prefix, which includes the provider and
 // bucket; the output names are relative to the bucket.
@@ -112,6 +99,7 @@ func (i *fakeIterator) Next(_ context.Context) (pio.ObjectAttributes, error) {
 	}
 	oa.Name = strings.TrimPrefix(n, i.bucket)
 	oa.IsDir = strings.HasSuffix(n, "/")
+	oa.Size = i.finder.files[n].Size
 	return oa, nil
 }
 
@@ -130,21 +118,28 @@ func TestArtifactFiles(t *testing.T) {
 			ff: &fakeFileFinder{
 				files: map[string]pio.Attributes{
 					base + "/build-log.txt": {
-						Size:            9000,
-						ContentEncoding: "text/plain; charset=utf-8",
+						Size: 9000,
 					},
 					base + "/started.json": {
-						Size:            350,
-						ContentEncoding: "application/json; charset=utf-8",
+						Size: 350,
 					},
 					base + "/artifacts/artifact.txt": {
-						Size:            10000,
-						ContentEncoding: "text/plain; charset=utf-8",
+						Size: 10000,
 					},
 				},
 			},
 			opts: ArtifactOpts{
 				Dir: base,
+				DefaultFiles: []DefaultFile{
+					{
+						Name: "prowjob.json",
+						Size: 1984,
+					},
+					{
+						Name: "started.json",
+						Size: 3500,
+					},
+				},
 			},
 			want: []*resultstore.File{
 				{
@@ -160,6 +155,12 @@ func TestArtifactFiles(t *testing.T) {
 					ContentType: "application/json",
 				},
 				{
+					Uid:         "prowjob.json",
+					Uri:         "gs://bucket/pr-logs/1234/prowjob.json",
+					Length:      &wrapperspb.Int64Value{Value: 1984},
+					ContentType: "application/json",
+				},
+				{
 					Uid:         "artifacts/artifact.txt",
 					Uri:         "gs://bucket/pr-logs/1234/artifacts/artifact.txt",
 					Length:      &wrapperspb.Int64Value{Value: 10000},
@@ -172,16 +173,13 @@ func TestArtifactFiles(t *testing.T) {
 			ff: &fakeFileFinder{
 				files: map[string]pio.Attributes{
 					base + "/build-log.txt": {
-						Size:            9000,
-						ContentEncoding: "text/plain; charset=utf-8",
+						Size: 9000,
 					},
 					base + "/started.json": {
-						Size:            350,
-						ContentEncoding: "application/json; charset=utf-8",
+						Size: 350,
 					},
 					base + "/artifacts/artifact.txt": {
-						Size:            10000,
-						ContentEncoding: "text/plain; charset=utf-8",
+						Size: 10000,
 					},
 				},
 			},
@@ -241,18 +239,6 @@ func TestArtifactFiles(t *testing.T) {
 			want: nil,
 		},
 		{
-			desc: "attribute error",
-			ff: &fakeFileFinder{
-				files: map[string]pio.Attributes{
-					base + "/attr-error.txt": wantAttrErr,
-				},
-			},
-			opts: ArtifactOpts{
-				Dir: base,
-			},
-			wantErr: true,
-		},
-		{
 			desc: "iterator error",
 			ff: &fakeFileFinder{
 				files: map[string]pio.Attributes{
@@ -269,13 +255,11 @@ func TestArtifactFiles(t *testing.T) {
 			ff: &fakeFileFinder{
 				files: map[string]pio.Attributes{
 					base + "/expected.txt": {
-						Size:            100,
-						ContentEncoding: "text/plain; charset=utf-8",
+						Size: 100,
 					},
 					base + "/next-error.txt": wantNextErr,
 					base + "/artifacts/unexpected.txt": {
-						Size:            1000,
-						ContentEncoding: "text/plain; charset=utf-8",
+						Size: 1000,
 					},
 				},
 			},
@@ -297,17 +281,14 @@ func TestArtifactFiles(t *testing.T) {
 			ff: &fakeFileFinder{
 				files: map[string]pio.Attributes{
 					base + "/ok.txt": {
-						Size:            100,
-						ContentEncoding: "text/plain",
+						Size: 100,
 					},
 					base + "/artifacts/a.txt": {
-						Size:            1000,
-						ContentEncoding: "text/plain",
+						Size: 1000,
 					},
 					base + "/artifacts/b.txt": wantNextErr,
 					base + "/artifacts/c.txt": {
-						Size:            10000,
-						ContentEncoding: "text/plain",
+						Size: 10000,
 					},
 				},
 			},

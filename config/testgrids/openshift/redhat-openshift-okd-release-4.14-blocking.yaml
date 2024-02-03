@@ -57,8 +57,8 @@ dashboards:
   name: redhat-openshift-okd-release-4.14-blocking
 test_groups:
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.14-e2e-aws-ovn
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.14-e2e-aws-ovn
   name: periodic-ci-openshift-release-master-okd-4.14-e2e-aws-ovn
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-scos-4.14-e2e-aws-ovn
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-scos-4.14-e2e-aws-ovn
   name: periodic-ci-openshift-release-master-okd-scos-4.14-e2e-aws-ovn

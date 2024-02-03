@@ -261,6 +261,8 @@ func (p *GerritProvider) blockers() (blockers.Blockers, error) {
 }
 
 func (p *GerritProvider) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
+	// gci.Mergeable is only set if this feature is enabled on the Gerrit Host.
+	// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#change-info
 	if crc.Mergeable == string(githubql.MergeableStateConflicting) {
 		return "PR has a merge conflict.", nil
 	}
@@ -392,18 +394,13 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) *types.PullRequest
 // (TODO:chaodaiG): deduplicate this with GitHub, which means inrepoconfig
 // processing all use cache client.
 func (p *GerritProvider) GetPresubmits(identifier, baseBranch string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
-	// Get presubmits from Config alone.
-	presubmits := p.cfg().GetPresubmitsStatic(identifier)
-	// If InRepoConfigCache is provided, then it means that we also want to fetch
+	// If InRepoConfigCache is provided, then it means that we want to fetch
 	// from an inrepoconfig.
 	if p.inRepoConfigGetter != nil {
-		prowYAML, err := p.inRepoConfigGetter.GetInRepoConfig(identifier, baseBranch, baseSHAGetter, headSHAGetters...)
-		if err != nil {
-			return nil, fmt.Errorf("faled to get presubmits from inrepoconfig: %v", err)
-		}
-		presubmits = append(presubmits, prowYAML.Presubmits...)
+		return p.inRepoConfigGetter.GetPresubmits(identifier, baseBranch, baseSHAGetter, headSHAGetters...)
 	}
-	return presubmits, nil
+	// Get presubmits from Config alone.
+	return p.cfg().GetPresubmitsStatic(identifier), nil
 }
 
 func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {

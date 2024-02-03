@@ -48,6 +48,7 @@ const (
 	issueCommentEvent             = "issue_comment"
 	issuesEvent                   = "issues"
 	workflowRunEvent              = "workflow_run"
+	registryPackageEvent          = "registry_package"
 )
 
 // GitHubEventServer hold all the information needed for the
@@ -119,6 +120,9 @@ type StatusEventHandler func(*logrus.Entry, github.StatusEvent)
 // WorkflowRunEventHandler is a type of function that handles GitHub's workflow run events.
 type WorkflowRunEventHandler func(*logrus.Entry, github.WorkflowRunEvent)
 
+// RegistryPackageEventHandler is a type of function that handles GitHub's registry package events.
+type RegistryPackageEventHandler func(*logrus.Entry, github.RegistryPackageEvent)
+
 // RegisterReviewCommentEventHandler registers an ReviewCommentEventHandler function in GitHubEventServerOptions
 func (g *GitHubEventServer) RegisterReviewCommentEventHandler(fn ReviewCommentEventHandler) {
 	g.serveMuxHandler.reviewCommentEventHandlers = append(g.serveMuxHandler.reviewCommentEventHandlers, fn)
@@ -159,6 +163,11 @@ func (g *GitHubEventServer) RegisterWorkflowRunEventHandler(fn WorkflowRunEventH
 	g.serveMuxHandler.workflowRunEventHandler = append(g.serveMuxHandler.workflowRunEventHandler, fn)
 }
 
+// RegisterWorkflowRunEventHandler registers a RegistryPackageEventHandler function in GitHubEventServerOptions
+func (g *GitHubEventServer) RegisterRegistryPackageEventHandler(fn RegistryPackageEventHandler) {
+	g.serveMuxHandler.registryPackageEventHandlers = append(g.serveMuxHandler.registryPackageEventHandlers, fn)
+}
+
 // RegisterExternalPlugins registers the external plugins in GitHubEventServerOptions
 func (g *GitHubEventServer) RegisterExternalPlugins(p map[string][]plugins.ExternalPlugin) {
 	g.serveMuxHandler.externalPlugins = p
@@ -192,14 +201,15 @@ type serveMuxHandler struct {
 	log *logrus.Entry
 	wg  *sync.WaitGroup
 
-	reviewCommentEventHandlers []ReviewCommentEventHandler
-	reviewEventHandlers        []ReviewEventHandler
-	pullRequestHandlers        []PullRequestHandler
-	pushEventHandlers          []PushEventHandler
-	issueCommentEventHandlers  []IssueCommentEventHandler
-	issueEventHandlers         []IssueEventHandler
-	statusEventHandlers        []StatusEventHandler
-	workflowRunEventHandler    []WorkflowRunEventHandler
+	reviewCommentEventHandlers   []ReviewCommentEventHandler
+	reviewEventHandlers          []ReviewEventHandler
+	pullRequestHandlers          []PullRequestHandler
+	pushEventHandlers            []PushEventHandler
+	issueCommentEventHandlers    []IssueCommentEventHandler
+	issueEventHandlers           []IssueEventHandler
+	statusEventHandlers          []StatusEventHandler
+	workflowRunEventHandler      []WorkflowRunEventHandler
+	registryPackageEventHandlers []RegistryPackageEventHandler
 
 	externalPlugins map[string][]plugins.ExternalPlugin
 
@@ -412,6 +422,28 @@ func (s *serveMuxHandler) handleEvent(eventType, eventGUID string, payload []byt
 					github.RepoLogField: wre.Repo.Name,
 					"workflow_id":       wre.WorkflowRun.WorkflowID,
 				}), wre)
+			}()
+		}
+
+	case registryPackageEvent:
+		var rpe github.RegistryPackageEvent
+		if err := json.Unmarshal(payload, &rpe); err != nil {
+			return err
+		}
+		rpe.GUID = eventGUID
+		org = rpe.Repo.Owner.Login
+		repo = rpe.Repo.Name
+
+		for _, registryPackageEventHandler := range s.registryPackageEventHandlers {
+			fn := registryPackageEventHandler
+			s.wg.Add(1)
+			go func() {
+				defer s.wg.Done()
+				fn(l.WithFields(logrus.Fields{
+					github.OrgLogField:    rpe.Repo.Owner.Login,
+					github.RepoLogField:   rpe.Repo.Name,
+					"registry_package_id": rpe.RegistryPackage.ID,
+				}), rpe)
 			}()
 		}
 

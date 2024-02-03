@@ -273,32 +273,32 @@ dashboards:
   name: redhat-openshift-okd-release-4.15-informing
 test_groups:
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-assisted
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-assisted
   name: periodic-ci-openshift-release-master-okd-4.15-e2e-assisted
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-okd-4.15-e2e-aws-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-gcp-ovn-upgrade
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-gcp-ovn-upgrade
   name: periodic-ci-openshift-release-master-okd-4.15-e2e-gcp-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-vsphere-ovn
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-vsphere-ovn
   name: periodic-ci-openshift-release-master-okd-4.15-e2e-vsphere-ovn
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-vsphere-upi
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-e2e-vsphere-upi
   name: periodic-ci-openshift-release-master-okd-4.15-e2e-vsphere-upi
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-upgrade-from-okd-4.14-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-upgrade-from-okd-4.14-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-okd-4.15-upgrade-from-okd-4.14-e2e-aws-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-4.15-upgrade-from-okd-4.14-e2e-gcp-ovn-upgrade
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-4.15-upgrade-from-okd-4.14-e2e-gcp-ovn-upgrade
   name: periodic-ci-openshift-release-master-okd-4.15-upgrade-from-okd-4.14-e2e-gcp-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-scos-4.15-e2e-aws-ovn-upgrade
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-scos-4.15-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-okd-scos-4.15-e2e-aws-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-scos-4.15-e2e-gcp-ovn-upgrade
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-scos-4.15-e2e-gcp-ovn-upgrade
   name: periodic-ci-openshift-release-master-okd-scos-4.15-e2e-gcp-ovn-upgrade
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-okd-scos-4.15-e2e-vsphere-ovn
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-okd-scos-4.15-e2e-vsphere-ovn
   name: periodic-ci-openshift-release-master-okd-scos-4.15-e2e-vsphere-ovn

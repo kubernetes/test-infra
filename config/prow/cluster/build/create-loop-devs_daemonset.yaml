@@ -18,6 +18,10 @@ spec:
   selector:
     matchLabels:
       name: create-loop-devs
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: "10%"
   template:
     metadata:
       labels:
@@ -40,7 +44,7 @@ spec:
             done
             sleep 100000000
           done
-        image: gcr.io/k8s-prow/alpine:latest
+        image: alpine:20231219
         imagePullPolicy: IfNotPresent
         resources: {}
         securityContext:

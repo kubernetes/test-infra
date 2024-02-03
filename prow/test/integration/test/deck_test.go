@@ -290,32 +290,65 @@ func TestDeckTenantIDs(t *testing.T) {
 			populateProwJobs(t, &prowjobs, kubeClient, ctx)
 			t.Cleanup(getCleanupProwJobsFunc(&prowjobs, kubeClient, ctx))
 
-			// Give it some time
-			time.Sleep(30 * time.Second)
-			resp, err := http.Get(fmt.Sprintf("http://localhost/%s/prowjobs.js", tt.deckInstance))
-			if err != nil {
-				t.Fatalf("Failed getting deck-tenanted front end %v", err)
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				t.Fatalf("Expected response status code %d, got %d, ", http.StatusOK, resp.StatusCode)
-			}
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Fatalf("Failed getting deck body response content %v", err)
-			}
+			// Scrape Deck instance for jobs. It may be that the instance isn't
+			// ready immediately by the time this test starts executing, so use
+			// a retry mechanism.
+			var body []byte
+			timeout := 180 * time.Second
+			pollInterval := 1 * time.Second
+			endpoint := fmt.Sprintf("http://localhost/%s/prowjobs.js", tt.deckInstance)
+			// Every time "scraper" below returns "false, nil" we retry it.
+			scraper := func() (bool, error) {
+				resp, err := http.Get(endpoint)
+				if err != nil {
+					t.Logf("Failed running GET request against %q: %v", endpoint, err)
+					return false, nil
+				}
+				defer resp.Body.Close()
+				if resp.StatusCode != http.StatusOK {
+					t.Logf("Expected response status code %d, got %d, ", http.StatusOK, resp.StatusCode)
+					return false, nil
+				}
+				body, err = io.ReadAll(resp.Body)
+				if err != nil {
+					t.Logf("Failed getting deck body response content %v", err)
+					return false, nil
+				}
 
-			got := prowjobv1.ProwJobList{}
-			if err = yaml.Unmarshal(body, &got); err != nil {
-				t.Fatalf("Failed unmarshal prowjobs %v", err)
-			}
+				got := prowjobv1.ProwJobList{}
+				if err = yaml.Unmarshal(body, &got); err != nil {
+					t.Logf("Failed unmarshal prowjobs %v", err)
+					return false, nil
+				}
 
-			if allExpected := expectedPJsInDeck(&expected, &got); !allExpected {
-				t.Fatalf("Not all expected PJs are present. want: %v\n got:%v", expected, got)
-			}
+				// Deck may take some number of seconds before it can return a
+				// non-empty body. If we detect an empty body, retry early to
+				// avoid spamming logs with "want vs got" messages below.
+				if string(body) == "{\"items\":[]}" {
+					t.Logf("endpoint %q returned empty result", endpoint)
+					return false, nil
+				}
 
-			if unexpectedFound := unexpectedPJsInDeck(&unexpected, &got); unexpectedFound {
-				t.Fatalf("Unexpected PJ is present. want: %v\n got:%v", expected, got)
+				// It is conceivable that Deck could be aware of a partial set
+				// of the jobs that we created in this test. Retry here as well.
+				if allExpected := expectedPJsInDeck(&expected, &got); !allExpected {
+					t.Logf("Not all expected jobs are present.\nwant: %v\n got:%v", expected, got)
+					return false, nil
+				}
+				if unexpectedFound := unexpectedPJsInDeck(&unexpected, &got); unexpectedFound {
+					t.Logf("Unexpected jobs found.\nwant: %v\n got:%v", expected, got)
+					return false, nil
+				}
+
+				// Everything checks out, so no need to scrape any more.
+				t.Logf("endpoint %q (finally) matched test expectations; scraping finished", endpoint)
+				return true, nil
+			}
+			if waitErr := wait.Poll(pollInterval, timeout, scraper); waitErr != nil {
+				// If waitErr is not nil, it means we timed out waiting for this
+				// test to succeed.
+				t.Errorf("Timed out while scraping %q", endpoint)
+				t.Fatal(waitErr)
 			}
 		})
 	}

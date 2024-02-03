@@ -25,11 +25,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 
-	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
+	pkgflagutil "k8s.io/test-infra/pkg/flagutil"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
@@ -39,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 )
 
 const (
@@ -69,7 +69,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.config, &o.controllerManager} {
+	for _, group := range []pkgflagutil.OptionGroup{&o.kubernetes, &o.config, &o.controllerManager} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -101,24 +101,24 @@ func main() {
 	}
 	cluster, err := cluster.New(cfg, func(o *cluster.Options) { o.Namespace = configAgent.Config().ProwJobNamespace })
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to construct prowjob client")
+		logrus.WithError(err).Fatal("Failed to construct prowjob client")
 	}
 	// Trigger cache creation for ProwJobs so the following cacheSync actually does something. If we don't
 	// do this here, the first List request for ProwJobs will transiently trigger cache creation and sync,
 	// which doesn't allow us to fail the binary if it doesn't work.
 	if _, err := cluster.GetCache().GetInformer(interrupts.Context(), &prowapi.ProwJob{}); err != nil {
-		logrus.WithError(err).Fatal("failed to get a prowjob informer")
+		logrus.WithError(err).Fatal("Failed to get a prowjob informer")
 	}
 	interrupts.Run(func(ctx context.Context) {
 		if err := cluster.Start(ctx); err != nil {
-			logrus.WithError(err).Fatal("Cache failed to start")
+			logrus.WithError(err).Fatal("Controller failed to start")
 		}
-		logrus.Info("Cache finished gracefully.")
+		logrus.Info("Controller finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), o.controllerManager.TimeoutListingProwJobs)
 	defer mgrSyncCtxCancel()
 	if synced := cluster.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
-		logrus.Fatal("Timed out waiting for cachesync")
+		logrus.Fatal("Timed out waiting for cache sync")
 	}
 
 	// start a cron
@@ -169,8 +169,9 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 			"previous-found": previousFound,
 		})
 
-		if p.Cron == "" {
-			shouldTrigger := false
+		var shouldTrigger = false
+		switch {
+		case p.Cron == "": // no cron expression is set, we use interval to trigger
 			if j.Complete() {
 				intervalRef := j.Status.StartTime.Time
 				intervalDuration := p.GetInterval()
@@ -180,32 +181,37 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 				}
 				shouldTrigger = now.Sub(intervalRef) > intervalDuration
 			}
-			logger = logger.WithField("should-trigger", shouldTrigger)
-			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
-				prowJob.Namespace = cfg.ProwJobNamespace
-				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
-				if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
-					errs = append(errs, err)
-				}
-			}
-		} else if cronTriggers.Has(p.Name) {
-			shouldTrigger := j.Complete()
-			logger = logger.WithField("should-trigger", shouldTrigger)
-			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
-				prowJob.Namespace = cfg.ProwJobNamespace
-				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
-				if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
-					errs = append(errs, err)
-				}
-			} else {
+		case cronTriggers.Has(p.Name):
+			shouldTrigger = j.Complete()
+		default:
+			if !cronTriggers.Has(p.Name) {
 				logger.WithFields(logrus.Fields{
 					"previous-found": previousFound,
 					"should-trigger": shouldTrigger,
 					"name":           p.Name,
 					"job":            p.JobBase.Name,
-				}).Info("skipping cron periodic")
+				}).Info("Skipping cron periodic")
+			}
+			continue
+		}
+		if !shouldTrigger {
+			logger.WithFields(logrus.Fields{
+				"previous-found": previousFound,
+				"name":           p.Name,
+				"job":            p.JobBase.Name,
+			}).Debug("Trigger time has not yet been reached.")
+		}
+		if !previousFound || shouldTrigger {
+			prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+			prowJob.Namespace = cfg.ProwJobNamespace
+			logger.WithFields(logrus.Fields{
+				"should-trigger": shouldTrigger,
+				"previous-found": previousFound,
+			}).WithFields(
+				pjutil.ProwJobFields(&prowJob),
+			).Info("Triggering new run.")
+			if err := prowJobClient.Create(context.TODO(), &prowJob); err != nil {
+				errs = append(errs, err)
 			}
 		}
 	}
@@ -213,6 +219,5 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 	if len(errs) > 0 {
 		return fmt.Errorf("failed to create %d prowjobs: %v", len(errs), errs)
 	}
-
 	return nil
 }

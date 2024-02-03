@@ -187,6 +187,9 @@ func CodeReviewCommonFromGerrit(gci *gerrit.ChangeInfo, instance string) *CodeRe
 	// MergeableStateConflicting.
 	// Ref: https://pkg.go.dev/github.com/shurcooL/githubv4#MergeableState
 	mergeable := string(githubql.MergeableStateUnknown)
+	// gci.Mergeable is only set if this feature is enabled on the Gerrit Host.
+	// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#change-info
+	// Mergeability can still be queried with GetMergeableInfo.
 	if gci.Mergeable {
 		mergeable = string(githubql.MergeableStateMergeable)
 	} else if gci.ContainsGitConflicts {

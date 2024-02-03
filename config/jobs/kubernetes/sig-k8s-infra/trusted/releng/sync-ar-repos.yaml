@@ -1,0 +1,211 @@
+periodics:
+  - name: sync-to-ar-asia-east2
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-asia-east2
+      testgrid-description: 'Sync AR repo from us-central1 to asia-east2'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - asia-east2-docker.pkg.dev/k8s-artifacts-prod/images
+  - name: sync-to-ar-europe-west3
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-europe-west3
+      testgrid-description: 'Sync AR repo from us-central1 to europe-west3'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - europe-west3-docker.pkg.dev/k8s-artifacts-prod/images
+  - name: sync-to-ar-europe-west10
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-europe-west10
+      testgrid-description: 'Sync AR repo from us-central1 to europe-west10'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - europe-west10-docker.pkg.dev/k8s-artifacts-prod/images
+  - name: sync-to-ar-europe-west12
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-europe-west12
+      testgrid-description: 'Sync AR repo from us-central1 to europe-west12'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - europe-west12-docker.pkg.dev/k8s-artifacts-prod/images
+  - name: sync-to-ar-us-west3
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-us-west3
+      testgrid-description: 'Sync AR repo from us-central1 to us-west3'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - us-west3-docker.pkg.dev/k8s-artifacts-prod/images
+  - name: sync-to-ar-us-west4
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-us-west4
+      testgrid-description: 'Sync AR repo from us-central1 to us-west4'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - us-west4-docker.pkg.dev/k8s-artifacts-prod/images
+  - name: sync-to-ar-southamerica-east1
+    cluster: k8s-infra-prow-build-trusted
+    interval: 2h
+    decorate: true
+    decoration_config:
+      timeout: 100m
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: sync-to-ar-repo-southamerica-east1
+      testgrid-description: 'Sync AR repo from us-central1 to southamerica-east1'
+      testgrid-num-failures-to-alert: '3'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      - org: kubernetes
+        slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/go-containerregistry/gcrane:latest
+        imagePullPolicy: Always
+        command:
+        - gcrane
+        args:
+        - copy
+        - --recursive
+        - --allow-nondistributable-artifacts
+        - us-central1-docker.pkg.dev/k8s-artifacts-prod/images
+        - southamerica-east1-docker.pkg.dev/k8s-artifacts-prod/images

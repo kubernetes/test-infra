@@ -62,7 +62,7 @@ func (r *Reporter) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.P
 		return false
 	}
 
-	// Require configured resultstore ProjectID for now. It may be determined
+	// Require configured ResultStore ProjectID for now. It may be determined
 	// automatically from storage in the future.
 	if projectID(pj) == "" {
 		return false
@@ -83,10 +83,10 @@ func (r *Reporter) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.P
 }
 
 func projectID(pj *v1.ProwJob) string {
-	if pj.Spec.ReporterConfig == nil || pj.Spec.ReporterConfig.ResultStore == nil {
-		return ""
+	if d := pj.Spec.ProwJobDefault; d != nil && d.ResultStoreConfig != nil {
+		return d.ResultStoreConfig.ProjectID
 	}
-	return pj.Spec.ReporterConfig.ResultStore.ProjectID
+	return ""
 }
 
 // Report reports results for this job to ResultStore.
@@ -102,7 +102,12 @@ func (r *Reporter) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob
 	log = log.WithField("BuildID", pj.Status.BuildID)
 	started := readStartedFile(ctx, log, r.opener, path)
 	finished := readFinishedFile(ctx, log, r.opener, path)
-	files, err := resultstore.ArtifactFiles(ctx, r.opener, resultstore.ArtifactOpts{Dir: path, ArtifactsDirOnly: r.dirOnly})
+
+	files, err := resultstore.ArtifactFiles(ctx, r.opener, resultstore.ArtifactOpts{
+		Dir:              path,
+		ArtifactsDirOnly: r.dirOnly,
+		DefaultFiles:     defaultFiles(pj),
+	})
 	if err != nil {
 		// Log and continue in case of errors.
 		log.WithError(err).Errorf("error reading artifact files from %q", path)
@@ -145,4 +150,27 @@ func readStartedFile(ctx context.Context, log *logrus.Entry, opener io.Opener, d
 		return nil
 	}
 	return &started
+}
+
+// defaultFiles returns the files to ensure are uploaded to
+// ResultStore, even if not (yet) present.
+func defaultFiles(pj *v1.ProwJob) []resultstore.DefaultFile {
+	var fs []resultstore.DefaultFile
+
+	// There is a race with the GCS reporter writing prowjob.json and
+	// finished.json, so provide these as defaults. In the unlikely
+	// case of error, skip it since the GCS reporter won't write it.
+	if bs, err := util.MarshalProwJob(pj); err == nil {
+		fs = append(fs, resultstore.DefaultFile{
+			Name: "prowjob.json",
+			Size: int64(len(bs)),
+		})
+	}
+	if bs, err := util.MarshalFinishedJSON(pj); err == nil {
+		fs = append(fs, resultstore.DefaultFile{
+			Name: "finished.json",
+			Size: int64(len(bs)),
+		})
+	}
+	return fs
 }

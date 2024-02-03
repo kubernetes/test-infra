@@ -598,6 +598,8 @@ func (g *gkeDeployer) TestSetup() error {
 	return nil
 }
 
+// setupBastion prepares KUBE_SSH_BASTION env variable with the hostname of some public
+// node of the cluster that could be sshed into. Some Kubernetes e2e tests need it.
 func (g *gkeDeployer) setupBastion() error {
 	if g.sshProxyInstanceName == "" {
 		return nil
@@ -608,14 +610,17 @@ func (g *gkeDeployer) setupBastion() error {
 	filtersToTry = append(filtersToTry, exactFilter)
 	// As a fallback - use proxy instance name as a regex but check only cluster nodes
 	var igFilters []string
+	// Filter out VMs not belonging to the GKE cluster
 	for _, ig := range g.instanceGroups {
 		igFilters = append(igFilters, fmt.Sprintf("(metadata.created-by ~ %s)", ig.path))
 	}
+	// Match VM name or wildcard passed by kubetest parameters
 	fuzzyFilter := fmt.Sprintf("(name ~ %s) AND (%s)",
 		g.sshProxyInstanceName,
 		strings.Join(igFilters, " OR "))
 	filtersToTry = append(filtersToTry, fuzzyFilter)
 
+	// Find hostname of VM that matches criteria
 	var bastion, zone string
 	for _, filter := range filtersToTry {
 		log.Printf("Checking for proxy instance with filter: %q", filter)
@@ -648,6 +653,7 @@ func (g *gkeDeployer) setupBastion() error {
 		"--zone="+zone,
 		"--project="+g.project))
 
+	// Set KUBE_SSH_BASTION env parameter 
 	err := setKubeShhBastionEnv(g.project, zone, bastion)
 	if err != nil {
 		return fmt.Errorf("setting KUBE_SSH_BASTION variable failed: %s", util.ExecError(err))

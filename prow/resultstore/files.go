@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/genproto/googleapis/devtools/resultstore/v2"
@@ -31,9 +33,14 @@ import (
 // fileFinder is the subset of pio.Opener required.
 type fileFinder interface {
 	Iterator(ctx context.Context, prefix, delimiter string) (pio.ObjectIterator, error)
-	Attributes(ctx context.Context, name string) (pio.Attributes, error)
 }
 
+// DefaultFile describes a file that should exist in ArtifactOpts.Dir.
+// If the file is not present, these values will be used instead.
+type DefaultFile struct {
+	Name string
+	Size int64
+}
 type ArtifactOpts struct {
 	// Dir is the top-level directory, including the provider, e.g.
 	// "gs://some-bucket/path"; include all files here.
@@ -41,9 +48,12 @@ type ArtifactOpts struct {
 	// ArtifactsDirOnly includes only the "Dir/artifacts/" directory,
 	// instead of files in the tree rooted there. Experimental.
 	ArtifactsDirOnly bool
+	// DefaultFiles are files in directory Dir (not nested) that are
+	// included in the output if they don't exist.
+	DefaultFiles []DefaultFile
 }
 
-// ArtifactFiles returns the files based on ARtifactOpts.
+// ArtifactFiles returns the files based on ArtifactOpts.
 //
 // In the event of error, returns any files collected so far in the
 // interest of best effort.
@@ -58,6 +68,8 @@ func ArtifactFiles(ctx context.Context, opener fileFinder, o ArtifactOpts) ([]*r
 	if err := c.collect(ctx, prefix, "/"); err != nil {
 		return c.builder.files, err
 	}
+
+	c.addDefaultFiles(prefix, o.DefaultFiles)
 
 	if o.ArtifactsDirOnly {
 		artifacts := prefix + "artifacts/"
@@ -134,17 +146,27 @@ func (c *filesCollector) collect(ctx context.Context, prefix, delimiter string) 
 		if f.IsDir {
 			continue
 		}
-		name := c.bucket + f.Name
-		// TODO: Fetching file attributes individually is costly. A
-		// bare GCS client List would provide both names and attrs.
-		// Consider switching if we must keep walking files.
-		attrs, err := c.finder.Attributes(ctx, name)
-		if err != nil {
-			return err
-		}
-		c.builder.Add(name, &attrs)
+		c.builder.Add(c.bucket+f.Name, f.Size)
 	}
 	return nil
+}
+
+// addDefaultFiles adds default files if not already collected.
+func (c *filesCollector) addDefaultFiles(prefix string, files []DefaultFile) {
+	if len(files) == 0 {
+		return
+	}
+	seen := map[string]bool{}
+	for _, f := range c.builder.files {
+		seen[f.Uri] = true
+	}
+	for _, f := range files {
+		name := prefix + f.Name
+		if seen[name] {
+			continue
+		}
+		c.builder.Add(name, f.Size)
+	}
 }
 
 // collectDirs collects directories in prefix where match is true.
@@ -186,7 +208,7 @@ func newFilesBuilder(prefix string) *filesBuilder {
 	}
 }
 
-func (b *filesBuilder) Add(name string, attrs *pio.Attributes) {
+func (b *filesBuilder) Add(name string, size int64) {
 	uid := b.trim(name)
 	switch uid {
 	case "build.log":
@@ -201,8 +223,8 @@ func (b *filesBuilder) Add(name string, attrs *pio.Attributes) {
 	b.files = append(b.files, &resultstore.File{
 		Uid:         uid,
 		Uri:         name,
-		Length:      &wrapperspb.Int64Value{Value: attrs.Size},
-		ContentType: shortContentType(attrs.ContentEncoding),
+		Length:      &wrapperspb.Int64Value{Value: size},
+		ContentType: contentType(uid),
 	})
 }
 
@@ -214,7 +236,14 @@ func (b *filesBuilder) AddDir(name string) {
 	})
 }
 
-func shortContentType(contentType string) string {
-	ps := strings.SplitN(contentType, ";", 2)
+func init() {
+	// Avoid the default of "text/x-log" for log files.
+	mime.AddExtensionType(".log", "text/plain")
+	// May not exist in the container.
+	mime.AddExtensionType(".txt", "text/plain")
+}
+
+func contentType(name string) string {
+	ps := strings.SplitN(mime.TypeByExtension(filepath.Ext(name)), ";", 2)
 	return ps[0]
 }

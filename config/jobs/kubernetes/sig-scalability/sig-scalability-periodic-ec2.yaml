@@ -64,10 +64,10 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws
     testgrid-tab-name: ec2-master-scale-performance
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, eks-scalability@amazon.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -124,8 +124,8 @@ periodics:
         value: "true"
       resources:
         requests:
-          cpu: "6"
-          memory: "16Gi"
+          cpu: "10"
+          memory: "48Gi"
         limits:
-          cpu: "6"
-          memory: "16Gi"
+          cpu: "10"
+          memory: "48Gi"

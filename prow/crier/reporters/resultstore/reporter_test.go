@@ -68,8 +68,8 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "gs://bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
+					ProwJobDefault: &prowv1.ProwJobDefault{
+						ResultStoreConfig: &prowv1.ResultStoreConfig{
 							ProjectID: "cloud-project-id",
 						},
 					},
@@ -100,8 +100,8 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "gs://bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
+					ProwJobDefault: &prowv1.ProwJobDefault{
+						ResultStoreConfig: &prowv1.ResultStoreConfig{
 							ProjectID: "cloud-project-id",
 						},
 					},
@@ -132,8 +132,8 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
+					ProwJobDefault: &prowv1.ProwJobDefault{
+						ResultStoreConfig: &prowv1.ResultStoreConfig{
 							ProjectID: "cloud-project-id",
 						},
 					},
@@ -164,8 +164,8 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "gs://bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
+					ProwJobDefault: &prowv1.ProwJobDefault{
+						ResultStoreConfig: &prowv1.ResultStoreConfig{
 							ProjectID: "cloud-project-id",
 						},
 					},
@@ -196,7 +196,6 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "gs://bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{},
 				},
 				Status: prowv1.ProwJobStatus{
 					State:          prowv1.SuccessState,
@@ -224,8 +223,8 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "non-gcs://bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
+					ProwJobDefault: &prowv1.ProwJobDefault{
+						ResultStoreConfig: &prowv1.ResultStoreConfig{
 							ProjectID: "cloud-project-id",
 						},
 					},
@@ -256,8 +255,8 @@ func TestShouldReport(t *testing.T) {
 							Bucket: "gs://bucket",
 						},
 					},
-					ReporterConfig: &prowv1.ReporterConfig{
-						ResultStore: &prowv1.ResultStoreReporter{
+					ProwJobDefault: &prowv1.ProwJobDefault{
+						ResultStoreConfig: &prowv1.ResultStoreConfig{
 							ProjectID: "cloud-project-id",
 						},
 					},

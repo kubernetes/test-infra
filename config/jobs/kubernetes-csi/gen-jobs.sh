@@ -46,7 +46,7 @@ latest_stable_k8s_version="1.26" # TODO: bump to 1.26 after testing a pull job
 hostpath_driver_version="v1.12.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -727,6 +727,7 @@ for deployment_suffix in "" "-test"; do
             cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "canary$deployment_suffix" "$kubernetes")
+  cluster: $(job_cluster "$repo")
   decorate: true
   extra_refs:
   - org: kubernetes-csi

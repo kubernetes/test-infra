@@ -40,7 +40,8 @@ cleanup(){
   if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
     >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after Docker in Docker ..."
     docker ps -aq | xargs -r docker rm -f || true
-    service docker stop || true
+    >&2 echo "wrapper.sh] [CLEANUP] Waiting for docker to stop for 30 seconds"
+    timeout 30 service docker stop || true
     >&2 echo "wrapper.sh] [CLEANUP] Done cleaning up after Docker in Docker."
   fi
 }

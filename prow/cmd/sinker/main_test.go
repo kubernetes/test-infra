@@ -21,11 +21,14 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1013,4 +1016,114 @@ func (c *clientWrapper) Get(ctx context.Context, key ctrlruntimeclient.ObjectKey
 		return nil
 	}
 	return c.Client.Get(ctx, key, obj)
+}
+
+func TestGetConfigMapSize(t *testing.T) {
+	toplevel, err := os.MkdirTemp("", "job-config")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(toplevel)
+
+	timestampDir := filepath.Join(toplevel, "..2024_01_01")
+	err = os.Mkdir(timestampDir, 0750)
+	if err != nil && !os.IsExist(err) {
+		t.Fatal(err)
+	}
+
+	// Create files inside timestampDir, just like how K8s does it.
+	file1 := filepath.Join(timestampDir, "key1")
+	if err := os.WriteFile(file1, []byte("val1"), 0666); err != nil {
+		t.Fatal(err)
+	}
+
+	file2 := filepath.Join(timestampDir, "key2")
+	if err := os.WriteFile(file2, []byte("val2"), 0666); err != nil {
+		t.Fatal(err)
+	}
+
+	file3 := filepath.Join(timestampDir, "key3")
+	if err := os.WriteFile(file3, []byte("val3"), 0666); err != nil {
+		t.Fatal(err)
+	}
+
+	// Symlink ..data to point to timestampDir.
+	dataDir := getDataDir(toplevel)
+	os.Symlink(timestampDir, dataDir)
+
+	// Create symlinks at the toplevel that point to files in ..data
+	// (again, like how K8s does it).
+	os.Symlink(filepath.Join(dataDir, "key1"), filepath.Join(toplevel, "key1"))
+	os.Symlink(filepath.Join(dataDir, "key2"), filepath.Join(toplevel, "key2"))
+	os.Symlink(filepath.Join(dataDir, "key3"), filepath.Join(toplevel, "key3"))
+
+	gotBytes, err := getConfigMapSize(toplevel)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Expect 12 bytes, because the 3 files each have 4 bytes of content.
+	if gotBytes != 12 {
+		t.Errorf("expected 12 bytes but got %v", gotBytes)
+	}
+}
+
+func TestGetConfigMapDirs(t *testing.T) {
+	toplevel, err := os.MkdirTemp("", "job-config")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(toplevel)
+
+	subdir1 := filepath.Join(toplevel, "part-1")
+	if err := os.Mkdir(subdir1, 0750); err != nil && !os.IsExist(err) {
+		t.Fatal(err)
+	}
+
+	subdir2 := filepath.Join(toplevel, "part-2")
+	if err := os.Mkdir(subdir2, 0750); err != nil && !os.IsExist(err) {
+		t.Fatal(err)
+	}
+
+	subdir3 := filepath.Join(toplevel, "part-3")
+	if err := os.Mkdir(subdir3, 0750); err != nil && !os.IsExist(err) {
+		t.Fatal(err)
+	}
+
+	expected := []string{subdir1, subdir2, subdir3}
+	dirs, err := getConfigMapDirs(toplevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(dirs, expected); diff != "" {
+		t.Fatal(diff)
+	}
+
+	// Now create a "..data" symlink inside the toplevel dir. We now expect
+	// getConfigMapDirs() to only give us back the toplevel directory itself,
+	// because it should see the "..data" and treat the toplevel directory as
+	// the only ConfigMap-mounted directory (that it is not partitioned into
+	// multiple ConfigMap-mounted subdirectories).
+	//
+	// For purposes of this test the target of the symlink doesn't matter (we
+	// just check that getConfigMapDirs() sees the "..data" symlink and treats
+	// the toplevel folder as a single ConfigMap). However, getConfigMapDirs()
+	// uses os.Stat() (instead of os.Lstat()) so in order to pass/fail the
+	// existence check, we have to create a valid symlink with a target that
+	// exists.
+	dataDir := getDataDir(toplevel)
+	if err := os.Symlink(toplevel, dataDir); err != nil {
+		t.Fatal(err)
+	}
+
+	expectedToplevelOnly := []string{toplevel}
+	dirs, err = getConfigMapDirs(toplevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(dirs, expectedToplevelOnly); diff != "" {
+		t.Fatal(diff)
+	}
 }

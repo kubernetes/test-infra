@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231206-f7b83ffbe6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         command:
         - runner.sh
         args:
@@ -52,7 +52,7 @@ periodics:
       - /krel
       - ci-build
       - --configure-docker
-      - --allow-dup
+      - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
       - --extra-version-markers=k8s-master
@@ -97,7 +97,7 @@ periodics:
       - /krel
       - ci-build
       - --configure-docker
-      - --allow-dup
+      - --allow-dup=false
       - --fast
       - --bucket=k8s-release-dev
       # docker-in-docker needs privileged mode

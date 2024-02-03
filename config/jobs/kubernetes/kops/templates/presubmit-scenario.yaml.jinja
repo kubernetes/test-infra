@@ -10,6 +10,7 @@
     optional: {{optional}}
     skip_report: {{skip_report}}
     labels:
+      {%- if cloud == "aws" %}
       preset-service-account: "true"
       preset-aws-ssh: "true"
       {%- if use_preset_for_account_creds %}
@@ -18,6 +19,9 @@
       preset-aws-credential: "true"
       {%- endif %}
       preset-dind-enabled: "true"
+      {%- else %}
+      preset-k8s-ssh: "true"
+      {%- endif %}
     max_concurrency: 1
     decorate: true
     decoration_config:
@@ -31,6 +35,9 @@
       path_alias: k8s.io/perf-tests
     {%- endif %}
     spec:
+      {%- if cloud == "gce" %}
+      serviceAccountName: k8s-kops-test
+      {%- endif %}
       containers:
       - image: {{image}}
         imagePullPolicy: Always

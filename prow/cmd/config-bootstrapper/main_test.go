@@ -450,6 +450,60 @@ func testRun(clients localgit.Clients, t *testing.T) {
 				},
 			},
 		},
+		{
+			// The keys for files a, b, and c are unaccounted for (they don't
+			// exist in the repo), so they should be deleted.
+			name:             "untouched keys are deleted",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "openshift/other")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/other-foo.yaml": {
+						Name: "job-config",
+					},
+					"config/other-bar.yaml": {
+						Name: "job-config",
+					},
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"other-foo.yaml": "#other-foo.yaml",
+						"other-bar.yaml": "#other-bar.yaml",
+
+						// The ones below should be deleted.
+						"a": "xxx",
+						"b": "xxx",
+						"c": "xxx",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"other-foo.yaml": "#other-foo.yaml",
+						"other-bar.yaml": "#other-bar.yaml",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {

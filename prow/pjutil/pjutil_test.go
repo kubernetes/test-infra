@@ -315,6 +315,9 @@ func TestCompletePrimaryRefs(t *testing.T) {
 					SkipSubmodules: true,
 					CloneDepth:     2,
 					SkipFetchHead:  true,
+					DecorationConfig: &prowapi.DecorationConfig{
+						BloblessFetch: boolPtr(true),
+					},
 				},
 			},
 			expected: prowapi.Refs{
@@ -323,6 +326,7 @@ func TestCompletePrimaryRefs(t *testing.T) {
 				SkipSubmodules: true,
 				CloneDepth:     2,
 				SkipFetchHead:  true,
+				BloblessFetch:  boolPtr(true),
 			},
 		},
 		{
@@ -1201,6 +1205,114 @@ func TestSpecFromJobBase(t *testing.T) {
 			verify: func(pj prowapi.ProwJobSpec) error {
 				if !pj.Hidden {
 					return errors.New("hidden property didnt get copied")
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify DecorateExtraRefs default true",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					DecorationConfig: &prowapi.DecorationConfig{
+						BloblessFetch: boolPtr(true),
+					},
+					ExtraRefs: []prowapi.Refs{
+						{
+							Org:           "true-org",
+							BloblessFetch: boolPtr(true),
+						},
+						{
+							Org:           "false-org",
+							BloblessFetch: boolPtr(false),
+						},
+						{
+							Org: "default-org",
+							BloblessFetch: nil,
+						},
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				for _, r := range pj.ExtraRefs {
+					got := r.BloblessFetch
+					want := boolPtr(r.Org != "false-org")
+					if diff := cmp.Diff(want, got); diff != "" {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s differs (-want +got)\n%s", r.Org, diff)
+					}
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify DecorateExtraRefs default false",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					DecorationConfig: &prowapi.DecorationConfig{
+						BloblessFetch: boolPtr(false),
+					},
+					ExtraRefs: []prowapi.Refs{
+						{
+							Org:           "true-org",
+							BloblessFetch: boolPtr(true),
+						},
+						{
+							Org:           "false-org",
+							BloblessFetch: boolPtr(false),
+						},
+						{
+							Org: "default-org",
+							BloblessFetch: nil,
+						},
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				for _, r := range pj.ExtraRefs {
+					got := r.BloblessFetch
+					want := boolPtr(r.Org == "true-org")
+					if diff := cmp.Diff(want, got); diff != "" {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s differs (-want +got)\n%s", r.Org, diff)
+					}
+				}
+				return nil
+			},
+		},
+		{
+			name: "Verify DecorateExtraRefs no decoration preserves existing",
+			jobBase: config.JobBase{
+				UtilityConfig: config.UtilityConfig{
+					ExtraRefs: []prowapi.Refs{
+						{
+							Org:           "true-org",
+							BloblessFetch: boolPtr(true),
+						},
+						{
+							Org:           "false-org",
+							BloblessFetch: boolPtr(false),
+						},
+						{
+							Org: "default-org",
+							BloblessFetch: nil,
+						},
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				for _, r := range pj.ExtraRefs {
+					got := r.BloblessFetch
+					var want *bool
+					switch r.Org {
+					case "true-org":
+						want = boolPtr(true)
+					case "false-org":
+						want = boolPtr(false)
+					case "default-org":
+						// Keep the unset default value.
+						want = nil
+					}
+					if diff := cmp.Diff(want, got); diff != "" {
+						return fmt.Errorf("ExtraRefs BloblessFetch for %s differs (-want +got)\n%s", r.Org, diff)
+					}
 				}
 				return nil
 			},

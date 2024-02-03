@@ -402,10 +402,11 @@ func (gi *GitHubProvider) refsForJob(sp subpool, prs []CodeReviewCommon) (prowap
 		refs.Pulls = append(
 			refs.Pulls,
 			prowapi.Pull{
-				Number: pr.Number,
-				Title:  pr.Title,
-				Author: string(pr.AuthorLogin),
-				SHA:    pr.HeadRefOID,
+				Number:  pr.Number,
+				Title:   pr.Title,
+				Author:  string(pr.AuthorLogin),
+				SHA:     pr.HeadRefOID,
+				HeadRef: pr.HeadRefName,
 			},
 		)
 	}

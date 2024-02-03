@@ -898,14 +898,22 @@ func (c *Configuration) LgtmFor(org, repo string) *Lgtm {
 // a trigger can be listed for the repo itself or for the
 // owning organization
 func (c *Configuration) TriggerFor(org, repo string) Trigger {
-	orgRepo := fmt.Sprintf("%s/%s", org, repo)
-	for _, tr := range c.Triggers {
-		for _, r := range tr.Repos {
-			if r == org || r == orgRepo {
-				return tr
-			}
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	// Prioritize repo level triggers over org level triggers.
+	for _, trigger := range c.Triggers {
+		if !sets.NewString(trigger.Repos...).Has(fullName) {
+			continue
 		}
+		return trigger
 	}
+	// If you don't find anything, loop again looking for an org config
+	for _, trigger := range c.Triggers {
+		if !sets.NewString(trigger.Repos...).Has(org) {
+			continue
+		}
+		return trigger
+	}
+
 	var tr Trigger
 	tr.SetDefaults()
 	return tr

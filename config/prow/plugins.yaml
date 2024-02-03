@@ -263,6 +263,8 @@ lgtm:
   - kubernetes-sigs/cluster-api-operator
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/controller-runtime
+  - kubernetes-sigs/controller-tools
   - kubernetes-sigs/kueue
   store_tree_hash: true
 
@@ -320,13 +322,6 @@ blockades:
   exceptionregexps:
   - ^README\.md$
   explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
-- repos:
-  - kubernetes/test-infra
-  blockregexps:
-  - ^prow/.+\.md$
-  exceptionregexps:
-  - ^prow/(ANNOUNCEMENTS|README)\.md$
-  explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4. Instructions for updating existing docs are at https://docs.prow.k8s.io/docs/contribution-guidelines/#updating-existing-docs."
 - repos:
   - kubernetes/k8s.io
   blockregexps:
@@ -464,28 +459,28 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.29
+    master: v1.30
   kubernetes/kubernetes:
-    master: v1.29
+    master: v1.30
     release-1.29: v1.29
     release-1.28: v1.28
     release-1.27: v1.27
     release-1.26: v1.26
   kubernetes/org:
-    main: v1.29
+    main: v1.30
   kubernetes/release:
-    master: v1.29
+    master: v1.30
   kubernetes/sig-release:
-    master: v1.29
+    master: v1.30
   kubernetes/test-infra:
-    master: v1.29
+    master: v1.30
   kubernetes-sigs/kueue:
     main: v0.6
     release-0.3: v0.3
     release-0.4: v0.4
     release-0.5: v0.5
   kubernetes/k8s.io:
-    main: v1.29
+    main: v1.30
   kubernetes/kops:
     master: v1.29
     release-1.28: v1.28
@@ -531,7 +526,8 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-vsphere:
-    main: v1.9
+    main: v1.10
+    release-1.9: v1.9
     release-1.8: v1.8
     release-1.7: v1.7
     release-1.6: v1.6
@@ -541,7 +537,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.29: 1.29
+    dev-1.30: 1.30
 
 repo_milestone:
   # Default maintainer
@@ -882,13 +878,11 @@ require_matching_label:
   repo: cluster-api
   issues: true
   prs: false
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
-    If CAPI contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
-
-    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+    CAPI contributors will take a look as soon as possible, apply one of the [`triage/*`](https://github.com/kubernetes-sigs/cluster-api/labels?q=triage%2F) labels and provide further guidance.
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: cluster-api-operator
@@ -1423,6 +1417,10 @@ plugins:
     - milestone
     - override
 
+  kubernetes-sigs/kernel-module-management:
+    plugins:
+    - override
+
   kubernetes-sigs/kind:
     plugins:
     - override
@@ -1811,6 +1809,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/kernel-module-management:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/kueue:
   - name: cherrypicker

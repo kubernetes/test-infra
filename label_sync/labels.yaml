@@ -1686,6 +1686,12 @@ repos:
         addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
+      - color: d455d0
+        description: Indicates an issue or PR that needs further discussion before being actively worked on.
+        name: triage/needs-discussion
+        target: both
+        prowPlugin: label
+        addedBy: org members
       - color: c7def8
         description: Issues or PRs related to proposals.
         name: kind/proposal

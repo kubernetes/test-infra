@@ -438,6 +438,11 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	if err != nil {
 		return tmpl, fmt.Errorf("invalid url %s: %w", url.String(), err)
 	}
+
+	if bucketAlias, exists := cfg().Deck.Spyglass.BucketAliases[bucketName]; exists {
+		bucketName = bucketAlias
+	}
+
 	bucket, err := newBlobStorageBucket(bucketName, storageProvider, cfg(), opener)
 	if err != nil {
 		return tmpl, err

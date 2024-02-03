@@ -226,6 +226,10 @@ func TestTriggerFor(t *testing.T) {
 				Repos:      []string{"k8s/t-i"},
 				TrustedOrg: "org3",
 			},
+			{
+				Repos:      []string{"kuber/utils"},
+				TrustedOrg: "org4",
+			},
 		},
 	}
 	config.setDefaults()
@@ -247,6 +251,12 @@ func TestTriggerFor(t *testing.T) {
 			org:             "k8s",
 			repo:            "t-i",
 			expectedTrusted: "org3",
+		},
+		{
+			name:            "repo trigger",
+			org:             "kuber",
+			repo:            "utils",
+			expectedTrusted: "org4",
 		},
 		{
 			name: "default trigger",

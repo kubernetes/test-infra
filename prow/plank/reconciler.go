@@ -258,14 +258,7 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 
 type ClusterStatus string
 
-// FIXME(listx): ClusterStatusUnreachable is no longer used here. It was used
-// previously when we used to list pods directly. However that code has been
-// deleted and replaced with flagutil.CheckAuthorizations.
-//
-// We should delete this status value sometime after
-// https://github.com/kubernetes/test-infra/pull/29282 is merged.
 const (
-	ClusterStatusUnreachable        ClusterStatus = "Unreachable"
 	ClusterStatusReachable          ClusterStatus = "Reachable"
 	ClusterStatusNoManager          ClusterStatus = "No-Manager"
 	ClusterStatusError              ClusterStatus = "Error"

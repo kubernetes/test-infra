@@ -1,5 +1,6 @@
 periodics:
 - name: ci-test-infra-benchmark-demo
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   extra_refs:
@@ -17,6 +18,13 @@ periodics:
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
       - --pass-on-error
       - ./experiment/dummybenchmarks/...
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-alert-email: colew@google.com
     testgrid-dashboards: sig-testing-canaries
@@ -24,6 +32,7 @@ periodics:
     description: Demoing JUnit golang benchmark results.
 - interval: 1h
   name: ci-test-infra-multiple-container-test
+  cluster: k8s-infra-prow-build
   decorate: true
   spec:
     containers:
@@ -33,8 +42,8 @@ periodics:
       args: ["I am first"]
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "250m"
+          memory: "256Mi"
+          cpu: "500m"
         limits:
           memory: "256Mi"
           cpu: "500m"
@@ -46,8 +55,8 @@ periodics:
       - "sleep 60 && echo I && sleep 60 && echo am && sleep 60 && echo second"
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "250m"
+          memory: "256Mi"
+          cpu: "500m"
         limits:
           memory: "256Mi"
           cpu: "500m"
@@ -59,8 +68,8 @@ periodics:
       - "sleep 120 && echo I && sleep 120 && echo am && sleep 120 && echo third"
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "250m"
+          memory: "256Mi"
+          cpu: "500m"
         limits:
           memory: "256Mi"
           cpu: "500m"

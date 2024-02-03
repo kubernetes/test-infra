@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/prow/config"
@@ -110,6 +111,28 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	labels := map[string]string{
 		"app.kubernetes.io/name":      "prow",
 		"app.kubernetes.io/component": "updateconfig-plugin",
+	}
+
+	// For bootstrap mode, if the existing ConfigMap has any keys, make note of
+	// all the keys that we won't be updating in "updates" (let's call them
+	// "stale" keys), and mark them for deletion. This is because in
+	// bootstrap mode, the updates that we do see are considered to be the
+	// *only* keys that we want. So if there are any other keys that exist which
+	// do not get updated, they shouldn't exist. So delete them.
+	//
+	// As an additional safety measure, only mark stale keys for deletion if
+	// we had some number of updates to perform. This is to guard against cases
+	// where we accidentally get 0 updates and would end up marking all existing
+	// keys for deletion (bad idea). This could happen if for
+	// config-bootstrapper (which uses this library) if it was executed against
+	// the wrong local directory and could not find any files to generate any
+	// updates for a ConfigMap.
+	if bootstrap && len(updates) > 0 {
+		keysToDelete := MarkStaleKeysForDeletion(cm, updates)
+		for _, upd := range keysToDelete {
+			logger.WithField("key", upd.Key).Info("queueing for deletion")
+		}
+		updates = append(updates, keysToDelete...)
 	}
 
 	if cm == nil || isNotFound {
@@ -203,8 +226,55 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	return nil
 }
 
+// MarkStaledKeysForDeletion returns a slice of ConfigMapUpdate entries for keys
+// that were missing from the updates, and which should be deleted. This only
+// makes sense for bootstrap mode (for the config-bootstrapper).
+func MarkStaleKeysForDeletion(
+	configMap *coreapi.ConfigMap,
+	updates []ConfigMapUpdate,
+) []ConfigMapUpdate {
+
+	// If there are no updates, then do nothing. This is just in case we pass in
+	// an empty slice for "updates" by accident (we don't want to wipe the
+	// ConfigMap entirely --- that is never the intent here).
+	if len(updates) == 0 {
+		return nil
+	}
+
+	// Likewise if configMap itself is empty, do nothing because there's nothing
+	// to delete.
+	if configMap == nil {
+		return nil
+	}
+
+	updatedKeys := sets.New[string]()
+	for _, upd := range updates {
+		updatedKeys.Insert(upd.Key)
+	}
+
+	// Add deletion entries for stale keys there were missing from the updates.
+	toDelete := []ConfigMapUpdate{}
+	fmt.Printf("configMap is %v", configMap)
+	for key := range configMap.Data {
+		if updatedKeys.Has(key) {
+			continue
+		}
+		toDelete = append(toDelete, ConfigMapUpdate{Key: key})
+	}
+
+	for key := range configMap.BinaryData {
+		if updatedKeys.Has(key) {
+			continue
+		}
+		toDelete = append(toDelete, ConfigMapUpdate{Key: key})
+	}
+
+	return toDelete
+}
+
 // ConfigMapUpdate is populated with information about a config map that should
-// be updated.
+// be updated. If the Filename is missing, then this update means that the key
+// should be deleted.
 type ConfigMapUpdate struct {
 	Key, Filename string
 	GZIP          bool

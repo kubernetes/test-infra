@@ -1,11 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- CecileRobertMichon
 - jackfrancis
 - mboersma
 - nojnhuh
-- sonasingh46
 reviewers:
 - Jont828
 - jsturtevant

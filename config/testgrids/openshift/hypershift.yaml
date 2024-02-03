@@ -1,113 +1,113 @@
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-powervs
   name: 4.16-powervs
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-mce-conformance
   name: 4.16-kubevirt-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-conformance
   name: 4.16-kubevirt-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-ibmcloud-roks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-ibmcloud-roks
   name: 4.16-ibmcloud-roks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-ibmcloud-iks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-ibmcloud-iks
   name: 4.16-ibmcloud-iks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.16-aws-ovn-proxy-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-mce-conformance
   name: 4.16-aws-ovn-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-conformance-serial
   name: 4.16-aws-ovn-conformance-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-conformance
   name: 4.16-aws-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn
   name: 4.16-aws-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-agent-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-agent-ovn-conformance
   name: 4.16-agent-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-powervs
   name: 4.15-powervs
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-kubevirt-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-kubevirt-mce-conformance
   name: 4.15-kubevirt-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-kubevirt-conformance
   name: 4.15-kubevirt-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-ibmcloud-roks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-ibmcloud-roks
   name: 4.15-ibmcloud-roks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-ibmcloud-iks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-ibmcloud-iks
   name: 4.15-ibmcloud-iks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.15-aws-ovn-proxy-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-mce-conformance
   name: 4.15-aws-ovn-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-conformance-serial
   name: 4.15-aws-ovn-conformance-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-conformance
   name: 4.15-aws-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn
   name: 4.15-aws-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-agent-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-agent-ovn-conformance
   name: 4.15-agent-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-powervs
   name: 4.14-powervs
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-kubevirt-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-kubevirt-mce-conformance
   name: 4.14-kubevirt-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-kubevirt-conformance
   name: 4.14-kubevirt-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-ibmcloud-roks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-ibmcloud-roks
   name: 4.14-ibmcloud-roks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-ibmcloud-iks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-ibmcloud-iks
   name: 4.14-ibmcloud-iks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.14-aws-ovn-proxy-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-mce-conformance
   name: 4.14-aws-ovn-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-conformance-serial
   name: 4.14-aws-ovn-conformance-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-conformance
   name: 4.14-aws-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn
   name: 4.14-aws-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-agent-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-agent-ovn-conformance
   name: 4.14-agent-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-powervs
   name: 4.13-powervs
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-kubevirt-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-kubevirt-mce-conformance
   name: 4.13-kubevirt-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-kubevirt-conformance
   name: 4.13-kubevirt-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-ibmcloud-roks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-ibmcloud-roks
   name: 4.13-ibmcloud-roks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-ibmcloud-iks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-ibmcloud-iks
   name: 4.13-ibmcloud-iks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.13-aws-ovn-proxy-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-mce-conformance
   name: 4.13-aws-ovn-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-conformance-serial
   name: 4.13-aws-ovn-conformance-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-conformance
   name: 4.13-aws-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn
   name: 4.13-aws-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-agent-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-agent-ovn-conformance
   name: 4.13-agent-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-powervs
   name: 4.12-powervs
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-kubevirt-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-kubevirt-mce-conformance
   name: 4.12-kubevirt-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-kubevirt-conformance
   name: 4.12-kubevirt-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-ibmcloud-roks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-ibmcloud-roks
   name: 4.12-ibmcloud-roks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-ibmcloud-iks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-ibmcloud-iks
   name: 4.12-ibmcloud-iks
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.12-aws-ovn-proxy-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-mce-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-mce-conformance
   name: 4.12-aws-ovn-mce-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-conformance-serial
   name: 4.12-aws-ovn-conformance-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-conformance
   name: 4.12-aws-ovn-conformance
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn
   name: 4.12-aws-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-agent-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-agent-ovn-conformance
   name: 4.12-agent-ovn-conformance
 
 dashboards:

@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kind-unit-test
+  cluster: k8s-infra-prow-build
   interval: 6h
   decorate: true
   extra_refs:
@@ -11,7 +12,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
       command:
       - wrapper.sh
       - make
@@ -19,6 +20,13 @@ periodics:
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: kind-ci-unit-test
@@ -42,7 +50,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
       command:
         - wrapper.sh
         - bash
@@ -86,7 +94,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
       command:
         - wrapper.sh
         - bash
@@ -135,7 +143,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -180,7 +188,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20231206-f7b83ffbe6-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"

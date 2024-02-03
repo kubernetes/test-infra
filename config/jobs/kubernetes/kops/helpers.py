@@ -76,7 +76,7 @@ def should_skip_newer_k8s(k8s_version, kops_version):
     return float(k8s_version) > float(kops_version)
 
 def k8s_version_info(k8s_version):
-    test_package_bucket = ''
+    test_package_url = ''
     test_package_dir = ''
     if k8s_version == 'latest':
         marker = 'latest.txt'
@@ -84,7 +84,7 @@ def k8s_version_info(k8s_version):
     elif k8s_version == 'ci':
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/k8s-release-dev/ci/latest.txt"
-        test_package_bucket = 'k8s-release-dev'
+        test_package_url = 'https://storage.googleapis.com/k8s-release-dev'
         test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
@@ -94,7 +94,7 @@ def k8s_version_info(k8s_version):
         k8s_deploy_url = f"https://dl.k8s.io/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
     else:
         raise Exception('missing required k8s_version')
-    return marker, k8s_deploy_url, test_package_bucket, test_package_dir
+    return marker, k8s_deploy_url, test_package_url, test_package_dir
 
 def create_args(kops_channel, networking, extra_flags, kops_image):
     args = f"--channel={kops_channel} --networking=" + networking

@@ -41,6 +41,7 @@ func TestNewGCSJobSource(t *testing.T) {
 		exName       string
 		exBuildID    string
 		exLinkPrefix string
+		exSource     string
 		expectedErr  error
 	}{
 		{
@@ -51,6 +52,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/example-ci-run/403",
 			expectedErr:  nil,
 		},
 		{
@@ -61,6 +63,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/example-ci-run/403/",
 			expectedErr:  nil,
 		},
 		{
@@ -71,6 +74,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/sig-flexing/example-ci-run/403",
 			expectedErr:  nil,
 		},
 		{
@@ -81,6 +85,18 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/example-ci-run/403",
+			expectedErr:  nil,
+		},
+		{
+			name:         "Test standard GCS link (new format) with bucket alias",
+			src:          "gs://alias/logs/example-ci-run/403",
+			exBucket:     "test-bucket",
+			exJobPrefix:  "logs/example-ci-run/403/",
+			exName:       "example-ci-run",
+			exBuildID:    "403",
+			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/example-ci-run/403",
 			expectedErr:  nil,
 		},
 		{
@@ -91,6 +107,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/example-ci-run/403/",
 			expectedErr:  nil,
 		},
 		{
@@ -101,6 +118,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "gs://",
+			exSource:     "gs://test-bucket/logs/sig-flexing/example-ci-run/403",
 			expectedErr:  nil,
 		},
 		{
@@ -111,6 +129,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "s3://",
+			exSource:     "s3://test-bucket/logs/example-ci-run/403",
 			expectedErr:  nil,
 		},
 		{
@@ -121,6 +140,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "s3://",
+			exSource:     "s3://test-bucket/logs/example-ci-run/403/",
 			expectedErr:  nil,
 		},
 		{
@@ -131,6 +151,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			exName:       "example-ci-run",
 			exBuildID:    "403",
 			exLinkPrefix: "s3://",
+			exSource:     "s3://test-bucket/logs/sig-flexing/example-ci-run/403",
 			expectedErr:  nil,
 		},
 		{
@@ -142,6 +163,7 @@ func TestNewGCSJobSource(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg := createConfigGetter("test-bucket")
+			cfg().Deck.Spyglass.BucketAliases = map[string]string{"alias": "test-bucket"}
 			af := NewStorageArtifactFetcher(nil, cfg, false)
 			jobSource, err := af.newStorageJobSource(tc.src)
 			if err != tc.expectedErr {
@@ -159,6 +181,9 @@ func TestNewGCSJobSource(t *testing.T) {
 			if tc.exLinkPrefix != jobSource.linkPrefix {
 				t.Errorf("Expected linkPrefix %s, got %s", tc.exLinkPrefix, jobSource.linkPrefix)
 			}
+			if tc.exSource != jobSource.source {
+				t.Errorf("Expected source %s, got %s", tc.exSource, jobSource.source)
+			}
 		})
 	}
 }
@@ -166,6 +191,7 @@ func TestNewGCSJobSource(t *testing.T) {
 // Tests listing objects associated with the current job in GCS
 func TestArtifacts_ListGCS(t *testing.T) {
 	cfg := createConfigGetter("test-bucket")
+	cfg().Deck.Spyglass.BucketAliases = map[string]string{"alias": "test-bucket"}
 	fakeGCSClient := fakeGCSServer.Client()
 	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), cfg, false)
 	testCases := []struct {
@@ -205,6 +231,17 @@ func TestArtifacts_ListGCS(t *testing.T) {
 			name:              "Test ArtifactFetcher list artifacts on source with no artifacts (new format)",
 			source:            "gs://test-bucket/logs/example-ci/404",
 			expectedArtifacts: []string{},
+		},
+		{
+			name:   "Test ArtifactFetcher list artifacts with bucket alias configured",
+			source: "gs://alias/logs/example-ci-run/403",
+			expectedArtifacts: []string{
+				"build-log.txt",
+				prowv1.StartedStatusFile,
+				prowv1.FinishedStatusFile,
+				"junit_01.xml",
+				"long-log.txt",
+			},
 		},
 	}
 

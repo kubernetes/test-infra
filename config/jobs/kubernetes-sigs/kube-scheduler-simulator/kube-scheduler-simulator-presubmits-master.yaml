@@ -13,7 +13,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - /bin/bash
         - -c
@@ -24,10 +24,10 @@ presubmits:
           make lint
         resources:
           limits:
-            cpu: 4
+            cpu: 6
             memory: 6Gi
           requests:
-            cpu: 4
+            cpu: 6
             memory: 6Gi
   - name: pull-kube-scheduler-simulator-frontend-lint
     cluster: eks-prow-build-cluster

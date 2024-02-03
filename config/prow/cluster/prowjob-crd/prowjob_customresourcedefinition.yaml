@@ -92,6 +92,10 @@ spec:
                 description: DecorationConfig holds configuration options for decorating
                   PodSpecs that users provide
                 properties:
+                  blobless_fetch:
+                    description: BloblessFetch tells Prow to avoid fetching objects
+                      when cloning using the --filter=blob:none flag.
+                    type: boolean
                   censor_secrets:
                     description: CensorSecrets enables censoring output logs and artifacts.
                     type: boolean
@@ -484,6 +488,11 @@ spec:
                       type: string
                     base_sha:
                       type: string
+                    blobless_fetch:
+                      description: BloblessFetch tells prow to avoid fetching objects
+                        when cloning using the --filter=blob:none flag. If unspecified,
+                        defaults to DecorationConfig.BloblessFetch.
+                      type: boolean
                     clone_depth:
                       description: CloneDepth is the depth of the clone that will
                         be used. A depth of zero will do a full clone.
@@ -29312,6 +29321,18 @@ spec:
                 description: ProwJobDefault holds configuration options provided as
                   defaults in the Prow config
                 properties:
+                  resultstore_config:
+                    description: ResultStoreConfig specifies parameters for uploading
+                      results to the ResultStore service.
+                    properties:
+                      project_id:
+                        description: ProjectID specifies the ResultStore InvocationAttributes.ProjectID,
+                          used for various quota and GUI access control purposes.
+                          In practice, it is generally the same as the Google Cloud
+                          Project ID or number of the job's GCS storage bucket. Required
+                          to upload results to ResultStore.
+                        type: string
+                    type: object
                   tenant_id:
                     type: string
                 type: object
@@ -29326,6 +29347,11 @@ spec:
                     type: string
                   base_sha:
                     type: string
+                  blobless_fetch:
+                    description: BloblessFetch tells prow to avoid fetching objects
+                      when cloning using the --filter=blob:none flag. If unspecified,
+                      defaults to DecorationConfig.BloblessFetch.
+                    type: boolean
                   clone_depth:
                     description: CloneDepth is the depth of the clone that will be
                       used. A depth of zero will do a full clone.
@@ -29413,18 +29439,6 @@ spec:
               reporter_config:
                 description: ReporterConfig holds reporter-specific configuration
                 properties:
-                  resultstore:
-                    description: 'TODO: This config is used only for alpha testing
-                      and will likely move to ProwJobDefaults for flexibility.'
-                    properties:
-                      project_id:
-                        description: Specifies the ResultStore InvocationAttributes.ProjectId,
-                          used for various quota and GUI access control purposes.
-                          In practice, it is generally the same as the Google Cloud
-                          Project ID or number of the job's GCS storage bucket. Required
-                          to write job results to ResultStore.
-                        type: string
-                    type: object
                   slack:
                     properties:
                       channel:

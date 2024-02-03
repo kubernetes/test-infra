@@ -29,6 +29,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	gerrit "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -121,14 +122,17 @@ func invocationAttributes(projectID string, pj *v1.ProwJob) *resultstore.Invocat
 
 func descriptionFromLabels(labels map[string]string) string {
 	jt := labels[kube.ProwJobTypeLabel]
-	repo := labels[kube.RepoLabel]
-	pull := labels[kube.PullLabel]
-	if ps := labels[kube.GerritPatchset]; ps != "" {
-		pull += "/" + ps
+	parts := []string{
+		labels[kube.RepoLabel],
 	}
-	buildID := labels[kube.ProwBuildIDLabel]
-	job := labels[kube.ContextAnnotation]
-	return fmt.Sprintf("%s for %s/%s/%s/%s", jt, repo, pull, buildID, job)
+	if pull := labels[kube.PullLabel]; pull != "" {
+		parts = append(parts, pull)
+		if ps := labels[kube.GerritPatchset]; ps != "" {
+			parts = append(parts, ps)
+		}
+	}
+	parts = append(parts, labels[kube.ProwBuildIDLabel], labels[kube.ProwJobAnnotation])
+	return fmt.Sprintf("%s for %s", jt, strings.Join(parts, "/"))
 }
 
 func workspaceInfo(job *v1.ProwJob) *resultstore.WorkspaceInfo {
@@ -239,7 +243,7 @@ func startedProperties(started *metadata.Started) []*resultstore.Property {
 	for _, r := range repos {
 		ps = append(ps, &resultstore.Property{
 			Key:   "Repo",
-			Value: "https://" + r,
+			Value: gerrit.EnsureCodeURL(r),
 		})
 	}
 	return ps

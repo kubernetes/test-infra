@@ -1,13 +1,14 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- alisondy
-- cblecker
-- mrbobbytables
-- nikhita
 - palnabarun
 - kaslin
 - MadhavJivrajani
 - Priyankasaggu11929
+emeritus_approvers:
+- alisondy
+- cblecker
+- mrbobbytables
+- nikhita
 labels:
 - sig/contributor-experience

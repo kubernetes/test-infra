@@ -22,6 +22,8 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/prometheus/client_golang/prometheus"
 	prometheus_model "github.com/prometheus/client_model/go"
 	"github.com/sirupsen/logrus"
@@ -1987,6 +1989,102 @@ func TestUpdateSize(t *testing.T) {
 			metrics.WithLabelValues(name, ns).Write(&metric)
 			if n := *metric.Gauge.Value; n != tc.expected {
 				t.Fatalf("unexpected total, want %v, got %v", tc.expected, n)
+			}
+		})
+	}
+}
+
+func TestMarkStaleKeysForDeletion(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name      string
+		configMap *coreapi.ConfigMap
+		updates   []ConfigMapUpdate
+		expected  []ConfigMapUpdate
+	}{
+		{
+			name: "empty",
+			configMap: &coreapi.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "config",
+				},
+			},
+			updates: []ConfigMapUpdate{
+				{Key: "foo.yaml", Filename: "config/foo.yaml"},
+			},
+			expected: []ConfigMapUpdate{}, // nothing to delete
+		},
+		{
+			name: "delete one key",
+			configMap: &coreapi.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "config",
+				},
+				Data: map[string]string{
+					"foo.yaml": "old-foo-config",
+					"bar.yaml": "old-bar-config",
+				},
+			},
+			updates: []ConfigMapUpdate{
+				{Key: "foo.yaml", Filename: "config/foo.yaml"},
+			},
+			expected: []ConfigMapUpdate{
+				{Key: "bar.yaml"}, // delete this one
+			},
+		},
+		{
+			name: "delete 3 keys",
+			configMap: &coreapi.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "config",
+				},
+				Data: map[string]string{
+					"foo.yaml": "old-foo-config",
+					"bar.yaml": "old-bar-config",
+					"baz.yaml": "old-baz-config",
+					"qux.yaml": "old-qux-config",
+				},
+			},
+			updates: []ConfigMapUpdate{
+				{Key: "foo.yaml", Filename: "config/foo.yaml"},
+			},
+			expected: []ConfigMapUpdate{
+				{Key: "bar.yaml"}, // delete this one
+				{Key: "baz.yaml"}, // delete this one
+				{Key: "qux.yaml"}, // delete this one
+			},
+		},
+		{
+			// Potential callers of MarkStaleKeysForDeletion() may avoid calling
+			// us if there are no updates for safety, but we can't rely on
+			// callers being safe all the time. So make sure that we do a NOP if
+			// there are no updates (don't try to do a mass deletion if an empty
+			// slice is passed in somehow).
+			name: "for safety, delete nothing if there are no updates",
+			configMap: &coreapi.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "config",
+				},
+				Data: map[string]string{
+					"foo.yaml": "old-foo-config",
+					"bar.yaml": "old-bar-config",
+					"baz.yaml": "old-baz-config",
+					"qux.yaml": "old-qux-config",
+				},
+			},
+			updates:  []ConfigMapUpdate{},
+			expected: nil,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			actual := MarkStaleKeysForDeletion(tc.configMap, tc.updates)
+			if diff := cmp.Diff(tc.expected, actual, cmpopts.SortSlices(func(a, b ConfigMapUpdate) bool {
+				return a.Key < b.Key
+			})); diff != "" {
+				t.Fatalf("ConfigMapUpdate slice mismatch. want(-), got(+):\n%s", diff)
 			}
 		})
 	}
