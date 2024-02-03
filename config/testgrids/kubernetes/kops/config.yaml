@@ -26,11 +26,13 @@ dashboard_groups:
   - kops-k8s-1.26
   - kops-k8s-1.27
   - kops-k8s-1.28
+  - kops-k8s-1.29
   - kops-k8s-ci
   - kops-k8s-latest
   - kops-k8s-stable
   - kops-1.27
   - kops-1.28
+  - kops-1.29
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -61,11 +63,13 @@ dashboards:
 - name: kops-k8s-1.26
 - name: kops-k8s-1.27
 - name: kops-k8s-1.28
+- name: kops-k8s-1.29
 - name: kops-k8s-ci
 - name: kops-k8s-latest
 - name: kops-k8s-stable
 - name: kops-1.27
 - name: kops-1.28
+- name: kops-1.29
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons
