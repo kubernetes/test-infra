@@ -1,6 +1,7 @@
 periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-scalability-cleanup
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
   decorate: true
@@ -35,6 +36,13 @@ periodics:
       - scalability-project
       # File with boskos resource definitions
       - $(GOPATH)/src/k8s.io/test-infra/config/prow/cluster/build/boskos-resources/boskos-resources.yaml
+      resources:
+        requests:
+          memory: "2000Mi"
+          cpu: 4000m
+        limits:
+          memory: "2000Mi"
+          cpu: 4000m
 
 - name: ci-kubernetes-scalability-cleanup-golang-builds-canary
   cluster: k8s-infra-prow-build
