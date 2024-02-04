@@ -122,7 +122,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.28.4"
+              value: "v1.29.0"
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -174,7 +174,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.28.4"
+              value: "v1.29.0"
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -411,7 +411,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.28.4"
+              value: "v1.29.0"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
@@ -464,7 +464,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.28.4"
+              value: "v1.29.0"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
@@ -751,7 +751,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.28.4"
+          value: "v1.29.0"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
@@ -806,7 +806,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.28.4"
+          value: "v1.29.0"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
@@ -861,7 +861,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.28.4"
+          value: "v1.29.0"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
@@ -916,7 +916,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.28.4"
+          value: "v1.29.0"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
