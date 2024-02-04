@@ -399,7 +399,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-flatcar
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-cni-calico-ipv6
   cron: '29 0-23/8 * * *'
   labels:
@@ -429,7 +429,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240126' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240126' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -454,7 +454,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -463,7 +463,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-ipv6
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-cni-cilium-ipv6
   cron: '22 3-23/8 * * *'
   labels:
@@ -493,7 +493,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240126' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240126' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -518,7 +518,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -527,7 +527,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium-ipv6
 
-# {"cloud": "aws", "distro": "flatcararm64", "extra_flags": "--ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "flatcararm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-ipv6-flatcar
   cron: '41 2-23/8 * * *'
   labels:
@@ -557,7 +557,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -583,7 +583,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: flatcararm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -592,7 +592,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ipv6-flatcar
 
-# {"cloud": "aws", "distro": "flatcararm64", "extra_flags": "--ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "flatcararm64", "extra_flags": "--ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-cni-calico-ipv6-flatcar
   cron: '52 3-23/8 * * *'
   labels:
@@ -622,7 +622,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -648,7 +648,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: flatcararm64
-    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
