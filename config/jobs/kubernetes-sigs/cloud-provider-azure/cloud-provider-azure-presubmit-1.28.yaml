@@ -25,7 +25,7 @@ presubmits:
                 memory: "9Gi"
                 cpu: "2"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-check-1-28
         description: "Run lint check tests for cloud-provider-azure release-1.28."
         testgrid-num-columns-recent: "30"
@@ -78,7 +78,7 @@ presubmits:
               - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
                 value: "capz"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
         description: "Runs Azure specific tests with cloud-provider-azure release-1.28 (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
         testgrid-num-columns-recent: "30"
@@ -139,7 +139,7 @@ presubmits:
               - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
                 value: "30"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-28
         description: "Runs Kubernetes conformance tests with cloud-provider-azure release-1.28 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: "30"
@@ -188,7 +188,7 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-28
         description: "Runs Azure specific tests with cloud-provider-azure release-1.28 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: "30"
@@ -255,7 +255,7 @@ presubmits:
               - name: ENABLE_VMSS_FLEX # cloud-provider-azure config
                 value: "false"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28
         description: "Runs Azure specific e2e tests with cloud controller manager v1.28 and IP-based load balancer backend pools."
         testgrid-num-columns-recent: '30'
@@ -320,7 +320,7 @@ presubmits:
               - name: WINDOWS_WORKER_MACHINE_COUNT
                 value: "2"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-28
         description: "Runs Azure specific e2e tests with cloud controller manager v1.28 and multiple standard load balancers."
         testgrid-num-columns-recent: '30'
@@ -349,7 +349,224 @@ presubmits:
                 memory: "9Gi"
                 cpu: "2"
       annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28-presubmit
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
         testgrid-tab-name: pr-cloud-provider-azure-unit-1-28
         description: "Run unit tests for cloud-provider-azure release-1.28."
         testgrid-num-columns-recent: "30"
+periodics:
+- cron: '0 22 * * *'  # Run at 22:00 UTC everyday
+  name: cloud-provider-azure-master-ipv6-capz-1-28
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.12
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: release-1.28
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "v1.28.5"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
+    testgrid-tab-name: cloud-provider-azure-master-ipv6-capz-1-28
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster."
+- cron: '0 22 * * *'  # Run at 22:00 UTC everyday
+  name: cloud-provider-azure-master-ipv6-vmss-capz-1-28
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.12
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: release-1.28
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "v1.28.5"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
+    testgrid-tab-name: cloud-provider-azure-master-ipv6-vmss-capz-1-28
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster with vmss."
+- cron: '0 22 * * *'  # Run at 22:00 UTC everyday
+  name: cloud-provider-azure-master-dualstack-capz-1-28
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.12
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: release-1.28
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "v1.28.5"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-md.yaml
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
+    testgrid-tab-name: cloud-provider-azure-master-dualstack-capz-1-28
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in a dualstack cluster."
+- cron: '0 22 * * *'  # Run at 22:00 UTC everyday
+  name: cloud-provider-azure-master-dualstack-vmss-capz-1-28
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.12
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: release-1.28
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "v1.28.5"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure-1-28
+    testgrid-tab-name: cloud-provider-azure-master-dualstack-vmss-capz-1-28
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in a dualstack cluster with vmss."
