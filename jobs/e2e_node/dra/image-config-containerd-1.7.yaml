@@ -1,6 +1,6 @@
 images:
   ubuntu:
-    image_family: pipeline-1-25
+    image_family: pipeline-1-29
     project: ubuntu-os-gke-cloud
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/init-containerd-1.7.yaml"
   cos:

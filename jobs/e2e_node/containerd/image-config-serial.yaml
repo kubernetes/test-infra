@@ -1,6 +1,6 @@
 images:
   ubuntu:
-    image_family: pipeline-1-25
+    image_family: pipeline-1-29
     project: ubuntu-os-gke-cloud
     # the image regex is added so that only cgroupv2 images are selected.
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
