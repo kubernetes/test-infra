@@ -30,7 +30,6 @@ presubmits:
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
