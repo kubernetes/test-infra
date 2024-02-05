@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-10-amd64-20240114-1626' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-10-amd64-20240204-1647' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
