@@ -66,6 +66,36 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
+  - name: pull-npd-verify-gomod
+    cluster: k8s-infra-prow-build
+    branches:
+    - master
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./hack/verify-gomod.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-node
     # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
     cluster: default
