@@ -2,7 +2,7 @@
 # 42 jobs, total of 742 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127
   cluster: k8s-infra-kops-prow-build
   cron: '6 10-23/24 * * *'
@@ -63,16 +63,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko127
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '5 13-23/24 * * *'
@@ -139,16 +139,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko127-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127
   cluster: k8s-infra-kops-prow-build
   cron: '40 4-23/24 * * *'
@@ -209,16 +209,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k127-ko127
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '3 23-23/24 * * *'
@@ -285,16 +285,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k127-ko127-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128
   cluster: k8s-infra-kops-prow-build
   cron: '11 19-23/24 * * *'
@@ -355,16 +355,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko128
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '52 8-23/24 * * *'
@@ -431,16 +431,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko128-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128
   cluster: k8s-infra-kops-prow-build
   cron: '40 4-23/24 * * *'
@@ -501,16 +501,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-ko128
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '24 12-23/24 * * *'
@@ -577,16 +577,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-ko128-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128
   cluster: k8s-infra-kops-prow-build
   cron: '23 23-23/24 * * *'
@@ -647,16 +647,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k128-ko128
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '48 16-23/24 * * *'
@@ -723,16 +723,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k128-ko128-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '32 5-23/8 * * *'
@@ -793,16 +793,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '10 2-23/8 * * *'
@@ -869,16 +869,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '43 6-23/8 * * *'
@@ -939,16 +939,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k124-ko127-to-k125-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '1 1-23/8 * * *'
@@ -1015,16 +1015,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k124-ko127-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '19 2-23/8 * * *'
@@ -1085,16 +1085,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k125-ko127-to-k126-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '8 4-23/8 * * *'
@@ -1161,16 +1161,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k125-ko127-to-k126-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '37 4-23/8 * * *'
@@ -1231,16 +1231,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko127-to-k127-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '6 2-23/8 * * *'
@@ -1307,16 +1307,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko127-to-k127-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '55 6-23/8 * * *'
@@ -1377,16 +1377,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '31 7-23/8 * * *'
@@ -1453,16 +1453,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '51 6-23/8 * * *'
@@ -1523,16 +1523,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k124-ko128-to-k125-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '40 0-23/8 * * *'
@@ -1599,16 +1599,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k124-ko128-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '47 2-23/8 * * *'
@@ -1669,16 +1669,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k125-ko128-to-k126-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '37 5-23/8 * * *'
@@ -1745,16 +1745,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k125-ko128-to-k126-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '5 4-23/8 * * *'
@@ -1815,16 +1815,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko128-to-k127-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '23 3-23/8 * * *'
@@ -1891,16 +1891,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-ko128-to-k127-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '55 6-23/8 * * *'
@@ -1961,16 +1961,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko128-to-k128-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '42 6-23/8 * * *'
@@ -2037,16 +2037,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-ko128-to-k128-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '46 4-23/8 * * *'
@@ -2107,16 +2107,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k128-kolatest-to-klatest-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '0 7-23/8 * * *'
@@ -2183,16 +2183,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k128-kolatest-to-klatest-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '11 5-23/8 * * *'
@@ -2253,16 +2253,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-kolatest-to-k128-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '22 2-23/8 * * *'
@@ -2329,16 +2329,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k127-kolatest-to-k128-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '15 1-23/8 * * *'
@@ -2399,16 +2399,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-kolatest-to-k127-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '19 3-23/8 * * *'
@@ -2475,16 +2475,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-kolatest-to-k127-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '38 4-23/8 * * *'
@@ -2545,16 +2545,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k125-kolatest-to-k126-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '52 0-23/8 * * *'
@@ -2621,16 +2621,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '40 6-23/8 * * *'
@@ -2691,16 +2691,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k124-kolatest-to-k125-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '29 1-23/8 * * *'
@@ -2767,16 +2767,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '59 7-23/8 * * *'
@@ -2837,16 +2837,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '7 2-23/8 * * *'
@@ -2913,16 +2913,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest
   cluster: k8s-infra-kops-prow-build
   cron: '52 5-23/8 * * *'
@@ -2983,16 +2983,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-kci-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '20 3-23/8 * * *'
@@ -3059,11 +3059,11 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-kci-kolatest-many-addons

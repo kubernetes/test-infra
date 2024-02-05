@@ -1390,7 +1390,7 @@ def generate_upgrades():
         }
         results.append(
             build_test(name_override=job_name,
-                       distro='u2004',
+                       distro='u2204',
                        networking='calico',
                        k8s_version='stable',
                        kops_channel='alpha',
@@ -1403,7 +1403,7 @@ def generate_upgrades():
         )
         results.append(
             build_test(name_override=job_name + "-many-addons",
-                       distro='u2004',
+                       distro='u2204',
                        networking='calico',
                        k8s_version='stable',
                        kops_channel='alpha',
