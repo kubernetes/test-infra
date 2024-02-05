@@ -147,7 +147,9 @@ def build_test(cloud='aws',
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
         build_cluster = "k8s-infra-kops-prow-build"
         env['CLOUD_PROVIDER'] = cloud
-        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
+        if not cluster_name:
+            cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
+        env['CLUSTER_NAME'] = cluster_name
         env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
         env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
@@ -1417,6 +1419,50 @@ def generate_upgrades():
                        env=addonsenv,
                        )
         )
+
+    # One-off upgrade test: from kops-128 -> latest with k8s.local, with calico
+    # Exit criteria: Remove when https://github.com/kubernetes/kops/issues/16276 is fixed
+    results.append(
+        build_test(name_override='kops-aws-upgrade-bug16276-calico',
+                   cluster_name='bug16276-calico.k8s.local',
+                   distro='u2204',
+                   networking='calico',
+                   k8s_version='stable',
+                   kops_channel='alpha',
+                   extra_dashboards=['kops-upgrades'],
+                   runs_per_day=3,
+                   test_timeout_minutes=120,
+                   scenario='upgrade-ab',
+                   env={
+                       'KOPS_VERSION_A': kops28,
+                       'K8S_VERSION_A': 'v1.28.0',
+                       'KOPS_VERSION_B': 'latest',
+                       'K8S_VERSION_B': 'v1.28.0',
+                   },
+                   )
+    )
+
+    # One-off upgrade test: from kops-128 -> latest with k8s.local, with cilium
+    # Exit criteria: Remove when https://github.com/kubernetes/kops/issues/16276 is fixed
+    results.append(
+        build_test(name_override='kops-aws-upgrade-bug16276-cilium',
+                   cluster_name='bug16276-cilium.k8s.local',
+                   distro='u2204',
+                   networking='cilium',
+                   k8s_version='stable',
+                   kops_channel='alpha',
+                   extra_dashboards=['kops-upgrades'],
+                   runs_per_day=3,
+                   test_timeout_minutes=120,
+                   scenario='upgrade-ab',
+                   env={
+                       'KOPS_VERSION_A': kops28,
+                       'K8S_VERSION_A': 'v1.28.0',
+                       'KOPS_VERSION_B': 'latest',
+                       'K8S_VERSION_B': 'v1.28.0',
+                   },
+                   )
+    )
     return results
 
 ###############################
