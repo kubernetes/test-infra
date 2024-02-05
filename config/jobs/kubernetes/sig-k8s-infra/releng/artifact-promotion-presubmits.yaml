@@ -78,6 +78,7 @@ presubmits:
         - name: GOPATH
           value: /go
   - name: pull-k8sio-file-promo
+    cluster: k8s-infra-prow-build
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
@@ -98,6 +99,13 @@ presubmits:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+        resources:
+          limits:
+            cpu: 2
+            memory: "4Gi"
+          requests:
+            cpu: 2
+            memory: "4Gi"
   # WIP version of pull-k8sio-file-promo that adds mirroring to our replicas.
   # Adds two extra containers to dry-run miroring for staging and production mirrors.
   # TODO(justinsb): merge with pull-k8sio-file-promo once we are happy with it
