@@ -48,8 +48,6 @@ periodics:
       - --test-cmd-args=--testsuite=testing/experimental/storage/pod-startup/suite.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=300m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
