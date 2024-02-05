@@ -610,7 +610,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd
 
-# {"cloud": "aws", "distro": "u2004", "extra_flags": "--set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-cloud-controller-manager
     cluster: default
     branches:
@@ -642,7 +642,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240126' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240126' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -670,7 +670,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -736,7 +736,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-load-balancer-controller
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-addon-resource-tracking
     cluster: default
     branches:
@@ -785,7 +785,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
@@ -793,7 +793,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-addon-resource-tracking
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-metrics-server
     cluster: default
     branches:
@@ -842,7 +842,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
@@ -850,7 +850,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-metrics-server
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-pod-identity-webhook
     cluster: default
     branches:
@@ -899,7 +899,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
@@ -1921,7 +1921,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-ipv6-karpenter
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest
     cluster: default
     branches:
@@ -1978,7 +1978,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -1986,7 +1986,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest
     cluster: default
     branches:
@@ -2049,7 +2049,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
@@ -2057,7 +2057,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest
 
-# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-k127-ko127-to-klatest-kolatest-many-addons
     cluster: default
     branches:
@@ -2121,7 +2121,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
