@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/alibaba-cloud-csi-driver:
 
   - name: pull-alibaba-cloud-csi-driver-verify-fmt
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     spec:
@@ -11,12 +12,20 @@ presubmits:
         - make
         args:
         - fmt
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-fmt
       description: Verifies the Golang sources have been formatted
 
   - name: pull-alibaba-cloud-csi-driver-verify-lint
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     spec:
@@ -26,12 +35,20 @@ presubmits:
         - make
         args:
         - lint
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-lint
       description: Verifies the Golang sources are linted
 
   - name: pull-alibaba-cloud-csi-driver-verify-vet
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     spec:
@@ -41,12 +58,20 @@ presubmits:
         - make
         args:
         - vet
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-vet
       description: Vets the Golang sources have been vetted
 
   - name: pull-alibaba-cloud-csi-driver-verify-unit
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     spec:
@@ -56,6 +81,13 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-unit
