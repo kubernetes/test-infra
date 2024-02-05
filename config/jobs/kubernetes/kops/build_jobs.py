@@ -781,6 +781,7 @@ def generate_misc():
                    runs_per_day=3,
                    extra_flags=[
                        "--set=cluster.spec.externalDNS.provider=external-dns",
+                       "--dns=public",
                    ],
                    extra_dashboards=['kops-misc']),
 
@@ -795,6 +796,8 @@ def generate_misc():
                        '--ipv6',
                        '--bastion',
                        "--set=cluster.spec.externalDNS.provider=external-dns",
+                       "--dns=public",
+
                    ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
@@ -1844,7 +1847,8 @@ def generate_presubmits_e2e():
             cloud="aws",
             networking="calico",
             extra_flags=[
-                '--set=cluster.spec.externalDNS.provider=external-dns'
+                '--set=cluster.spec.externalDNS.provider=external-dns',
+                '--dns=public',
             ],
         ),
         presubmit_test(
@@ -1854,7 +1858,8 @@ def generate_presubmits_e2e():
             extra_flags=[
                 '--ipv6',
                 '--bastion',
-                '--set=cluster.spec.externalDNS.provider=external-dns'
+                '--set=cluster.spec.externalDNS.provider=external-dns',
+                '--dns=public',
             ],
         ),
         presubmit_test(
