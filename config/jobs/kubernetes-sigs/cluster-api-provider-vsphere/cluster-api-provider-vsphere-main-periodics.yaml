@@ -261,3 +261,36 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Shows test coverage for CAPV
+
+- name: periodic-cluster-api-provider-vsphere-janitor
+  labels:
+    preset-cluster-api-provider-vsphere-e2e-config: "true"
+  interval: 12h
+  decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28
+      command:
+      - runner.sh
+      args:
+      - make clean-ci
+      env:
+      resources:
+        requests:
+          cpu: "1000m"
+          memory: "1Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-janitor
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs the janitor to cleanup orphaned objects in CI
