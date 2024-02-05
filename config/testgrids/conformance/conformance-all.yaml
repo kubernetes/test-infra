@@ -262,15 +262,15 @@ dashboards:
     - name: Periodic s390x conformance test on local cluster
       test_group_name: s390x-conformance
       description: Runs conformance tests by using kubetest2 against latest master version of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.29
+      test_group_name: s390x-conformance-v1.29
+      description: Runs conformance tests by using kubetest2 against latest v1.29 branch HEAD of kubernetes on local s390x cluster
     - name: Periodic s390x conformance test on local cluster , v1.28
       test_group_name: s390x-conformance-v1.28
       description: Runs conformance tests by using kubetest2 against latest v1.28 branch HEAD of kubernetes on local s390x cluster
     - name: Periodic s390x conformance test on local cluster , v1.27
       test_group_name: s390x-conformance-v1.27
       description: Runs conformance tests by using kubetest2 against latest v1.27 branch HEAD of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.26
-      test_group_name: s390x-conformance-v1.26
-      description: Runs conformance tests by using kubetest2 against latest v1.26 branch HEAD of kubernetes on local s390x cluster
 
 # CEL Conformance Tests
 - name: google-cel
@@ -311,12 +311,12 @@ test_groups:
 #IBM s390x test results
 - name: s390x-conformance
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
+- name: s390x-conformance-v1.29
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.29
 - name: s390x-conformance-v1.28
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.28
 - name: s390x-conformance-v1.27
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.27
-- name: s390x-conformance-v1.26
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.26
 
 # google-osconfig
 - name: osconfig-unstable
