@@ -51,10 +51,10 @@ periodics:
       resources:
         requests:
           cpu: 2
-          memory: "2Gi"
+          memory: "4Gi"
         limits:
           cpu: 2
-          memory: "2Gi"
+          memory: "4Gi"
 
 - name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
   cluster: k8s-infra-prow-build
