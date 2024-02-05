@@ -227,8 +227,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.7
-      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.13
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
       - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
