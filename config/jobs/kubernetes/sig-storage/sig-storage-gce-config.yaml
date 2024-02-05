@@ -214,6 +214,7 @@ presubmits:
 periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-gce-iscsi-serial
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -245,6 +246,13 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
+      resources:
+        requests:
+          memory: "2000Mi"
+          cpu: 4000m
+        limits:
+          memory: "2000Mi"
+          cpu: 4000m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
   annotations:
     testgrid-num-columns-recent: '20'
