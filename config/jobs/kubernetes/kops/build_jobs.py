@@ -1797,7 +1797,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-cloud-controller-manager",
             cloud="aws",
-            distro="u2004",
+            distro="u2204",
             k8s_version="ci",
             extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
@@ -1815,7 +1815,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-addon-resource-tracking",
             cloud="aws",
-            distro="u2004",
+            distro="u2204",
             networking="calico",
             scenario="addon-resource-tracking",
             tab_name="pull-kops-e2e-aws-addon-resource-tracking",
@@ -1824,7 +1824,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-metrics-server",
             cloud="aws",
-            distro="u2004",
+            distro="u2204",
             networking="calico",
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
@@ -1833,7 +1833,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-pod-identity-webhook",
             cloud="aws",
-            distro="u2004",
+            distro="u2204",
             networking="calico",
             scenario="podidentitywebhook",
             tab_name="pull-kops-e2e-aws-pod-identity-webhook",
@@ -1990,7 +1990,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest",
             optional=True,
-            distro='u2004',
+            distro='u2204',
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
@@ -2005,7 +2005,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest",
             optional=True,
-            distro='u2004',
+            distro='u2204',
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
@@ -2023,7 +2023,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k127-ko127-to-klatest-kolatest-many-addons",
             optional=True,
-            distro='u2004',
+            distro='u2204',
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
