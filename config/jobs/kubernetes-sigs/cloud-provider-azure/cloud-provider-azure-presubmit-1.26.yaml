@@ -381,11 +381,11 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
               - name: KUBERNETES_VERSION # CAPZ config
-                value: "v1.26.12"
+                value: "latest-1.26"
               - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
                 value: "capz"
               - name: CLUSTER_TEMPLATE # CAPZ config
-                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.12/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-26
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-capz-1-26-presubmit
@@ -436,11 +436,11 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.26.12"
+          value: "latest-1.26"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.12/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure-1-26
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz-1-26
