@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/release:
   - name: pull-release-cluster-up
+    cluster: k8s-infra-prow-build
     run_if_changed: '^push-build.sh'
     labels:
       preset-service-account: "true"
@@ -29,12 +30,15 @@ presubmits:
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           requests:
+            cpu: 4
+            memory: "6Gi"
+          limits:
+            cpu: 4
             memory: "6Gi"
         securityContext:
           privileged: true
