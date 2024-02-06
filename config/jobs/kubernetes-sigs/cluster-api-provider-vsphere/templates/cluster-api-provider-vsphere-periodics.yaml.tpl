@@ -285,8 +285,11 @@ periodics:
     - image: {{ $.config.TestImage }}
       command:
       - runner.sh
+      - bash
       args:
-      - make clean-ci
+      - -c
+      - |
+        make clean-ci
       env:
       resources:
         requests:
