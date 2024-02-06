@@ -29,8 +29,13 @@ prefixes:
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false
     consistentImages: false
-  - name: "k8s-staging-test-infra images"
+  - name: "k8s-staging-test-infra GCR images"
     prefix: "gcr.io/k8s-staging-test-infra"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: false
+    consistentImages: false
+  - name: "k8s-staging-test-infra AR images"
+    prefix: "us-central1-docker.pkg.dev/k8s-staging-test-infra/images"
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false
     consistentImages: false
