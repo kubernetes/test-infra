@@ -614,8 +614,6 @@ presubmits:
             requests:
               cpu: 4
               memory: 6Gi
-  # TODO(gjkim42, SidecarContainers): Remove this once SidecarContainers
-  # graduates to beta.
   - name: pull-kubernetes-node-kubelet-serial-containerd-sidecar-containers
     always_run: false
     optional: true
@@ -650,7 +648,7 @@ presubmits:
           - '--node-test-args=--feature-gates=SidecarContainers=true --service-feature-gates=SidecarContainers=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\].*\[NodeAlphaFeature:SidecarContainers\]|\[NodeAlphaFeature:SidecarContainers\].*\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeFeature:Eviction\]"
+          - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\].*\[NodeFeature:SidecarContainers\]|\[NodeFeature:SidecarContainers\].*\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeFeature:Eviction\]"
           - --timeout=240m
           env:
           - name: GOPATH
@@ -2643,59 +2641,6 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
         - --timeout=65m
-        env:
-        - name: GOPATH
-          value: /go
-        resources:
-          requests:
-            cpu: 4
-            memory: 6Gi
-          limits:
-            cpu: 4
-            memory: 6Gi
-
-  # TODO(gjkim42, SidecarContainers): Remove this once SidecarContainers
-  # graduates to beta.
-  - name: pull-kubernetes-node-e2e-containerd-sidecar-containers
-    cluster: k8s-infra-prow-build
-    branches:
-    # TODO(releng): Remove once repo default branch has been renamed
-    - master
-    - main
-    always_run: false
-    optional: true
-    max_concurrency: 12
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-containerd-sidecar-containers
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --deployment=node
-        - --gcp-zone=us-central1-b
-        - '--node-test-args=--feature-gates=SidecarContainers=true --service-feature-gates=SidecarContainers=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
-        - --node-tests=true
-        - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeFeature:SidecarContainers\]|\[NodeAlphaFeature:SidecarContainers\]" --skip="\[Flaky\]|\[Serial\]"
-        - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
         env:
         - name: GOPATH
           value: /go
