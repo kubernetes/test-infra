@@ -145,7 +145,7 @@ presubmits:
       testgrid-tab-name: pull-ingress-gce-verify
 
   - name: pull-ingress-gce-e2e
-    cluster: default # https://github.com/kubernetes/test-infra/pull/31681d
+    cluster: k8s-infra-prow-build
     always_run: true
     optional: false
     decorate: true
