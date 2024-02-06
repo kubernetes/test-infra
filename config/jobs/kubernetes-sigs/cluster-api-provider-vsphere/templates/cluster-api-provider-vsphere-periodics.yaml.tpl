@@ -268,6 +268,7 @@ periodics:
 
 - name: periodic-cluster-api-provider-vsphere-janitor
   labels:
+    preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   interval: 12h
   decorate: true
@@ -285,11 +286,8 @@ periodics:
     - image: {{ $.config.TestImage }}
       command:
       - runner.sh
-      - bash
       args:
-      - -c
-      - |
-        make clean-ci
+      - ./hack/clean-ci.sh
       env:
       resources:
         requests:
