@@ -942,6 +942,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-containerd-gce
+    cluster: k8s-infra-prow-build
     optional: true
     decorate: true
     decoration_config:
@@ -973,7 +974,11 @@ presubmits:
         name: ""
         resources:
           requests:
-            memory: 6Gi
+            cpu: 4
+            memory: "6Gi"
+          limits:
+            cpu: 4
+            memory: "6Gi"
         securityContext:
           privileged: true
   - always_run: true
