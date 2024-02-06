@@ -4,6 +4,7 @@ presubmits:
   kubernetes/kubernetes:
 
   - name: pull-kubernetes-e2e-gci-gce-ingress
+    cluster: k8s-infra-prow-build
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
     - master
@@ -60,6 +61,10 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
           requests:
+            cpu: 4
+            memory: "6Gi"
+          limits:
+            cpu: 4
             memory: "6Gi"
         securityContext:
           privileged: true
