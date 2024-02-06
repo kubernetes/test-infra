@@ -264,6 +264,7 @@ periodics:
 
 - name: periodic-cluster-api-provider-vsphere-janitor
   labels:
+    preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   interval: 12h
   decorate: true
@@ -281,11 +282,8 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28
       command:
       - runner.sh
-      - bash
       args:
-      - -c
-      - |
-        make clean-ci
+      - ./hack/clean-ci.sh
       env:
       resources:
         requests:
