@@ -281,8 +281,11 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28
       command:
       - runner.sh
+      - bash
       args:
-      - make clean-ci
+      - -c
+      - |
+        make clean-ci
       env:
       resources:
         requests:
