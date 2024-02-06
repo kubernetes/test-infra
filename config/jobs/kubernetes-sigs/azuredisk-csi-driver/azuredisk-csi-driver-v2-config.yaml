@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
   - name: pull-azuredisk-csi-driver-verify-mainv2
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -27,6 +28,7 @@ presubmits:
       description: "Run code verification tests for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit-mainv2
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -392,6 +394,7 @@ presubmits:
       description: "Run E2E tests on a Windows cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build-mainv2
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
