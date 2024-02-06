@@ -17,6 +17,13 @@ presubmits:
         args:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         securityContext:
           privileged: true
     annotations:
@@ -39,6 +46,13 @@ presubmits:
         args:
         - make
         - unit-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         securityContext:
           privileged: true
     annotations:
@@ -543,6 +557,13 @@ presubmits:
         args:
         - make
         - azuredisk-windows
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-windows-build
