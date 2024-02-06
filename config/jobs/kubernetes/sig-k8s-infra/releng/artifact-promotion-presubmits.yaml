@@ -102,6 +102,7 @@ presubmits:
   # Adds two extra containers to dry-run miroring for staging and production mirrors.
   # TODO(justinsb): merge with pull-k8sio-file-promo once we are happy with it
   - name: pull-k8sio-file-promo-with-mirroring
+    cluster: k8s-infra-prow-build
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
@@ -120,6 +121,13 @@ presubmits:
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
         image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.4-0
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         command:
         - /kpromo
         args:
@@ -130,6 +138,13 @@ presubmits:
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
         image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.4-0
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         command:
         - /kpromo
         args:
@@ -140,6 +155,13 @@ presubmits:
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
         image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.4-0
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         command:
         - /kpromo
         args:
