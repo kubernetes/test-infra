@@ -288,11 +288,15 @@ periodics:
       - runner.sh
       args:
       - ./hack/clean-ci.sh
-      env:
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
       resources:
         requests:
-          cpu: "1000m"
-          memory: "1Gi"
+          cpu: "2000m"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-janitor
