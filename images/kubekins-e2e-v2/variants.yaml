@@ -18,7 +18,7 @@ variants:
     K8S_RELEASE: stable
   main:
     CONFIG: main
-    GO_VERSION: 1.21.5
+    GO_VERSION: 1.21.6
     K8S_RELEASE: stable
   '1.29':
     CONFIG: '1.29'

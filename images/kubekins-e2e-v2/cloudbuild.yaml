@@ -13,7 +13,7 @@ steps:
     - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
     - --build-arg=YQ_VERSION=$_YQ_VERSION
     - .
-    dir: images/kubekins-e2e-v2
+    dir: .
   - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
     entrypoint: gcloud
     args:
