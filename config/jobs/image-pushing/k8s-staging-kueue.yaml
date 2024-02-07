@@ -20,4 +20,5 @@ postsubmits:
               - --project=k8s-staging-kueue
               - --scratch-bucket=gs://k8s-staging-kueue-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
