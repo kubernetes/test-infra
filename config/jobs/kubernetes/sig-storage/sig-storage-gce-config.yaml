@@ -258,6 +258,7 @@ periodics:
     testgrid-num-columns-recent: '20'
 - interval: 24h
   name: ci-kubernetes-e2e-snapshot
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
