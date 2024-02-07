@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-iam-authenticator:
   - name: pull-aws-iam-authenticator-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -13,6 +14,13 @@ presubmits:
         args:
         - make
         - test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-aws-iam-authenticator
       testgrid-tab-name: pull-unit-test
