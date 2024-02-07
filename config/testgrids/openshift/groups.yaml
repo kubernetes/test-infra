@@ -2,8 +2,6 @@ dashboard_groups:
 - dashboard_names:
   - redhat-assisted-installer
   - redhat-hypershift
-  - redhat-openshift-CSPI-QE-MSI-release-4.14-informing
-  - redhat-openshift-CSPI-QE-MSI-release-4.15-informing
   - redhat-openshift-informing
   - redhat-openshift-lp-interop-release-4.13-informing
   - redhat-openshift-lp-interop-release-4.14-informing
