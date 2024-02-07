@@ -2,6 +2,7 @@ presubmits:
   containerd/containerd:
   - name: pull-containerd-build
     always_run: true
+    cluster: eks-prow-build-cluster
     branches:
     - main
     - release/1.6
@@ -28,6 +29,7 @@ presubmits:
   - name: pull-containerd-node-e2e
     always_run: true
     max_concurrency: 8
+    cluster: eks-prow-build-cluster
     decorate: true
     branches:
     - main
@@ -78,6 +80,7 @@ presubmits:
 
   - name: pull-containerd-node-e2e-1-7
     always_run: true
+    cluster: eks-prow-build-cluster
     max_concurrency: 8
     decorate: true
     branches:
@@ -129,6 +132,7 @@ presubmits:
 
   - name: pull-containerd-node-e2e-1-6
     always_run: true
+    cluster: eks-prow-build-cluster
     max_concurrency: 8
     decorate: true
     branches:
