@@ -17,9 +17,6 @@ Artisanal
 d) `ci-kubernetes-e2e-gce-device-plugin-gpu` (22m) (01:30)  
 e) `ci-kubernetes-e2e-gce-device-plugin-gpu-beta` (22m) (00:00)
 
-### 3 hours
-g) `ci-cri-containerd-e2e-gce-device-plugin-gpu` (22m) (01:30)
-
 ### 4 hours
 h) `ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80` (1h33m) (00:00)  
 i) `ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100` (1h33m) (02:00)
