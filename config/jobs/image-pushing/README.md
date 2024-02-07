@@ -1,8 +1,7 @@
 # Image pushing jobs
 
-<!--TODO: update this when we start using staging AR instances instead--->
 This directory contains jobs that run in the trusted cluster and kick off GCB
-jobs that then push images to staging GCR repos. These jobs are the recommended
+jobs that then push images to staging GCR/AR repos. These jobs are the recommended
 way to regularly publish images to staging.
 
 ## Getting started
@@ -20,7 +19,7 @@ components two getting set up:
 
 The contents of `cloudbuild.yaml` depends on how your repo produces images.
 The [official documentation][gcb documentation] discusses these in the general
-case. If your image can be built using `go build` or Bazel and pushed using
+case. If your image can be built using `go build` and pushed using
 `docker push`, that advice should be sufficient.
 
 ### Custom substitutions

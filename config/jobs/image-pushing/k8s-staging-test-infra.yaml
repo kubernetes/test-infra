@@ -219,6 +219,31 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/kubekins-e2e/
+
+    - name: post-test-infra-push-kubekins-e2e-v2
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: kubekins-e2e-v2
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the kubekins-e2e-v2 image
+      run_if_changed: '^images/kubekins-e2e-v2/'
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/kubekins-e2e-v2/
     #
     # components, e.g. kettle/, triage/
     #
