@@ -100,33 +100,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -559,33 +532,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-redhat-developer-helm-release-3.11-helm-ocp4.14-lp-interop-helm-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -926,8 +872,6 @@ test_groups:
   name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-4
 - gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.14-lp-interop-amq-streams-2-6
   name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.14-lp-interop-amq-streams-2-6
-- gcs_prefix: test-platform-results/logs/periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
-  name: periodic-ci-ansible-tower-qa-devel-ocp4.14-lp-interop-aap-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
   name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.14-lp-interop-cost-management-interop-aws
@@ -960,8 +904,6 @@ test_groups:
   name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.14-lp-interop-quarkus-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.14-lp-interop-devspaces-interop-aws
   name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.14-lp-interop-devspaces-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
-  name: periodic-ci-redhat-developer-gitops-operator-v1.10-gitops-ocp4.14-lp-interop-redhat-openshift-gitops-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-helm-release-3.11-helm-ocp4.14-lp-interop-helm-interop-aws
   name: periodic-ci-redhat-developer-helm-release-3.11-helm-ocp4.14-lp-interop-helm-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.14-lp-interop-odo-scenario-aws
