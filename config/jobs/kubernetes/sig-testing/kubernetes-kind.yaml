@@ -438,7 +438,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
-      timeout: 180m
+      timeout: 60m
       grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
