@@ -154,16 +154,6 @@ ARG YQ_VERSION
 RUN wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${TARGETARCH}" \
     -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# install bazel
-ARG BAZEL_VERSION_ARG
-ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
-COPY images/kubekins-e2e/install-bazel.sh /
-RUN bash /install-bazel.sh
-
-ARG OLD_BAZEL_VERSION
-COPY --from=old \
-    /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
-
 # install kind if a version is provided
 ARG KIND_VERSION
 RUN if [ -n "${KIND_VERSION}" ]; then \

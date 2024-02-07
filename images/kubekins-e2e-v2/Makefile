@@ -13,9 +13,15 @@
 # limitations under the License.
 
 push-prod:
-	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb images/kubekins-v2
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder $(EXTRA_ARG) --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb images/kubekins-e2e-v2
 
 push:
-	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty images/kubekins-v2
-
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder $(EXTRA_ARG) --allow-dirty images/kubekins-e2e-v2
 .PHONY: push push-prod
+
+help:
+	@echo "By default, build all the images"
+	@echo "But you can also specify one of a supported k8s version, \"experimental\", or \"master\", e.g."
+	@echo
+	@echo "    make build K8S=1.14"
+	@echo
