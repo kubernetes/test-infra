@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
   - name: pull-azuredisk-csi-driver-verify-mainv2
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -16,6 +17,13 @@ presubmits:
         args:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         env:
           - name: BUILD_V2
             value: "true"
@@ -27,6 +35,7 @@ presubmits:
       description: "Run code verification tests for Azure Disk CSI driver V2."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit-mainv2
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -42,6 +51,13 @@ presubmits:
         args:
         - make
         - unit-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         securityContext:
           privileged: true
     annotations:
@@ -392,6 +408,7 @@ presubmits:
       description: "Run E2E tests on a Windows cluster for Azure Disk CSI V2 driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build-mainv2
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -407,6 +424,13 @@ presubmits:
         args:
         - make
         - azuredisk-windows-v2
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-windows-build-mainv2

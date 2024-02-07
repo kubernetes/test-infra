@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
   - name: pull-azuredisk-csi-driver-verify
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -16,6 +17,13 @@ presubmits:
         args:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         securityContext:
           privileged: true
     annotations:
@@ -24,6 +32,7 @@ presubmits:
       description: "Run code verification tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -37,6 +46,13 @@ presubmits:
         args:
         - make
         - unit-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         securityContext:
           privileged: true
     annotations:
@@ -525,6 +541,7 @@ presubmits:
       description: "Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build
+    cluster: k8s-infra-prow-build
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
@@ -540,6 +557,13 @@ presubmits:
         args:
         - make
         - azuredisk-windows
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-windows-build
