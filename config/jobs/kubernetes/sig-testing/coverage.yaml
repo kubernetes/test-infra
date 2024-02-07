@@ -111,6 +111,7 @@ periodics:
     description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
 - interval: 1h
   name: ci-kubernetes-coverage-e2e-gci-gce
+  cluster: k8s-infra-prow-build
   decorate: true
   labels:
     preset-service-account: "true"
