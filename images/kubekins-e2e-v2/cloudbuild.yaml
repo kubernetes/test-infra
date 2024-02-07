@@ -1,0 +1,39 @@
+steps:
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
+    entrypoint: /buildx-entrypoint
+    args:
+    - build
+    - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --build-arg=IMAGE_ARG=us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - --platform=linux/amd64,linux/arm64
+    - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
+    - --build-arg=GO_VERSION=$_GO_VERSION
+    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
+    - --build-arg=KIND_VERSION=$_KIND_VERSION
+    - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
+    - --build-arg=YQ_VERSION=$_YQ_VERSION
+    - .
+    dir: images/kubekins-e2e-v2
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
+    entrypoint: gcloud
+    args:
+    - tag
+    - container
+    - images
+    - add-tag
+    - us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
+    - us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:latest-$_CONFIG
+substitutions:
+  _CFSSL_VERSION: 1.6.4
+  _CONFIG: master
+  _GIT_TAG: '12345'
+  _GO_VERSION: 1.13.5
+  _K8S_RELEASE: stable
+  _KIND_VERSION: ''
+  _KUBETEST2_VERSION: 'master'
+  _YQ_VERSION: v4.40.4
+timeout: 1800s  
+options:
+  substitution_option: ALLOW_LOOSE
+  # this is a large and critical CI image, builds are slow on the default 1 core
+  machineType: E2_HIGHCPU_32

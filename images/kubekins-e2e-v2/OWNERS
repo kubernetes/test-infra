@@ -17,7 +17,6 @@ approvers:
 emeritus_approvers:
 - amwat
 - spiffxp
-- MushuEE
 
 labels:
 - sig/release
