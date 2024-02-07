@@ -1,5 +1,5 @@
 postsubmits:
-  cncf/apisnoop:
+  kubernetes-sigs/apisnoop:
     - name: apisnoop-push-auditlogger-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
