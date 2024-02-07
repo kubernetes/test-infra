@@ -77,6 +77,7 @@ presubmits:
       description: Uses kubetest to run e2e Conformance, SIG-Network or Network Ingress tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
+    cluster: k8s-infra-prow-build
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
     - master
@@ -133,6 +134,10 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         resources:
           requests:
+            cpu: 4
+            memory: "6Gi"
+          limits:
+            cpu: 4
             memory: "6Gi"
         securityContext:
           privileged: true
