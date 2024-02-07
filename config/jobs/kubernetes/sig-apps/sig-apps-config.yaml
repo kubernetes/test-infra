@@ -1,6 +1,7 @@
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-statefulset
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
