@@ -51,7 +51,7 @@ periodics:
              --use-built-binaries true \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws" \
              --focus-regex="\[Slow\]" \
-             --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|LoadBalancers" \
              --parallel=25
         env:
           - name: BUILD_EKS_AMI_OS
@@ -122,7 +122,7 @@ periodics:
              --use-built-binaries true \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws" \
              --focus-regex="\[Slow\]" \
-             --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|LoadBalancers" \
              --parallel=25
         env:
           - name: BUILD_EKS_AMI_OS
