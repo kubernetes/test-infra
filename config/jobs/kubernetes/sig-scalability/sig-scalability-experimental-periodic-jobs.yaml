@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-storage-scalability
+  cluster: k8s-infra-prow-build
   tags:
     - "perfDashPrefix: storage"
     - "perfDashJobType: storage"
@@ -47,8 +48,13 @@ periodics:
       - --test-cmd-args=--testsuite=testing/experimental/storage/pod-startup/suite.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=300m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 2
+          memory: "4Gi"
+        limits:
+          cpu: 2
+          memory: "4Gi"
 
 - name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
   cluster: k8s-infra-prow-build
