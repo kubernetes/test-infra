@@ -4,8 +4,6 @@ version: 1.4.0
 kernel_arguments:
   should_not_exist:
     - mitigations=auto,nosmt
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
@@ -29,10 +27,6 @@ storage:
         # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
         source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
       mode: 0644
-    - path: /etc/crio/crio.conf.d/40-evented-pleg.conf
-      contents:
-        local: 40-evented-pleg.conf
-      mode: 0644
 systemd:
   units:
     - name: configure-sysctl.service
@@ -47,6 +41,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: tools-install.service
       enabled: true
       contents: |
@@ -66,6 +61,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: selinux-install.service
       enabled: true
       contents: |
@@ -84,6 +80,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: crio-install.service
       enabled: true
       contents: |
@@ -108,6 +105,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: authorized-key.service
       enabled: true
       contents: |
