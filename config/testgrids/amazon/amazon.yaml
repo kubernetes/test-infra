@@ -6,6 +6,7 @@ dashboards:
 - name: amazon-ec2-node
 - name: amazon-ec2-al2023
 - name: amazon-ec2-provider
+- name: amazon-ec2-release
 
 #
 # Start dashboard groups
@@ -17,3 +18,4 @@ dashboard_groups:
   - amazon-ec2-node
   - amazon-ec2-al2023
   - amazon-ec2-provider
+  - amazon-ec2-release

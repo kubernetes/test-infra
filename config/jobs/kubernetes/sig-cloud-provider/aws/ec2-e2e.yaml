@@ -663,7 +663,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-conformance-latest
   annotations:
-    testgrid-dashboards: amazon-ec2, conformance-all, conformance-ec2, sig-release-master-informing
+    testgrid-dashboards: amazon-ec2, conformance-all, conformance-ec2, sig-release-master-informing, amazon-ec2-release
     testgrid-tab-name: Conformance - EC2 - master
     description: Runs conformance tests using kubetest against kubernetes master on EC2
   labels:
@@ -1052,7 +1052,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-arm64-conformance-latest
   annotations:
-    testgrid-dashboards: amazon-ec2, conformance-all, conformance-ec2, sig-release-master-informing
+    testgrid-dashboards: amazon-ec2, conformance-all, conformance-ec2, sig-release-master-informing, amazon-ec2-release
     testgrid-tab-name: Conformance - EC2 - arm64 - master
     description: Runs conformance tests using kubetest against kubernetes master on EC2 (arm64)
   labels:
