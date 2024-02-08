@@ -50,6 +50,7 @@ presubmits:
 periodics:
 - interval: 1h
   name: ci-kubernetes-coverage-conformance
+  cluster: k8s-infra-prow-build
   decorate: true
   labels:
     preset-service-account: "true"
