@@ -643,6 +643,7 @@ def generate_misc():
                    terraform_version="1.5.5",
                    extra_flags=[
                        "--zones=us-west-1a",
+                       "--dns=public",
                    ],
                    extra_dashboards=['kops-misc']),
         build_test(name_override="kops-scenario-ipv6-terraform",
@@ -655,6 +656,7 @@ def generate_misc():
                        '--topology=private',
                        '--bastion',
                        "--zones=us-west-1a",
+                       "--dns=public",
                    ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
@@ -1966,6 +1968,9 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2204arm64",
             terraform_version="1.5.5",
+            extra_flags=[
+                "--dns=public",
+            ],
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-ipv6-terraform",
@@ -1975,6 +1980,7 @@ def generate_presubmits_e2e():
             extra_flags=[
                 '--ipv6',
                 '--bastion',
+                '--dns=public',
             ],
         ),
 
