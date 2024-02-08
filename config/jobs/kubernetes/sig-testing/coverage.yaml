@@ -50,6 +50,7 @@ presubmits:
 periodics:
 - interval: 1h
   name: ci-kubernetes-coverage-conformance
+  cluster: k8s-infra-prow-build
   decorate: true
   labels:
     preset-service-account: "true"
@@ -105,6 +106,13 @@ periodics:
         value: "n"
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 16Gi
+        requests:
+          cpu: 4
+          memory: 16Gi
   # coverage for same tests that run in ci-kubernetes-e2e-gci-gce
   annotations:
     testgrid-dashboards: sig-testing-canaries
