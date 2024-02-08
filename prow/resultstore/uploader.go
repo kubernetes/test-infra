@@ -37,6 +37,15 @@ func NewUploader(client *Client) *Uploader {
 	}
 }
 
+// onlyTransientError returns err only if it is transient. This ensures the
+// caller retries the Upload at a later time only for non-permanent errors.
+func onlyTransientError(err error) error {
+	if writer.IsPermanentError(err) {
+		return nil
+	}
+	return err
+}
+
 // Upload uploads a completed Prow job's results to ResultStore's API:
 // https://github.com/googleapis/googleapis/blob/master/google/devtools/resultstore/v2/resultstore_upload.proto
 // This function distinguishes between transient and permanent errors; only
@@ -50,10 +59,7 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 	}
 	w, err := writer.New(ctx, log, u.client, inv, authToken.From(inv.Id.InvocationId))
 	if err != nil {
-		if writer.PermanentError(err) {
-			return nil
-		}
-		return err
+		return onlyTransientError(err)
 	}
 	// While the resource proto write methods could theoretically return error,
 	// because we presently create fewer than writer.batchSize updates, they
@@ -64,10 +70,7 @@ func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) er
 	w.WriteAction(ctx, p.OverallAction())
 
 	if err := w.Finalize(ctx); err != nil {
-		if writer.PermanentError(err) {
-			return nil
-		}
-		return err
+		return onlyTransientError(err)
 	}
 	return nil
 }

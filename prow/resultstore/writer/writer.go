@@ -77,12 +77,12 @@ type writer struct {
 	finalized   bool
 }
 
-// PermanentError returns whether the error status code is permanent based on
+// IsPermanentError returns whether the error status code is permanent based on
 // the ResultStore implementation, according to the ResultStore maintainers.
 // (No external documentation is known.) Permanent errors will never succeed
 // and should not be retried. Transient errors should be retried with
 // exponential backoff.
-func PermanentError(err error) bool {
+func IsPermanentError(err error) bool {
 	status, _ := status.FromError(err)
 	switch status.Code() {
 	case codes.AlreadyExists:
@@ -136,7 +136,7 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 		return nil, err
 	}
 
-	if touchErr := w.touchInvocation(ctx, invID); PermanentError(touchErr) {
+	if touchErr := w.touchInvocation(ctx, invID); IsPermanentError(touchErr) {
 		// Since it was confirmed above that the Invocation exists, a
 		// permanent error here indicates the Invocation is finalized.
 		return nil, err
@@ -150,15 +150,21 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 	return w, nil
 }
 
+// onlyPermanentError returns err only if it is permanent. Used to prevent
+// retries for RPC errors which will never succeed.
+func onlyPermanentError(err error) error {
+	if IsPermanentError(err) {
+		return err
+	}
+	return nil
+}
+
 func (w *writer) createInvocation(ctx context.Context, inv *resultstore.Invocation, invID string) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
 		if err != nil {
 			w.log.Errorf("resultstore.CreateInvocation: %v", err)
-			if PermanentError(err) {
-				return false, err // End retries.
-			}
-			return false, nil
+			return false, onlyPermanentError(err)
 		}
 		w.retInv = inv
 		return true, nil
@@ -170,10 +176,7 @@ func (w *writer) touchInvocation(ctx context.Context, invID string) error {
 		_, err := w.client.TouchInvocation(ctx, w.touchInvocationRequest(invID))
 		if err != nil {
 			w.log.Errorf("resultstore.TouchInvocation: %v", err)
-			if PermanentError(err) {
-				return false, err // End retries.
-			}
-			return false, nil
+			return false, onlyPermanentError(err)
 		}
 		return true, nil
 	})
@@ -184,10 +187,7 @@ func (w *writer) retrieveResumeToken(ctx context.Context, invID string) error {
 		meta, err := w.client.GetInvocationUploadMetadata(ctx, w.getInvocationUploadMetadataRequest(invID))
 		if err != nil {
 			w.log.Errorf("resultstore.GetInvocationUploadMetadata: %v", err)
-			if PermanentError(err) {
-				return false, err // End retries.
-			}
-			return false, nil
+			return false, onlyPermanentError(err)
 		}
 		w.resumeToken = meta.ResumeToken
 		return true, nil
@@ -266,7 +266,7 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
 		if _, err := w.client.UploadBatch(ctx, b); err != nil {
 			w.log.Errorf("resultstore.UploadBatch: %v", err)
-			if PermanentError(err) {
+			if IsPermanentError(err) {
 				// End retries by returning error.
 				return false, err
 			}
