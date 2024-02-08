@@ -11,7 +11,7 @@ presets:
   volumes:
   - name: cloud-provider-vsphere-e2e-config
     secret:
-      secretName: cloud-provider-vsphere-e2e-config
+      secretName: cloud-provider-vsphere-ci
       items:
       - key: config.env
         path: config.env
