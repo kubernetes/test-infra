@@ -20,7 +20,7 @@ periodics:
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       args:
@@ -60,7 +60,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/issues/2854
     serviceAccountName: boskos-janitor
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       args:

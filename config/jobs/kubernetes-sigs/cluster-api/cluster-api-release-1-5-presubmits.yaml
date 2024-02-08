@@ -11,7 +11,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -39,7 +39,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         resources:
           requests:
             cpu: 7300m
@@ -62,7 +62,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -88,7 +88,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -112,7 +112,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -149,7 +149,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -190,7 +190,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -224,7 +224,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -257,7 +257,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -294,7 +294,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -332,7 +332,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

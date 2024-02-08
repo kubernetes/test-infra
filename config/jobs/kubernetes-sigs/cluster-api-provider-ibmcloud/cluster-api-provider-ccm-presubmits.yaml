@@ -25,7 +25,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27
         imagePullPolicy: IfNotPresent
         resources:
           limits:
