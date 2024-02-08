@@ -56,6 +56,6 @@ ADD ./buildx-entrypoint.sh /buildx-entrypoint
 RUN apk add qemu
 
 # Install buildx system-wide for fast docker builds
-COPY --from=docker/buildx-bin:0.10.4 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+COPY --from=docker/buildx-bin:0.12.1 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]

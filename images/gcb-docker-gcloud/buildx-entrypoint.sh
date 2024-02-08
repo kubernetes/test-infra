@@ -16,5 +16,8 @@
 set -euo pipefail
 
 /register --reset -p yes
+if [ -z "${BUILDX_NO_DEFAULT_ATTESTATIONS}" ]; then
+    export BUILDX_NO_DEFAULT_ATTESTATIONS=1
+fi
 docker buildx create --use
 docker buildx "$@"
