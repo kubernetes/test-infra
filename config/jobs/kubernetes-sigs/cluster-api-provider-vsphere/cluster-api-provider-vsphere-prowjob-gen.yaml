@@ -9,7 +9,7 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.28"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.28"
       # interval for e2e jobs
       interval: "24h"
       upgradesInterval: "24h"
@@ -19,7 +19,7 @@ prow_ignored:
       - from: "1.29"
         to: "1.30"
     release-1.9:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.28"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.28"
       # interval for e2e jobs
       interval: "24h"
       upgradesInterval: "24h"
@@ -29,11 +29,11 @@ prow_ignored:
       - from: "1.29"
         to: "1.30"
     release-1.8:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.27"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.27"
       # interval for e2e jobs
       interval: "24h"
     release-1.7:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-1.26"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-1.26"
       # interval for e2e jobs
       interval: "24h"
     release-1.6:

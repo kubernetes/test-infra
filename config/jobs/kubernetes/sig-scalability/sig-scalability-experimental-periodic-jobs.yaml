@@ -28,7 +28,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -85,7 +85,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -161,7 +161,7 @@ periodics:
     testgrid-tab-name: watchlist-off
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -225,7 +225,7 @@ periodics:
     testgrid-tab-name: watchlist-on
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -286,7 +286,7 @@ periodics:
     testgrid-tab-name: consistent-list-from-cache-on-large-objects
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -355,7 +355,7 @@ periodics:
     testgrid-tab-name: consistent-list-from-cache-off-large-objects
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -424,7 +424,7 @@ periodics:
     testgrid-tab-name: consistent-list-from-cache-on-small-objects
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -493,7 +493,7 @@ periodics:
     testgrid-tab-name: consistent-list-from-cache-off-small-objects
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py

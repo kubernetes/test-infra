@@ -11,7 +11,7 @@ presubmits:
     - ^release-0.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         command:
         - "runner.sh"
         - "./scripts/ci-test.sh"
@@ -36,7 +36,7 @@ presubmits:
     - ^release-0.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         command:
         - "runner.sh"
         - "./scripts/ci-build.sh"
@@ -64,7 +64,7 @@ presubmits:
     - ^release-0.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240207-d8632cc3bc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
