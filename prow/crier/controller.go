@@ -20,6 +20,7 @@ package crier
 import (
 	"context"
 	"fmt"
+	"golang.org/x/time/rate"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -68,7 +69,10 @@ func New(
 		Named(fmt.Sprintf("crier_%s", reporter.GetName())).
 		For(&prowv1.ProwJob{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers,
-			RateLimiter: workqueue.DefaultControllerRateLimiter()}).
+			RateLimiter: workqueue.NewMaxOfRateLimiter(
+				workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 500*time.Second),
+				// 20 qps, 200 bucket size.
+				&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(20), 200)})}).
 		Complete(&reconciler{
 			pjclientset:       mgr.GetClient(),
 			reporter:          reporter,
