@@ -119,6 +119,7 @@ periodics:
     description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
 - interval: 1h
   name: ci-kubernetes-coverage-e2e-gci-gce
+  cluster: k8s-infra-prow-build
   decorate: true
   labels:
     preset-service-account: "true"
@@ -178,6 +179,13 @@ periodics:
         value: "n"
       securityContext:
         privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 16Gi
+        requests:
+          cpu: 4
+          memory: 16Gi
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
