@@ -19,3 +19,4 @@ dashboard_groups:
   - amazon-ec2-al2023
   - amazon-ec2-provider
   - amazon-ec2-release
+  - presubmits-ec2
