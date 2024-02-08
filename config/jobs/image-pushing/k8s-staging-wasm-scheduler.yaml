@@ -1,0 +1,33 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated
+  # for each repo.
+  kubernetes-sigs/kube-scheduler-wasm-extension:
+    # The name should be changed to match the repo name above
+    - name: post-kube-scheduler-wasm-extension-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # This is the name of some testgrid dashboard to report to.
+        # If this is the first one for your sig, you may need to create one
+        testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
+      decorate: true
+      # this causes the job to only run on the main branch. Remove it if your
+      # job makes sense on every branch (unless it's setting a `latest` tag it
+      # probably does).
+      branches:
+        - ^main$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-wasm-scheduler
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-wasm-scheduler-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
