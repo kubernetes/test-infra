@@ -12,12 +12,12 @@ steps:
     - --build-arg=KIND_VERSION=$_KIND_VERSION
     - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
     - --build-arg=YQ_VERSION=$_YQ_VERSION
+    - --push
     - .
     dir: .
   - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
     entrypoint: gcloud
     args:
-    - tag
     - container
     - images
     - add-tag

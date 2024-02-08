@@ -242,7 +242,6 @@ postsubmits:
           args:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
-          - --build-dir=.
           - images/kubekins-e2e-v2/
     #
     # components, e.g. kettle/, triage/
