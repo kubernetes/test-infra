@@ -25,7 +25,7 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-cloud-provider-aws
+      testgrid-dashboards: provider-aws-cloud-provider-aws, amazon-ec2-presubmits
       testgrid-tab-name: check
       description: aws cloud provider checks
       testgrid-num-columns-recent: '30'
@@ -54,7 +54,7 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-cloud-provider-aws
+      testgrid-dashboards: provider-aws-cloud-provider-aws, amazon-ec2-presubmits
       testgrid-tab-name: test
       description: aws cloud provider tests
       testgrid-num-columns-recent: '30'

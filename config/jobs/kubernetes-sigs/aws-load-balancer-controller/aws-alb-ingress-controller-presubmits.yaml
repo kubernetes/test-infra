@@ -22,7 +22,7 @@ presubmits:
             cpu: 1
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-dashboards: provider-aws-load-balancer-controller, amazon-ec2-presubmits
       testgrid-tab-name: lint
       description: aws load balancer controller code lint
       testgrid-num-columns-recent: '30'
@@ -48,7 +48,7 @@ presubmits:
             cpu: 6
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-dashboards: provider-aws-load-balancer-controller, amazon-ec2-presubmits
       testgrid-tab-name: unit test
       description: aws load balancer controller unit tests
       testgrid-num-columns-recent: '30'
@@ -81,7 +81,7 @@ presubmits:
             cpu: 4
             memory: 8Gi
     annotations:
-      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-dashboards: provider-aws-load-balancer-controller, amazon-ec2-presubmits
       testgrid-tab-name: e2e test
       description: aws load balancer controller e2e tests
       testgrid-num-columns-recent: '30'
@@ -107,7 +107,7 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-dashboards: provider-aws-load-balancer-controller, amazon-ec2-presubmits
       testgrid-tab-name: unit test 2
       description: aws load balancer controller unit tests
       testgrid-num-columns-recent: '30'
@@ -133,7 +133,7 @@ presubmits:
             cpu: 3
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-dashboards: provider-aws-load-balancer-controller, amazon-ec2-presubmits
       testgrid-tab-name: unit test 3
       description: aws load balancer controller unit tests
       testgrid-num-columns-recent: '30'
@@ -159,7 +159,7 @@ presubmits:
             cpu: 4
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-dashboards: provider-aws-load-balancer-controller, amazon-ec2-presubmits
       testgrid-tab-name: unit test 4
       description: aws load balancer controller unit tests
       testgrid-num-columns-recent: '30'
