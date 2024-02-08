@@ -9,7 +9,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - hack/pull-security-profiles-operator-build
         resources:
@@ -29,7 +29,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - hack/pull-security-profiles-operator-verify
         resources:
@@ -49,7 +49,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - hack/pull-security-profiles-operator-test-unit
         resources:
