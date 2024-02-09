@@ -153,6 +153,7 @@ periodics:
         is:issue
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/kubectl
+        -repo:kubernetes/steering
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
@@ -213,6 +214,7 @@ periodics:
         is:pr
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
+        -repo:kubernetes/steering
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -337,6 +339,7 @@ periodics:
         is:issue
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
+        -repo:kubernetes/steering
         -label:lifecycle/frozen
         -label:lifecycle/rotten
         -label:"help wanted"
@@ -397,6 +400,7 @@ periodics:
         is:pr
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
+        -repo:kubernetes/steering
         -label:lifecycle/frozen
         -label:lifecycle/rotten
         label:lifecycle/stale
@@ -454,6 +458,7 @@ periodics:
         is:issue
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
+        -repo:kubernetes/steering
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
@@ -514,6 +519,7 @@ periodics:
         is:pr
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
+        -repo:kubernetes/steering
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
@@ -617,6 +623,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/steering
         label:triage/accepted
         -label:priority/important-soon
         -label:priority/critical-urgent
@@ -665,6 +672,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/steering
         label:triage/accepted
         label:priority/important-soon
         is:issue
@@ -714,6 +722,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/steering
         label:triage/accepted
         label:priority/critical-urgent
         is:issue
