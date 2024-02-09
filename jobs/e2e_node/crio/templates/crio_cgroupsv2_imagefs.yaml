@@ -14,17 +14,9 @@ storage:
       contents:
         local: kubelet-e2e.te
       mode: 0644
-    - path: /etc/crio/crio.conf.d/10-log-level.conf
+    - path: /etc/crio/crio.conf.d/crio.conf
       contents:
-        local: 10-log-level.conf
-      mode: 0644
-    - path: /etc/crio/crio.conf.d/20-runtimes.conf
-      contents:
-        local: 20-runtimes.conf
-      mode: 0644
-    - path: /etc/crio/crio.conf.d/30-infra-container.conf
-      contents:
-        local: 30-infra-container.conf
+        local: crio.conf
       mode: 0644
     - path: /etc/sysctl.d/99-e2e-sysctl.conf
       contents:
@@ -99,18 +91,17 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="SCRIPT_COMMIT=2ecbfb31ab8451345552e861fe6b0a961694bd29"
-        Environment="CRIO_COMMIT=4e230f28c6e3dd9bca81b67c0bb6ca9316f25743"
+        Environment="SCRIPT_COMMIT=85f0d4175e1abce29dc9f6efbd45fb235df86c3d"
+        Environment="CRIO_COMMIT=efff37a2900e5039e5af554c3196633df25890dc"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
         ExecStartPre=mount -o remount,rw /dev/sda4 /usr
-        ExecStartPre=rm -f /usr/bin/runc
         ExecStartPre=bash -c '\
           curl --fail --retry 5 --retry-delay 3 --silent --show-error \
             https://raw.githubusercontent.com/cri-o/packaging/$SCRIPT_COMMIT/get |\
               bash -s -- -t $CRIO_COMMIT'
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
-        ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
+        ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crio.conf
         ExecStart=systemctl enable --now crio.service
 
         [Install]
@@ -136,4 +127,20 @@ systemd:
         WantedBy=multi-user.target
     - name: label-graphroot.service
       enabled: true
-      contents: "[Unit]\nDescription=Label Graphroot\nAfter=crio-install.service\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  policycoreutils-python-utils \nExecStart=semanage fcontext -a -e /var/lib/containers /tmp/containers\nExecStart=restorecon -R -v /tmp/containers\n\n[Install]\nWantedBy=multi-user.target"
+      contents: |
+        [Unit]
+        Description=Label Graphroot
+        After=crio-install.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=rpm-ostree install \
+          -y \
+          --apply-live \
+          --allow-inactive \
+          policycoreutils-python-utils
+        ExecStart=semanage fcontext -a -e /var/lib/containers /tmp/containers
+        ExecStart=restorecon -R -v /tmp/containers
+
+        [Install]
+        WantedBy=multi-user.target

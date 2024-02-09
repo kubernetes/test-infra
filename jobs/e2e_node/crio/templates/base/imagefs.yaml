@@ -20,7 +20,7 @@ systemd:
           -y \
           --apply-live \
           --allow-inactive \
-          policycoreutils-python-utils 
+          policycoreutils-python-utils
         ExecStart=semanage fcontext -a -e /var/lib/containers /tmp/containers
         ExecStart=restorecon -R -v /tmp/containers
 
