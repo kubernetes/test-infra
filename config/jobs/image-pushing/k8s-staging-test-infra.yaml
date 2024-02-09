@@ -205,6 +205,9 @@ postsubmits:
         description: builds and pushes the kubekins-e2e image
       run_if_changed: '^(images/kubekins-e2e|kubetest|boskos|logexporter)/'
       decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
       branches:
       - ^master$
       max_concurrency: 1
@@ -230,6 +233,9 @@ postsubmits:
         description: builds and pushes the kubekins-e2e-v2 image
       run_if_changed: '^images/kubekins-e2e-v2/'
       decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
       branches:
       - ^master$
       max_concurrency: 1

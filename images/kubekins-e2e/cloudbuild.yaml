@@ -47,7 +47,7 @@ substitutions:
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.23.1
-timeout: 1800s  
+timeout: 7200s
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
