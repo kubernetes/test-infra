@@ -7,8 +7,6 @@ periodics:
   interval: 6h
   labels:
     preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-aws-credential-aws-shared-testing: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: aws-ebs-csi-driver
@@ -21,8 +19,6 @@ periodics:
       args:
       - make
       - test
-      securityContext:
-        privileged: true
       resources:
         limits:
           cpu: "2"
