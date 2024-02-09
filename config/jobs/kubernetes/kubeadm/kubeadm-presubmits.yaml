@@ -4,6 +4,7 @@ presubmits:
 
   # kinder presubmits
   - name: pull-kubeadm-kinder-verify
+    cluster: eks-prow-build-cluster
     decorate: true
     optional: false
     path_alias: "k8s.io/kubeadm"
@@ -13,8 +14,16 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240130-9db6d59ca0-master
         command:
         - "./kinder/hack/verify-all.sh"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "9Gi"
+          limits:
+            cpu: "2"
+            memory: "9Gi"
 
   - name: pull-kubeadm-kinder-upgrade-latest
+    cluster: eks-prow-build-cluster
     decorate: true
     optional: false
     run_if_changed: '^kinder\/.*$'
@@ -42,5 +51,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "9000Mi"
-            cpu: 2000m
+            cpu: "2"
+            memory: "9Gi"
+          limits:
+            cpu: "2"
+            memory: "9Gi"
