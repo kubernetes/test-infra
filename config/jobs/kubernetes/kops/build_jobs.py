@@ -503,9 +503,9 @@ def generate_misc():
                    extra_dashboards=['kops-misc'],
                    scenario='smoketest',
                    env={
-                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.1/", # pylint: disable=line-too-long
-                       'KOPS_VERSION': "v1.28.1",
-                       'K8S_VERSION': "v1.28.4",
+                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.4/", # pylint: disable=line-too-long
+                       'KOPS_VERSION': "v1.28.4",
+                       'K8S_VERSION': "v1.28.6",
                        'KOPS_SKIP_E2E': '1',
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),

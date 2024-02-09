@@ -93,11 +93,11 @@ periodics:
       - ./tests/e2e/scenarios/smoketest/run-test.sh
       env:
       - name: KOPS_BASE_URL
-        value: "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.1/"
+        value: "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.4/"
       - name: KOPS_VERSION
-        value: "v1.28.1"
-      - name: K8S_VERSION
         value: "v1.28.4"
+      - name: K8S_VERSION
+        value: "v1.28.6"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_CONTROL_PLANE_SIZE
