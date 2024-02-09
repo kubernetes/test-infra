@@ -18,7 +18,7 @@ package resultstore
 
 import "testing"
 
-func TestTokener(t *testing.T) {
+func TestTokenGenerator(t *testing.T) {
 
 	for _, tc := range []struct {
 		desc string

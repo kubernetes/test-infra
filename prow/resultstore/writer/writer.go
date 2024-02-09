@@ -113,8 +113,8 @@ func IsAlreadyExistsErr(err error) bool {
 // writer syncs with ResultStore to resume writing. RPCs are retried with
 // exponential backoff unless there is a permanent error, which is returned
 // immediately. The caller should check whether a returned error is permanent
-// using PermanentError() and only retry transient errors. The authToken is a
-// UUID and must be identical across all calls for the same Invocation.
+// using IsPermanentError() and only retry transient errors. The authToken is
+// a UUID and must be identical across all calls for the same Invocation.
 func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation, invID, authToken string) (*writer, error) {
 	w := &writer{
 		log:         log,
