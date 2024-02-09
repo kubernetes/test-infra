@@ -22,8 +22,8 @@ presubmits:
             cpu: 4
             memory: 8Gi
     annotations:
-      testgrid-dashboards: provider-aws-iam-authenticator
-      testgrid-tab-name: pull-unit-test
+      testgrid-dashboards: provider-aws-iam-authenticator, amazon-ec2-presubmits
+      testgrid-tab-name: pull-iam-unit-test
       description: AWS IAM Authenticator unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-iam-authenticator-integration
@@ -50,7 +50,7 @@ presubmits:
             cpu: 4
             memory: 8Gi
     annotations:
-      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-dashboards: provider-aws-iam-authenticator, amazon-ec2-presubmits
       testgrid-tab-name: pull-integration
       description: AWS IAM Authenticator integration test on pull request
       testgrid-num-columns-recent: '30'
@@ -80,7 +80,7 @@ presubmits:
             cpu: 4
             memory: 8Gi
     annotations:
-      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-dashboards: provider-aws-iam-authenticator, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e
       description: AWS IAM Authenticator end-to-end test on pull request
       testgrid-num-columns-recent: '30'
@@ -117,7 +117,7 @@ presubmits:
             cpu: 4
             memory: 8Gi
     annotations:
-      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-dashboards: provider-aws-iam-authenticator, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e-kind
       description: AWS IAM Authenticator end-to-end test on pull request (run on kind)
       testgrid-num-columns-recent: '30'

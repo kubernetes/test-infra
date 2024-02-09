@@ -24,8 +24,8 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver
-      testgrid-tab-name: unit-test
+      testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: unit-fsx-openzfs-test
       description: aws fsx openzfs csi driver unit test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-fsx-openzfs-csi-driver-sanity
@@ -56,7 +56,7 @@ presubmits:
             cpu: 2
             memory: 4Gi
     annotations:
-      testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver
+      testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: sanity-test
       description: aws fsx openzfs csi driver sanity test
       testgrid-num-columns-recent: '30'

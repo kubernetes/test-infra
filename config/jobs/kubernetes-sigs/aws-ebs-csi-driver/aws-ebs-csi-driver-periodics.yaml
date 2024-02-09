@@ -31,7 +31,7 @@ periodics:
           cpu: "2"
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-aws-ebs-csi-driver
+    testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-unit-test
     description: aws ebs csi driver unit test, continuous
     testgrid-num-columns-recent: '30'
@@ -67,7 +67,7 @@ periodics:
           cpu: "2"
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-aws-ebs-csi-driver
+    testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-e2e-test-single-az
     description: aws ebs csi driver e2e test on single az, continuous
     testgrid-num-columns-recent: '30'
@@ -103,7 +103,7 @@ periodics:
           cpu: "2"
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-aws-ebs-csi-driver
+    testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-e2e-test-multi-az
     description: aws ebs csi driver e2e test on mutiple AZs, continuous
     testgrid-num-columns-recent: '30'
@@ -139,7 +139,7 @@ periodics:
           cpu: "2"
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-aws-ebs-csi-driver
+    testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-periodics
     testgrid-tab-name: ci-external-test
     description: kubernetes/kubernetes external test, continuous
     testgrid-num-columns-recent: '30'

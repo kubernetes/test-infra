@@ -7,6 +7,8 @@ dashboards:
 - name: amazon-ec2-al2023
 - name: amazon-ec2-provider
 - name: amazon-ec2-release
+- name: amazon-ec2-periodics
+- name: amazon-ec2-presubmits
 
 #
 # Start dashboard groups
@@ -19,3 +21,5 @@ dashboard_groups:
   - amazon-ec2-al2023
   - amazon-ec2-provider
   - amazon-ec2-release
+  - amazon-ec2-periodics
+  - amazon-ec2-presubmits

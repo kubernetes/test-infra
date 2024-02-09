@@ -28,7 +28,7 @@ presubmits:
             cpu: "2"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: test-e2e-external-eks-windows
       description: aws ebs csi driver External Storage tests for Windows on pull request
       testgrid-num-columns-recent: '30'
@@ -61,7 +61,7 @@ presubmits:
             cpu: "2"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: test-helm-chart
       description: aws ebs csi driver test helm chart on pull request
       testgrid-num-columns-recent: '30'
@@ -89,8 +89,8 @@ presubmits:
             cpu: "2"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
-      testgrid-tab-name: verify
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: verify-ebs
       description: aws ebs csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
@@ -117,8 +117,8 @@ presubmits:
             cpu: "2"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
-      testgrid-tab-name: pull-unit-test
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: pull-ebs-unit-test
       description: aws ebs csi driver unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
@@ -149,7 +149,7 @@ presubmits:
             cpu: "2"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e-test-single-az
       description: aws ebs csi driver e2e test on single az on pull request
       testgrid-num-columns-recent: '30'
@@ -181,7 +181,7 @@ presubmits:
             cpu: "2"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-e2e-test-multi-az
       description: aws ebs csi driver e2e test on mutiple AZs on pull request
       testgrid-num-columns-recent: '30'
@@ -213,7 +213,7 @@ presubmits:
               cpu: "2"
               memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test
       description: kubernetes/kubernetes external test on pull request
       testgrid-num-columns-recent: '30'
@@ -245,8 +245,8 @@ presubmits:
               cpu: "2"
               memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
-      testgrid-tab-name: pull-external-test-eks
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: pull-ebs-external-test-eks
       description: kubernetes/kubernetes external test on pull request on eks
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-kustomize
@@ -277,7 +277,7 @@ presubmits:
               cpu: "2"
               memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test-kustomize
       description: kubernetes/kubernetes external test on pull request via kustomize
       testgrid-num-columns-recent: '30'
@@ -310,7 +310,7 @@ presubmits:
               cpu: "2"
               memory: "4Gi"
     annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: pull-external-test-arm64
       description: kubernetes/kubernetes external test on pull request with arm64 nodes and image
       testgrid-num-columns-recent: '30'

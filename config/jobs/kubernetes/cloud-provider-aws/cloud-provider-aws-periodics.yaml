@@ -7,7 +7,7 @@ periodics:
     timeout: 80m
   annotations:
     testgrid-tab-name: ci-cloud-provider-aws-e2e
-    testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
+    testgrid-dashboards: amazon-ec2, amazon-ec2-provider, provider-aws-periodics, amazon-ec2-periodics
     description: Runs e2e against cloud-provider-aws master on AWS
   labels:
     preset-dind-enabled: "true"
@@ -50,7 +50,7 @@ periodics:
     timeout: 80m
   annotations:
     testgrid-tab-name: ci-cloud-provider-aws-e2e-with-kubernetes-master
-    testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
+    testgrid-dashboards: amazon-ec2, amazon-ec2-provider, provider-aws-periodics, amazon-ec2-periodics
     description: Runs e2e against cloud-provider-aws master on AWS using latest k8s.io/kubernetes libraries
   labels:
     preset-dind-enabled: "true"
@@ -95,7 +95,7 @@ periodics:
     testgrid-alert-stale-results-hours: "24"
     testgrid-create-test-group: "true"
     testgrid-num-failures-to-alert: "10"
-    testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
+    testgrid-dashboards: amazon-ec2, amazon-ec2-provider, provider-aws-periodics, amazon-ec2-periodics
   labels:
     preset-dind-enabled: "true"
     preset-aws-credential-aws-shared-testing: "true"
@@ -175,7 +175,7 @@ periodics:
     testgrid-alert-stale-results-hours: "24"
     testgrid-create-test-group: "true"
     testgrid-num-failures-to-alert: "10"
-    testgrid-dashboards: presubmits-ec2, amazon-ec2, amazon-ec2-provider, provider-aws-periodics
+    testgrid-dashboards: amazon-ec2, amazon-ec2-provider, provider-aws-periodics, amazon-ec2-periodics
   labels:
     preset-dind-enabled: "true"
     preset-aws-credential-aws-shared-testing: "true"
