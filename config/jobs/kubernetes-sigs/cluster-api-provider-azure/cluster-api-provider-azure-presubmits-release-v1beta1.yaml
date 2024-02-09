@@ -10,7 +10,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -34,7 +34,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -64,7 +64,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -97,7 +97,7 @@ presubmits:
       - ^release-1.*
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
           command:
             - runner.sh
           args:
@@ -133,7 +133,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -168,7 +168,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -204,7 +204,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -234,7 +234,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
         - "runner.sh"
         - "make"
@@ -269,7 +269,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -296,7 +296,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -320,7 +320,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         command:
           - runner.sh
         args:
@@ -361,7 +361,7 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
           command:
             - runner.sh
           args:
@@ -400,7 +400,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

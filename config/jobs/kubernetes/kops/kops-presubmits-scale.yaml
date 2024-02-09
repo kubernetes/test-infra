@@ -28,7 +28,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -95,7 +95,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -206,7 +206,7 @@ presubmits:
       path_alias: k8s.io/perf-tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -309,7 +309,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -412,7 +412,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         imagePullPolicy: Always
         command:
         - runner.sh

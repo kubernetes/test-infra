@@ -8,7 +8,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         command:
         - "./hack/verify-all.sh"
         resources:
@@ -30,7 +30,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
