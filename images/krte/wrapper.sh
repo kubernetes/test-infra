@@ -93,6 +93,8 @@ fi
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
   >&2 echo "wrapper.sh] [SETUP] Docker in Docker enabled, initializing ..."
+  # Fix ulimit issue
+  sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
   # If we have opted in to docker in docker, start the docker daemon,
   service docker start
   # the service can be started but the docker socket not ready, wait for ready
