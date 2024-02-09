@@ -25,7 +25,7 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-encryption-provider, amazon-ec2-presubmits
-      testgrid-tab-name: verify
+      testgrid-tab-name: verify-enc
       description: aws-encryption-provider verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-encryption-provider-unittest
@@ -55,6 +55,6 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-encryption-provider, amazon-ec2-presubmits
-      testgrid-tab-name: unit-test
+      testgrid-tab-name: unit-enc-test
       description: aws-encryption-provider unit tests
       testgrid-num-columns-recent: '30'

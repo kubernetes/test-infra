@@ -90,7 +90,7 @@ presubmits:
             memory: "4Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: verify
+      testgrid-tab-name: verify-ebs
       description: aws ebs csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
@@ -118,7 +118,7 @@ presubmits:
             memory: "4Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: pull-unit-test
+      testgrid-tab-name: pull-ebs-unit-test
       description: aws ebs csi driver unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
@@ -246,7 +246,7 @@ presubmits:
               memory: "4Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: pull-external-test-eks
+      testgrid-tab-name: pull-ebs-external-test-eks
       description: kubernetes/kubernetes external test on pull request on eks
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-kustomize

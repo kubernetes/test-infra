@@ -23,7 +23,7 @@ presubmits:
             memory: 8Gi
     annotations:
       testgrid-dashboards: provider-aws-iam-authenticator, amazon-ec2-presubmits
-      testgrid-tab-name: pull-unit-test
+      testgrid-tab-name: pull-iam-unit-test
       description: AWS IAM Authenticator unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-iam-authenticator-integration

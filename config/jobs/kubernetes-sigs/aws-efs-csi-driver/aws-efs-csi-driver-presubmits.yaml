@@ -25,7 +25,7 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-efs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: verify
+      testgrid-tab-name: verify-efs
       description: aws efs csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-efs-csi-driver-unit
@@ -53,7 +53,7 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-efs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: unit-test
+      testgrid-tab-name: unit-efs-test
       description: aws efs csi driver unit test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-efs-csi-driver-e2e
@@ -85,7 +85,7 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-efs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: e2e-test
+      testgrid-tab-name: e2e-efs-test
       description: aws efs csi driver e2e test
       testgrid-num-columns-recent: '30'
   - name: pull-aws-efs-csi-driver-external-test-eks
@@ -117,6 +117,6 @@ presubmits:
               memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-efs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: pull-external-test-eks
+      testgrid-tab-name: pull-efs-external-test-eks
       description: kubernetes/kubernetes external test on pull request on eks
       testgrid-num-columns-recent: '30'
