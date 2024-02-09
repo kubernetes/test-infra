@@ -1007,13 +1007,36 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=6),
 
+        build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-aws-cni",
+                   cloud="aws",
+                   distro="al2023",
+                   networking="amazonvpc",
+                   k8s_version="stable",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
+                   kops_channel="alpha",
+                   build_cluster="k8s-infra-prow-build",
+                   extra_flags=[
+                       "--set=spec.kubeAPIServer.logLevel=4",
+                       "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
+                       "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
+                       "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
+                       "--node-size=t3.large",
+                   ],
+                   focus_regex=r'\[Conformance\]',
+                   skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
+                   test_timeout_minutes=200,
+                   test_parallelism=1, # serial tests
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   runs_per_day=6),
+
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="amazonvpc",
                    k8s_version="ci",
                    kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
-                   cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
+                   cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
