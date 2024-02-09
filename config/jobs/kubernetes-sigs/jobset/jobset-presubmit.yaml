@@ -43,44 +43,11 @@ presubmits:
       description: "Run jobset integration tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - make
         args:
         - test-integration
-        resources:
-          limits:
-            cpu: 3
-            memory: 10Gi
-          requests:
-            cpu: 3
-            memory: 10Gi
-  - name: pull-jobset-test-e2e-main-1-25
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/jobset
-    annotations:
-      testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-e2e-main-1-25
-      description: "Run jobset end to end tests for Kubernetes 1.25"
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-master
-        env:
-        - name: E2E_KIND_VERSION
-          value: kindest/node:v1.25.3
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        args:
-        - make
-        - test-e2e-kind
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
         resources:
           limits:
             cpu: 3
@@ -233,7 +200,7 @@ presubmits:
       description: "Run jobset verify checks"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - make
         args:
