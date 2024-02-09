@@ -993,7 +993,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="eks-prow-build-cluster",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1015,7 +1015,7 @@ def generate_misc():
                    kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="eks-prow-build-cluster",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
