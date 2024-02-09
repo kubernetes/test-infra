@@ -51,6 +51,13 @@ periodics:
       - --timeout=40m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: 4
+          memory: 16Gi
+        requests:
+          cpu: 4
+          memory: 16Gi
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: gce
