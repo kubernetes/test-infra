@@ -7,7 +7,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.21
+          - image: public.ecr.aws/docker/library/golang:1.22
             imagePullPolicy: Always
             command:
               - make
@@ -29,7 +29,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.21
+          - image: public.ecr.aws/docker/library/golang:1.22
             imagePullPolicy: Always
             command:
               - make
@@ -51,7 +51,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.21
+          - image: public.ecr.aws/docker/library/golang:1.22
             imagePullPolicy: Always
             command:
               - make
@@ -81,9 +81,9 @@ presubmits:
               - runner.sh
             env:
               - name: K8S_VERSION
-                value: "v1.29.0"
+                value: "v1.29.1"
               - name: KIND_VERSION
-                value: "v0.20.0"
+                value: "v0.21.0"
               - name: FOCUS
                 value: "Simple pod should contain last line of the log"
               - name: DRYRUN
@@ -126,9 +126,9 @@ presubmits:
               - runner.sh
             env:
               - name: K8S_VERSION
-                value: "v1.29.0"
+                value: "v1.29.1"
               - name: KIND_VERSION
-                value: "v0.20.0"
+                value: "v0.21.0"
               - name: FOCUS
                 value: "Simple pod should contain last line of the log"
               - name: CHECK_DURATION

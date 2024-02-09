@@ -21,9 +21,9 @@ periodics:
             - runner.sh
           env:
             - name: K8S_VERSION
-              value: "v1.29.0"
+              value: "v1.29.1"
             - name: KIND_VERSION
-              value: "v0.20.0"
+              value: "v0.21.0"
             - name: CONFORMANCE
               value: "true"
             - name: EXPECTED_NUM_TESTS
@@ -69,9 +69,9 @@ periodics:
             - runner.sh
           env:
             - name: K8S_VERSION
-              value: "v1.29.0"
+              value: "v1.29.1"
             - name: KIND_VERSION
-              value: "v0.20.0"
+              value: "v0.21.0"
             - name: EXTRA_ARGS
               value: "--parallel=25"
             - name: SKIP
