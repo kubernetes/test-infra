@@ -516,6 +516,7 @@ milestone_applier:
     main: v1.14
     release-1.13: v1.13
     release-1.12: v1.12
+    release-1.11: v1.11 # needed for v1.25 cloud-provider-azure tests
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
