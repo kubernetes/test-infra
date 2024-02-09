@@ -32,6 +32,49 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+func TestInvocationID(t *testing.T) {
+	for _, tc := range []struct {
+		desc    string
+		payload Payload
+		want    string
+		wantErr bool
+	}{
+		{
+			desc: "success",
+			payload: Payload{
+				Job: &v1.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "job-name",
+					},
+				},
+			},
+			want: "job-name",
+		},
+		{
+			desc:    "nil job",
+			payload: Payload{},
+			wantErr: true,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			got, err := tc.payload.InvocationID()
+			if err != nil {
+				if tc.wantErr {
+					t.Logf("got expected error: %v", err)
+					return
+				}
+				t.Fatal("got unexpected error")
+			}
+			if tc.wantErr {
+				t.Fatal("want error, got nil")
+			}
+			if got != tc.want {
+				t.Errorf("InvocationID got %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
 func int64Pointer(v int64) *int64 {
 	return &v
 }
@@ -101,9 +144,6 @@ func TestInvocation(t *testing.T) {
 				ProjectID: "project-id",
 			},
 			want: &resultstore.Invocation{
-				Id: &resultstore.Invocation_Id{
-					InvocationId: "job-name",
-				},
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
@@ -213,9 +253,6 @@ func TestInvocation(t *testing.T) {
 				ProjectID: "project-id",
 			},
 			want: &resultstore.Invocation{
-				Id: &resultstore.Invocation_Id{
-					InvocationId: "job-name",
-				},
 				InvocationAttributes: &resultstore.InvocationAttributes{
 					ProjectId: "project-id",
 					Labels: []string{
@@ -287,49 +324,6 @@ func TestInvocation(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("invocation differs (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInvocationId(t *testing.T) {
-	for _, tc := range []struct {
-		desc    string
-		job     *v1.ProwJob
-		want    *resultstore.Invocation_Id
-		wantErr bool
-	}{
-		{
-			desc: "success",
-			job: &v1.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "job-name",
-				},
-			},
-			want: &resultstore.Invocation_Id{
-				InvocationId: "job-name",
-			},
-		},
-		{
-			desc:    "nil",
-			job:     nil,
-			wantErr: true,
-		},
-	} {
-		t.Run(tc.desc, func(t *testing.T) {
-			got, err := invocationID(tc.job)
-			if err != nil {
-				if tc.wantErr {
-					t.Logf("got expected error: %v", err)
-					return
-				}
-				t.Fatal("got unexpected error")
-			}
-			if tc.wantErr {
-				t.Fatal("want error, got nil")
-			}
-			if diff := cmp.Diff(tc.want, got, protocmp.Transform()); diff != "" {
-				t.Errorf("invocation id differs (-want +got):\n%s", diff)
 			}
 		})
 	}

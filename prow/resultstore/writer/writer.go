@@ -115,9 +115,7 @@ func IsAlreadyExistsErr(err error) bool {
 // immediately. The caller should check whether a returned error is permanent
 // using PermanentError() and only retry transient errors. The authToken is a
 // UUID and must be identical across all calls for the same Invocation.
-func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation, authToken string) (*writer, error) {
-	invID := inv.Id.InvocationId
-	inv.Id = nil
+func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation, invID, authToken string) (*writer, error) {
 	w := &writer{
 		log:         log,
 		client:      client,
