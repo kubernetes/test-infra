@@ -304,7 +304,7 @@ gen-all-proto-stubs(){
 }
 
 gen-gangway-apidescriptorpb-for-cloud-endpoints(){
-  echo >&2 "Generating self-describing proto stub (api_descriptor.pb) for gangway.proto"
+  echo >&2 "Generating self-describing proto stub (gangway_api_descriptor.pb) for gangway.proto"
 
   "${REPO_ROOT}/_bin/protoc/bin/protoc" \
     "--proto_path=${REPO_ROOT}/_bin/protoc/include/google/protobuf" \
@@ -312,7 +312,7 @@ gen-gangway-apidescriptorpb-for-cloud-endpoints(){
     "--proto_path=${REPO_ROOT}/prow/gangway" \
     --include_imports \
     --include_source_info \
-    --descriptor_set_out "${REPO_ROOT}/prow/gangway/api_descriptor.pb" \
+    --descriptor_set_out "${REPO_ROOT}/prow/gangway/gangway_api_descriptor.pb" \
     gangway.proto
 }
 
