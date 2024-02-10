@@ -173,7 +173,7 @@ postsubmits:
           - images/builder/
     - name: post-test-infra-push-krte
       cluster: k8s-infra-prow-build-trusted
-      run_if_changed: '^images/(krte/|kubekins-e2e/variants.yaml)'
+      run_if_changed: '^images/(krte/|kubekins-e2e-v2/variants.yaml)'
       annotations:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
         testgrid-tab-name: krte
@@ -203,7 +203,7 @@ postsubmits:
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
         description: builds and pushes the kubekins-e2e image
-      run_if_changed: '^(images/kubekins-e2e|kubetest|boskos|logexporter)/'
+      run_if_changed: '^(images/(kubekins-e2e/|kubekins-e2e-v2/variants.yaml)|kubetest|boskos|logexporter)'
       decorate: true
       decoration_config:
         timeout: 180m
