@@ -52,12 +52,16 @@ func onlyTransientError(err error) error {
 // transient errors from ResultStore are returned, in which case the call
 // should be retried later.
 func (u *Uploader) Upload(ctx context.Context, log *logrus.Entry, p *Payload) error {
+	invID, err := p.InvocationID()
+	if err != nil {
+		log.Errorf("p.InvocationID: %v", err)
+	}
 	inv, err := p.Invocation()
 	if err != nil {
 		log.Errorf("p.Invocation: %v", err)
 		return nil
 	}
-	w, err := writer.New(ctx, log, u.client, inv, authToken.From(inv.Id.InvocationId))
+	w, err := writer.New(ctx, log, u.client, inv, invID, authToken.From(invID))
 	if err != nil {
 		return onlyTransientError(err)
 	}

@@ -41,13 +41,21 @@ type Payload struct {
 	ProjectID string
 }
 
+// InvocationID returns the ResultStore InvocationId.
+func (p *Payload) InvocationID() (string, error) {
+	if p.Job == nil {
+		return "", errors.New("internal error: pj is nil")
+	}
+	// Name is a v4 UUID set in pjutil.go.
+	return p.Job.Name, nil
+}
+
+// Invocation returns an Invocation suitable to upload to ResultStore.
 func (p *Payload) Invocation() (*resultstore.Invocation, error) {
-	id, err := invocationID(p.Job)
-	if err != nil {
-		return nil, err
+	if p.Job == nil {
+		return nil, errors.New("internal error: pj is nil")
 	}
 	i := &resultstore.Invocation{
-		Id:                   id,
 		StatusAttributes:     invocationStatusAttributes(p.Job),
 		Timing:               invocationTiming(p.Job),
 		InvocationAttributes: invocationAttributes(p.ProjectID, p.Job),
@@ -56,16 +64,6 @@ func (p *Payload) Invocation() (*resultstore.Invocation, error) {
 		Files:                p.Files,
 	}
 	return i, nil
-}
-
-func invocationID(pj *v1.ProwJob) (*resultstore.Invocation_Id, error) {
-	if pj == nil {
-		return nil, errors.New("internal error: pj is nil")
-	}
-	return &resultstore.Invocation_Id{
-		// Name is a v4 UUID set in pjutil.go.
-		InvocationId: pj.Name,
-	}, nil
 }
 
 func invocationStatusAttributes(job *v1.ProwJob) *resultstore.StatusAttributes {

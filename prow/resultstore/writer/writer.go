@@ -70,9 +70,9 @@ type ResultStoreBatchClient interface {
 type writer struct {
 	log         *logrus.Entry
 	client      ResultStoreBatchClient
+	invID       string
 	authToken   string
 	resumeToken string
-	retInv      *resultstore.Invocation
 	updates     []*resultstore.UploadRequest
 	finalized   bool
 }
@@ -113,14 +113,13 @@ func IsAlreadyExistsErr(err error) bool {
 // writer syncs with ResultStore to resume writing. RPCs are retried with
 // exponential backoff unless there is a permanent error, which is returned
 // immediately. The caller should check whether a returned error is permanent
-// using PermanentError() and only retry transient errors. The authToken is a
-// UUID and must be identical across all calls for the same Invocation.
-func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation, authToken string) (*writer, error) {
-	invID := inv.Id.InvocationId
-	inv.Id = nil
+// using IsPermanentError() and only retry transient errors. The authToken is
+// a UUID and must be identical across all calls for the same Invocation.
+func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, inv *resultstore.Invocation, invID, authToken string) (*writer, error) {
 	w := &writer{
 		log:         log,
 		client:      client,
+		invID:       invID,
 		authToken:   authToken,
 		resumeToken: resumeToken(),
 		updates:     []*resultstore.UploadRequest{},
@@ -128,7 +127,7 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 	ctx, cancel := context.WithTimeout(ctx, rpcRetryDuration)
 	defer cancel()
 
-	err := w.createInvocation(ctx, inv, invID)
+	err := w.createInvocation(ctx, inv)
 	if err == nil {
 		return w, nil
 	}
@@ -136,13 +135,13 @@ func New(ctx context.Context, log *logrus.Entry, client ResultStoreBatchClient, 
 		return nil, err
 	}
 
-	if touchErr := w.touchInvocation(ctx, invID); IsPermanentError(touchErr) {
+	if touchErr := w.touchInvocation(ctx); IsPermanentError(touchErr) {
 		// Since it was confirmed above that the Invocation exists, a
 		// permanent error here indicates the Invocation is finalized.
 		return nil, err
 	}
 
-	if err = w.retrieveResumeToken(ctx, invID); err != nil {
+	if err = w.retrieveResumeToken(ctx); err != nil {
 		return nil, err
 	}
 
@@ -159,21 +158,20 @@ func onlyPermanentError(err error) error {
 	return nil
 }
 
-func (w *writer) createInvocation(ctx context.Context, inv *resultstore.Invocation, invID string) error {
+func (w *writer) createInvocation(ctx context.Context, inv *resultstore.Invocation) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
-		inv, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(invID, inv))
+		_, err := w.client.CreateInvocation(ctx, w.createInvocationRequest(inv))
 		if err != nil {
 			w.log.Errorf("resultstore.CreateInvocation: %v", err)
 			return false, onlyPermanentError(err)
 		}
-		w.retInv = inv
 		return true, nil
 	})
 }
 
-func (w *writer) touchInvocation(ctx context.Context, invID string) error {
+func (w *writer) touchInvocation(ctx context.Context) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
-		_, err := w.client.TouchInvocation(ctx, w.touchInvocationRequest(invID))
+		_, err := w.client.TouchInvocation(ctx, w.touchInvocationRequest())
 		if err != nil {
 			w.log.Errorf("resultstore.TouchInvocation: %v", err)
 			return false, onlyPermanentError(err)
@@ -182,9 +180,9 @@ func (w *writer) touchInvocation(ctx context.Context, invID string) error {
 	})
 }
 
-func (w *writer) retrieveResumeToken(ctx context.Context, invID string) error {
+func (w *writer) retrieveResumeToken(ctx context.Context) error {
 	return wait.ExponentialBackoffWithContext(ctx, rpcRetryBackoff, func() (bool, error) {
-		meta, err := w.client.GetInvocationUploadMetadata(ctx, w.getInvocationUploadMetadataRequest(invID))
+		meta, err := w.client.GetInvocationUploadMetadata(ctx, w.getInvocationUploadMetadataRequest())
 		if err != nil {
 			w.log.Errorf("resultstore.GetInvocationUploadMetadata: %v", err)
 			return false, onlyPermanentError(err)
@@ -214,33 +212,33 @@ func (w *writer) Finalize(ctx context.Context) error {
 	return w.addUploadRequest(ctx, w.finalizeRequest())
 }
 
-func (w *writer) createInvocationRequest(invID string, inv *resultstore.Invocation) *resultstore.CreateInvocationRequest {
+func (w *writer) createInvocationRequest(inv *resultstore.Invocation) *resultstore.CreateInvocationRequest {
 	return &resultstore.CreateInvocationRequest{
-		InvocationId:       invID,
+		InvocationId:       w.invID,
 		Invocation:         inv,
 		AuthorizationToken: w.authToken,
 		InitialResumeToken: w.resumeToken,
 	}
 }
 
-func invocationName(invID string) string {
-	return fmt.Sprintf("invocations/%s", invID)
+func (w *writer) invocationName() string {
+	return fmt.Sprintf("invocations/%s", w.invID)
 }
 
-func (w *writer) touchInvocationRequest(invID string) *resultstore.TouchInvocationRequest {
+func (w *writer) touchInvocationRequest() *resultstore.TouchInvocationRequest {
 	return &resultstore.TouchInvocationRequest{
-		Name:               invocationName(invID),
+		Name:               w.invocationName(),
 		AuthorizationToken: w.authToken,
 	}
 }
 
-func uploadMetadataName(invID string) string {
-	return fmt.Sprintf("invocations/%s/uploadMetadata", invID)
+func (w *writer) uploadMetadataName() string {
+	return fmt.Sprintf("invocations/%s/uploadMetadata", w.invID)
 }
 
-func (w *writer) getInvocationUploadMetadataRequest(invID string) *resultstore.GetInvocationUploadMetadataRequest {
+func (w *writer) getInvocationUploadMetadataRequest() *resultstore.GetInvocationUploadMetadataRequest {
 	return &resultstore.GetInvocationUploadMetadataRequest{
-		Name:               uploadMetadataName(invID),
+		Name:               w.uploadMetadataName(),
 		AuthorizationToken: w.authToken,
 	}
 }
@@ -280,7 +278,7 @@ func (w *writer) flushUpdates(ctx context.Context) error {
 func (w *writer) uploadBatchRequest(reqs []*resultstore.UploadRequest) *resultstore.UploadBatchRequest {
 	nextToken := resumeToken()
 	req := &resultstore.UploadBatchRequest{
-		Parent:             w.retInv.Name,
+		Parent:             w.invocationName(),
 		ResumeToken:        w.resumeToken,
 		NextResumeToken:    nextToken,
 		AuthorizationToken: w.authToken,
