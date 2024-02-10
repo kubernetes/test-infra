@@ -1066,6 +1066,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.26
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-node-e2e-containerd-kubetest2
     decorate: true
     decoration_config:
