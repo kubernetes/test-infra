@@ -49,8 +49,8 @@ go build -o "${go_bindata}" github.com/go-bindata/go-bindata/v3/go-bindata
 controller_gen=${REPO_ROOT}/_bin/controller-gen
 go build -o "${controller_gen}" sigs.k8s.io/controller-tools/cmd/controller-gen
 protoc_gen_go="${REPO_ROOT}/_bin/protoc-gen-go" # golang protobuf plugin
-GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
-GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.32.0
+GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
 
 cd "${REPO_ROOT}"
 ensure-protoc-deps(){
@@ -67,7 +67,7 @@ ensure-protoc-deps(){
     fi
     # See https://developers.google.com/protocol-buffers/docs/news/2022-05-06 for
     # a note on the versioning scheme change.
-    PROTOC_VERSION=21.9
+    PROTOC_VERSION=25.2
     PROTOC_ZIP="protoc-${PROTOC_VERSION}-${OS}-${ARCH}.zip"
     curl -OL "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
     unzip -o $PROTOC_ZIP -d _bin/protoc bin/protoc
@@ -77,8 +77,8 @@ ensure-protoc-deps(){
 
   # Clone proto dependencies.
   if ! [[ -f "${REPO_ROOT}"/_bin/protoc/include/googleapis/google/api/annotations.proto ]]; then
-    # This SHA was retrieved on 2022-12-14.
-    GOOGLEAPIS_VERSION="d9dc42bf24866ac28c09489feb58590c838ed970"
+    # This SHA was retrieved on 2024-02-09.
+    GOOGLEAPIS_VERSION="e183baf16610b925fc99e628fc539e118bc3348a"
     >/dev/null pushd "${REPO_ROOT}"/_bin/protoc/include
     curl -OL "https://github.com/googleapis/googleapis/archive/${GOOGLEAPIS_VERSION}.zip"
     >/dev/null unzip -o ${GOOGLEAPIS_VERSION}.zip
