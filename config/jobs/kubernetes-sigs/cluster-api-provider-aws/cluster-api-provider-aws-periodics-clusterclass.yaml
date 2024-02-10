@@ -18,7 +18,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-82001bc8c5-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-1.29
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
