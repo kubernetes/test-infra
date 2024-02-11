@@ -1801,6 +1801,16 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro='al2023',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-amazonvpc',
+            networking='amazonvpc',
+            tab_name='e2e-aws-amazonvpc',
+            always_run=False,
+            optional=True,
+        ),
+        presubmit_test(
             cloud='gce',
             k8s_version='stable',
             kops_channel='alpha',
