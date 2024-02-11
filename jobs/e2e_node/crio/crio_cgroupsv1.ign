@@ -50,6 +50,14 @@
           "source": "data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA=="
         },
         "mode": 420
+      },
+      {
+        "path": "/etc/crio/crio.conf.d/42-checkpoint-enabled.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bcrio.runtime%5D%0Aenable_criu_support%20%3D%20true%0A"
+        },
+        "mode": 420
       }
     ]
   },
