@@ -12,7 +12,7 @@ postsubmits:
       testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - scripts/test-infra/verify.sh
         env:
@@ -34,7 +34,7 @@ postsubmits:
       testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - bash
         args:
