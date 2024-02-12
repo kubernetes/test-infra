@@ -55,11 +55,11 @@ func TestTokenGenerator(t *testing.T) {
 			tg := tokenGenerator{}
 			tg.Reseed(tc.seed)
 			if got, want := tg.From(tc.id), tc.want; got != want {
-				t.Errorf("tokener.For() got %q, want %q", got, want)
+				t.Errorf("From() got %q, want %q", got, want)
 			}
 			// Ensure repeatable values.
 			if got, want := tg.From(tc.id), tc.want; got != want {
-				t.Errorf("Second tokener.For() got %q, want %q", got, want)
+				t.Errorf("Second From() got %q, want %q", got, want)
 			}
 		})
 	}
