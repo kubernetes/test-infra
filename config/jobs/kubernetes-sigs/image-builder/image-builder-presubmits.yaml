@@ -119,6 +119,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-lint
   - name: pull-image-builder-gcp-all
+    cluster: k8s-infra-prow-build
     path_alias: sigs.k8s.io/image-builder
     always_run: false
     optional: true
@@ -141,6 +142,9 @@ presubmits:
             privileged: true
           resources:
             requests:
+              memory: "4Gi"
+              cpu: 2000m
+            limits:
               memory: "4Gi"
               cpu: 2000m
     annotations:
