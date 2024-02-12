@@ -28,7 +28,7 @@ spec:
         spec:
           containers:
             - name: label-sync
-              image: gcr.io/k8s-prow/label_sync:v20240209-c2f5cc5314
+              image: gcr.io/k8s-prow/label_sync:v20240210-3c4f626498
               args:
               - --config=/etc/config/labels.yaml
               - --confirm=true
