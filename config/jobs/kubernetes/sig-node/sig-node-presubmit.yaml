@@ -570,6 +570,7 @@ presubmits:
               cpu: 4
               memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-containerd-alpha-features
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -616,6 +617,7 @@ presubmits:
               cpu: 4
               memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-containerd-sidecar-containers
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
