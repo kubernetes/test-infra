@@ -1864,6 +1864,7 @@ presubmits:
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   # on a kind cluster with containerd updated to a version with CDI support.
   - name: pull-kubernetes-kind-dra
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1907,6 +1908,9 @@ presubmits:
             # this is mostly for building kubernetes
             memory: "9000Mi"
             # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
             cpu: 2000m
 
   - name: pull-kubernetes-e2e-gce-kubelet-credential-provider
