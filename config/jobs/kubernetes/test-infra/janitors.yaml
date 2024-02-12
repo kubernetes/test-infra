@@ -15,7 +15,7 @@ periodics:
       - --ttl=6h
       - --path=s3://cloud-provider-aws-shared-e2e/objs.json
       - --exclude-tags=Shared=Ignore
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240208-efc15e2
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240212-5972d0c
       resources:
         requests:
           cpu: 1
@@ -43,7 +43,7 @@ periodics:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
       - --exclude-tags=Shared=Ignore
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240208-efc15e2
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240212-5972d0c
   annotations:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: ci-aws-janitor
