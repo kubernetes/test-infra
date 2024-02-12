@@ -524,6 +524,7 @@ presubmits:
             memory: 6Gi
 
   - name: pull-kubernetes-node-kubelet-serial-containerd
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
