@@ -6,7 +6,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-master
         command:
         - make
         - test
@@ -31,7 +31,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -71,7 +71,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -124,7 +124,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240209-9cf7b68bc9-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-master
         command:
         - runner.sh
         - "../../k8s.io/kubeadm/kinder/ci/kinder-run.sh"
