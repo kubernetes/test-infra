@@ -885,6 +885,7 @@ presubmits:
     branches:
     - release-1.28
     context: pull-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -924,7 +925,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.28
         name: ""
         resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
           requests:
+            cpu: 2
             memory: 6Gi
         securityContext:
           privileged: true
