@@ -163,7 +163,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	for _, pjob := range pjs {
 		if err := criercommonlib.UpdateReportStateWithRetries(ctx, pjob, log, r.pjclientset, r.reporter.GetName()); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
-			// The error above is alreay logged, so it would be duplicated
+			// The error above is already logged, so it would be duplicated
 			// effort to combine all errors to return, only capture the last
 			// error should be sufficient.
 			lastErr = err
