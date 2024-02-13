@@ -42,6 +42,9 @@ dashboards:
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
     base_options: width=10
+  - name: pull-kubernetes-verify-lint
+    test_group_name: pull-kubernetes-verify-lint
+    base_options: width=10
   - name: pull-kubernetes-typecheck
     test_group_name: pull-kubernetes-typecheck
     base_options: width=10

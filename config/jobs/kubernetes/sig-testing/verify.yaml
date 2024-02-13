@@ -28,6 +28,8 @@ presubmits:
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
+        - name: EXCLUDE_GOLANGCI_LINT
+          value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
           value: master
         - name: REPO_DIR
@@ -56,7 +58,7 @@ presubmits:
     # for example, a linter config change or tool update might cause
     # failures in existing, unmodified code.
     always_run: true
-    optional: true
+    optional: false
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
