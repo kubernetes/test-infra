@@ -136,7 +136,8 @@ presubmits:
   - name: pull-cluster-api-addon-provider-helm-e2e
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
-    always_run: true
+    optional: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|Makefile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -161,14 +162,16 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-e2e-main
-  - name: pull-cluster-api-addon-provider-helm-capi-e2e-main
+  - name: pull-cluster-api-addon-provider-helm-capi-e2e
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
-    always_run: true
+    always_run: false
+    run_if_changed: 'test\/e2e\/capi_test.go|scripts\/ci-e2e.sh|^go.mod'
+    optional: true
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -204,7 +207,8 @@ presubmits:
     decoration_config:
       timeout: 4h
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
-    always_run: true
+    optional: true
+    always_run: false
     branches:
     - ^main$
     extra_refs:
@@ -236,7 +240,9 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
-    always_run: true
+    run_if_changed: '^test\/e2e\/(config\/helm\.yaml)|(data\/shared\/v1beta1-provider\/metadata\.yaml)$'
+    optional: true
+    always_run: false
     branches:
       - ^main$
     extra_refs:
