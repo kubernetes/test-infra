@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-storage-slow
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     # All the files owned by sig-storage. Keep in sync across
@@ -52,7 +53,11 @@ presubmits:
           privileged: true
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
         resources:
+          limits:
+            cpu: "4"
+            memory: "6Gi"
           requests:
+            cpu: "4"
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
