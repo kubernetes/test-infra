@@ -207,10 +207,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
           requests:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes
@@ -253,10 +253,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
           requests:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes-1-29
@@ -299,10 +299,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
           requests:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes-1-28
@@ -345,10 +345,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
           requests:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes-1-27
@@ -391,10 +391,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
           requests:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
@@ -432,10 +432,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
           requests:
-            cpu: "4"
+            cpu: "7"
             memory: 9000Mi
         securityContext:
           privileged: true
