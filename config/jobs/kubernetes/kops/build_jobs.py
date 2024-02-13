@@ -1805,8 +1805,13 @@ def generate_presubmits_e2e():
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc',
-            extra_flags=["--node-size=r5d.xlarge",
-                         "--master-size=r5d.xlarge"],
+            extra_flags=[
+                "--node-size=r5d.xlarge",
+                "--master-size=r5d.xlarge",
+                "--set cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
+                "--set cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
+                "--set cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10"
+            ],
             networking='amazonvpc',
             tab_name='e2e-aws-amazonvpc',
             always_run=False,
