@@ -1805,6 +1805,8 @@ def generate_presubmits_e2e():
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc',
+            extra_flags=["--node-size=r5d.xlarge",
+                         "--master-size=r5d.xlarge"],
             networking='amazonvpc',
             tab_name='e2e-aws-amazonvpc',
             always_run=False,
