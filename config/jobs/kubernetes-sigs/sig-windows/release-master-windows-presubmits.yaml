@@ -68,6 +68,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-serial-slow
     decorate: true
+    decoration_config:
+      timeout: 4h
     always_run: false
     optional: true
     path_alias: k8s.io/kubernetes
