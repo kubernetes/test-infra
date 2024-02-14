@@ -790,12 +790,36 @@ func TestConfiguredTarget(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Job: "spec-job",
 					},
+					Status: v1.ProwJobStatus{
+						State: v1.SuccessState,
+					},
+				},
+				Started: &metadata.Started{
+					Timestamp:  150,
+					RepoCommit: "repo-commit",
+					Repos: map[string]string{
+						"repo-key": "repo-value",
+					},
+				},
+				Finished: &metadata.Finished{
+					Timestamp: int64Pointer(250),
 				},
 			},
 			want: &resultstore.ConfiguredTarget{
 				Id: &resultstore.ConfiguredTarget_Id{
 					TargetId:        "spec-job",
 					ConfigurationId: "default",
+				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_PASSED,
+				},
+				Timing: &resultstore.Timing{
+					StartTime: &timestamppb.Timestamp{
+						Seconds: 150,
+					},
+					Duration: &durationpb.Duration{
+						Seconds: 100,
+					},
 				},
 			},
 		},
@@ -806,6 +830,9 @@ func TestConfiguredTarget(t *testing.T) {
 				Id: &resultstore.ConfiguredTarget_Id{
 					TargetId:        "Unknown",
 					ConfigurationId: "default",
+				},
+				StatusAttributes: &resultstore.StatusAttributes{
+					Status: resultstore.Status_TOOL_FAILED,
 				},
 			},
 		},

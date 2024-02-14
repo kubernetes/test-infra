@@ -283,6 +283,8 @@ func (p *Payload) ConfiguredTarget() *resultstore.ConfiguredTarget {
 			TargetId:        targetID(p.Job),
 			ConfigurationId: defaultConfigurationId,
 		},
+		StatusAttributes: invocationStatusAttributes(p.Job),
+		Timing:           metadataTiming(p.Job, p.Started, p.Finished),
 	}
 }
 
