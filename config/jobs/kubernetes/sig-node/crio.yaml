@@ -512,3 +512,54 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master,
       cgroup v1 and the evented pleg feature enabled"
+- name: ci-crio-cdi-device-plugins
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cdi-device-plugins
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --deployment=node
+        - --env=KUBE_SSH_USER=core
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates="DevicePluginCDIDevices=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--focus="\[NodeSpecialFeature:CDI\]" --skip="\[Flaky\]"
+        - --timeout=60m
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
+        - name: GOPATH
+          value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
