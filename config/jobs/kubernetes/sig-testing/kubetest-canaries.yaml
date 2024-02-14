@@ -30,7 +30,6 @@ periodics:
           cpu: 4
           memory: 16Gi  
   annotations:
-  annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: prow
 - name: ci-kubernetes-e2e-node-canary
