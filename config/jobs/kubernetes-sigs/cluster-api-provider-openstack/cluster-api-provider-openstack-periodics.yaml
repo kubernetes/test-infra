@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-openstack-e2e-test-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -35,6 +36,9 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+        limits:
+          memory: "9000Mi"
+          cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-e2e-test-main
@@ -50,6 +54,7 @@ periodics:
       - error
       report_template: ':alert: Failed periodic job: {{.Status.State}}. <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-cluster-lifecycle-cluster-api-provider-openstack|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
 - name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -86,6 +91,9 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+        limits:
+          memory: "9000Mi"
+          cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-conformance-test-main
@@ -93,6 +101,7 @@ periodics:
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "48"
 - name: periodic-cluster-api-provider-openstack-e2e-full-test-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -133,6 +142,9 @@ periodics:
           # this is mostly for building kubernetes
           memory: "9000Mi"
           # during the tests more like 3-20m is used
+          cpu: 2000m
+        limits:
+          memory: "9000Mi"
           cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
