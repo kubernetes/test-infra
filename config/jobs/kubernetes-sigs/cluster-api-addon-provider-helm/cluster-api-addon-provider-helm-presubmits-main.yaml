@@ -133,14 +133,45 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-mink8s-main
-  - name: pull-cluster-api-addon-provider-helm-capi-e2e-main
+  - name: pull-cluster-api-addon-provider-helm-e2e
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    optional: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|Makefile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        env:
+          - name: GINKGO_FOCUS
+            value: \[REQUIRED\]
+          - name: GINKGO_SKIP
+            value: ""
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-e2e-main
+  - name: pull-cluster-api-addon-provider-helm-capi-e2e
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
-    always_run: true
+    always_run: false
+    run_if_changed: 'test\/e2e\/capi_test.go|scripts\/ci-e2e.sh|^go.mod'
+    optional: true
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -153,6 +184,8 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
+          - name: GINKGO_SKIP
+            value: "\\[K8s-Upgrade\\]|API Version Upgrade"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -166,3 +199,73 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-capi-e2e-main
+  - name: pull-cluster-api-addon-provider-helm-e2e-workload-upgrade
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    optional: true
+    always_run: false
+    branches:
+    - ^main$
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-e2e-upgrade
+  - name: pull-cluster-api-addon-provider-helm-apiversion-upgrade
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    run_if_changed: '^test\/e2e\/(config\/helm\.yaml)|(data\/shared\/v1beta1-provider\/metadata\.yaml)$'
+    optional: true
+    always_run: false
+    branches:
+      - ^main$
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-1.29
+          args:
+            - runner.sh
+            - "./scripts/ci-e2e.sh"
+          env:
+            - name: GINKGO_FOCUS
+              value: "API Version Upgrade"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-apiversion-upgrade-main
+      description: This job creates clusters with an older version of Cluster API and Cluster API Add-on Provider Helm, then upgrades them to the latest version of Cluster API and to the main branch of Cluster API Add-on Provider Helm.
