@@ -3,8 +3,13 @@
 approvers:
 - Jont828
 - fabriziopandini
-- CecileRobertMichon
 - jackfrancis
+
+reviewers:
+- mboersma
+
+emeritus_approvers:
+- CecileRobertMichon
 
 labels:
 - sig/cluster-lifecycle
