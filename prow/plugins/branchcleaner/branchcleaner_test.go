@@ -77,6 +77,32 @@ func TestBranchCleaner(t *testing.T) {
 			branchDeleteExpected: false,
 		},
 		{
+			name:          "PR from same repo with preserved branch regex match",
+			prAction:      github.PullRequestActionClosed,
+			srcBranchName: "betatest-1",
+			preservedBranches: map[string][]string{
+				"my-org": {
+					"release", "betatest-.*",
+				},
+			},
+			merged:               true,
+			headRepoFullName:     "my-org/repo",
+			branchDeleteExpected: false,
+		},
+		{
+			name:          "PR from same repo without preserved branch regex match",
+			prAction:      github.PullRequestActionClosed,
+			srcBranchName: "betatest1",
+			preservedBranches: map[string][]string{
+				"my-org": {
+					"release", "betatest-.*",
+				},
+			},
+			merged:               true,
+			headRepoFullName:     "my-org/repo",
+			branchDeleteExpected: true,
+		},
+		{
 			name:          "PR from same repo with preserved branch in org",
 			prAction:      github.PullRequestActionClosed,
 			srcBranchName: "betatest",

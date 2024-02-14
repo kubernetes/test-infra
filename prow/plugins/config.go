@@ -1940,9 +1940,17 @@ func (b *BranchCleaner) IsPreservedBranch(org, repo, branch string) bool {
 		if branch == pb {
 			return true
 		}
+
+		if match, _ := regexp.MatchString(pb, branch); match {
+			return true
+		}
 	}
 	for _, pb := range b.PreservedBranches[org] {
 		if branch == pb {
+			return true
+		}
+
+		if match, _ := regexp.MatchString(pb, branch); match {
 			return true
 		}
 	}
