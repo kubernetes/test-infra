@@ -70,8 +70,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
-    always_run: false
-    optional: true
+    always_run: true
     decorate: true
     path_alias: k8s.io/node-problem-detector
     labels:
