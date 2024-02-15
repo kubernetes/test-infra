@@ -3,7 +3,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -37,7 +37,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -81,7 +81,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -116,7 +116,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -151,7 +151,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
