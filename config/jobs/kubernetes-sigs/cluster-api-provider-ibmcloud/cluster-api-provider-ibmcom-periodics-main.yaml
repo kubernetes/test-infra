@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-ibmcloud-coverage
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   extra_refs:
@@ -29,3 +30,10 @@ periodics:
           ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
           ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
           exit $result
+      resources:
+        limits:
+          cpu: "2"
+          memory: "6Gi"
+        requests:
+          cpu: "2"
+          memory: "6Gi"
