@@ -9,11 +9,6 @@ presets:
   - name: K8S_SSH_PRIVATE_KEY_PATH
     value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
 - labels:
-    preset-capz-containerd-1-6-latest: "true"
-  env:
-  - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.6.25/containerd-1.6.25-windows-amd64.tar.gz"
-- labels:
     preset-capz-containerd-1-7-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
