@@ -44,8 +44,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -120,8 +118,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -190,8 +186,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -266,8 +260,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -336,8 +328,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -412,8 +402,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -482,8 +470,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -558,8 +544,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -628,8 +612,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -704,8 +686,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -774,8 +754,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -850,8 +828,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -920,8 +896,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -996,8 +970,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1066,8 +1038,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1142,8 +1112,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1212,8 +1180,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1288,8 +1254,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1358,8 +1322,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1434,8 +1396,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1504,8 +1464,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1580,8 +1538,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1650,8 +1606,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1726,8 +1680,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1796,8 +1748,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1872,8 +1822,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1942,8 +1890,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2018,8 +1964,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2088,8 +2032,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2164,8 +2106,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2234,8 +2174,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2310,8 +2248,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2380,8 +2316,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2456,8 +2390,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2526,8 +2458,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2602,8 +2532,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2672,8 +2600,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2748,8 +2674,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2818,8 +2742,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2894,8 +2816,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -2964,8 +2884,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -3040,8 +2958,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -3110,8 +3026,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -3180,8 +3094,6 @@ periodics:
         value: "s3://k8s-kops-ci-prow"
       - name: KOPS_DNS_DOMAIN
         value: "tests-kops-aws.k8s.io"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
