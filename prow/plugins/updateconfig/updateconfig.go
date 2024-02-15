@@ -254,7 +254,6 @@ func MarkStaleKeysForDeletion(
 
 	// Add deletion entries for stale keys there were missing from the updates.
 	toDelete := []ConfigMapUpdate{}
-	fmt.Printf("configMap is %v", configMap)
 	for key := range configMap.Data {
 		if updatedKeys.Has(key) {
 			continue
