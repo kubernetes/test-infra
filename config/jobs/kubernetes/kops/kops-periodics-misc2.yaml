@@ -364,7 +364,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3850.1.0-arm64-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -557,7 +557,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3850.1.0-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -622,7 +622,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3815.1.0-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3850.1.0-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
