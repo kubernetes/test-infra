@@ -145,7 +145,10 @@ def build_test(cloud='aws',
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
-        build_cluster = "k8s-infra-kops-prow-build"
+        # https://github.com/kubernetes/kops/issues/16352 older k/k versions dont have a
+        # new enough AWS SDK. TODO: remove guard once we stop testing upgrades to k8s 1.26
+        if scenario != "upgrade-ab":
+            build_cluster = "k8s-infra-kops-prow-build"
         env['CLOUD_PROVIDER'] = cloud
         if not cluster_name:
             cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"

@@ -4,7 +4,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '6 10-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -74,7 +74,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '5 13-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -150,7 +150,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '40 4-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -220,7 +220,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '3 23-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -296,7 +296,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '11 19-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -366,7 +366,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '52 8-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -442,7 +442,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '40 4-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -512,7 +512,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '24 12-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -588,7 +588,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '23 23-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -658,7 +658,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '48 16-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -734,7 +734,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '32 5-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -804,7 +804,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '10 2-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -880,7 +880,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '43 6-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -950,7 +950,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '1 1-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1026,7 +1026,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '19 2-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1096,7 +1096,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '8 4-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1172,7 +1172,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '37 4-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1242,7 +1242,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '6 2-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1318,7 +1318,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '55 6-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1388,7 +1388,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '31 7-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1464,7 +1464,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '51 6-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1534,7 +1534,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '40 0-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1610,7 +1610,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '47 2-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1680,7 +1680,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '37 5-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1756,7 +1756,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '5 4-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1826,7 +1826,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '23 3-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1902,7 +1902,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '55 6-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -1972,7 +1972,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '42 6-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2048,7 +2048,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '46 4-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2118,7 +2118,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '0 7-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2194,7 +2194,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '11 5-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2264,7 +2264,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '22 2-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2340,7 +2340,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-k127-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '15 1-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2410,7 +2410,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-k127-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '19 3-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2486,7 +2486,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '38 4-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2556,7 +2556,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '52 0-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2632,7 +2632,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '40 6-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2702,7 +2702,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '29 1-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2778,7 +2778,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '59 7-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2848,7 +2848,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '7 2-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2924,7 +2924,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '52 5-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -2994,7 +2994,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '20 3-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -3070,7 +3070,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-bug16276-calico
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '16 3-23/8 * * *'
   labels:
     preset-service-account: "true"
@@ -3140,7 +3140,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-upgrade-bug16276-cilium
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   cron: '58 1-23/8 * * *'
   labels:
     preset-service-account: "true"
