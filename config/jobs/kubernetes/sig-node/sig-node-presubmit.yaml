@@ -258,6 +258,7 @@ presubmits:
               memory: 10Gi
   - name: pull-kubernetes-node-arm64-ubuntu-serial-gce
     # this is functional duplicated with `pull-kubernetes-node-arm64-e2e-containerd-serial-ec2`, consider to remove one of them when either of them is green
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
