@@ -1116,6 +1116,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-containerd-gce
+    cluster: k8s-infra-prow-build
     optional: true
     path_alias: k8s.io/kubernetes
     spec:

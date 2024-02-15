@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-containerd-gce
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     decorate: true

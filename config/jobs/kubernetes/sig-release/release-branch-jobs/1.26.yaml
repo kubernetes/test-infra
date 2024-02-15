@@ -987,6 +987,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-containerd-gce
+    cluster: k8s-infra-prow-build
     optional: true
     decorate: true
     decoration_config:
@@ -1017,8 +1018,12 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-1.26
         name: ""
         resources:
+          limits:
+            cpu: "4"
+            memory: "6Gi"
           requests:
-            memory: 6Gi
+            cpu: "4"
+            memory: "6Gi"
         securityContext:
           privileged: true
   - always_run: true
