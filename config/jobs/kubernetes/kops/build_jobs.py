@@ -149,13 +149,13 @@ def build_test(cloud='aws',
         # new enough AWS SDK. TODO: remove guard once we stop testing upgrades to k8s 1.26
         if scenario != "upgrade-ab":
             build_cluster = "k8s-infra-kops-prow-build"
+            env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
         env['CLOUD_PROVIDER'] = cloud
         if not cluster_name:
             cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
         env['CLUSTER_NAME'] = cluster_name
         env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
-        env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
         env['KUBE_SSH_USER'] = kops_ssh_user
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
