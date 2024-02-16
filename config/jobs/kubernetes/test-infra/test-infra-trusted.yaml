@@ -17,6 +17,8 @@ postsubmits:
         - --github-endpoint=http://ghproxy.default.svc.cluster.local
         - --github-endpoint=https://api.github.com
         - --github-token-path=/etc/github-token/oauth
+        # TODO(palnabarun): To be removed as soon as the org audit removal is complete
+        - --maximum-removal-delta=0.4
         - --confirm
         volumeMounts:
         - name: github
@@ -566,6 +568,8 @@ periodics:
       - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - --github-endpoint=https://api.github.com
       - --github-token-path=/etc/github-token/oauth
+      # TODO(palnabarun): To be removed as soon as the org audit removal is complete
+      - --maximum-removal-delta=0.4
       - --confirm
       volumeMounts:
       - name: github
