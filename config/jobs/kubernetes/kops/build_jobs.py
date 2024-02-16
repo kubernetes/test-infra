@@ -157,6 +157,8 @@ def build_test(cloud='aws',
         env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
         env['KUBE_SSH_USER'] = kops_ssh_user
+        if 'KOPS_STATE_STORE' not in env and cloud == "aws":
+            env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
