@@ -461,6 +461,18 @@ func TestDefaultMatches(t *testing.T) {
 			orgRepo: "org/repo",
 			want: true,
 		},
+		{
+			desc: "givenOrgRepo gerrit review org match",
+			givenOrgRepo: "some.org",
+			orgRepo: "some-review.org/repo",
+			want: true,
+		},
+		{
+			desc: "givenOrgRepo gerrit review full match",
+			givenOrgRepo: "some.org/repo",
+			orgRepo: "some-review.org/repo",
+			want: true,
+		},
 		// The following two cases cover an unexpected existing configuration
 		// that matches a literal http/s prefix. Though unadvised, it should
 		// not be broken by fuzz matching http prefixes.
@@ -489,6 +501,12 @@ func TestDefaultMatches(t *testing.T) {
 			want: true,
 		},
 		{
+			desc: "givenOrgRepo https fuzz gerrit review org match",
+			givenOrgRepo: "some.org",
+			orgRepo: "https://some-review.org/repo",
+			want: true,
+		},
+		{
 			desc: "givenOrgRepo http fuzz full match",
 			givenOrgRepo: "org/repo",
 			orgRepo: "http://org/repo",
@@ -510,6 +528,12 @@ func TestDefaultMatches(t *testing.T) {
 			desc: "givenOrgRepo repo mismatch",
 			givenOrgRepo: "org/repo2",
 			orgRepo: "org/repo",
+			want: false,
+		},
+		{
+			desc: "givenOrgRepo gerrit review org mismatch",
+			givenOrgRepo: "some.other.org",
+			orgRepo: "some.other-review.org",
 			want: false,
 		},
 		{
