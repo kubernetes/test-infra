@@ -186,17 +186,24 @@ func allTags(arch string) ([]string, error) {
 	return allTags, nil
 }
 
+var datePrefix string
+
 // gitTag returns YYYYMMDD-<GIT_TAG>
+// In order to ensure a consistent date value across the runtime of this process
+// when run near midnight UTC, we cache the value of date.
+// We don't cache the git SHA since a change in that would be meaningful.
 func gitTag() (string, error) {
-	prefix, err := runCmd(nil, "date", "+v%Y%m%d")
-	if err != nil {
-		return "", err
+	var err error
+	if datePrefix == "" {
+		if datePrefix, err = runCmd(nil, "date", "+v%Y%m%d"); err != nil {
+			return "", err
+		}
 	}
 	postfix, err := runCmd(nil, "git", "describe", "--always", "--dirty")
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s-%s", prefix, postfix), nil
+	return fmt.Sprintf("%s-%s", datePrefix, postfix), nil
 }
 
 func runGatherStaticScript(id *imageDef, args ...string) error {
