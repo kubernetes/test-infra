@@ -111,6 +111,7 @@ presubmits:
             memory: "8Gi"
             cpu: "1024m"
   - name: capi-provider-cloudstack-presubmit-e2e-smoke-test
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
