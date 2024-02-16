@@ -7,6 +7,7 @@ dashboard_groups:
   - redhat-openshift-lp-interop-release-4.13-informing
   - redhat-openshift-lp-interop-release-4.14-informing
   - redhat-openshift-lp-interop-release-4.15-informing
+  - redhat-openshift-lp-interop-release-4.16-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.12-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.13-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.14-informing
