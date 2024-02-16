@@ -5,6 +5,9 @@
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    {%- if build_cluster == "default" %}
+    preset-aws-credential: "true"
+    {%- endif %}
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -17,7 +20,7 @@
     workdir: true
     path_alias: k8s.io/kops
   spec:
-    {%- if not pod_service_account %}
+    {%- if build_cluster != "default" %}
     serviceAccountName: prowjob-default-sa
     {%- endif %}
     containers:
