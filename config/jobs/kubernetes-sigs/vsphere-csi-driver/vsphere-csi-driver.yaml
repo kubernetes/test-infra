@@ -162,6 +162,8 @@ presubmits:
 
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
+    labels:
+      preset-dind-enabled: "true"
     cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '^(cmd|pkg|go.mod)'
