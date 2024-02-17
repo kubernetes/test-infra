@@ -104,14 +104,14 @@ periodics:
         value: "3"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-622a77307c-4bdbd.tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1403,14 +1403,14 @@ periodics:
       env:
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-4342699135-9b4dd.tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1467,14 +1467,14 @@ periodics:
         value: "3"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-349a115d39-16181.tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1529,14 +1529,14 @@ periodics:
       env:
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-127cbce38e-b114d.tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1591,14 +1591,14 @@ periodics:
       env:
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-49d63c55eb-ac683.tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
@@ -1653,14 +1653,14 @@ periodics:
       env:
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-c0d41e2af2-13250.tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA

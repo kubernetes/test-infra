@@ -64,7 +64,6 @@ def build_test(cloud='aws',
                scenario=None,
                env=None,
                kubernetes_feature_gates=None,
-               pod_service_account=None,
                build_cluster="default",
                cluster_name=None,
                template_path=None,
@@ -150,12 +149,12 @@ def build_test(cloud='aws',
         if scenario != "upgrade-ab":
             build_cluster = "k8s-infra-kops-prow-build"
             env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
+            env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
+            env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
         env['CLOUD_PROVIDER'] = cloud
         if not cluster_name:
             cluster_name = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.tests-kops-aws.k8s.io"
         env['CLUSTER_NAME'] = cluster_name
-        env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
-        env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
         env['KUBE_SSH_USER'] = kops_ssh_user
         if 'KOPS_STATE_STORE' not in env and cloud == "aws":
             env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
@@ -195,7 +194,6 @@ def build_test(cloud='aws',
         build_cluster=build_cluster,
         kubernetes_feature_gates=kubernetes_feature_gates,
         test_args=test_args,
-        pod_service_account=pod_service_account,
         cluster_name=cluster_name,
         storage_e2e_cred=storage_e2e_cred,
     )
