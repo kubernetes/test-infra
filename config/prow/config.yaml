@@ -657,6 +657,9 @@ tide:
     - kubernetes/controller-manager
     - kubernetes/cri-api
     - kubernetes/csi-translation-lib
+    - kubernetes/dynamic-resource-allocation
+    - kubernetes/endpointslice
+    - kubernetes/kms
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
     - kubernetes/kube-proxy
@@ -666,7 +669,6 @@ tide:
     - kubernetes/legacy-cloud-providers
     - kubernetes/metrics
     - kubernetes/mount-utils
-    - kubernetes/node-api
     - kubernetes/pod-security-admission
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin

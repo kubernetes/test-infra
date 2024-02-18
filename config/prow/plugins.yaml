@@ -321,7 +321,40 @@ blockades:
   - .*
   exceptionregexps:
   - ^README\.md$
-  explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+  explanation: "The Kubernetes project doesn't accept direct changes directly against this repository unless the change is to the `README.md` in the root of the repo."
+- repos:
+  - kubernetes/api
+  - kubernetes/apiextensions-apiserver
+  - kubernetes/apimachinery
+  - kubernetes/apiserver
+  - kubernetes/cli-runtime
+  - kubernetes/cloud-provider
+  - kubernetes/cluster-bootstrap
+  - kubernetes/code-generator
+  - kubernetes/component-base
+  - kubernetes/component-helpers
+  - kubernetes/controller-manager
+  - kubernetes/cri-api
+  - kubernetes/csi-translation-lib
+  - kubernetes/dynamic-resource-allocation
+  - kubernetes/endpointslice
+  - kubernetes/kms
+  - kubernetes/kube-aggregator
+  - kubernetes/kube-controller-manager
+  - kubernetes/kube-proxy
+  - kubernetes/kube-scheduler
+  - kubernetes/kubectl
+  - kubernetes/kubelet
+  - kubernetes/legacy-cloud-providers
+  - kubernetes/metrics
+  - kubernetes/mount-utils
+  - kubernetes/pod-security-admission
+  - kubernetes/sample-apiserver
+  - kubernetes/sample-cli-plugin
+  - kubernetes/sample-controller
+  blockregexps:
+  - .*
+  explanation: "The Kubernetes project doesn't accept direct changes directly against this repository."
 - repos:
   - kubernetes/k8s.io
   blockregexps:
@@ -1171,6 +1204,34 @@ plugins:
     - wip
     - yuks
 
+  kubernetes/api:
+    plugins:
+    - blockade
+
+  kubernetes/apiextensions-apiserver:
+    plugins:
+    - blockade
+
+  kubernetes/apimachinery:
+    plugins:
+    - blockade
+
+  kubernetes/apiserver:
+    plugins:
+    - blockade
+
+  kubernetes/cli-runtime:
+    plugins:
+    - blockade
+
+  kubernetes/client-go:
+    plugins:
+    - blockade
+
+  kubernetes/cloud-provider:
+    plugins:
+    - blockade
+
   kubernetes/cloud-provider-aws:
     plugins:
     - milestone
@@ -1187,15 +1248,51 @@ plugins:
     - override
     - release-note
 
+  kubernetes/cluster-bootstrap:
+    plugins:
+    - blockade
+
+  kubernetes/code-generator:
+    plugins:
+    - blockade
+
   kubernetes/community:
     plugins:
     - blockade
     - milestone
     - require-matching-label
 
+  kubernetes/component-base:
+    plugins:
+    - blockade
+
+  kubernetes/component-helpers:
+    plugins:
+    - blockade
+
+  kubernetes/controller-manager:
+    plugins:
+    - blockade
+
+  kubernetes/cri-api:
+    plugins:
+    - blockade
+
+  kubernetes/csi-translation-lib:
+    plugins:
+    - blockade
+
   kubernetes/dashboard:
     plugins:
     - override
+
+  kubernetes/dynamic-resource-allocation:
+    plugins:
+    - blockade
+
+  kubernetes/endpointslice:
+    plugins:
+    - blockade
 
   kubernetes/enhancements:
     plugins:
@@ -1222,6 +1319,26 @@ plugins:
     - milestone
     - override
 
+  kubernetes/kms:
+    plugins:
+    - blockade
+
+  kubernetes/kube-aggregator:
+    plugins:
+    - blockade
+
+  kubernetes/kube-controller-manager:
+    plugins:
+    - blockade
+
+  kubernetes/kube-proxy:
+    plugins:
+    - blockade
+
+  kubernetes/kube-scheduler:
+    plugins:
+    - blockade
+
   kubernetes/kubeadm:
     plugins:
     - mergecommitblocker
@@ -1230,7 +1347,12 @@ plugins:
 
   kubernetes/kubectl:
     plugins:
+    - blockade
     - require-matching-label
+
+  kubernetes/kubelet:
+    plugins:
+    - blockade
 
   kubernetes/kubernetes:
     plugins:
@@ -1244,9 +1366,26 @@ plugins:
     - release-note
     - require-matching-label
 
+  kubernetes/legacy-cloud-providers:
+    plugins:
+    - blockade
+
   kubernetes/org:
     plugins:
     - milestone
+
+  kubernetes/metrics:
+    plugins:
+    - blockade
+    - require-matching-label
+
+  kubernetes/mount-utils:
+    plugins:
+    - blockade
+
+  kubernetes/pod-security-admission:
+    plugins:
+    - blockade
 
   kubernetes/publishing-bot:
     plugins:
@@ -1260,6 +1399,18 @@ plugins:
     - override
     - release-note
     - require-matching-label
+
+  kubernetes/sample-apiserver:
+    plugins:
+    - blockade
+
+  kubernetes/sample-cli-plugin:
+    plugins:
+    - blockade
+
+  kubernetes/sample-controller:
+    plugins:
+    - blockade
 
   kubernetes/sig-release:
     plugins:
@@ -1630,10 +1781,6 @@ plugins:
     - require-matching-label
 
   kubernetes/kube-state-metrics:
-    plugins:
-    - require-matching-label
-
-  kubernetes/metrics:
     plugins:
     - require-matching-label
 
