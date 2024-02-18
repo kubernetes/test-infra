@@ -40,8 +40,9 @@ cleanup(){
   if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
     >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after Docker in Docker ..."
     docker ps -aq | xargs -r docker rm -f || true
-    >&2 echo "wrapper.sh] [CLEANUP] Waiting for docker to stop for 30 seconds"
-    timeout 30 service docker stop || true
+    >&2 echo "wrapper.sh] [CLEANUP] Send TERM to docker process, wait 30 seconds for processes to exit"
+    >&2 echo "wrapper.sh] [CLEANUP] If not exited send KILL to docker process, wait 30 seconds for process to exit"
+    start-stop-daemon --pid $(cat /var/run/docker-ssd.pid) --stop --retry 30 || true
     >&2 echo "wrapper.sh] [CLEANUP] Done cleaning up after Docker in Docker."
   fi
 }

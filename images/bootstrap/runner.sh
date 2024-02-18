@@ -29,8 +29,9 @@ cleanup_dind() {
     if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
         echo "Cleaning up after docker"
         docker ps -aq | xargs -r docker rm -f || true
-        echo "Waiting for docker to stop for 30 seconds"
-        timeout 30 service docker stop || true
+        echo "Send TERM to docker process, wait 30 second for processes to exit"
+        echo "If not exited send KILL to docker process, wait 30 second for process to exit"
+        start-stop-daemon --pid $(cat /var/run/docker-ssd.pid) --stop --retry 30 || true
     fi
 }
 
