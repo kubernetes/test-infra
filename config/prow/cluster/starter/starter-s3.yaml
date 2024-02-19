@@ -1076,12 +1076,12 @@ rules:
     resources:
       - pods
     verbs:
-      - delete
-      - list
-      - watch
       - create
-      - patch
+      - delete
       - get
+      - list
+      - patch
+      - watch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
