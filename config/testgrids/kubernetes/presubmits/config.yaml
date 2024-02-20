@@ -68,6 +68,9 @@ dashboards:
     base_options: width=10
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
+  - name: pull-cos-containerd-e2e-ubuntu-gce
+    test_group_name: pull-cos-containerd-e2e-ubuntu-gce
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
     base_options: width=10
