@@ -99,7 +99,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.12
+        base_ref: release-1.13
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -123,7 +123,7 @@ presubmits:
               value: "1"
             # TODO: Should use a 1.29 K8s version
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.28.5"
+              value: "latest"
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -152,7 +152,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.12
+        base_ref: release-1.13
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -175,7 +175,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.28.5"
+              value: "latest"
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -205,7 +205,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.12
+        base_ref: release-1.13
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -493,7 +493,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.12
+        base_ref: release-1.13
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -561,7 +561,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.12
+        base_ref: release-1.13
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -655,7 +655,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.12
+        base_ref: release-1.13
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -777,7 +777,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.12
+      base_ref: release-1.13
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -807,7 +807,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.28.5"
+          value: "latest"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
@@ -887,7 +887,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.12
+      base_ref: release-1.13
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -917,7 +917,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.28.5"
+          value: "latest"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
@@ -1485,7 +1485,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.12
+    base_ref: release-1.13
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
