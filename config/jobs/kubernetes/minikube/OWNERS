@@ -3,19 +3,14 @@
 reviewers:
   - sig-cluster-lifecycle-leads
   - afbjorklund
-  - sharifelgamal
   - medyagh
-  - blueelvis
-  - prasadkatti
   - prezha
   - spowelljr
-  - klaases
 approvers:
   - sig-cluster-lifecycle-leads
   - afbjorklund
-  - sharifelgamal
   - medyagh
-  - spowelljr
   - prezha
+  - spowelljr
 labels:
   - sig/cluster-lifecycle
