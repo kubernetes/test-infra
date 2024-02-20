@@ -89,7 +89,7 @@ type ReviewPolicy struct {
 	DismissStale *bool `json:"dismiss_stale_reviews,omitempty"`
 	// RequireOwners overrides whether CODEOWNERS must approve PRs if set
 	RequireOwners *bool `json:"require_code_owner_reviews,omitempty"`
-	// Approvals overrides the number of approvals required if set (set to 0 to disable)
+	// Approvals overrides the number of approvals required if set
 	Approvals *int `json:"required_approving_review_count,omitempty"`
 	// BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
 	BypassRestrictions *BypassRestrictions `json:"bypass_pull_request_allowances,omitempty"`
