@@ -85,7 +85,7 @@ branch-protection:
                                         - ""
                                 # RequireOwners overrides whether CODEOWNERS must approve PRs if set
                                 require_code_owner_reviews: false
-                                # Approvals overrides the number of approvals required if set (set to 0 to disable)
+                                # Approvals overrides the number of approvals required if set
                                 required_approving_review_count: 0
                             # RequiredStatusChecks configures github contexts
                             required_status_checks:
@@ -139,7 +139,7 @@ branch-protection:
                                 - ""
                         # RequireOwners overrides whether CODEOWNERS must approve PRs if set
                         require_code_owner_reviews: false
-                        # Approvals overrides the number of approvals required if set (set to 0 to disable)
+                        # Approvals overrides the number of approvals required if set
                         required_approving_review_count: 0
                     # RequiredStatusChecks configures github contexts
                     required_status_checks:
@@ -181,7 +181,7 @@ branch-protection:
                         - ""
                 # RequireOwners overrides whether CODEOWNERS must approve PRs if set
                 require_code_owner_reviews: false
-                # Approvals overrides the number of approvals required if set (set to 0 to disable)
+                # Approvals overrides the number of approvals required if set
                 required_approving_review_count: 0
             # RequiredStatusChecks configures github contexts
             required_status_checks:
@@ -232,7 +232,7 @@ branch-protection:
                 - ""
         # RequireOwners overrides whether CODEOWNERS must approve PRs if set
         require_code_owner_reviews: false
-        # Approvals overrides the number of approvals required if set (set to 0 to disable)
+        # Approvals overrides the number of approvals required if set
         required_approving_review_count: 0
     # RequiredStatusChecks configures github contexts
     required_status_checks:

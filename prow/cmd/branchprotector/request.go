@@ -129,15 +129,13 @@ func makeRestrictions(rp *branchprotection.Restrictions, enableAppsRestrictions 
 
 // makeReviews renders review policy into the corresponding GitHub api object.
 //
-// Returns nil if the policy is nil, or approvals is nil or 0.
+// Returns nil if the policy is nil, or approvals is nil.
 func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestReviewsRequest {
 	switch {
 	case rp == nil:
 		return nil
 	case rp.Approvals == nil:
 		logrus.Warn("WARNING: required_pull_request_reviews policy does not specify required_approving_review_count, disabling")
-		return nil
-	case *rp.Approvals == 0:
 		return nil
 	}
 	rprr := github.RequiredPullRequestReviewsRequest{

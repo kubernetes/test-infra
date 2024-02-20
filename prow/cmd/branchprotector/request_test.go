@@ -71,9 +71,12 @@ func TestMakeReviews(t *testing.T) {
 			},
 		},
 		{
-			name: "0 approvals returns nil",
+			name: "0 approvals set",
 			input: &branchprotection.ReviewPolicy{
 				Approvals: &zero,
+			},
+			expected: &github.RequiredPullRequestReviewsRequest{
+				RequiredApprovingReviewCount: 0,
 			},
 		},
 		{

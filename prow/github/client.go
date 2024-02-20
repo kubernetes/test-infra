@@ -2683,7 +2683,6 @@ func (c *client) UpdateBranchProtection(org, repo, branch string, config BranchP
 	defer durationLogger()
 
 	_, err := c.request(&request{
-		accept:      "application/vnd.github.luke-cage-preview+json", // for required_approving_review_count
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("/repos/%s/%s/branches/%s/protection", org, repo, branch),
 		org:         org,
