@@ -20,7 +20,6 @@ package crier
 import (
 	"context"
 	"fmt"
-	"golang.org/x/time/rate"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -69,10 +68,7 @@ func New(
 		Named(fmt.Sprintf("crier_%s", reporter.GetName())).
 		For(&prowv1.ProwJob{}).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers,
-			RateLimiter: workqueue.NewMaxOfRateLimiter(
-				workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 500*time.Second),
-				// 20 qps, 200 bucket size.
-				&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(20), 200)})}).
+			RateLimiter: workqueue.DefaultControllerRateLimiter()}).
 		Complete(&reconciler{
 			pjclientset:       mgr.GetClient(),
 			reporter:          reporter,
@@ -163,7 +159,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	for _, pjob := range pjs {
 		if err := criercommonlib.UpdateReportStateWithRetries(ctx, pjob, log, r.pjclientset, r.reporter.GetName()); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
-			// The error above is already logged, so it would be duplicated
+			// The error above is alreay logged, so it would be duplicated
 			// effort to combine all errors to return, only capture the last
 			// error should be sufficient.
 			lastErr = err
