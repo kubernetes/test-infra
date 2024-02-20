@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-minikube/prow-test:v0.0.6
+      - image: gcr.io/k8s-minikube/prow-test:v0.0.7
         # we add --force since minikube is running as root
         command:
         - wrapper.sh
