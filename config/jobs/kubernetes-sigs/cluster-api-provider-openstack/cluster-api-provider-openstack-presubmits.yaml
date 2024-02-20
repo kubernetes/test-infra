@@ -48,6 +48,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-openstack-e2e-test
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -84,6 +85,9 @@ presubmits:
               memory: "9000Mi"
               # during the tests more like 3-20m is used
               cpu: 2000m
+            limits:
+              memory: "9000Mi"
+              cpu: "2000m"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-e2e-test
