@@ -21,6 +21,10 @@ periodics:
     base_ref: master
     workdir: true
     path_alias: k8s.io/kops
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   spec:
     containers:
     - command:
