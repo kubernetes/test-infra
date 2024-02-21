@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -105,7 +105,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=calico --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=calico --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -242,7 +242,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/al2023-ami-2023.3.20240205.2-kernel-6.1-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -709,7 +709,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240207.1' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240220' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1006,7 +1006,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240207.1' --channel=alpha --networking=calico --set=cluster.spec.externalDNS.provider=external-dns --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240220' --channel=alpha --networking=calico --set=cluster.spec.externalDNS.provider=external-dns --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1073,7 +1073,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240207.1' --channel=alpha --networking=calico --ipv6 --bastion --set=cluster.spec.externalDNS.provider=external-dns --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240220' --channel=alpha --networking=calico --ipv6 --bastion --set=cluster.spec.externalDNS.provider=external-dns --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1140,7 +1140,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=cilium --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=cilium --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1207,7 +1207,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240207.1' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240220' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=APIServerNodes \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -1277,7 +1277,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1344,7 +1344,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=calico --dns=none --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=calico --dns=none --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1477,7 +1477,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=calico --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=calico --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1544,7 +1544,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=cilium --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=cilium --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --terraform-version=1.5.5 \
@@ -1612,7 +1612,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=cilium --ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=cilium --ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --terraform-version=1.5.5 \
@@ -1882,7 +1882,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1951,7 +1951,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240207.1' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240220' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2356,7 +2356,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240207.1' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240220' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
             --boskos-resource-type=aws-account \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
