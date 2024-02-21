@@ -96,7 +96,7 @@ presubmits:
   - name: pull-gcp-filestore-csi-driver-kubernetes-integration
     cluster: k8s-infra-prow-build
     always_run: false
-    run_if_changed: '^(pkg\/|cmd\/|test\/|hack\/|vendor\/)'
+    run_if_changed: '^(pkg\/|cmd\/|test\/|hack\/|vendor\/|Makefile|Dockerfile)'
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
