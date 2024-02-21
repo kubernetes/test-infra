@@ -412,7 +412,7 @@ networking_options = [
 
 distro_options = [
     'amzn2',
-    'deb10',
+    'deb12',
     'flatcar',
     'rhel8',
     'u2004',
