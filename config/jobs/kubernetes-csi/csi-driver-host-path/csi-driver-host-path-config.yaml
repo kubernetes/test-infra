@@ -293,6 +293,57 @@ presubmits:
           limits:
             memory: "9Gi"
             cpu: 4
+  - name: pull-kubernetes-csi-csi-driver-host-path-alpha-1-28-on-kubernetes-1-28
+    cluster: eks-prow-build-cluster
+    always_run: false
+    optional: true
+    decorate: true
+    skip_report: false
+    skip_branches: []
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: alpha-1-28-on-kubernetes-1-28
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for alpha tests, using deployment 1.28 on Kubernetes 1.28
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.28.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.28"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.12.1"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v6.1.0"
+        - name: CSI_PROW_TESTS
+          value: "serial-alpha parallel-alpha"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-27-test-on-kubernetes-1-27
     cluster: eks-prow-build-cluster
     always_run: true
@@ -574,6 +625,57 @@ presubmits:
           value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
+  - name: pull-kubernetes-csi-csi-driver-host-path-alpha-1-28-test-on-kubernetes-1-28
+    cluster: eks-prow-build-cluster
+    always_run: false
+    optional: true
+    decorate: true
+    skip_report: false
+    skip_branches: []
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: alpha-1-28-test-on-kubernetes-1-28
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for alpha tests, using deployment 1.28-test on Kubernetes 1.28
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240211-f101bf4199-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        # We pick some version for which there are pre-built images for kind.
+        # Update only when the newer version is known to not cause issues,
+        # otherwise presubmit jobs may start to fail for reasons that are
+        # unrelated to the PR. Testing against the latest Kubernetes is covered
+        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.28.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.28"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: "-test"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.12.1"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v6.1.0"
+        - name: CSI_PROW_TESTS
+          value: "serial-alpha parallel-alpha"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

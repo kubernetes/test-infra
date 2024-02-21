@@ -40,7 +40,7 @@ deployment_versions="
 experimental_k8s_version="1.29"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.26" # TODO: bump to 1.27 after testing a pull job
+latest_stable_k8s_version="1.28"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
 hostpath_driver_version="v1.12.1"
