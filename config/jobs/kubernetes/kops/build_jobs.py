@@ -411,7 +411,7 @@ networking_options = [
 ]
 
 distro_options = [
-    'amzn2',
+    'al2023',
     'deb12',
     'flatcar',
     'rhel8',

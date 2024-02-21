@@ -2,9 +2,9 @@
 # 437 jobs, total of 1189 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k25
-  cron: '36 18 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k25
+  cron: '24 2 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -56,18 +56,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k25
+    testgrid-tab-name: kops-grid-kubenet-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k25-ko27
-  cron: '17 6 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k25-ko27
+  cron: '18 14 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -95,10 +95,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -120,18 +119,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k25-ko27
+    testgrid-tab-name: kops-grid-kubenet-al2023-k25-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k25-ko28
-  cron: '8 23 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k25-ko28
+  cron: '43 15 * * 6'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -159,7 +158,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -183,18 +182,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-kubenet-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k26
-  cron: '18 16 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k26
+  cron: '26 16 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -222,7 +221,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -246,18 +245,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k26
+    testgrid-tab-name: kops-grid-kubenet-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k26-ko27
-  cron: '11 0 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k26-ko27
+  cron: '52 16 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -285,10 +284,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -310,18 +308,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k26-ko27
+    testgrid-tab-name: kops-grid-kubenet-al2023-k26-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k26-ko28
-  cron: '34 17 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k26-ko28
+  cron: '37 9 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -349,7 +347,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -373,18 +371,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-kubenet-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k27
-  cron: '20 22 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k27
+  cron: '8 22 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -412,7 +410,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -436,18 +434,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k27
+    testgrid-tab-name: kops-grid-kubenet-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k27-ko27
-  cron: '10 5 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k27-ko27
+  cron: '41 21 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -475,10 +473,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -500,18 +497,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k27-ko27
+    testgrid-tab-name: kops-grid-kubenet-al2023-k27-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k27-ko28
-  cron: '3 4 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k27-ko28
+  cron: '32 12 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -539,7 +536,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -563,18 +560,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-kubenet-al2023-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k28
-  cron: '37 15 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k28
+  cron: '49 7 * * 6'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -602,7 +599,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -626,18 +623,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k28
+    testgrid-tab-name: kops-grid-kubenet-al2023-k28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
-- name: e2e-kops-grid-kubenet-amzn2-k28-ko28
-  cron: '50 9 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kubenet"}
+- name: e2e-kops-grid-kubenet-al2023-k28-ko28
+  cron: '25 9 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -665,7 +662,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -689,14 +686,14 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kubenet-amzn2-k28-ko28
+    testgrid-tab-name: kops-grid-kubenet-al2023-k28-ko28
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-kops-grid-kubenet-deb12-k25
@@ -4177,9 +4174,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-kubenet-u2204-k28-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k25
-  cron: '31 5 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k25
+  cron: '57 19 * * 6'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4207,7 +4204,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -4231,18 +4228,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k25
+    testgrid-tab-name: kops-grid-calico-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k25-ko27
-  cron: '54 21 * * 1'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k25-ko27
+  cron: '0 11 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4270,10 +4267,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -4295,18 +4291,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k25-ko27
+    testgrid-tab-name: kops-grid-calico-al2023-k25-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k25-ko28
-  cron: '55 4 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k25-ko28
+  cron: '13 10 * * 6'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4334,7 +4330,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -4358,18 +4354,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-calico-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k26
-  cron: '25 15 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k26
+  cron: '7 1 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4397,7 +4393,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -4421,18 +4417,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k26
+    testgrid-tab-name: kops-grid-calico-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k26-ko27
-  cron: '20 11 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k26-ko27
+  cron: '2 21 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4460,10 +4456,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -4485,18 +4480,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k26-ko27
+    testgrid-tab-name: kops-grid-calico-al2023-k26-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k26-ko28
-  cron: '9 18 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k26-ko28
+  cron: '39 4 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4524,7 +4519,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -4548,18 +4543,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-calico-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k27
-  cron: '35 9 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k27
+  cron: '57 7 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4587,7 +4582,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -4611,18 +4606,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k27
+    testgrid-tab-name: kops-grid-calico-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k27-ko27
-  cron: '49 14 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k27-ko27
+  cron: '11 8 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4650,10 +4645,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -4675,18 +4669,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k27-ko27
+    testgrid-tab-name: kops-grid-calico-al2023-k27-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k27-ko28
-  cron: '52 15 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k27-ko28
+  cron: '50 1 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4714,7 +4708,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -4738,18 +4732,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-calico-al2023-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k28
-  cron: '18 0 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k28
+  cron: '28 14 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4777,7 +4771,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -4801,18 +4795,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k28
+    testgrid-tab-name: kops-grid-calico-al2023-k28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
-- name: e2e-kops-grid-calico-amzn2-k28-ko28
-  cron: '41 18 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+- name: e2e-kops-grid-calico-al2023-k28-ko28
+  cron: '7 12 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -4840,7 +4834,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -4864,14 +4858,14 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-calico-amzn2-k28-ko28
+    testgrid-tab-name: kops-grid-calico-al2023-k28-ko28
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-grid-calico-deb12-k25
@@ -8352,9 +8346,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-calico-u2204-k28-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k25
-  cron: '41 23 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k25
+  cron: '6 4 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8382,7 +8376,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -8406,18 +8400,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k25
+    testgrid-tab-name: kops-grid-cilium-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k25-ko27
-  cron: '34 1 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k25-ko27
+  cron: '0 15 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8445,10 +8439,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -8470,18 +8463,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k25-ko27
+    testgrid-tab-name: kops-grid-cilium-al2023-k25-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k25-ko28
-  cron: '51 0 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k25-ko28
+  cron: '9 22 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8509,7 +8502,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -8533,18 +8526,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-cilium-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k26
-  cron: '27 5 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k26
+  cron: '16 6 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8572,7 +8565,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -8596,18 +8589,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k26
+    testgrid-tab-name: kops-grid-cilium-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k26-ko27
-  cron: '32 7 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k26-ko27
+  cron: '46 1 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8635,10 +8628,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -8660,18 +8652,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k26-ko27
+    testgrid-tab-name: kops-grid-cilium-al2023-k26-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k26-ko28
-  cron: '33 14 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k26-ko28
+  cron: '47 8 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8699,7 +8691,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -8723,18 +8715,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-cilium-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k27
-  cron: '25 11 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k27
+  cron: '22 8 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8762,7 +8754,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -8786,18 +8778,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k27
+    testgrid-tab-name: kops-grid-cilium-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k27-ko27
-  cron: '45 2 * * 1'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k27-ko27
+  cron: '55 4 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8825,10 +8817,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -8850,18 +8841,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k27-ko27
+    testgrid-tab-name: kops-grid-cilium-al2023-k27-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k27-ko28
-  cron: '28 19 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k27-ko28
+  cron: '34 21 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8889,7 +8880,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -8913,18 +8904,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-cilium-al2023-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k28
-  cron: '16 10 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k28
+  cron: '47 9 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -8952,7 +8943,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -8976,18 +8967,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k28
+    testgrid-tab-name: kops-grid-cilium-al2023-k28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
-- name: e2e-kops-grid-cilium-amzn2-k28-ko28
-  cron: '45 6 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium"}
+- name: e2e-kops-grid-cilium-al2023-k28-ko28
+  cron: '27 8 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -9015,7 +9006,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -9039,14 +9030,14 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-amzn2-k28-ko28
+    testgrid-tab-name: kops-grid-cilium-al2023-k28-ko28
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-grid-cilium-deb12-k25
@@ -12527,9 +12518,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-cilium-u2204-k28-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k25
-  cron: '47 8 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k25
+  cron: '24 3 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12557,7 +12548,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -12581,18 +12572,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k25
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k25-ko27
-  cron: '23 10 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k25-ko27
+  cron: '18 10 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12620,10 +12611,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -12645,18 +12635,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k25-ko27
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k25-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k25-ko28
-  cron: '30 3 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k25-ko28
+  cron: '39 3 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12684,7 +12674,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -12708,18 +12698,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k26
-  cron: '37 2 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k26
+  cron: '22 17 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12747,7 +12737,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -12771,18 +12761,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k26
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k26-ko27
-  cron: '13 12 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k26-ko27
+  cron: '0 12 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12810,10 +12800,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -12835,18 +12824,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k26-ko27
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k26-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k26-ko28
-  cron: '44 5 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k26-ko28
+  cron: '1 13 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12874,7 +12863,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -12898,18 +12887,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k27
-  cron: '39 20 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k27
+  cron: '44 23 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -12937,7 +12926,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -12961,18 +12950,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k27
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k27-ko27
-  cron: '12 1 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k27-ko27
+  cron: '13 17 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -13000,10 +12989,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -13025,18 +13013,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k27-ko27
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k27-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k27-ko28
-  cron: '17 16 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k27-ko28
+  cron: '36 8 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -13064,7 +13052,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -13088,18 +13076,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k28
-  cron: '38 21 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k28
+  cron: '53 14 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -13127,7 +13115,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -13151,18 +13139,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k28
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
-- name: e2e-kops-grid-cilium-etcd-amzn2-k28-ko28
-  cron: '40 5 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-etcd"}
+- name: e2e-kops-grid-cilium-etcd-al2023-k28-ko28
+  cron: '57 21 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -13190,7 +13178,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -13214,14 +13202,14 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-etcd-amzn2-k28-ko28
+    testgrid-tab-name: kops-grid-cilium-etcd-al2023-k28-ko28
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-etcd"}
 - name: e2e-kops-grid-cilium-etcd-deb12-k25
@@ -16702,9 +16690,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-cilium-etcd-u2204-k28-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k25
-  cron: '26 19 * * 3'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k25
+  cron: '16 7 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -16732,7 +16720,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -16756,19 +16744,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k25
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k25-ko28
-  cron: '16 6 * * 0'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k25-ko28
+  cron: '46 19 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -16796,7 +16784,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -16820,19 +16808,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k26
-  cron: '12 17 * * 4'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k26
+  cron: '58 5 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -16860,7 +16848,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -16884,19 +16872,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k26
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k26-ko28
-  cron: '14 8 * * 1'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k26-ko28
+  cron: '24 5 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -16924,7 +16912,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -16948,19 +16936,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k27
-  cron: '10 15 * * 5'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k27
+  cron: '56 3 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -16988,7 +16976,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -17012,19 +17000,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k27
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k27-ko28
-  cron: '55 13 * * 0'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k27-ko28
+  cron: '13 8 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -17052,7 +17040,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -17076,19 +17064,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k28
-  cron: '23 22 * * 1'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k28
+  cron: '13 10 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -17116,7 +17104,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -17140,19 +17128,19 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k28
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k28
 
-# {"cloud": "aws", "distro": "amzn2", "extra_flags": "--node-size=t3.large", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
-- name: e2e-kops-grid-cilium-eni-amzn2-k28-ko28
-  cron: '38 8 * * 0'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=t3.large", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "cilium-eni"}
+- name: e2e-kops-grid-cilium-eni-al2023-k28-ko28
+  cron: '4 21 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -17180,7 +17168,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -17204,15 +17192,15 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --node-size=t3.large
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: cilium-eni
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-cilium-eni-amzn2-k28-ko28
+    testgrid-tab-name: kops-grid-cilium-eni-al2023-k28-ko28
 
 # {"cloud": "aws", "distro": "deb12", "extra_flags": "--node-size=t3.large", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium-eni"}
 - name: e2e-kops-grid-cilium-eni-deb12-k25
@@ -19782,9 +19770,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-cilium-eni-u2204-k28-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k25
-  cron: '28 2 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k25
+  cron: '13 7 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -19812,7 +19800,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -19836,18 +19824,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k25
+    testgrid-tab-name: kops-grid-flannel-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k25-ko27
-  cron: '14 13 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k25-ko27
+  cron: '58 6 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -19875,10 +19863,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -19900,18 +19887,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k25-ko27
+    testgrid-tab-name: kops-grid-flannel-al2023-k25-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k25-ko28
-  cron: '39 20 * * 6'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k25-ko28
+  cron: '19 15 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -19939,7 +19926,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -19963,18 +19950,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-flannel-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k26
-  cron: '46 0 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k26
+  cron: '11 13 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -20002,7 +19989,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -20026,18 +20013,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k26
+    testgrid-tab-name: kops-grid-flannel-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k26-ko27
-  cron: '0 11 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k26-ko27
+  cron: '48 16 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -20065,10 +20052,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -20090,18 +20076,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k26-ko27
+    testgrid-tab-name: kops-grid-flannel-al2023-k26-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k26-ko28
-  cron: '21 2 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k26-ko28
+  cron: '45 17 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -20129,7 +20115,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -20153,18 +20139,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-flannel-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k27
-  cron: '4 22 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k27
+  cron: '5 19 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -20192,7 +20178,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -20216,18 +20202,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k27
+    testgrid-tab-name: kops-grid-flannel-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k27-ko27
-  cron: '53 6 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k27-ko27
+  cron: '41 5 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -20255,10 +20241,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -20280,18 +20265,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k27-ko27
+    testgrid-tab-name: kops-grid-flannel-al2023-k27-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "flannel"}
-- name: e2e-kops-grid-flannel-amzn2-k27-ko28
-  cron: '44 7 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "flannel"}
+- name: e2e-kops-grid-flannel-al2023-k27-ko28
+  cron: '32 20 * * 1'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -20319,7 +20304,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -20343,14 +20328,14 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-flannel-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-flannel-al2023-k27-ko28
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "flannel"}
 - name: e2e-kops-grid-flannel-deb12-k25
@@ -23199,9 +23184,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-flannel-u2204-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k25
-  cron: '10 12 * * 5'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k25
+  cron: '12 22 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23229,7 +23214,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -23253,18 +23238,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.25, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k25
+    testgrid-tab-name: kops-grid-kopeio-al2023-k25
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k25-ko27
-  cron: '29 18 * * 1'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k25-ko27
+  cron: '54 5 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23292,10 +23277,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -23317,18 +23301,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k25-ko27
+    testgrid-tab-name: kops-grid-kopeio-al2023-k25-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k25-ko28
-  cron: '12 19 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k25-ko28
+  cron: '23 4 * * 4'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23356,7 +23340,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
           --test=kops \
@@ -23380,18 +23364,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.25'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.25, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k25-ko28
+    testgrid-tab-name: kops-grid-kopeio-al2023-k25-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k26
-  cron: '12 14 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k26
+  cron: '42 12 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23419,7 +23403,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -23443,18 +23427,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.26, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k26
+    testgrid-tab-name: kops-grid-kopeio-al2023-k26
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k26-ko27
-  cron: '27 12 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k26-ko27
+  cron: '40 3 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23482,10 +23466,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -23507,18 +23490,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k26-ko27
+    testgrid-tab-name: kops-grid-kopeio-al2023-k26-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k26-ko28
-  cron: '18 21 * * 4'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k26-ko28
+  cron: '25 18 * * 5'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23546,7 +23529,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.26.txt \
           --test=kops \
@@ -23570,18 +23553,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.26'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.26, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k26-ko28
+    testgrid-tab-name: kops-grid-kopeio-al2023-k26-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k27
-  cron: '50 8 * * 2'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k27
+  cron: '52 18 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23609,7 +23592,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -23633,18 +23616,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.27, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k27
+    testgrid-tab-name: kops-grid-kopeio-al2023-k27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k27-ko27
-  cron: '14 9 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k27-ko27
+  cron: '37 14 * * 2'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23672,10 +23655,9 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
-          --validation-wait=20m \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
@@ -23697,18 +23679,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.27, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.27, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k27-ko27
+    testgrid-tab-name: kops-grid-kopeio-al2023-k27-ko27
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k27-ko28
-  cron: '59 8 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k27-ko28
+  cron: '36 23 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23736,7 +23718,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -23760,18 +23742,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k27-ko28
+    testgrid-tab-name: kops-grid-kopeio-al2023-k27-ko28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k28
-  cron: '51 1 * * 3'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k28
+  cron: '13 3 * * 0'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23799,7 +23781,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -23823,18 +23805,18 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-distro-amzn2, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-al2023, kops-grid, kops-k8s-1.28, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k28
+    testgrid-tab-name: kops-grid-kopeio-al2023-k28
 
-# {"cloud": "aws", "distro": "amzn2", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
-- name: e2e-kops-grid-kopeio-amzn2-k28-ko28
-  cron: '10 5 * * 0'
+# {"cloud": "aws", "distro": "al2023", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "kopeio"}
+- name: e2e-kops-grid-kopeio-al2023-k28-ko28
+  cron: '49 18 * * 3'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -23862,7 +23844,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240131.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/al2023-ami-2023.3.20240219.0-kernel-6.1-x86_64' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -23886,14 +23868,14 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: amzn2
+    test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-1.28, kops-distro-amzn2, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.28, kops-distro-al2023, kops-grid, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-kopeio-amzn2-k28-ko28
+    testgrid-tab-name: kops-grid-kopeio-al2023-k28-ko28
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": "latest", "networking": "kopeio"}
 - name: e2e-kops-grid-kopeio-deb12-k25
