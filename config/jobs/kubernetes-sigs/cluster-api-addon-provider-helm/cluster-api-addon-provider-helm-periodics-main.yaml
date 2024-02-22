@@ -14,7 +14,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-addon-provider-helm"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240210-53ea00220b-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-1.29
       command:
         - runner.sh
       args:
@@ -46,7 +46,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-addon-provider-helm"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240210-53ea00220b-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-1.29
       command:
         - runner.sh
       args:
@@ -78,7 +78,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-addon-provider-helm"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240210-53ea00220b-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-1.29
         command:
           - runner.sh
         args:
@@ -113,7 +113,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-addon-provider-helm"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240210-53ea00220b-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-1.29
       command:
         - runner.sh
       args:
