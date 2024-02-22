@@ -24,7 +24,10 @@ ENV WORKSPACE=/workspace \
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
-ENV IMAGE=${IMAGE_ARG}
+ENV IMAGE=${IMAGE_ARG} \
+    GOPATH=/go \
+    PATH=/go/bin:/usr/local/go/bin:/google-cloud-sdk/bin:${PATH} \
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 # common util tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -59,10 +62,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip setuptools wheel
 
 # Install gcloud
-
-ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
-    CLOUDSDK_CORE_DISABLE_PROMPTS=1
-
 ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
 RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
@@ -72,7 +71,7 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     --bash-completion=false \
     --path-update=false \
     --usage-reporting=false && \
-    gcloud components install alpha beta kubectl && \
+    gcloud components install alpha beta && \
     gcloud info | tee /workspace/gcloud-info.txt
 
 
@@ -147,6 +146,7 @@ ARG GO_VERSION
 ENV GO_TARBALL "go${GO_VERSION}.linux-${TARGETARCH}.tar.gz"
 RUN wget -q "https://go.dev/dl/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
+    mkdir -p "${GOPATH}/bin" && \
     rm "${GO_TARBALL}"
 
 # install yq
@@ -161,12 +161,13 @@ RUN if [ -n "${KIND_VERSION}" ]; then \
     chmod +x /usr/local/bin/kind; \
     fi
 
-# install kubetest2 binaries if a version is provided
-# kubetest2 must be installed from git as the makefile embeds the git short hash and the day it was built.
+# We are installing prebuilt binaries as arm64 compiles are bugged
+# https://github.com/kubernetes-sigs/kubetest2/pull/259
 ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
-    git clone https://github.com/kubernetes-sigs/kubetest2.git /tmp/kubetest2 && \
-    cd /tmp/kubetest2 && make install-all && rm -rf /tmp/kubetest2; \
+    wget -q https://storage.googleapis.com/k8s-staging-kubetest2/latest/linux-${TARGETARCH}.tgz && \
+    tar xzf linux-${TARGETARCH}.tgz -C "$GOPATH/bin" && \
+    rm linux-${TARGETARCH}.tgz; \
     fi
 
 # configure dockerd to use mirror.gcr.io
@@ -175,11 +176,6 @@ ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
 RUN [ -n "${DOCKER_REGISTRY_MIRROR_URL}" ] && \
     echo "DOCKER_OPTS=\"\${DOCKER_OPTS} --registry-mirror=${DOCKER_REGISTRY_MIRROR_URL}\"" | \
     tee --append /etc/default/docker
-
-# add env we can debug with the image name:tag
-ARG IMAGE_ARG
-ENV IMAGE=${IMAGE_ARG}
-
 
 # note the runner is also responsible for making docker in docker function if
 # env DOCKER_IN_DOCKER_ENABLED is set
