@@ -804,7 +804,6 @@ def generate_misc():
                        '--bastion',
                        "--set=cluster.spec.externalDNS.provider=external-dns",
                        "--dns=public",
-
                    ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
@@ -847,6 +846,17 @@ def generate_misc():
                    extra_dashboards=["kops-misc", "kops-ipv6"],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'), # pylint: disable=line-too-long
+
+        # A job to isolate a test failure reported in
+        # https://github.com/kubernetes/kubernetes/issues/123255
+        build_test(name_override="kops-aws-k28-hostname-bug123255",
+                   cloud="aws",
+                   distro="al2023",
+                   k8s_version="1.28",
+                   networking="cilium",
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits', # pylint: disable=line-too-long
+                   runs_per_day=3,
+                   extra_dashboards=['kops-misc']),
 
         # [sig-storage, @jsafrane] A one-off scenario testing SELinux features, because kops
         # is the only way how to get Kubernetes on a Linux with SELinux in enforcing mode in CI.
