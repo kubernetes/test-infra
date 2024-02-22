@@ -29,10 +29,10 @@ substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _KIND_VERSION: ''
+  _KIND_VERSION: '0.22.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.40.4
-timeout: 7200s
+  _YQ_VERSION: v4.40.7
+timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE
   # this is a large and critical CI image, builds are slow on the default 1 core
