@@ -201,7 +201,6 @@ type TeamClient interface {
 	UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(org string, id int, user string) error
 	RemoveTeamMembershipBySlug(org, teamSlug, user string) error
-	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error)
 	ListTeamRepos(org string, id int) ([]Repo, error)
 	ListTeamReposBySlug(org, teamSlug string) ([]Repo, error)
@@ -211,7 +210,6 @@ type TeamClient interface {
 	RemoveTeamRepoBySlug(org, teamSlug, repo string) error
 	ListTeamInvitations(org string, id int) ([]OrgInvitation, error)
 	ListTeamInvitationsBySlug(org, teamSlug string) ([]OrgInvitation, error)
-	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
 }
@@ -250,7 +248,6 @@ type MilestoneClient interface {
 // RerunClient interface for job rerun access check related API actions
 type RerunClient interface {
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
-	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
@@ -3786,44 +3783,6 @@ func (c *client) RemoveTeamMembershipBySlug(org, teamSlug, user string) error {
 	return err
 }
 
-// ListTeamMembers gets a list of team members for the given team id
-//
-// Role options are "all", "maintainer" and "member"
-//
-// https://developer.github.com/v3/teams/members/#list-team-members
-// Deprecated: please use ListTeamMembersBySlug
-func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
-	c.logger.WithField("methodName", "ListTeamMembers").
-		Warn("method is deprecated, please use ListTeamMembersBySlug")
-	durationLogger := c.log("ListTeamMembers", id, role)
-	defer durationLogger()
-
-	if c.fake {
-		return nil, nil
-	}
-	path := fmt.Sprintf("/teams/%d/members", id)
-	var teamMembers []TeamMember
-	err := c.readPaginatedResultsWithValues(
-		path,
-		url.Values{
-			"per_page": []string{"100"},
-			"role":     []string{role},
-		},
-		"application/vnd.github+json",
-		org,
-		func() interface{} {
-			return &[]TeamMember{}
-		},
-		func(obj interface{}) {
-			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return teamMembers, nil
-}
-
 // ListTeamMembersBySlug gets a list of team members for the given team slug
 //
 // Role options are "all", "maintainer" and "member"
@@ -4804,38 +4763,20 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 	return err
 }
 
-// TeamHasMember checks if a user belongs to a team
-// Deprecated: use TeamBySlugHasMember
-func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
-	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
+func (c *client) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
+	durationLogger := c.log("TeamBySlugHasMember", teamSlug, org)
 	defer durationLogger()
 
-	projectMaintainers, err := c.ListTeamMembers(org, teamID, RoleAll)
+	members, err := c.ListTeamMembersBySlug(org, teamSlug, RoleAll)
 	if err != nil {
 		return false, err
 	}
-	for _, person := range projectMaintainers {
+	for _, person := range members {
 		if NormLogin(person.Login) == NormLogin(memberLogin) {
 			return true, nil
 		}
 	}
 	return false, nil
-}
-
-func (c *client) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
-	durationLogger := c.log("TeamBySlugHasMember", teamSlug, org)
-	defer durationLogger()
-
-	if c.fake {
-		return false, nil
-	}
-	exitCode, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, memberLogin),
-		org:       org,
-		exitCodes: []int{200, 404},
-	}, nil)
-	return exitCode == 200, err
 }
 
 // GetTeamBySlug returns information about that team

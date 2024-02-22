@@ -502,6 +502,8 @@ project_config:
             # to the default column if column name is not provided in the command
             org_default_column_map:
                 "": ""
+            # ID of the github project maintainer team for a give project or org
+            org_maintainers_team_slug: ' '
             # Repo level configs for github projects; key is repo name
             project_repo_configs:
                 "":
@@ -509,6 +511,8 @@ project_config:
                     # to the default column if column name is not provided in the command
                     repo_default_column_map:
                         "": ""
+                    # ID of the github project maintainer team for a give project or org
+                    repo_maintainers_team_slug: ' '
 project_manager:
     orgsRepos:
         "":

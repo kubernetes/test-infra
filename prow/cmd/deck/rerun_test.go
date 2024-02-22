@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
@@ -51,9 +52,14 @@ func getPresubmitConfig() *config.Config {
 					"foo": "foo",
 				},
 				RerunAuthConfig: &prowapi.RerunAuthConfig{
-					AllowAnyone:   false,
-					GitHubUsers:   []string{"authorized", "alsoauthorized"},
-					GitHubTeamIDs: []int{42},
+					AllowAnyone: false,
+					GitHubUsers: []string{"authorized", "alsoauthorized"},
+					GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+						prowapi.GitHubTeamSlug{
+							Org:  "kubernetes",
+							Slug: "leads",
+						},
+					},
 				},
 			},
 			Brancher: config.Brancher{
@@ -82,9 +88,14 @@ func getPeriodicConfig() *config.Config {
 						"foo": "foo",
 					},
 					RerunAuthConfig: &prowapi.RerunAuthConfig{
-						AllowAnyone:   false,
-						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{42},
+						AllowAnyone: false,
+						GitHubUsers: []string{"authorized", "alsoauthorized"},
+						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+							prowapi.GitHubTeamSlug{
+								Org:  "kubernetes",
+								Slug: "leads",
+							},
+						},
 					},
 				},
 			}},
@@ -104,6 +115,7 @@ func TestRerun(t *testing.T) {
 		shouldCreateProwJob bool
 		httpCode            int
 		httpMethod          string
+		teams               map[string]map[string]fakegithub.TeamWithMembers
 	}{
 		{
 			name:                "Handler returns ProwJob",
@@ -174,6 +186,7 @@ func TestRerun(t *testing.T) {
 			shouldCreateProwJob: true,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			teams:               map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:                "Org member permitted for presubmits",
@@ -208,9 +221,14 @@ func TestRerun(t *testing.T) {
 						},
 					},
 					RerunAuthConfig: &prowapi.RerunAuthConfig{
-						AllowAnyone:   false,
-						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{42},
+						AllowAnyone: false,
+						GitHubUsers: []string{"authorized", "alsoauthorized"},
+						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+							prowapi.GitHubTeamSlug{
+								Org:  "kubernetes",
+								Slug: "leads",
+							},
+						},
 					},
 				},
 				Status: prowapi.ProwJobStatus{
@@ -250,6 +268,7 @@ func TestRerun(t *testing.T) {
 			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
 			rc := fakegithub.NewFakeClient()
 			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
+			rc.Teams = tc.teams
 			pca := plugins.NewFakeConfigAgent()
 			cfg := func() *config.Config { return &config.Config{} }
 			handler := handleRerun(cfg, fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
@@ -304,6 +323,7 @@ func TestLatestRerun(t *testing.T) {
 		reported            bool
 		httpCode            int
 		httpMethod          string
+		teams               map[string]map[string]fakegithub.TeamWithMembers
 	}{
 		{
 			name:                "Handler returns Presubmit ProwJob",
@@ -407,6 +427,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			teams:               map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:                "Org member permitted for presubmits",
@@ -508,6 +529,7 @@ func TestLatestRerun(t *testing.T) {
 			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
 			rc := fakegithub.NewFakeClient()
 			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
+			rc.Teams = tc.teams
 			pca := plugins.NewFakeConfigAgent()
 			cfg := func() *config.Config {
 				return tc.config
@@ -569,9 +591,14 @@ func TestLatestRerun(t *testing.T) {
 						},
 						Report: tc.reported,
 						RerunAuthConfig: &prowapi.RerunAuthConfig{
-							AllowAnyone:   false,
-							GitHubUsers:   tc.authorized,
-							GitHubTeamIDs: []int{42},
+							AllowAnyone: false,
+							GitHubUsers: tc.authorized,
+							GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+								prowapi.GitHubTeamSlug{
+									Org:  "kubernetes",
+									Slug: "leads",
+								},
+							},
 						},
 					},
 					Status: prowapi.ProwJobStatus{

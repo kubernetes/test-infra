@@ -1762,7 +1762,7 @@ func TestDumpOrgConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "fails if ListTeamMembersFails",
+			name: "fails if ListTeamMembers fails",
 			err:  true,
 			teams: []github.Team{
 				{
