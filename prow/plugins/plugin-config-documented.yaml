@@ -67,11 +67,12 @@ branch_cleaner:
     # format:
     # ```
     # preserved_branches:
-    # <org>: ["master", "release"]
-    # <org/repo>: ["master", "release"]
+    # <org>: ["master", "release", "release-*"]
+    # <org/repo>: ["master", "release", "release-*"]
     # ```
-    # branches in this allow map would be exempt from branch gc
-    # even if the branches are already merged into the target branch
+    # Branches in this allow map would be exempt from branch gc
+    # even if the branches are already merged into the target branch.
+    # Supports regex.
     preserved_branches:
         "": null
 bugzilla:
