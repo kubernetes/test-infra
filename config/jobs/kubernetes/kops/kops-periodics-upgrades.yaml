@@ -46,7 +46,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -118,7 +118,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -184,7 +184,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -256,7 +256,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -322,7 +322,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -394,7 +394,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -460,7 +460,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -532,7 +532,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -598,7 +598,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -670,7 +670,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -736,7 +736,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -808,7 +808,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -874,7 +874,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -946,7 +946,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1012,7 +1012,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1084,7 +1084,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1150,7 +1150,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1222,7 +1222,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1288,7 +1288,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1360,7 +1360,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1426,7 +1426,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1498,7 +1498,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1564,7 +1564,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1636,7 +1636,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1702,7 +1702,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1774,7 +1774,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1840,7 +1840,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1912,7 +1912,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1978,7 +1978,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2050,7 +2050,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2116,7 +2116,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2188,7 +2188,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2254,7 +2254,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2326,7 +2326,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2392,7 +2392,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2464,7 +2464,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2530,7 +2530,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2602,7 +2602,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2668,7 +2668,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2740,7 +2740,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2806,7 +2806,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2878,7 +2878,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2944,7 +2944,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3010,7 +3010,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       imagePullPolicy: Always
       resources:
         limits:
