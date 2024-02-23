@@ -177,7 +177,7 @@ func (n localCluster) Down() error {
 	}
 
 	// make sure all containers are removed
-	if err := control.FinishRunning(exec.Command("sh", "-c", `docker ps -aq | xargs docker rm -fv`)); err != nil {
+	if err := control.FinishRunning(exec.Command("sh", "-c", `docker ps -aq | xargs -r docker rm -fv`)); err != nil {
 		log.Printf("unable to cleanup containers in docker: %v", err)
 	}
 
