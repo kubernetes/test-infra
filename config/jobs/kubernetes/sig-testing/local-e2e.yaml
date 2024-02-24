@@ -21,7 +21,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         env:
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
           value: "true"
@@ -65,7 +65,7 @@ periodics:
     timeout: 240m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
       env:
       - name: DOCKER_IN_DOCKER_IPV6_ENABLED
         value: "true"

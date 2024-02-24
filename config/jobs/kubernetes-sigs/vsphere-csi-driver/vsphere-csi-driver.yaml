@@ -9,7 +9,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - make
         args:
@@ -36,7 +36,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - make
         args:
@@ -142,7 +142,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - make
         args:
@@ -173,7 +173,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - runner.sh
         args:
@@ -201,7 +201,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - "make"
         args:
@@ -235,7 +235,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - runner.sh
         args:
@@ -269,7 +269,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240219-207a9fb4d2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - runner.sh
         args:
