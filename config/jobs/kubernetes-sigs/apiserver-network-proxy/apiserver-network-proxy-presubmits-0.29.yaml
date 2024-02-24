@@ -1,0 +1,123 @@
+presubmits:
+  kubernetes-sigs/apiserver-network-proxy:
+  - name: pull-apiserver-network-proxy-test-0-29
+    cluster: eks-prow-build-cluster
+    branches:
+    - release-0.29
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.21.5
+        command:
+        - make
+        args:
+        - test
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-test-0-29
+      description: Tests the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-docker-build-amd64-0-29
+    cluster: eks-prow-build-cluster
+    branches:
+    - release-0.29
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - docker-build/proxy-agent-amd64
+        env:
+        - name: REGISTRY
+          value: testlocal.io
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-amd64-0-29
+      description: Build amd64 image via Docker for the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-docker-build-arm64-0-29
+    cluster: eks-prow-build-cluster
+    branches:
+    - release-0.29
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - docker-build/proxy-agent-arm64
+        env:
+        - name: REGISTRY
+          value: testlocal.io
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-arm64-0-29
+      description: Build arm64 image via Docker for the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-make-lint-0-29
+    cluster: eks-prow-build-cluster
+    branches:
+    - release-0.29
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - lint
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-make-lint-0-29
+      description: Run lint target for the apiserver-network-proxy

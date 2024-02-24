@@ -1,14 +1,15 @@
 presubmits:
   kubernetes-sigs/apiserver-network-proxy:
-  - name: pull-apiserver-network-proxy-test
+  - name: pull-apiserver-network-proxy-test-0-28
     cluster: eks-prow-build-cluster
-    always_run: true
+    branches:
+    - release-0.28
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21.5
+      - image: public.ecr.aws/docker/library/golang:1.20.10
         command:
         - make
         args:
@@ -22,11 +23,12 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-test
+      testgrid-tab-name: pr-test-0-28
       description: Tests the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-docker-build-amd64
+  - name: pull-apiserver-network-proxy-docker-build-amd64-0-28
     cluster: eks-prow-build-cluster
-    always_run: true
+    branches:
+    - release-0.28
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
@@ -55,11 +57,12 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-docker-build-amd64
+      testgrid-tab-name: pr-docker-build-amd64-0-28
       description: Build amd64 image via Docker for the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-docker-build-arm64
+  - name: pull-apiserver-network-proxy-docker-build-arm64-0-28
     cluster: eks-prow-build-cluster
-    always_run: true
+    branches:
+    - release-0.28
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
@@ -88,11 +91,12 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-docker-build-arm64
+      testgrid-tab-name: pr-docker-build-arm64-0-28
       description: Build arm64 image via Docker for the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-make-lint
+  - name: pull-apiserver-network-proxy-make-lint-0-28
     cluster: eks-prow-build-cluster
-    always_run: true
+    branches:
+    - release-0.28
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
@@ -115,5 +119,5 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-make-lint
+      testgrid-tab-name: pr-make-lint-0-28
       description: Run lint target for the apiserver-network-proxy
