@@ -200,7 +200,7 @@ func DataUploadWithOptions(newReader ReaderFunc, attrs pkgio.WriterOptions) Uplo
 
 		if writer.compressData() {
 			path := writer.fullUploadPath()
-			ext := strings.TrimPrefix(filepath.Ext(path), ".")
+			ext := filepath.Ext(path)
 			mediaType := mime.TypeByExtension(ext)
 			if mediaType == "" {
 				mediaType = "text/plain; charset=utf-8"

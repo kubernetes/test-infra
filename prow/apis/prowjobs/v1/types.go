@@ -975,7 +975,7 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 	if merged.LocalOutputDir == "" {
 		merged.LocalOutputDir = def.LocalOutputDir
 	}
-	if len(merged.CompressFileTypes) == 0 {
+	if merged.CompressFileTypes == nil {
 		merged.CompressFileTypes = def.CompressFileTypes
 	}
 	return &merged
