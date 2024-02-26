@@ -27,7 +27,7 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.26.0"
+          value: "1.28.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION
