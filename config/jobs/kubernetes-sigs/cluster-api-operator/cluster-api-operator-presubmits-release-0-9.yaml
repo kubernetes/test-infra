@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/cluster-api-operator:
-  - name: pull-cluster-api-operator-build-release-0-8
+  - name: pull-cluster-api-operator-build-release-0-9
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-0.8$
+    - ^release-0.9$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.27
@@ -24,9 +24,9 @@ presubmits:
             cpu: "1"
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-      testgrid-tab-name: capi-operator-pr-build-release-0-6
-  - name: pull-cluster-api-operator-make-release-0-8
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+      testgrid-tab-name: capi-operator-pr-build-release-0-9
+  - name: pull-cluster-api-operator-make-release-0-9
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
@@ -36,7 +36,7 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-0.8$
+    - ^release-0.9$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.27
@@ -54,9 +54,9 @@ presubmits:
             cpu: "4"
             memory: "8Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-      testgrid-tab-name: capi-operator-pr-make-release-0-6
-  - name: pull-cluster-api-operator-apidiff-release-0-8
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+      testgrid-tab-name: capi-operator-pr-make-release-0-9
+  - name: pull-cluster-api-operator-apidiff-release-0-9
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
@@ -65,7 +65,7 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-0.8$
+    - ^release-0.9$
     run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
@@ -81,9 +81,9 @@ presubmits:
             cpu: "1"
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-      testgrid-tab-name: capi-operator-pr-apidiff-release-0-6
-  - name: pull-cluster-api-operator-verify-release-0-8
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+      testgrid-tab-name: capi-operator-pr-apidiff-release-0-9
+  - name: pull-cluster-api-operator-verify-release-0-9
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
@@ -92,7 +92,7 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-0.8$
+    - ^release-0.9$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.27
@@ -107,9 +107,9 @@ presubmits:
             cpu: "1"
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-      testgrid-tab-name: capi-operator-pr-verify-release-0-6
-  - name: pull-cluster-api-operator-test-release-0-8
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+      testgrid-tab-name: capi-operator-pr-verify-release-0-9
+  - name: pull-cluster-api-operator-test-release-0-9
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
@@ -117,7 +117,7 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-0.8$
+    - ^release-0.9$
     run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
@@ -133,9 +133,9 @@ presubmits:
             cpu: "1"
             memory: "2Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-      testgrid-tab-name: capi-operator-pr-test-release-0-6
-  - name: pull-cluster-api-operator-e2e-release-0-8
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+      testgrid-tab-name: capi-operator-pr-test-release-0-9
+  - name: pull-cluster-api-operator-e2e-release-0-9
     path_alias: "sigs.k8s.io/cluster-api-operator"
     optional: false
     decorate: true
@@ -145,7 +145,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - ^release-0.8$
+    - ^release-0.9$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.27
@@ -170,5 +170,5 @@ presubmits:
             cpu: "4"
             memory: "8Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-      testgrid-tab-name: capi-operator-pr-e2e-release-0-6
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+      testgrid-tab-name: capi-operator-pr-e2e-release-0-9
