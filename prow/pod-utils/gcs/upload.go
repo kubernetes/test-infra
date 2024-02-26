@@ -25,6 +25,7 @@ import (
 	"mime"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -65,11 +66,7 @@ func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile s
 	}
 	dtw := func(dest string) dataWriter {
 		compressFileTypeSet := sets.NewString(compressFileTypes...)
-		extIndex := strings.LastIndex(dest, ".")
-		var ext string
-		if extIndex >= 0 {
-			ext = dest[extIndex+1:]
-		}
+		ext := strings.TrimPrefix(filepath.Ext(dest), ".")
 		compress := compressFileTypeSet.Has("*") || compressFileTypeSet.Has(ext)
 		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest, compress: compress}
 	}
@@ -202,13 +199,9 @@ func DataUploadWithOptions(newReader ReaderFunc, attrs pkgio.WriterOptions) Uplo
 		}()
 
 		if writer.compressData() {
-			var mediaType string
 			path := writer.fullUploadPath()
-			extIndex := strings.LastIndex(path, ".")
-			if extIndex >= 0 {
-				ext := path[extIndex:]
-				mediaType = mime.TypeByExtension(ext)
-			}
+			ext := strings.TrimPrefix(filepath.Ext(path), ".")
+			mediaType := mime.TypeByExtension(ext)
 			if mediaType == "" {
 				mediaType = "text/plain; charset=utf-8"
 			}
