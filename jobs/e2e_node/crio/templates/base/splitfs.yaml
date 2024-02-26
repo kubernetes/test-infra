@@ -1,0 +1,7 @@
+---
+storage:
+  files:
+    - path: /etc/containers/storage.conf
+      contents:
+        local: 60-storage-split-disk.conf
+      mode: 0644
