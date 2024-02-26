@@ -646,6 +646,13 @@ plank:
                 # * a S3 bucket: with s3:// prefix
                 # * a GCS bucket: without a prefix (deprecated, it's discouraged to use Bucket without prefix please add the gs:// prefix)
                 bucket: ' '
+                # CompressFileTypes specify file types that should be gzipped prior to upload.
+                # Matching files will be compressed prior to upload, and the content-encoding on these files will be set to gzip.
+                # GCS will transcode these gzipped files transparently when viewing. See: https://cloud.google.com/storage/docs/transcoding
+                # Example: "txt", "json"
+                # Use "*" for all
+                compress_file_types:
+                    - ""
                 # DefaultOrg is omitted from GCS paths when using the
                 # legacy or simple strategy
                 default_org: ' '
@@ -840,6 +847,13 @@ plank:
                 # * a S3 bucket: with s3:// prefix
                 # * a GCS bucket: without a prefix (deprecated, it's discouraged to use Bucket without prefix please add the gs:// prefix)
                 bucket: ' '
+                # CompressFileTypes specify file types that should be gzipped prior to upload.
+                # Matching files will be compressed prior to upload, and the content-encoding on these files will be set to gzip.
+                # GCS will transcode these gzipped files transparently when viewing. See: https://cloud.google.com/storage/docs/transcoding
+                # Example: "txt", "json"
+                # Use "*" for all
+                compress_file_types:
+                    - ""
                 # DefaultOrg is omitted from GCS paths when using the
                 # legacy or simple strategy
                 default_org: ' '

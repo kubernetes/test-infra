@@ -73,7 +73,7 @@ func completeUpload(ctx context.Context, o Options, uploadTargets map[string]gcs
 	}
 
 	if o.LocalOutputDir == "" {
-		if err := gcs.Upload(ctx, o.Bucket, o.StorageClientOptions.GCSCredentialsFile, o.StorageClientOptions.S3CredentialsFile, uploadTargets); err != nil {
+		if err := gcs.Upload(ctx, o.Bucket, o.StorageClientOptions.GCSCredentialsFile, o.StorageClientOptions.S3CredentialsFile, o.CompressFileTypes, uploadTargets); err != nil {
 			return fmt.Errorf("failed to upload to blob storage: %w", err)
 		}
 		logrus.Info("Finished upload to blob storage")

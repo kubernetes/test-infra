@@ -243,6 +243,11 @@ func (in *GCSConfiguration) DeepCopyInto(out *GCSConfiguration) {
 			(*out)[key] = val
 		}
 	}
+	if in.CompressFileTypes != nil {
+		in, out := &in.CompressFileTypes, &out.CompressFileTypes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
