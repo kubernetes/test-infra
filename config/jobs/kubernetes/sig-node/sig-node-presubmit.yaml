@@ -1114,10 +1114,10 @@ presubmits:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--node-test-args=--service-feature-gates="KubeletSeparateDiskGC=true" --feature-gates="KubeletSeparateDiskGC=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--feature-gates=KubeletSeparateDiskGC=true --service-feature-gates=KubeletSeparateDiskGC=true --nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+        - --test_args="--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=180m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-splitfs.yaml
         resources:
@@ -2328,7 +2328,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgroupv2-node-e2e-eviction
-  - name: pull-crio-cgroupv2-imagefs-e2e-diskpressure
+  - name: pull-crio-cgroupv2-imagefs-separatedisktest
     cluster: k8s-infra-prow-build
     skip_branches:
       - release-\d+\.\d+  # per-release image
@@ -2360,7 +2360,7 @@ presubmits:
         - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1 --focus="DiskPressure" --timeout=300m
+        - --test_args=--nodes=1 --focus="SeparateDiskTest" --timeout=300m
         - --timeout=300m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-imagefs.yaml
         env:
@@ -2377,9 +2377,8 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-crio-cgroupv2-imagefs-e2e-diskpressure
-# This should be removed after kannon92 debugs some separate disk tests
-  - name: pull-crio-cgroupv2-imagefs-e2e-separatedisktest
+      testgrid-tab-name: pr-crio-cgroupv2-imagefs-e2e-separatedisktest
+  - name: pull-crio-cgroupv2-splitfs-e2e-splitdisk
     cluster: k8s-infra-prow-build
     skip_branches:
       - release-\d+\.\d+  # per-release image
@@ -2408,10 +2407,10 @@ presubmits:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--node-test-args=--feature-gates="KubeletSeparateDiskGC=true" --service-feature-gates="KubeletSeparateDiskGC=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--feature-gates=KubeletSeparateDiskGC=true --service-feature-gates=KubeletSeparateDiskGC=true --nodes=1 --focus="SplitDisk" --timeout=300m
+        - --test_args=--nodes=1 --focus="SplitDisk" --timeout=300m
         - --timeout=300m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-splitfs.yaml
         env:
@@ -2428,7 +2427,7 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-crio-cgroupv2-imagefs-e2e-separatedisktest
+      testgrid-tab-name: pr-crio-cgroupv2-splitfs-splitdisk
   - name: pull-kubernetes-cos-cgroupv1-containerd-node-e2e
     skip_branches:
       - release-\d+\.\d+  # per-release image
