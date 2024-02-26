@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	imageRegexp = regexp.MustCompile(`\b((?:[a-z0-9]+\.)?gcr\.io|(?:[a-z0-9]+\-)?docker\.pkg\.dev)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_./-]+):([a-zA-Z0-9_.-]+)\b`)
+	imageRegexp = regexp.MustCompile(`\b((?:[a-z0-9]+\.)?gcr\.io|(?:[a-z0-9-]+)?docker\.pkg\.dev)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_./-]+):([a-zA-Z0-9_.-]+)\b`)
 	tagRegexp   = regexp.MustCompile(`(v?\d{8}-(?:v\d(?:[.-]\d+)*-g)?[0-9a-f]{6,10}|latest)(-.+)?`)
 )
 

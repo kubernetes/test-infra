@@ -330,11 +330,19 @@ func TestUpdateAllTags(t *testing.T) {
 			},
 		},
 		{
-			name:           "AR subdomains are supported",
+			name:           "AR multi-regional subdomains are supported",
 			content:        `{"images": ["us-docker.pkg.dev/k8s-testimages/some-image:v20190404-12345678"]}`,
 			expectedResult: `{"images": ["us-docker.pkg.dev/k8s-testimages/some-image:v20190405-123456789"]}`,
 			newTags: map[string]string{
 				"us-docker.pkg.dev/k8s-testimages/some-image:v20190404-12345678": "v20190405-123456789",
+			},
+		},
+		{
+			name:           "AR regional subdomains are supported",
+			content:        `{"images": ["us-central1-docker.pkg.dev/k8s-testimages/some-image:v20190404-12345678"]}`,
+			expectedResult: `{"images": ["us-central1-docker.pkg.dev/k8s-testimages/some-image:v20190405-123456789"]}`,
+			newTags: map[string]string{
+				"us-central1-docker.pkg.dev/k8s-testimages/some-image:v20190404-12345678": "v20190405-123456789",
 			},
 		},
 		{
