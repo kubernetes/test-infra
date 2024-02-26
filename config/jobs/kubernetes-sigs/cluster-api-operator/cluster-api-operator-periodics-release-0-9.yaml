@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-operator-test-release-0-8
+- name: periodic-cluster-api-operator-test-release-0-9
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
@@ -8,7 +8,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-operator
-    base_ref: release-0.8
+    base_ref: release-0.9
     path_alias: sigs.k8s.io/cluster-api-operator
   spec:
     containers:
@@ -23,11 +23,11 @@ periodics:
           cpu: "1"
           memory: "2Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-    testgrid-tab-name: capi-operator-test-release-0-6
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+    testgrid-tab-name: capi-operator-test-release-0-9
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-operator-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-operator-e2e-release-0-8
+- name: periodic-cluster-api-operator-e2e-release-0-9
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
@@ -39,7 +39,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-operator
-    base_ref: release-0.8
+    base_ref: release-0.9
     path_alias: sigs.k8s.io/cluster-api-operator
   spec:
     containers:
@@ -58,7 +58,7 @@ periodics:
           cpu: "1"
           memory: "2Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.6
-    testgrid-tab-name: capi-operator-e2e-release-0-6
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.9
+    testgrid-tab-name: capi-operator-e2e-release-0-9
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-operator-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
