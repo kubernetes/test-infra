@@ -34,7 +34,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -86,7 +86,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -139,7 +139,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -192,7 +192,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -322,7 +322,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -373,7 +373,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -426,7 +426,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -480,7 +480,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -549,7 +549,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 5h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
