@@ -56,6 +56,8 @@ type storageClient interface {
 type (
 	ReadCloser  = io.ReadCloser
 	WriteCloser = io.WriteCloser
+	Writer      = io.Writer
+	Closer      = io.Closer
 )
 
 type Attributes struct {

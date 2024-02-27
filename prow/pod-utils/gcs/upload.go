@@ -239,34 +239,37 @@ type dataWriter interface {
 
 type openerObjectWriter struct {
 	pkgio.Opener
-	Context       context.Context
-	Bucket        string
-	Dest          string
-	compress      bool
-	opts          []pkgio.WriterOptions
-	storageWriter pkgio.WriteCloser
-	zipWriter     pkgio.WriteCloser
+	Context  context.Context
+	Bucket   string
+	Dest     string
+	compress bool
+	opts     []pkgio.WriterOptions
+	writer   pkgio.Writer
+	closers  []pkgio.Closer
 }
 
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
-	if w.storageWriter == nil {
-		w.storageWriter, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
+	if w.writer == nil {
+		var storageWriter pkgio.WriteCloser
+		storageWriter, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
 		if err != nil {
 			return 0, err
 		}
 		if w.compress {
-			w.zipWriter = gzip.NewWriter(w.storageWriter)
+			zipWriter := gzip.NewWriter(storageWriter)
+			w.writer = zipWriter
+			w.closers = append(w.closers, zipWriter)
+		} else {
+			w.writer = storageWriter
 		}
+		// The storage closer needs to be last in the list to close in the correct order
+		w.closers = append(w.closers, storageWriter)
 	}
-	if w.compress {
-		return w.zipWriter.Write(p)
-	} else {
-		return w.storageWriter.Write(p)
-	}
+	return w.writer.Write(p)
 }
 
 func (w *openerObjectWriter) Close() error {
-	if w.storageWriter == nil {
+	if w.writer == nil {
 		// Always create a writer even if Write() was never called
 		// otherwise empty files are never created, because Write() is
 		// never called for them
@@ -276,16 +279,13 @@ func (w *openerObjectWriter) Close() error {
 	}
 
 	var errs []error
-	if w.compress {
-		if err := w.zipWriter.Close(); err != nil {
+	for _, closer := range w.closers {
+		if err := closer.Close(); err != nil {
 			errs = append(errs, err)
 		}
-		w.zipWriter = nil
 	}
-	if err := w.storageWriter.Close(); err != nil {
-		errs = append(errs, err)
-	}
-	w.storageWriter = nil
+	w.closers = nil
+	w.writer = nil
 	return utilerrors.NewAggregate(errs)
 }
 
