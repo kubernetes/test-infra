@@ -4,7 +4,7 @@ presets:
   env:
   # K80s will be uncreatable after 1st of May 2024
   - name: NODE_ACCELERATORS
-    value: type=nvidia-tesla-k80,count=2
+    value: type=nvidia-tesla-t4,count=2
   - name: NODE_SIZE
     value: n1-standard-2
 
