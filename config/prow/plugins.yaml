@@ -31,8 +31,6 @@ triggers:
   join_org_url: "https://github.com/etcd-io/etcd/blob/main/CONTRIBUTING.md"
   trigger_github_workflows: true
 - repos:
-  - bazelbuild
-- repos:
   - kubernetes/utils
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   trigger_github_workflows: true
@@ -1111,26 +1109,6 @@ cherry_pick_approved:
 # Keys: Full repo name: "org/repo".
 # Values: List of plugins to run against the repo.
 plugins:
-  # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
-  # Repos that do not send prow webhooks will see no effect.
-  bazelbuild:
-    plugins:
-    - approve  # Allow OWNERS to /approve
-    - assign  # Allow /assign and /cc
-    - blunderbuss  # Auto-assign people
-    - cat # /meow replies with cat pictures
-    - dog # /bark replies with dog pictures
-    - help  # Support /help and /good-first-issue
-    - hold  # Support /hold to delay merge
-    - lgtm  # Allow /lgtm
-    - lifecycle  # Allow /lifecycle stale
-    - override
-    - size  # Auto-label size of PR
-    - trigger  # Allow people to configure CI jobs to /test
-    - verify-owners # Validates OWNERS file changes in PRs.
-    - wip  # Auto-hold PRs with WIP in title
-    - yuks # Let prow tell a /joke
-
   google/cadvisor:
     plugins:
     - trigger
