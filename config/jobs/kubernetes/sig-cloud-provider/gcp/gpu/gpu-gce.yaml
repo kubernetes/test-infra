@@ -42,6 +42,7 @@ periodics:
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
       - --gcp-node-image=gci
+      - --gcp-nodes=2
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -83,6 +84,7 @@ periodics:
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
       - --gcp-node-image=gci
+      - --gcp-nodes=2
       - --gcp-project=k8s-infra-e2e-gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
