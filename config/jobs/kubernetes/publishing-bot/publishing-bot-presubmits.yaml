@@ -7,7 +7,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         resources:
@@ -27,7 +27,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         - test
@@ -53,7 +53,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         env:
         - name: "GOWORK"
           value: "off"
@@ -158,7 +158,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         env:
         - name: "GOWORK"
           value: "off"
