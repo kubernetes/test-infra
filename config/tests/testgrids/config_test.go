@@ -380,7 +380,6 @@ func TestConfig(t *testing.T) {
 // Tracking issue: https://github.com/kubernetes/test-infra/issues/18159
 var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
-	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"kubernetes-sigs/cluster-capacity",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",

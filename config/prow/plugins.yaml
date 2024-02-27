@@ -18,7 +18,6 @@ triggers:
   only_org_members: true
 - repos:
   - google/cadvisor
-  - GoogleCloudPlatform/k8s-multicluster-ingress
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
   - containerd/cri
@@ -1596,10 +1595,6 @@ plugins:
     - mergecommitblocker # Mark PRs with merge commits
     - size    # Mark size of PRs
     - wip     # Mark draft PRs
-
-  GoogleCloudPlatform/k8s-multicluster-ingress:
-    plugins:
-    - trigger
 
   GoogleCloudPlatform/k8s-cluster-bundle:
     plugins:
