@@ -198,17 +198,6 @@ func DataUploadWithOptions(newReader ReaderFunc, attrs pkgio.WriterOptions) Uplo
 			e = utilerrors.NewAggregate(errors)
 		}()
 
-		if writer.compressData() {
-			path := writer.fullUploadPath()
-			ext := filepath.Ext(path)
-			mediaType := mime.TypeByExtension(ext)
-			if mediaType == "" {
-				mediaType = "text/plain; charset=utf-8"
-			}
-			attrs.ContentType = &mediaType
-			ce := "gzip"
-			attrs.ContentEncoding = &ce
-		}
 		writer.ApplyWriterOptions(attrs)
 
 		reader, err := newReader()
@@ -290,6 +279,17 @@ func (w *openerObjectWriter) Close() error {
 }
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
+	if w.compressData() {
+		path := w.fullUploadPath()
+		ext := filepath.Ext(path)
+		mediaType := mime.TypeByExtension(ext)
+		if mediaType == "" {
+			mediaType = "text/plain; charset=utf-8"
+		}
+		opts.ContentType = &mediaType
+		ce := "gzip"
+		opts.ContentEncoding = &ce
+	}
 	w.opts = append(w.opts, opts)
 }
 
