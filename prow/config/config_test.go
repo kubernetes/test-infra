@@ -423,144 +423,144 @@ func TestGetGCSBrowserPrefix(t *testing.T) {
 }
 
 func TestDefaultMatches(t *testing.T) {
-	for _, tc := range []struct{
-		desc string
+	for _, tc := range []struct {
+		desc         string
 		givenOrgRepo string
 		givenCluster string
-		orgRepo string
-		cluster string
-		want bool
+		orgRepo      string
+		cluster      string
+		want         bool
 	}{
 		{
-			desc: "empty",
+			desc:    "empty",
 			orgRepo: "org/repo",
 			cluster: "cluster",
-			want: true,
+			want:    true,
 		},
 		{
-			desc: "givenOrgRepo empty",
+			desc:         "givenOrgRepo empty",
 			givenOrgRepo: "",
-			orgRepo: "org/repo",
-			want: true,
+			orgRepo:      "org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo star",
+			desc:         "givenOrgRepo star",
 			givenOrgRepo: "*",
-			orgRepo: "org/repo",
-			want: true,
+			orgRepo:      "org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo org match",
+			desc:         "givenOrgRepo org match",
 			givenOrgRepo: "org",
-			orgRepo: "org/repo",
-			want: true,
+			orgRepo:      "org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo full match",
+			desc:         "givenOrgRepo full match",
 			givenOrgRepo: "org/repo",
-			orgRepo: "org/repo",
-			want: true,
+			orgRepo:      "org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo gerrit review org match",
+			desc:         "givenOrgRepo gerrit review org match",
 			givenOrgRepo: "some.org",
-			orgRepo: "some-review.org/repo",
-			want: true,
+			orgRepo:      "some-review.org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo gerrit review full match",
+			desc:         "givenOrgRepo gerrit review full match",
 			givenOrgRepo: "some.org/repo",
-			orgRepo: "some-review.org/repo",
-			want: true,
+			orgRepo:      "some-review.org/repo",
+			want:         true,
 		},
 		// The following two cases cover an unexpected existing configuration
 		// that matches a literal http/s prefix. Though unadvised, it should
 		// not be broken by fuzz matching http prefixes.
 		{
-			desc: "givenOrgRepo http full match",
+			desc:         "givenOrgRepo http full match",
 			givenOrgRepo: "http://org/repo",
-			orgRepo: "http://org/repo",
-			want: true,
+			orgRepo:      "http://org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo https full match",
+			desc:         "givenOrgRepo https full match",
 			givenOrgRepo: "https://org/repo",
-			orgRepo: "https://org/repo",
-			want: true,
+			orgRepo:      "https://org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo http fuzz org match",
+			desc:         "givenOrgRepo http fuzz org match",
 			givenOrgRepo: "org",
-			orgRepo: "http://org/repo",
-			want: true,
+			orgRepo:      "http://org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo https fuzz org match",
+			desc:         "givenOrgRepo https fuzz org match",
 			givenOrgRepo: "org",
-			orgRepo: "https://org/repo",
-			want: true,
+			orgRepo:      "https://org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo https fuzz gerrit review org match",
+			desc:         "givenOrgRepo https fuzz gerrit review org match",
 			givenOrgRepo: "some.org",
-			orgRepo: "https://some-review.org/repo",
-			want: true,
+			orgRepo:      "https://some-review.org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo http fuzz full match",
+			desc:         "givenOrgRepo http fuzz full match",
 			givenOrgRepo: "org/repo",
-			orgRepo: "http://org/repo",
-			want: true,
+			orgRepo:      "http://org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo https fuzz full match",
+			desc:         "givenOrgRepo https fuzz full match",
 			givenOrgRepo: "org/repo",
-			orgRepo: "https://org/repo",
-			want: true,
+			orgRepo:      "https://org/repo",
+			want:         true,
 		},
 		{
-			desc: "givenOrgRepo org mismatch",
+			desc:         "givenOrgRepo org mismatch",
 			givenOrgRepo: "org2",
-			orgRepo: "org/repo",
-			want: false,
+			orgRepo:      "org/repo",
+			want:         false,
 		},
 		{
-			desc: "givenOrgRepo repo mismatch",
+			desc:         "givenOrgRepo repo mismatch",
 			givenOrgRepo: "org/repo2",
-			orgRepo: "org/repo",
-			want: false,
+			orgRepo:      "org/repo",
+			want:         false,
 		},
 		{
-			desc: "givenOrgRepo gerrit review org mismatch",
+			desc:         "givenOrgRepo gerrit review org mismatch",
 			givenOrgRepo: "some.other.org",
-			orgRepo: "some.other-review.org",
-			want: false,
+			orgRepo:      "some.other-review.org",
+			want:         false,
 		},
 		{
-			desc: "givenCluster empty",
+			desc:         "givenCluster empty",
 			givenCluster: "",
-			cluster: "cluster",
-			want: true,
+			cluster:      "cluster",
+			want:         true,
 		},
 		{
-			desc: "givenCluster star",
+			desc:         "givenCluster star",
 			givenCluster: "*",
-			cluster: "cluster",
-			want: true,
+			cluster:      "cluster",
+			want:         true,
 		},
 		{
-			desc: "givenCluster match",
+			desc:         "givenCluster match",
 			givenCluster: "cluster",
-			cluster: "cluster",
-			want: true,
+			cluster:      "cluster",
+			want:         true,
 		},
 		{
-			desc: "givenCluster mismatch",
+			desc:         "givenCluster mismatch",
 			givenCluster: "cluster2",
-			cluster: "cluster",
-			want: false,
+			cluster:      "cluster",
+			want:         false,
 		},
-	}{
+	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			if got := matches(tc.givenOrgRepo, tc.givenCluster, tc.orgRepo, tc.cluster); got != tc.want {
 				t.Errorf("matches() got %v, want %v", got, tc.want)
@@ -8418,6 +8418,7 @@ prowjob_namespace: default
 push_gateway:
   interval: 1m0s
   serve_metrics: false
+scheduler: {}
 sinker:
   max_pod_age: 24h0m0s
   max_prowjob_age: 168h0m0s
@@ -8501,6 +8502,7 @@ prowjob_namespace: default
 push_gateway:
   interval: 1m0s
   serve_metrics: false
+scheduler: {}
 sinker:
   max_pod_age: 24h0m0s
   max_prowjob_age: 168h0m0s
@@ -8577,6 +8579,7 @@ prowjob_namespace: default
 push_gateway:
   interval: 1m0s
   serve_metrics: false
+scheduler: {}
 sinker:
   max_pod_age: 24h0m0s
   max_prowjob_age: 168h0m0s
@@ -8658,6 +8661,7 @@ prowjob_namespace: default
 push_gateway:
   interval: 1m0s
   serve_metrics: false
+scheduler: {}
 sinker:
   max_pod_age: 24h0m0s
   max_prowjob_age: 168h0m0s
