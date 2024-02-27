@@ -45,7 +45,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-slow
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=120m
         securityContext:
@@ -57,6 +56,7 @@ presubmits:
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-storage-snapshot
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     # All the files owned by sig-storage. Keep in sync across
@@ -100,18 +100,22 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
         - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=150m
         securityContext:
           privileged: true
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         resources:
+          limits:
+            cpu: "4"
+            memory: "6Gi"
           requests:
+            cpu: "4"
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-csi-serial
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     # All the files owned by sig-storage. Keep in sync across
@@ -155,18 +159,22 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=150m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         resources:
+          limits:
+            cpu: "4"
+            memory: "6Gi"
           requests:
+            cpu: "4"
             memory: "6Gi"
         securityContext:
           privileged: true
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-storage-disruptive
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     branches:
@@ -200,12 +208,15 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=240m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         resources:
+          limits:
+            cpu: "4"
+            memory: "6Gi"
           requests:
+            cpu: "4"
             memory: "6Gi"
         securityContext:
           privileged: true
