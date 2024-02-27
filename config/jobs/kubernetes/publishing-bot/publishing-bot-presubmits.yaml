@@ -54,6 +54,9 @@ presubmits:
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.20
+        env:
+        - name: "GOWORK"
+          value: "off"
         command:
         - go
         args:
@@ -156,6 +159,9 @@ presubmits:
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.20
+        env:
+        - name: "GOWORK"
+          value: "off"
         command:
         - go
         args:
