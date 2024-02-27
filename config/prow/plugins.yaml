@@ -1596,13 +1596,6 @@ plugins:
     - size    # Mark size of PRs
     - wip     # Mark draft PRs
 
-  GoogleCloudPlatform/k8s-cluster-bundle:
-    plugins:
-    - trigger
-    - lgtm
-    - size
-    - welcome
-
   kubernetes-sigs/secrets-store-csi-driver:
     plugins:
     - milestone
