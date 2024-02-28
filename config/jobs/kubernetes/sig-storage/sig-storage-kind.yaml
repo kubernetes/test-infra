@@ -74,7 +74,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
         command:
         - wrapper.sh
         - bash
@@ -168,7 +168,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
         command:
         - wrapper.sh
         - bash
