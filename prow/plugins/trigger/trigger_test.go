@@ -236,6 +236,7 @@ func TestRunRequested(t *testing.T) {
 				return false, nil, nil
 			})
 			client := Client{
+				Config:        &config.Config{},
 				GitHubClient:  &fakeGitHubClient,
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 				Logger:        logrus.WithField("testcase", testCase.name),

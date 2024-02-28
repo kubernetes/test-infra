@@ -37,14 +37,36 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-// NewProwJob initializes a ProwJob out of a ProwJobSpec.
-func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
+// Modifiers allows a client to set some fields
+// when a ProwJob is being created.
+type Modifiers struct {
+	state prowapi.ProwJobState
+}
+
+// Modifier configures a Modifiers value
+type Modifier func(*Modifiers)
+
+func defaultModifiers() Modifiers {
+	return Modifiers{state: prowapi.TriggeredState}
+}
+
+// RequireScheduling returns an Option that, if enabled, set
+// the ProwJob initial state to SchedulingState
+func RequireScheduling(enableScheduling bool) Modifier {
+	if enableScheduling {
+		return func(opts *Modifiers) { opts.state = prowapi.SchedulingState }
+	}
+	return func(*Modifiers) {}
+}
+
+// NewProwJob initializes a ProwJob out of a ProwJobSpec, with some extra modifiers.
+func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string, modifiers ...Modifier) prowapi.ProwJob {
 	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
 	specCopy := spec.DeepCopy()
 	setReportDefault(specCopy)
 	uuidV1 := uuid.New()
 
-	return prowapi.ProwJob{
+	pj := prowapi.ProwJob{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "prow.k8s.io/v1",
 			Kind:       "ProwJob",
@@ -60,6 +82,14 @@ func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 			State:     prowapi.TriggeredState,
 		},
 	}
+
+	defModifiers := defaultModifiers()
+	for _, modifier := range modifiers {
+		modifier(&defModifiers)
+	}
+	pj.Status.State = defModifiers.state
+
+	return pj
 }
 
 // setReportDefault sets Slack to false when states to report is an empty slice.
@@ -120,7 +150,8 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string) prowapi.ProwJob {
+// Presubmit is finally mutated according to the modifiers.
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string, modifiers ...Modifier) prowapi.ProwJob {
 	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
@@ -135,7 +166,7 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 	for k, v := range job.Annotations {
 		annotations[k] = v
 	}
-	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
+	return NewProwJob(PresubmitSpec(job, refs), labels, annotations, modifiers...)
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
