@@ -10,7 +10,7 @@ presubmits:
       description: "build the kernel-module-management controller binary."
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - ci/prow/build
         resources:
@@ -30,7 +30,7 @@ presubmits:
       description: "make sure deployment manifests and bundle are up-to-date."
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20-alpine
+      - image: public.ecr.aws/docker/library/golang:1.21-alpine
         command: [sh]
         args:
         - -c
@@ -85,7 +85,7 @@ presubmits:
       description: "lint the source code of kernel-module-management."
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - ci/prow/lint
         resources:
@@ -105,7 +105,7 @@ presubmits:
       description: "unit-tests the source code of kernel-module-management."
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - ci/prow/unit-tests
         resources:
