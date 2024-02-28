@@ -2380,7 +2380,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgroupv2-imagefs-e2e-separatedisktest
-  - name: pull-crio-cgroupv2-splitfs-e2e-splitdisk
+  - name: pull-crio-cgroupv2-splitfs-splitdisk
     cluster: k8s-infra-prow-build
     skip_branches:
       - release-\d+\.\d+  # per-release image
