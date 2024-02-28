@@ -2,7 +2,8 @@
 
 presubmits:
   kubernetes-csi/csi-driver-host-path:
-  - name: pull-kubernetes-csi-csi-driver-host-distributed-on-kubernetes-1-25
+  # 1.28 is used because it is the (currently) latest stable release.
+  - name: pull-kubernetes-csi-csi-driver-host-distributed-on-kubernetes-1-28
     cluster: eks-prow-build-cluster
     always_run: true
     optional: true
@@ -15,8 +16,8 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
-      testgrid-tab-name: distributed-on-kubernetes-1-25
-      description: Kubernetes-CSI pull job in repo csi-driver-host-path for distributed deployment on Kubernetes 1.25, with CSIStorageCapacity
+      testgrid-tab-name: distributed-on-kubernetes-1-28
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for distributed deployment on Kubernetes 1.28, with CSIStorageCapacity
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -27,7 +28,7 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.25.0"
+          value: "1.28.0"
         - name: CSI_PROW_DEPLOYMENT
           value: "kubernetes-distributed"
         - name: CSI_SNAPSHOTTER_VERSION
