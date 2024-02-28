@@ -1,6 +1,6 @@
 # CRI-O test infra jobs
 
-**For any modifications to this directory, please ping
+**For any modifications to this directoy, please ping
 [@kubernetes/sig-node-cri-o-test-maintainers](https://github.com/orgs/kubernetes/teams/sig-node-cri-o-test-maintainers)
 on the related issue or pull request.**
 

@@ -125,7 +125,7 @@ func main() {
 	}
 	cfg := configAgent.Config
 	o.kubernetes.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
-	
+
 	var logOpts []zap.Opts
 	if cfg().LogLevel == "debug" {
 		logOpts = append(logOpts, func(o *zap.Options) {

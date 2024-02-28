@@ -431,6 +431,15 @@ deck:
 # DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 # no timeout is configured at the job level. This value is set to 24 hours.
 default_job_timeout: 0s
+dingtalk_reporter_configs:
+    "":
+        job_states_to_report:
+            - ""
+        job_types_to_report:
+            - ""
+        report: false
+        report_template: ' '
+        token: ' '
 # DisabledClusters holds a list of disabled build cluster names. The same context names will be ignored while
 # Prow components load the kubeconfig files.
 disabled_clusters:
