@@ -22,6 +22,28 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
+  - name: pull-node-feature-discovery-operator-unit-tests
+    cluster: eks-prow-build-cluster
+    always_run: true
+    skip_branches:
+    - gh-pages
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: operator-unit-tests
+      description: "Unit tests for node-feature-discovery-operator"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.21
+        command:
+        - scripts/test-infra/unit-tests.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-operator-verify-docs
     cluster: eks-prow-build-cluster
     always_run: true
