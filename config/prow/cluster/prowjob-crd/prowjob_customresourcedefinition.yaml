@@ -182,6 +182,16 @@ spec:
                           discouraged to use Bucket without prefix please add the
                           gs:// prefix)'
                         type: string
+                      compress_file_types:
+                        description: 'CompressFileTypes specify file types that should
+                          be gzipped prior to upload. Matching files will be compressed
+                          prior to upload, and the content-encoding on these files
+                          will be set to gzip. GCS will transcode these gzipped files
+                          transparently when viewing. See: https://cloud.google.com/storage/docs/transcoding
+                          Example: "txt", "json" Use "*" for all'
+                        items:
+                          type: string
+                        type: array
                       default_org:
                         description: DefaultOrg is omitted from GCS paths when using
                           the legacy or simple strategy

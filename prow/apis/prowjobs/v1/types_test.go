@@ -75,7 +75,6 @@ func TestProwJobDefaulting(t *testing.T) {
 					ProjectID: "default-project",
 				},
 				TenantID: "default-tenant",
-
 			},
 			expected: &ProwJobDefault{
 				ResultStoreConfig: &ResultStoreConfig{
@@ -85,20 +84,19 @@ func TestProwJobDefaulting(t *testing.T) {
 			},
 		},
 		{
-			name: "Empty provided, no default",
+			name:     "Empty provided, no default",
 			provided: &ProwJobDefault{},
-			def: &ProwJobDefault{},
+			def:      &ProwJobDefault{},
 			expected: &ProwJobDefault{},
 		},
 		{
-			name: "Empty provided, use default",
+			name:     "Empty provided, use default",
 			provided: &ProwJobDefault{},
 			def: &ProwJobDefault{
 				ResultStoreConfig: &ResultStoreConfig{
 					ProjectID: "default-project",
 				},
 				TenantID: "default-tenant",
-
 			},
 			expected: &ProwJobDefault{
 				ResultStoreConfig: &ResultStoreConfig{
@@ -108,20 +106,19 @@ func TestProwJobDefaulting(t *testing.T) {
 			},
 		},
 		{
-			name: "Nil provided, empty default",
+			name:     "Nil provided, empty default",
 			provided: nil,
-			def: &ProwJobDefault{},
+			def:      &ProwJobDefault{},
 			expected: &ProwJobDefault{},
 		},
 		{
-			name: "Nil provided, use default",
+			name:     "Nil provided, use default",
 			provided: nil,
 			def: &ProwJobDefault{
 				ResultStoreConfig: &ResultStoreConfig{
 					ProjectID: "default-project",
 				},
 				TenantID: "default-tenant",
-
 			},
 			expected: &ProwJobDefault{
 				ResultStoreConfig: &ResultStoreConfig{
@@ -131,9 +128,9 @@ func TestProwJobDefaulting(t *testing.T) {
 			},
 		},
 		{
-			name: "Nil provided, nil default",
+			name:     "Nil provided, nil default",
 			provided: nil,
-			def: nil,
+			def:      nil,
 			expected: nil,
 		},
 		{
@@ -222,11 +219,12 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 			name: "gcs configuration provided",
 			provided: &DecorationConfig{
 				GCSConfiguration: &GCSConfiguration{
-					Bucket:       "bucket-1",
-					PathPrefix:   "prefix-2",
-					PathStrategy: PathStrategyExplicit,
-					DefaultOrg:   "org2",
-					DefaultRepo:  "repo2",
+					Bucket:            "bucket-1",
+					PathPrefix:        "prefix-2",
+					PathStrategy:      PathStrategyExplicit,
+					DefaultOrg:        "org2",
+					DefaultRepo:       "repo2",
+					CompressFileTypes: []string{"txt", "json"},
 				},
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {

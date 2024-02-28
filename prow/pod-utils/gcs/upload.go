@@ -17,11 +17,16 @@ limitations under the License.
 package gcs
 
 import (
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"mime"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -43,10 +48,10 @@ type destToWriter func(dest string) dataWriter
 
 const retryCount = 4
 
-// Upload uploads all of the data in the
-// uploadTargets map to blob storage in parallel. The map is
-// keyed on blob storage path under the bucket
-func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
+// Upload uploads all the data in the uploadTargets map to blob storage in parallel.
+// The map is keyed on blob storage path under the bucket.
+// Files with an extension in the compressFileTypes list will be compressed prior to uploading
+func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile string, compressFileTypes []string, uploadTargets map[string]UploadFunc) error {
 	parsedBucket, err := url.Parse(bucket)
 	if err != nil {
 		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
@@ -60,7 +65,10 @@ func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile s
 		return fmt.Errorf("new opener: %w", err)
 	}
 	dtw := func(dest string) dataWriter {
-		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest}
+		compressFileTypeSet := sets.NewString(compressFileTypes...)
+		ext := strings.TrimPrefix(filepath.Ext(dest), ".")
+		compress := compressFileTypeSet.Has("*") || compressFileTypeSet.Has(ext)
+		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest, compress: compress}
 	}
 	return upload(dtw, uploadTargets)
 }
@@ -215,29 +223,42 @@ type dataWriter interface {
 	io.WriteCloser
 	fullUploadPath() string
 	ApplyWriterOptions(opts pkgio.WriterOptions)
+	compressData() bool
 }
 
 type openerObjectWriter struct {
 	pkgio.Opener
-	Context     context.Context
-	Bucket      string
-	Dest        string
-	opts        []pkgio.WriterOptions
-	writeCloser pkgio.WriteCloser
+	Context  context.Context
+	Bucket   string
+	Dest     string
+	compress bool
+	opts     []pkgio.WriterOptions
+	writer   pkgio.Writer
+	closers  []pkgio.Closer
 }
 
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
-	if w.writeCloser == nil {
-		w.writeCloser, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
+	if w.writer == nil {
+		var storageWriter pkgio.WriteCloser
+		storageWriter, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
 		if err != nil {
 			return 0, err
 		}
+		if w.compress {
+			zipWriter := gzip.NewWriter(storageWriter)
+			w.writer = zipWriter
+			w.closers = append(w.closers, zipWriter)
+		} else {
+			w.writer = storageWriter
+		}
+		// The storage closer needs to be last in the list to close in the correct order
+		w.closers = append(w.closers, storageWriter)
 	}
-	return w.writeCloser.Write(p)
+	return w.writer.Write(p)
 }
 
 func (w *openerObjectWriter) Close() error {
-	if w.writeCloser == nil {
+	if w.writer == nil {
 		// Always create a writer even if Write() was never called
 		// otherwise empty files are never created, because Write() is
 		// never called for them
@@ -246,15 +267,36 @@ func (w *openerObjectWriter) Close() error {
 		}
 	}
 
-	err := w.writeCloser.Close()
-	w.writeCloser = nil
-	return err
+	var errs []error
+	for _, closer := range w.closers {
+		if err := closer.Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	w.closers = nil
+	w.writer = nil
+	return utilerrors.NewAggregate(errs)
 }
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
+	if w.compressData() {
+		path := w.fullUploadPath()
+		ext := filepath.Ext(path)
+		mediaType := mime.TypeByExtension(ext)
+		if mediaType == "" {
+			mediaType = "text/plain; charset=utf-8"
+		}
+		opts.ContentType = &mediaType
+		ce := "gzip"
+		opts.ContentEncoding = &ce
+	}
 	w.opts = append(w.opts, opts)
 }
 
 func (w *openerObjectWriter) fullUploadPath() string {
 	return fmt.Sprintf("%s/%s", w.Bucket, w.Dest)
+}
+
+func (w *openerObjectWriter) compressData() bool {
+	return w.compress
 }

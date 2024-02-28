@@ -18,6 +18,7 @@ package gcs
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -87,12 +88,13 @@ func newReaderFunc(opt readerFuncOptions) (ReaderFunc, *readerFuncMetadata) {
 func TestUploadNewReaderFunc(t *testing.T) {
 	var testCases = []struct {
 		name               string
+		compressFileTypes  []string
 		isErrExpected      bool
 		readerFuncOpts     readerFuncOptions
 		wantReaderFuncMeta readerFuncMetadata
 	}{
 		{
-			name:          "Succeed on firt retry",
+			name:          "Succeed on first retry",
 			isErrExpected: false,
 			readerFuncOpts: readerFuncOptions{
 				newFailsOnNthAttempt:   -1,
@@ -127,6 +129,18 @@ func TestUploadNewReaderFunc(t *testing.T) {
 				ReaderWasClosed:      true,
 			},
 		},
+		{
+			name:              "Compress files",
+			compressFileTypes: []string{"*"},
+			readerFuncOpts: readerFuncOptions{
+				newFailsOnNthAttempt:   -1,
+				closeFailsOnNthAttempt: -1,
+			},
+			wantReaderFuncMeta: readerFuncMetadata{
+				NewReaderAttemptsNum: 1,
+				ReaderWasClosed:      true,
+			},
+		},
 	}
 	tempDir := t.TempDir()
 	for _, testCase := range testCases {
@@ -139,7 +153,7 @@ func TestUploadNewReaderFunc(t *testing.T) {
 			readerFunc, readerFuncMeta := newReaderFunc(testCase.readerFuncOpts)
 			uploadTargets[path.Base(f.Name())] = DataUpload(readerFunc)
 			bucket := fmt.Sprintf("%s://%s", providers.File, path.Dir(f.Name()))
-			err = Upload(context.TODO(), bucket, "", "", uploadTargets)
+			err = Upload(context.TODO(), bucket, "", "", testCase.compressFileTypes, uploadTargets)
 			if testCase.isErrExpected && err == nil {
 				t.Errorf("error expected but got nil")
 			}
@@ -266,7 +280,7 @@ func TestUploadWithRetries(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			err := Upload(ctx, "", "", "", uploadFuncs)
+			err := Upload(ctx, "", "", "", []string{}, uploadFuncs)
 
 			isErrExpected := false
 			for _, currentTestState := range currentTestStates {
@@ -289,6 +303,100 @@ func TestUploadWithRetries(t *testing.T) {
 	}
 }
 
+func TestUploadCompression(t *testing.T) {
+	type destUploadBehavior struct {
+		dest     string
+		compress bool
+	}
+
+	testCases := []struct {
+		name               string
+		destUploadBehavior []destUploadBehavior
+		compressFileTypes  []string
+	}{
+		{
+			name: "compress all",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "log.txt",
+					compress: true,
+				},
+				{
+					dest:     "graph.json",
+					compress: true,
+				},
+			},
+			compressFileTypes: []string{"*"},
+		},
+		{
+			name: "compress txt only",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "log.txt",
+					compress: true,
+				},
+				{
+					dest:     "graph.json",
+					compress: false,
+				},
+			},
+			compressFileTypes: []string{"txt"},
+		},
+		{
+			name: "compress multiple types, but some others included",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "log.txt",
+					compress: true,
+				},
+				{
+					dest:     "graph.json",
+					compress: false,
+				},
+				{
+					dest:     "something.log",
+					compress: true,
+				},
+			},
+			compressFileTypes: []string{"txt", "log"},
+		},
+		{
+			name: "compress nothing",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "log.txt",
+					compress: false,
+				},
+				{
+					dest:     "graph.json",
+					compress: false,
+				},
+			},
+			compressFileTypes: []string{},
+		},
+	}
+	for _, tc := range testCases {
+		uploadFuncs := map[string]UploadFunc{}
+		for _, destBehavior := range tc.destUploadBehavior {
+			uploadFuncs[destBehavior.dest] = func(destBehavior destUploadBehavior) UploadFunc {
+				return func(writer dataWriter) error {
+					if destBehavior.compress != writer.compressData() {
+						t.Errorf("expected upload to be compressed=%v, but writer wasn't set up correctly for dest: %s", destBehavior.compress, destBehavior.dest)
+					}
+					return nil
+				}
+			}(destBehavior)
+		}
+		t.Run(tc.name, func(t *testing.T) {
+			err := Upload(context.Background(), "", "", "", tc.compressFileTypes, uploadFuncs)
+			if err != nil {
+				t.Errorf("unexpected error returned from Upload: %v", err)
+			}
+
+		})
+	}
+}
+
 func Test_openerObjectWriter_Write(t *testing.T) {
 
 	fakeBucket := "test-bucket"
@@ -301,6 +409,7 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 		name          string
 		ObjectDest    string
 		ObjectContent []byte
+		compress      bool
 		wantN         int
 		wantErr       bool
 	}{
@@ -318,14 +427,23 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 			wantN:         0,
 			wantErr:       false,
 		},
+		{
+			name:          "compress file",
+			ObjectDest:    "build/log.text",
+			ObjectContent: []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			compress:      true,
+			wantN:         25,
+			wantErr:       false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &openerObjectWriter{
-				Opener:  io.NewGCSOpener(fakeGCSClient),
-				Context: context.Background(),
-				Bucket:  fmt.Sprintf("gs://%s", fakeBucket),
-				Dest:    tt.ObjectDest,
+				Opener:   io.NewGCSOpener(fakeGCSClient),
+				Context:  context.Background(),
+				Bucket:   fmt.Sprintf("gs://%s", fakeBucket),
+				Dest:     tt.ObjectDest,
+				compress: tt.compress,
 			}
 			gotN, err := w.Write(tt.ObjectContent)
 			if (err != nil) != tt.wantErr {
@@ -347,9 +465,21 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
 			}
 
-			gotObjectContent, err := stdio.ReadAll(reader)
-			if err != nil {
-				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
+			var gotObjectContent []byte
+			if tt.compress {
+				gzipReader, err := gzip.NewReader(reader)
+				if err != nil {
+					t.Errorf("Got unexpected error creating gzipReader for object %s: %v", tt.ObjectDest, err)
+				}
+				gotObjectContent, err = stdio.ReadAll(gzipReader)
+				if err != nil {
+					t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
+				}
+			} else {
+				gotObjectContent, err = stdio.ReadAll(reader)
+				if err != nil {
+					t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
+				}
 			}
 
 			if !bytes.Equal(tt.ObjectContent, gotObjectContent) {
