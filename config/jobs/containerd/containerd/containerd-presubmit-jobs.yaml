@@ -177,3 +177,73 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.6-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+
+  - name: pull-containerd-k8s-e2e-ec2
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: presubmits-ec2
+      description: Runs presubmit tests using kubetest2-ec2 against kubernetes master on EC2 using containerd master
+    labels:
+      preset-e2e-containerd-ec2: "true"
+      preset-dind-enabled: "true"
+    always_run: false
+    optional: true
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+      - org: kubernetes-sigs
+        repo: provider-aws-test-infra
+        base_ref: main
+        path_alias: sigs.k8s.io/provider-aws-test-infra
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              ./test/build.sh
+              GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+              export CONTAINERD_PULL_REFS=PULL_REFS
+              kubetest2 ec2 \
+               --build \
+               --region us-east-1 \
+               --target-build-arch linux/amd64 \
+               --stage provider-aws-test-infra \
+               --up \
+               --down \
+               --test=ginkgo \
+               -- \
+               --use-built-binaries true \
+               --parallel=30 \
+               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+          env:
+            - name: USE_DOCKERIZED_BUILD
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 8
+              memory: 10Gi
+            requests:
+              cpu: 8
+              memory: 10Gi
