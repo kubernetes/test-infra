@@ -1,0 +1,102 @@
+periodics:
+- name: periodic-cluster-api-provider-gcp-build-release-1-6
+  interval: 4h
+  decorate: true
+  cluster: eks-prow-build-cluster
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-1.6
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.28
+      command:
+      - "runner.sh"
+      - "./scripts/ci-build.sh"
+      resources:
+        limits:
+          cpu: 4
+          memory: 4Gi
+        requests:
+          cpu: 4
+          memory: 4Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-build-release-1-6
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-gcp-test-release-1-6
+  interval: 4h
+  decorate: true
+  cluster: eks-prow-build-cluster
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-1.6
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.28
+      args:
+      - "runner.sh"
+      - "./scripts/ci-test.sh"
+      resources:
+        limits:
+          cpu: 4
+          memory: 4Gi
+        requests:
+          cpu: 4
+          memory: 4Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-test-release-1-6
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-gcp-make-conformance-release-1-6
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 12h
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-1.6
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.28
+        env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-conformance-release-1-6
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
