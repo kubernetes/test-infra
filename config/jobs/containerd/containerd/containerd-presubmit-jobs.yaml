@@ -222,7 +222,8 @@ presubmits:
             - |
               ./test/build.sh
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
-              export CONTAINERD_PULL_REFS=PULL_REFS
+              export CONTAINERD_PULL_REFS=$PULL_REFS
+              echo "CONTAINERD_PULL_REFS: $CONTAINERD_PULL_REFS"
               kubetest2 ec2 \
                --build \
                --region us-east-1 \
