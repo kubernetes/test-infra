@@ -17,7 +17,6 @@ periodics:
       - --check-leaked-resources
       - --cluster=canary-e2e-prow
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
