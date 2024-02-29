@@ -72,6 +72,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build
+  - name: pull-cluster-api-provider-aws-build-docker
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.29
+        command:
+        - "./scripts/ci-docker-build.sh"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        # docker-in-docker needs privileged mode
+        securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: pr-build-docker
+    labels:
+      preset-dind-enabled: "true"
   - name: pull-cluster-api-provider-aws-verify
     cluster: eks-prow-build-cluster
     always_run: true
