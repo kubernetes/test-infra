@@ -188,6 +188,7 @@ presubmits:
       testgrid-dashboards: presubmits-ec2
       description: Runs presubmit tests using kubetest2-ec2 against kubernetes master on EC2 using containerd master
     labels:
+      preset-service-account: "true"
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
     always_run: false
