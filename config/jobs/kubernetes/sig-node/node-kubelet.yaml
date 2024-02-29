@@ -142,10 +142,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 6Gi
+          memory: 12Gi
         requests:
           cpu: 4
-          memory: 6Gi
+          memory: 12Gi
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: node-kubelet-serial-crio

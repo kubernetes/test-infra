@@ -1332,10 +1332,10 @@ presubmits:
         resources:
           limits:
             cpu: 4
-            memory: 6Gi
+            memory: 12Gi
           requests:
             cpu: 4
-            memory: 6Gi
+            memory: 12Gi
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -1382,10 +1382,10 @@ presubmits:
         resources:
           limits:
             cpu: 4
-            memory: 6Gi
+            memory: 12Gi
           requests:
             cpu: 4
-            memory: 6Gi
+            memory: 12Gi
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
