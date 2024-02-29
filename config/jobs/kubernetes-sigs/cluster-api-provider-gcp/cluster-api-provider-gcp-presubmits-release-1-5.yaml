@@ -289,6 +289,8 @@ presubmits:
     decorate: true
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.5$
     extra_refs:
       - org: kubernetes
         repo: test-infra
