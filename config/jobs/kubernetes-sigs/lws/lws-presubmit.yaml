@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes-sigs/lws:
+  - name: pull-lws-test-main
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/lws
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-lws-test-unit-main
+      description: "Run leaderworkerset unit and integration tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        env:
+        - name: GO_TEST_FLAGS
+          value: "-race -count 3"
+        command:
+        - make
+        args:
+        - test
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 3
+            memory: 10Gi
+          requests:
+            cpu: 3
+            memory: 10Gi
