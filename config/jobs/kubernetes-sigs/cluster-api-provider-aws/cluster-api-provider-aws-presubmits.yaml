@@ -74,6 +74,9 @@ presubmits:
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-aws-build-docker
     cluster: eks-prow-build-cluster
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     optional: false
     decorate: true
@@ -82,7 +85,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.29
         command:
-        - "./scripts/ci-docker-build.sh"
+        - runner.sh
+        args:
+        - ./scripts/ci-docker-build.sh
         resources:
           requests:
             cpu: "4"
@@ -96,8 +101,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build-docker
-    labels:
-      preset-dind-enabled: "true"
   - name: pull-cluster-api-provider-aws-verify
     cluster: eks-prow-build-cluster
     always_run: true
