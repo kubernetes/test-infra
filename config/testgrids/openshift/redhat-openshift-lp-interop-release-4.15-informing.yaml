@@ -208,14 +208,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-jboss-eap-qe-openshift-eap-tests-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
+    name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-jboss-eap-qe-openshift-eap-tests-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
+    test_group_name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1015,8 +1015,8 @@ test_groups:
   name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.15-lp-interop-cost-management-interop-aws
   name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.15-lp-interop-cost-management-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-eap-qe-openshift-eap-tests-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
-  name: periodic-ci-jboss-eap-qe-openshift-eap-tests-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
+  name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.15-lp-interop-eap-74-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.15-lp-interop-eap-74-xp-interop-aws
   name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.15-lp-interop-eap-74-xp-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.15-lp-interop-camel-k-interop-aws
