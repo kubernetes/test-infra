@@ -1,0 +1,40 @@
+presubmits:
+  kubernetes/autoscaler:
+  - name: pull-cluster-autoscaler-e2e-azure
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: cloudprovider-azure
+    always_run: false
+    optional: true
+    run_if_changed: 'cluster-autoscaler\/cloudprovider\/azure'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+    decorate: true
+    decoration_config:
+      timeout: 5h
+    path_alias: k8s.io/autoscaler
+    extra_refs:
+    - org: jackfrancis # change to kubernetes-sigs when fully baked
+      repo: cluster-api-provider-azure
+      base_ref: cluster-autoscaler-e2e # change to latest release branch when fully baked
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.27
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        env:
+          - name: GINKGO_FOCUS
+            value: \[SIG AUTOSCALING\]
+          - name: GINKGO_SKIP
+            value: ""
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
