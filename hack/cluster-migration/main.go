@@ -39,6 +39,7 @@ type Config struct {
 	output           string
 	ineligibleReport bool
 	eligibleReport   bool
+	todoReport       bool
 }
 
 type status struct {
@@ -310,6 +311,22 @@ func containsRepo(repos []repoStatus, repo string) bool {
 	return false
 }
 
+func getIncompleteJobs(repo string, status status) []string {
+	ret := []string{}
+	for _, cluster := range status.Clusters {
+		for _, repoStatus := range cluster.RepoStatus {
+			if repoStatus.RepoName == repo {
+				for _, job := range repoStatus.Jobs {
+					if !job.Eligible {
+						ret = append(ret, job.JobName)
+					}
+				}
+			}
+		}
+	}
+	return ret
+}
+
 // The function `printJobStats` prints the status of jobs in a given repository,
 func printJobStats(repo string, status status, onlyIneligible bool, onlyEligible bool) {
 	format := "%-70v is %s%v\033[0m\n" // \033[0m resets color back to default after printing
@@ -520,6 +537,7 @@ func main() {
 	flag.BoolVar(&config.repoReport, "repo-report", false, "Detailed report of all repo status")
 	flag.BoolVar(&config.ineligibleReport, "ineligible-report", false, "Get a detailed report of ineligible jobs")
 	flag.BoolVar(&config.eligibleReport, "eligible-report", false, "Get a detailed report of eligible jobs")
+	flag.BoolVar(&config.todoReport, "todo-report", false, "Get a detailed report of jobs that are not yet completed")
 	flag.Parse()
 
 	if err := config.validate(); err != nil {
@@ -544,6 +562,61 @@ func main() {
 		json.Indent(&out, bt, "", " ")
 		out.WriteTo(os.Stdout)
 		println("\n")
+		return
+	}
+
+	if config.todoReport {
+		// Create an output html file
+		f, err := os.Create("todo.html")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		// Write the html header
+		f.WriteString(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repository Status Checks</title>
+<style>
+	body { font-family: Arial, sans-serif; }
+	table { width: 100%; border-collapse: collapse; }
+	th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+	th { background-color: #f2f2f2; }
+</style>
+</head>
+<body>
+<h2 style="color: red; background-color: black; text-shadow: 3px 3px 0px #000, 4px 4px 0px rgba(255, 0, 0, 0.7); border: 3px dotted yellow; padding: 10px; letter-spacing: 3px;">
+	JOBS IN DANGER!! ☠
+</h2>
+<p>If you own any jobs listed below, PLEASE ensure they are migrated to a community cluster prior to August 1st, 2024. If you need help, please reach out to #sig-testing on Slack.</p>
+<table>
+<thead>
+<tr>
+<th>Repository</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody>
+`)
+		repos := getAllRepos(status)
+		sort.Strings(repos)
+		for _, repo := range repos {
+			jobs := getIncompleteJobs(repo, status)
+			sort.Strings(jobs)
+			for _, job := range jobs {
+				// Write the lines in the table
+				_, err = f.WriteString(fmt.Sprintf("<tr><td>%v</td><td>%v</td></tr>\n", repo, job))
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+		// Wrap it up
+		f.WriteString("</tbody></table></body></html>")
 		return
 	}
 
