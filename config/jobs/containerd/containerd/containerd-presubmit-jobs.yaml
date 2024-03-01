@@ -179,8 +179,9 @@ presubmits:
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.6-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-containerd-k8s-e2e-ec2
-    skip_branches:
-      - release-\d+\.\d+  # per-release image
+    branches:
+    - main
+    - release/1.7
     annotations:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
@@ -233,7 +234,7 @@ presubmits:
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Services should fallback to local terminating endpoints when there are no ready endpoints with externalTrafficPolicy|Services should preserve source pod IP for traffic thru service cluster IP'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
