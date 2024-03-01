@@ -31,6 +31,22 @@ storage:
       contents:
         local: 50-storage.conf
       mode: 0644
+  disks:
+    - device: /dev/disk/by-id/coreos-boot-disk
+      wipe_table: false
+      partitions:
+        - number: 4
+          label: root
+          # Allocate at least 8 GiB to the rootfs. See NOTE above about this.
+          size_mib: 8192
+          resize: true
+        - size_mib: 0
+          label: imagefs
+  filesystems:
+    - path: /var/lib/imagefs
+      device: /dev/disk/by-partlabel/imagefs
+      format: ext4
+      with_mount_unit: true
 systemd:
   units:
     - name: configure-sysctl.service
@@ -139,8 +155,8 @@ systemd:
           --apply-live \
           --allow-inactive \
           policycoreutils-python-utils
-        ExecStart=semanage fcontext -a -e /var/lib/containers /tmp/containers
-        ExecStart=restorecon -R -v /tmp/containers
+        ExecStart=semanage fcontext -a -e /var/lib/containers /var/lib/imagefs
+        ExecStart=restorecon -R -v /var/lib/imagefs
 
         [Install]
         WantedBy=multi-user.target

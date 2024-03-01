@@ -5,3 +5,19 @@ storage:
       contents:
         local: 60-storage-split-disk.conf
       mode: 0644
+  disks:
+  - device: /dev/disk/by-id/coreos-boot-disk
+    wipe_table: false
+    partitions:
+    - number: 4
+      label: root
+      # Allocate at least 8 GiB to the rootfs. See NOTE above about this.
+      size_mib: 8192
+      resize: true
+    - size_mib: 0
+      label: images
+  filesystems:
+    - path: /var/lib/images
+      device: /dev/disk/by-partlabel/images
+      format: ext4
+      with_mount_unit: true
