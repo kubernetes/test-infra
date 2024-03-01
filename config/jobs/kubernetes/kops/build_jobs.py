@@ -868,7 +868,6 @@ def generate_misc():
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
-                   kubernetes_feature_gates="SELinuxMountReadWriteOncePod,ReadWriteOncePod",
                    extra_flags=[
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
                    ],
