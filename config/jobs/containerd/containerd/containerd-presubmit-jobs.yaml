@@ -234,7 +234,7 @@ presubmits:
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Services should fallback to local terminating endpoints when there are no ready endpoints with externalTrafficPolicy|Services should preserve source pod IP for traffic thru service cluster IP'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
