@@ -7,7 +7,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.22-bookworm
         imagePullPolicy: Always
         command:
         - go
@@ -34,7 +34,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.22-bookworm
         imagePullPolicy: Always
         command:
         - go
