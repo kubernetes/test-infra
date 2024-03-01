@@ -858,7 +858,7 @@ def generate_misc():
                    runs_per_day=3,
                    extra_dashboards=['kops-misc']),
 
-        # [sig-storage, @jsafrane] A one-off scenario testing SELinux features, because kops
+        # [sig-storage, @jsafrane] Test SELinux features, because kops
         # is the only way how to get Kubernetes on a Linux with SELinux in enforcing mode in CI.
         # Test the latest kops and CI build of Kubernetes (=almost master).
         build_test(name_override="kops-aws-selinux",
@@ -868,7 +868,6 @@ def generate_misc():
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
-                   kubernetes_feature_gates="SELinuxMountReadWriteOncePod,ReadWriteOncePod",
                    extra_flags=[
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
                    ],
@@ -880,13 +879,47 @@ def generate_misc():
                    # - Driver: local: this is optimization only, the volume plugin does not
                    #   support SELinux and there are several subvariants of local volumes
                    #   that multiply nr. of tests.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]",
+                   # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
+                   #   in v1.30.
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\FeatureGate:SELinuxMount\]", # pylint: disable=line-too-long
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
                    runs_per_day=3),
+
+        # [sig-storage, @jsafrane] A one-off scenario testing SELinuxMount feature (alpha in v1.30).
+        # This will need to merge with kops-aws-selinux when SELinuxMount gets enabled by default.
+        build_test(name_override="kops-aws-selinux-alpha",
+                   # RHEL8 VM image is enforcing SELinux by default.
+                   distro="rhel8",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_channel="alpha",
+                   feature_flags=['SELinuxMount'],
+                   kubernetes_feature_gates="SELinuxMount",
+                   extra_flags=[
+                       "--set=cluster.spec.containerd.selinuxEnabled=true",
+                   ],
+                   focus_regex=r"\[Feature:SELinux\]",
+                   # Skip:
+                   # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
+                   #   installed on nodes.
+                   # - Driver: nfs: NFS does not have client tools installed on nodes.
+                   # - Driver: local: this is optimization only, the volume plugin does not
+                   #   support SELinux and there are several subvariants of local volumes
+                   #   that multiply nr. of tests.
+                   # - Feature:SELinuxMountReadWriteOncePodOnly: these tests require SELinuxMount
+                   #   feature gate off.
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]", # pylint: disable=line-too-long
+                   # [Serial] and [Disruptive] are intentionally not skipped, therefore run
+                   # everything as serial.
+                   test_parallelism=1,
+                   # Serial and Disruptive tests can be slow.
+                   test_timeout_minutes=120,
+                   runs_per_day=3),
+
 
         # test kube-up to kops jobs migration
         build_test(name_override="ci-kubernetes-e2e-cos-gce-canary",
