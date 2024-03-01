@@ -224,16 +224,14 @@ presubmits:
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
               export CONTAINERD_PULL_REFS=$PULL_REFS
               echo "CONTAINERD_PULL_REFS: $CONTAINERD_PULL_REFS"
+              VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
               kubetest2 ec2 \
-               --build \
-               --region us-east-1 \
-               --target-build-arch linux/amd64 \
-               --stage provider-aws-test-infra \
+               --stage https://dl.k8s.io/ci/ \
+               --version $VERSION \
                --up \
                --down \
                --test=ginkgo \
                -- \
-               --use-built-binaries true \
                --parallel=30 \
                --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
