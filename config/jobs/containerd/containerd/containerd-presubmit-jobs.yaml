@@ -192,6 +192,7 @@ presubmits:
       preset-service-account: "true"
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
+    run_if_changed: '(pkg|plugins|internal|integration|vendor|third_party).*\/(cri|cri-api)\/'
     always_run: false
     optional: true
     cluster: eks-prow-build-cluster
