@@ -12,6 +12,8 @@ reviewers:
 - lubronzhan
 - HanFa
 - XudongLiuHarold
+- DanielXiao
+- chenlin07
 approvers:
 - baludontu
 - divyenpatel
@@ -24,6 +26,8 @@ approvers:
 - lubronzhan
 - HanFa
 - XudongLiuHarold
+- DanielXiao
+- chenlin07
 emeritus_approvers:
 - abrarshivani
 - kerneltime
