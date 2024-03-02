@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/lws:
-  - name: pull-lws-test-main
+  - name: pull-lws-test-unit-main
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
@@ -8,7 +8,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps
       testgrid-tab-name: pull-lws-test-unit-main
-      description: "Run leaderworkerset unit and integration tests"
+      description: "Run lws unit tests"
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -23,6 +23,29 @@ presubmits:
         - test
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 3
+            memory: 10Gi
+          requests:
+            cpu: 3
+            memory: 10Gi
+  - name: pull-lws-test-integration-main
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/lws
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-lws-test-integration-main
+      description: "Run lws integration tests"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.21
+        command:
+        - make
+        args:
+        - test-integration
         resources:
           limits:
             cpu: 3
