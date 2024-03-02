@@ -785,6 +785,7 @@ tide:
     kubernetes-sigs/kui: rebase
     kubernetes-sigs/security-profiles-operator: rebase
     kubernetes-sigs/service-catalog: squash
+    kubernetes-sigs/gateway-api: squash
     kubernetes-sigs/go-open-service-broker-client: squash
     kubernetes-sigs/minibroker: squash
     kubernetes-sigs/vsphere-csi-driver: squash
