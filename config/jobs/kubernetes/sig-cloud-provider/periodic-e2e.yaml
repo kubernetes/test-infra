@@ -1,0 +1,126 @@
+periodics:
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-alpha-enabled-default
+  annotations:
+    testgrid-dashboards: amazon-ec2
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-alpha-enabled-default
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+            kubetest2 ec2 \
+             --stage https://dl.k8s.io/ci/ \
+             --version $VERSION \
+             --feature-gates=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true
+             --runtime-config=api/all=true
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+             --focus-regex="\[Slow\]" \
+             --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0" \
+             --parallel=25
+        env:
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-alpha-features
+  annotations:
+    testgrid-dashboards: amazon-ec2
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-alpha-features
+    description: Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with kubetest2-ec2
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+            kubetest2 ec2 \
+             --stage https://dl.k8s.io/ci/ \
+             --version $VERSION \
+             --feature-gates=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+             --runtime-config=api/all=true
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection|ValidatingAdmissionPolicy)\]|Networking" \
+             --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
+             --parallel=25
+        env:
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
