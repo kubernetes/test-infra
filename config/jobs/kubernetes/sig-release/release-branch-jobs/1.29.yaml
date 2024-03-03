@@ -58,7 +58,7 @@ periodics:
       - --extract=ci/latest-1.29
       - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_NODE_OS_DISTRIBUTION=gci
-      - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
+      - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
       - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -1069,7 +1069,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --env=KUBE_NODE_OS_DISTRIBUTION=gci
-        - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-0-47
+        - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
         - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
         - --gcp-node-image=gci
         - --gcp-nodes=4
