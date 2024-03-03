@@ -38,8 +38,8 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/ \
              --version $VERSION \
-             --feature-gates=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true
-             --runtime-config=api/all=true
+             --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true" \
+             --runtime-config="api/all=true" \
              --up \
              --down \
              --test=ginkgo \
@@ -101,8 +101,8 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/ \
              --version $VERSION \
-             --feature-gates=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
-             --runtime-config=api/all=true
+             --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
+             --runtime-config="api/all=true" \
              --up \
              --down \
              --test=ginkgo \
