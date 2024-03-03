@@ -45,7 +45,6 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
-             --focus-regex="\[Slow\]" \
              --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0" \
              --parallel=25
         env:
