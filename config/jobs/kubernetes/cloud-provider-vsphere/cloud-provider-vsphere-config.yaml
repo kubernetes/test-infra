@@ -384,6 +384,40 @@ presubmits:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
+  # Executes the e2e tests with latest k8s version.
+  - name: pull-cloud-provider-vsphere-e2e-test-on-latest-k8s-version
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      # Borrows CAPV credentials for cloud provider e2e testing
+      preset-cloud-provider-vsphere-e2e-config-capv: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod|hack/e2e\.sh|test/e2e/|charts/vsphere-cpi/'
+    skip_report: false
+    optional: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh latest-k8s-version
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
