@@ -23,6 +23,7 @@ import (
 	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"mime"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -98,7 +99,7 @@ func shouldCompressFile(dest string, compressFileTypes sets.Set[string]) bool {
 	}
 	defer file.Close()
 
-	header := make([]byte, 2)
+	header := make([]byte, 3)
 	_, err = file.Read(header)
 	if err != nil {
 		if err == io.EOF {
@@ -108,8 +109,7 @@ func shouldCompressFile(dest string, compressFileTypes sets.Set[string]) bool {
 		return false
 	}
 
-	// 0x1F and 0x8B are gzip magic numbers, this will tell us if the file is actually gzip
-	if header[0] == 0x1F && header[1] == 0x8B {
+	if http.DetectContentType(header) == "application/x-gzip" {
 		return false
 	}
 
