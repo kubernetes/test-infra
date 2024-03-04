@@ -1375,7 +1375,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.27
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-integration
     decorate: true
     labels:
@@ -1403,7 +1403,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.27
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-integration-go-compatibility
     decorate: true
     labels:
