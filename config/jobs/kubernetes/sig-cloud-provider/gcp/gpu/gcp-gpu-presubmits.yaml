@@ -3,7 +3,7 @@ presets:
     preset-pull-gce-device-plugin-gpu: "true"
   env:
   - name: NODE_ACCELERATORS
-    value: type=nvidia-tesla-t4,count=2
+    value: type=nvidia-tesla-k80,count=2
   - name: CREATE_CUSTOM_NETWORK
     value: "true"
   - name: NODE_SIZE
