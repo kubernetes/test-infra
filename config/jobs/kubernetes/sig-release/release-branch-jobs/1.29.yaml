@@ -2086,7 +2086,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.29
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-verify
     decorate: true
     labels:
