@@ -407,7 +407,8 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./hack/e2e.sh latest-k8s-version
+        - ./hack/e2e.sh
+        - latest-k8s-version
         securityContext:
           privileged: true
         resources:
