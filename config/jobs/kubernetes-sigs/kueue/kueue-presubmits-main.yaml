@@ -223,7 +223,7 @@ presubmits:
       description: "Run kueue verify checks"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
         - make
         args:
