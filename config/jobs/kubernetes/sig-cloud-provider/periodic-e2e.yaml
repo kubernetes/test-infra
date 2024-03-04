@@ -1,6 +1,71 @@
 periodics:
 - interval: 6h
   cluster: eks-prow-build-cluster
+  name: ci-kubernetes-e2e-ec2-device-plugin-gpu
+  annotations:
+    testgrid-dashboards: amazon-ec2
+    testgrid-tab-name: ci-kubernetes-e2e-ec2-device-plugin-gpu
+  labels:
+    preset-e2e-containerd-ec2: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+  spec:
+    serviceAccountName: node-e2e-tests
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            AMI_ID=$(aws ssm get-parameters --names \
+                     /aws/service/eks/optimized-ami/1.29/amazon-linux-2-gpu/recommended/image_id \
+                     --query 'Parameters[0].[Value]' --output text)
+            VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+            kubetest2 ec2 \
+             --stage https://dl.k8s.io/ci/ \
+             --version $VERSION \
+             --instance-type=g4dn.xlarge \
+             --worker-image="$AMI_ID" \
+             --device-plugin-nvidia true \
+             --worker-user-data-file $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/al2.sh \
+             --up \
+             --down \
+             --test=ginkgo \
+             -- \
+             --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+             --focus-regex="\[Feature:GPUDevicePlugin\]" \
+             --parallel=25
+        env:
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+          requests:
+            cpu: 8
+            memory: 10Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ec2-alpha-enabled-default
   annotations:
     testgrid-dashboards: amazon-ec2
