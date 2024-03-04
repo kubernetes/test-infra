@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-verify
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -122,7 +122,7 @@ presubmits:
             cpu: 5
             memory: 12Gi
   - name: pull-kubernetes-verify-go-canary
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     always_run: false
     skip_report: false
     decorate: true
