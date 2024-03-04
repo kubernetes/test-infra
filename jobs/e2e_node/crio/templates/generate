@@ -61,7 +61,7 @@ merge() {
 
     set -x
     # shellcheck disable=SC2016
-    $CONTAINER_RUNTIME run -i --rm -v "$PWD":/w -w /w $YQ_IMAGE \
+    $CONTAINER_RUNTIME run --privileged -i --rm -v "$PWD":/w -w /w $YQ_IMAGE \
         ea '. as $item ireduce ({}; . *+ $item)' "${ARGS[@]}" >"$1.yaml"
     { set +x; } 2>/dev/null
 }
@@ -73,7 +73,7 @@ for i in "${!CONFIGURATIONS[@]}"; do
     merge "$i" "${ARGS[@]}"
 
     set -x
-    $CONTAINER_RUNTIME run -i --rm -v "$PWD":/w -w /w $BUTANE_IMAGE \
+    $CONTAINER_RUNTIME run --privileged -i --rm -v "$PWD":/w -w /w $BUTANE_IMAGE \
         -ps -d $BASE_PATH <"$i.yaml" >../"$i.ign"
     { set +x; } 2>/dev/null
 done
