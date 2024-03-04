@@ -939,7 +939,7 @@ presubmits:
       testgrid-create-test-group: "true"
     branches:
     - release-1.26
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-verify-govet-levee
     decorate: true
     labels:
@@ -1420,7 +1420,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.26
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-integration
     decorate: true
     labels:
@@ -1450,7 +1450,7 @@ presubmits:
       description: run with GO_VERSION set to the original go version used for this branch
     branches:
     - release-1.26
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-integration-go-compatibility
     decorate: true
     labels:
@@ -1653,7 +1653,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.26
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-typecheck
     decorate: true
     name: pull-kubernetes-typecheck
@@ -1717,7 +1717,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.26
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-verify
     decorate: true
     labels:

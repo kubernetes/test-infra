@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-typecheck
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     path_alias: "k8s.io/kubernetes"
     decorate: true
     always_run: true
