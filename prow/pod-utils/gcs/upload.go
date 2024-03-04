@@ -65,12 +65,55 @@ func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile s
 		return fmt.Errorf("new opener: %w", err)
 	}
 	dtw := func(dest string) dataWriter {
-		compressFileTypeSet := sets.NewString(compressFileTypes...)
-		ext := strings.TrimPrefix(filepath.Ext(dest), ".")
-		compress := compressFileTypeSet.Has("*") || compressFileTypeSet.Has(ext)
+		compress := shouldCompressFile(dest, sets.New[string](compressFileTypes...))
 		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest, compress: compress}
 	}
 	return upload(dtw, uploadTargets)
+}
+
+func shouldCompressFile(dest string, compressFileTypes sets.Set[string]) bool {
+	ext := strings.TrimPrefix(filepath.Ext(dest), ".")
+	if ext == "gz" || ext == "gzip" {
+		return false
+	}
+	if !compressFileTypes.Has("*") && !compressFileTypes.Has(ext) {
+		return false
+	}
+
+	fileInfo, err := os.Stat(dest)
+	if err != nil {
+		logrus.WithError(err).Warnf("unable to stat file: %s to determine if we should compress", dest)
+		return false
+	}
+
+	// Don't compress files smaller than 1KB as it will likely result in a larger file
+	if fileInfo.Size() < 1024 {
+		return false
+	}
+
+	file, err := os.Open(dest)
+	if err != nil {
+		logrus.WithError(err).Warnf("unable to open file: %s to determine if we should compress", dest)
+		return false
+	}
+	defer file.Close()
+
+	header := make([]byte, 2)
+	_, err = file.Read(header)
+	if err != nil {
+		if err == io.EOF {
+			return false
+		}
+		logrus.WithError(err).Warnf("unable to read file: %s to determine if we should compress", dest)
+		return false
+	}
+
+	// 0x1F and 0x8B are gzip magic numbers, this will tell us if the file is actually gzip
+	if header[0] == 0x1F && header[1] == 0x8B {
+		return false
+	}
+
+	return true
 }
 
 // LocalExport copies all of the data in the uploadTargets map to local files in parallel. The map

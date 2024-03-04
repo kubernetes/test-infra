@@ -318,11 +318,11 @@ func TestUploadCompression(t *testing.T) {
 			name: "compress all",
 			destUploadBehavior: []destUploadBehavior{
 				{
-					dest:     "log.txt",
+					dest:     "testdata/log.txt",
 					compress: true,
 				},
 				{
-					dest:     "graph.json",
+					dest:     "testdata/graph.json",
 					compress: true,
 				},
 			},
@@ -332,11 +332,11 @@ func TestUploadCompression(t *testing.T) {
 			name: "compress txt only",
 			destUploadBehavior: []destUploadBehavior{
 				{
-					dest:     "log.txt",
+					dest:     "testdata/log.txt",
 					compress: true,
 				},
 				{
-					dest:     "graph.json",
+					dest:     "testdata/graph.json",
 					compress: false,
 				},
 			},
@@ -346,29 +346,63 @@ func TestUploadCompression(t *testing.T) {
 			name: "compress multiple types, but some others included",
 			destUploadBehavior: []destUploadBehavior{
 				{
-					dest:     "log.txt",
+					dest:     "testdata/log.txt",
 					compress: true,
 				},
 				{
-					dest:     "graph.json",
+					dest:     "testdata/graph.json",
 					compress: false,
 				},
 				{
-					dest:     "something.log",
+					dest:     "testdata/something.log",
 					compress: true,
 				},
 			},
 			compressFileTypes: []string{"txt", "log"},
 		},
 		{
-			name: "compress nothing",
+			name: "compress all, ignores small file",
 			destUploadBehavior: []destUploadBehavior{
 				{
-					dest:     "log.txt",
+					dest:     "testdata/small.json",
+					compress: false,
+				},
+			},
+			compressFileTypes: []string{"*"},
+		},
+		{
+			name: "compress all, ignores gz and gzip file",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "testdata/something.gz",
 					compress: false,
 				},
 				{
-					dest:     "graph.json",
+					dest:     "testdata/something.gzip",
+					compress: false,
+				},
+			},
+			compressFileTypes: []string{"*"},
+		},
+		{
+			name: "compress log, ignores file that is gzipped despite having log extension",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "testdata/really-a-zip.log",
+					compress: false,
+				},
+			},
+			compressFileTypes: []string{"log"},
+		},
+		{
+			name: "compress nothing",
+			destUploadBehavior: []destUploadBehavior{
+				{
+					dest:     "testdata/log.txt",
+					compress: false,
+				},
+				{
+					dest:     "testdata/graph.json",
 					compress: false,
 				},
 			},
