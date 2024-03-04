@@ -46,7 +46,7 @@ import (
 type options struct {
 	allContexts            bool
 	config                 configflagutil.ConfigOptions
-	kubeconfig             string
+	kubernetes             prowflagutil.KubernetesOptions
 	totURL                 string
 	instrumentationOptions prowflagutil.InstrumentationOptions
 }
@@ -63,7 +63,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	o.config.ConfigPathFlagName = "config"
 	flags.BoolVar(&o.allContexts, "all-contexts", false, "Monitor all cluster contexts, not just default")
 	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
-	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
+	o.kubernetes.AddFlags(flags)
 	o.instrumentationOptions.AddFlags(flags)
 	o.config.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
@@ -117,7 +117,9 @@ func main() {
 		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 
-	configs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig)))
+	configs, err := o.kubernetes.LoadClusterConfigs(func() {
+		logrus.Fatal("Kubeconfig changed, exiting to trigger a restart")
+	})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error building client configs")
 	}

@@ -50,12 +50,10 @@ func TestOptions(t *testing.T) {
 		},
 	}, {
 		name: "parse all arguments",
-		args: []string{"--all-contexts=true", "--tot-url=https://tot",
-			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml"},
+		args: []string{"--all-contexts=true", "--tot-url=https://tot", "--config=/etc/config.yaml"},
 		expected: &options{
 			allContexts: true,
 			totURL:      "https://tot",
-			kubeconfig:  "/root/kubeconfig",
 			config: configflagutil.ConfigOptions{
 				ConfigPathFlagName:                    "config",
 				ConfigPath:                            "/etc/config.yaml",
