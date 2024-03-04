@@ -578,9 +578,7 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
-# Temporarily block auto deployment for Friday, March 1 (on-call unavailable); revert after.
-#- cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
-- cron: "30 18-23/5 * * 1-4"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Thu
+- cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
   # Save for daylight saving:
   # cron: "30 17-22/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (17:05 UTC, spring) Mon-Fri
   name: ci-test-infra-autobump-prow-for-auto-deploy
