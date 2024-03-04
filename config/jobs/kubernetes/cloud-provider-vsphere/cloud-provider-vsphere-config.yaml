@@ -428,6 +428,7 @@ postsubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cloud-provider-vsphere-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
     max_concurrency: 1
     branches:
     - ^master$
@@ -463,6 +464,7 @@ postsubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cloud-provider-vsphere-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
     max_concurrency: 1
     branches:
     - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
