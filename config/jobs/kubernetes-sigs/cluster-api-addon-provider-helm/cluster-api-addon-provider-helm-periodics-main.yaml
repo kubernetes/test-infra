@@ -32,6 +32,7 @@ periodics:
     testgrid-tab-name: caaph-periodic-capi-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-helm@kubernetes.io
 - name: periodic-cluster-api-addon-provider-helm-e2e-workload-upgrade-main
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -57,6 +58,13 @@ periodics:
         - name: GINKGO_SKIP
           value: ""
       # docker-in-docker needs privileged mode
+      resources:
+        limits:
+            cpu: 2
+            memory: 4Gi
+        requests:
+            cpu: 2
+            memory: 4Gi
       securityContext:
         privileged: true
   annotations:
