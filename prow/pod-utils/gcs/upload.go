@@ -246,8 +246,7 @@ type openerObjectWriter struct {
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 	if w.writer == nil {
 		largerThanOneKB := len(p) > 1024
-		alreadyCompressed := http.DetectContentType(p) == "application/x-gzip"
-		shouldCompressFile := w.compressFileType && largerThanOneKB && !alreadyCompressed
+		shouldCompressFile := w.compressFileType && largerThanOneKB && http.DetectContentType(p) != "application/x-gzip"
 		if shouldCompressFile {
 			path := w.fullUploadPath()
 			ext := filepath.Ext(path)
