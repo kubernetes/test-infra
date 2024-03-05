@@ -68,6 +68,7 @@ type jobStatus struct {
 	JobDetails cfg.JobBase `json:"jobDetails"`
 	Eligible   bool        `json:"eligible"`
 	Reason     string      `json:"reason"`
+	SourcePath string      `json:"sourcePath"`
 }
 
 var config Config
@@ -273,7 +274,7 @@ func getStatus(jobs map[string][]cfg.JobBase) status {
 							if eligible {
 								s.Clusters[i].RepoStatus[j].EligibleJobs++
 							}
-							s.Clusters[i].RepoStatus[j].Jobs = append(s.Clusters[i].RepoStatus[j].Jobs, jobStatus{JobName: job.Name, JobDetails: job, Eligible: eligible, Reason: ineligibleReason})
+							s.Clusters[i].RepoStatus[j].Jobs = append(s.Clusters[i].RepoStatus[j].Jobs, jobStatus{JobName: job.Name, JobDetails: job, Eligible: eligible, Reason: ineligibleReason, SourcePath: job.SourcePath})
 						}
 					}
 				}
@@ -311,14 +312,14 @@ func containsRepo(repos []repoStatus, repo string) bool {
 	return false
 }
 
-func getIncompleteJobs(repo string, status status) []string {
-	ret := []string{}
+func getIncompleteJobs(repo string, status status) []jobStatus {
+	ret := []jobStatus{}
 	for _, cluster := range status.Clusters {
 		for _, repoStatus := range cluster.RepoStatus {
 			if repoStatus.RepoName == repo {
 				for _, job := range repoStatus.Jobs {
 					if !job.Eligible {
-						ret = append(ret, job.JobName)
+						ret = append(ret, job)
 					}
 				}
 			}
@@ -567,7 +568,7 @@ func main() {
 
 	if config.todoReport {
 		// Create an output html file
-		f, err := os.Create("todo.html")
+		f, err := os.Create("job-migration-todo.md")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -575,48 +576,28 @@ func main() {
 
 		// Write the html header
 		f.WriteString(`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Repository Status Checks</title>
-<style>
-	body { font-family: Arial, sans-serif; }
-	table { width: 100%; border-collapse: collapse; }
-	th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-	th { background-color: #f2f2f2; }
-</style>
-</head>
-<body>
-<h2 style="color: red; background-color: black; text-shadow: 3px 3px 0px #000, 4px 4px 0px rgba(255, 0, 0, 0.7); border: 3px dotted yellow; padding: 10px; letter-spacing: 3px;">
-	JOBS IN DANGER!! ☠
-</h2>
-<p>If you own any jobs listed below, PLEASE ensure they are migrated to a community cluster prior to August 1st, 2024. If you need help, please reach out to #sig-testing on Slack.</p>
-<table>
-<thead>
-<tr>
-<th>Repository</th>
-<th>Job</th>
-</tr>
-</thead>
-<tbody>
+## JOBS IN DANGER!! ☠
+
+If you own any jobs listed below, PLEASE ensure they are migrated to a community cluster prior to August 1st, 2024. If you need help, please reach out to #sig-testing of #sig-k8s-infra on Slack.
+| File Path | Job | Link |
+| --- | --- | --- |
 `)
 		repos := getAllRepos(status)
 		sort.Strings(repos)
 		for _, repo := range repos {
 			jobs := getIncompleteJobs(repo, status)
-			sort.Strings(jobs)
+			sort.Slice(jobs, func(i, j int) bool {
+				return jobs[i].SourcePath < jobs[j].SourcePath
+			})
 			for _, job := range jobs {
+				link := "https://cs.k8s.io/?q=name%3A%20" + job.JobName + "%24&i=nope&files=&excludeFiles=&repos="
 				// Write the lines in the table
-				_, err = f.WriteString(fmt.Sprintf("<tr><td>%v</td><td>%v</td></tr>\n", repo, job))
+				_, err = f.WriteString(fmt.Sprintf("|%v|%v|[Search Results](%s)|\n", job.SourcePath, job.JobName, link))
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 		}
-		// Wrap it up
-		f.WriteString("</tbody></table></body></html>")
 		return
 	}
 
