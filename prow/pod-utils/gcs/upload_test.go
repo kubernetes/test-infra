@@ -18,11 +18,11 @@ package gcs
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
 	stdio "io"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"os"
 	"path"
 	"reflect"
@@ -303,130 +303,38 @@ func TestUploadWithRetries(t *testing.T) {
 	}
 }
 
-func TestUploadCompression(t *testing.T) {
-	type destUploadBehavior struct {
-		dest     string
-		compress bool
-	}
-
+func TestShouldCompressFileType(t *testing.T) {
 	testCases := []struct {
-		name               string
-		destUploadBehavior []destUploadBehavior
-		compressFileTypes  []string
+		name              string
+		dest              string
+		compressFileTypes sets.Set[string]
+		expected          bool
 	}{
 		{
-			name: "compress all",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/log.txt",
-					compress: true,
-				},
-				{
-					dest:     "testdata/graph.json",
-					compress: true,
-				},
-			},
-			compressFileTypes: []string{"*"},
+			name:              "compress all",
+			dest:              "some-file.txt",
+			compressFileTypes: sets.New[string]("*"),
+			expected:          true,
 		},
 		{
-			name: "compress txt only",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/log.txt",
-					compress: true,
-				},
-				{
-					dest:     "testdata/graph.json",
-					compress: false,
-				},
-			},
-			compressFileTypes: []string{"txt"},
+			name:              "compress txt only",
+			dest:              "some-file.txt",
+			compressFileTypes: sets.New[string]("txt"),
+			expected:          true,
 		},
 		{
-			name: "compress multiple types, but some others included",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/log.txt",
-					compress: true,
-				},
-				{
-					dest:     "testdata/graph.json",
-					compress: false,
-				},
-				{
-					dest:     "testdata/something.log",
-					compress: true,
-				},
-			},
-			compressFileTypes: []string{"txt", "log"},
-		},
-		{
-			name: "compress all, ignores small file",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/small.json",
-					compress: false,
-				},
-			},
-			compressFileTypes: []string{"*"},
-		},
-		{
-			name: "compress all, ignores gz and gzip file",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/something.gz",
-					compress: false,
-				},
-				{
-					dest:     "testdata/something.gzip",
-					compress: false,
-				},
-			},
-			compressFileTypes: []string{"*"},
-		},
-		{
-			name: "compress log, ignores file that is gzipped despite having log extension",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/really-a-zip.log",
-					compress: false,
-				},
-			},
-			compressFileTypes: []string{"log"},
-		},
-		{
-			name: "compress nothing",
-			destUploadBehavior: []destUploadBehavior{
-				{
-					dest:     "testdata/log.txt",
-					compress: false,
-				},
-				{
-					dest:     "testdata/graph.json",
-					compress: false,
-				},
-			},
-			compressFileTypes: []string{},
+			name:              "compress other file types",
+			dest:              "some-file.txt",
+			compressFileTypes: sets.New[string]("log", "json"),
+			expected:          false,
 		},
 	}
 	for _, tc := range testCases {
-		uploadFuncs := map[string]UploadFunc{}
-		for _, destBehavior := range tc.destUploadBehavior {
-			uploadFuncs[destBehavior.dest] = func(destBehavior destUploadBehavior) UploadFunc {
-				return func(writer dataWriter) error {
-					if destBehavior.compress != writer.compressData() {
-						t.Errorf("expected upload to be compressed=%v, but writer wasn't set up correctly for dest: %s", destBehavior.compress, destBehavior.dest)
-					}
-					return nil
-				}
-			}(destBehavior)
-		}
 		t.Run(tc.name, func(t *testing.T) {
-			err := Upload(context.Background(), "", "", "", tc.compressFileTypes, uploadFuncs)
-			if err != nil {
-				t.Errorf("unexpected error returned from Upload: %v", err)
+			result := shouldCompressFileType(tc.dest, tc.compressFileTypes)
+			if tc.expected != result {
+				t.Errorf("result (%v) did not match expected (%v)", result, tc.expected)
 			}
-
 		})
 	}
 }
@@ -440,12 +348,12 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
 
 	tests := []struct {
-		name          string
-		ObjectDest    string
-		ObjectContent []byte
-		compress      bool
-		wantN         int
-		wantErr       bool
+		name             string
+		ObjectDest       string
+		ObjectContent    []byte
+		compressFileType bool
+		wantN            int
+		wantErr          bool
 	}{
 		{
 			name:          "write regular file",
@@ -462,22 +370,38 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name:          "compress file",
-			ObjectDest:    "build/log.text",
-			ObjectContent: []byte("Oh wow\nlogs\nthis is\ncrazy"),
-			compress:      true,
-			wantN:         25,
-			wantErr:       false,
+			name:             "compress file",
+			ObjectDest:       "build/log.text",
+			ObjectContent:    []byte("Oh wow\nlogs\nthis is\ncrazy\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Integer leo risus, cursus eget libero in, auctor placerat lorem. Nulla elementum arcu sem, vel tempor risus cursus nec. Nulla aliquam quam in ex aliquet elementum. Praesent molestie vulputate magna, eu ultrices mi tincidunt eget. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nunc blandit viverra magna eget volutpat. Suspendisse in metus et leo interdum gravida eget vel mi. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilities. Maecenas sem urna, aliquam vel enim ullamcorper, sagittis lacinia elit. Donec malesuada tempor varius. Proin feugiat elit metus, eu vulputate magna mattis et. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Phasellus hendrerit turpis id convallis ornare.\n\nCras sed quam mattis, venenatis diam ac, posuere odio. Fusce eu pharetra ipsum. Maecenas dignissim nulla ut mauris bibendum consequat. Quisque euismod lacus nec dapibus tempus. Nunc eget felis sed arcu commodo scelerisque dapibus nec nullam.\n\n"),
+			compressFileType: true,
+			wantN:            1132,
+			wantErr:          false,
+		},
+		{
+			name:             "compress filetype, but file is too small to compress",
+			ObjectDest:       "build/log.text",
+			ObjectContent:    []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			compressFileType: true,
+			wantN:            25,
+			wantErr:          false,
+		},
+		{
+			name:             "compress filetype, but file is hidden gzip",
+			ObjectDest:       "build/log.text",
+			ObjectContent:    []byte("\u001F\u008B\bOh wow\nlogs\nthis is\ncrazy\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Integer leo risus, cursus eget libero in, auctor placerat lorem. Nulla elementum arcu sem, vel tempor risus cursus nec. Nulla aliquam quam in ex aliquet elementum. Praesent molestie vulputate magna, eu ultrices mi tincidunt eget. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nunc blandit viverra magna eget volutpat. Suspendisse in metus et leo interdum gravida eget vel mi. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilities. Maecenas sem urna, aliquam vel enim ullamcorper, sagittis lacinia elit. Donec malesuada tempor varius. Proin feugiat elit metus, eu vulputate magna mattis et. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Phasellus hendrerit turpis id convallis ornare.\n\nCras sed quam mattis, venenatis diam ac, posuere odio. Fusce eu pharetra ipsum. Maecenas dignissim nulla ut mauris bibendum consequat. Quisque euismod lacus nec dapibus tempus. Nunc eget felis sed arcu commodo scelerisque dapibus nec nullam.\n\n"),
+			compressFileType: true,
+			wantN:            1136,
+			wantErr:          false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &openerObjectWriter{
-				Opener:   io.NewGCSOpener(fakeGCSClient),
-				Context:  context.Background(),
-				Bucket:   fmt.Sprintf("gs://%s", fakeBucket),
-				Dest:     tt.ObjectDest,
-				compress: tt.compress,
+				Opener:           io.NewGCSOpener(fakeGCSClient),
+				Context:          context.Background(),
+				Bucket:           fmt.Sprintf("gs://%s", fakeBucket),
+				Dest:             tt.ObjectDest,
+				compressFileType: tt.compressFileType,
 			}
 			gotN, err := w.Write(tt.ObjectContent)
 			if (err != nil) != tt.wantErr {
@@ -498,24 +422,10 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 			if err != nil {
 				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
 			}
-
-			var gotObjectContent []byte
-			if tt.compress {
-				gzipReader, err := gzip.NewReader(reader)
-				if err != nil {
-					t.Errorf("Got unexpected error creating gzipReader for object %s: %v", tt.ObjectDest, err)
-				}
-				gotObjectContent, err = stdio.ReadAll(gzipReader)
-				if err != nil {
-					t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
-				}
-			} else {
-				gotObjectContent, err = stdio.ReadAll(reader)
-				if err != nil {
-					t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
-				}
+			gotObjectContent, err := stdio.ReadAll(reader)
+			if err != nil {
+				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
 			}
-
 			if !bytes.Equal(tt.ObjectContent, gotObjectContent) {
 				t.Errorf("Write() gotObjectContent = %v, want %v", gotObjectContent, tt.ObjectContent)
 			}

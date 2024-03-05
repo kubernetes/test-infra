@@ -66,54 +66,18 @@ func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile s
 		return fmt.Errorf("new opener: %w", err)
 	}
 	dtw := func(dest string) dataWriter {
-		compress := shouldCompressFile(dest, sets.New[string](compressFileTypes...))
-		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest, compress: compress}
+		compressFileType := shouldCompressFileType(dest, sets.New[string](compressFileTypes...))
+		return &openerObjectWriter{Opener: opener, Context: ctx, Bucket: parsedBucket.String(), Dest: dest, compressFileType: compressFileType}
 	}
 	return upload(dtw, uploadTargets)
 }
 
-func shouldCompressFile(dest string, compressFileTypes sets.Set[string]) bool {
+func shouldCompressFileType(dest string, compressFileTypes sets.Set[string]) bool {
 	ext := strings.TrimPrefix(filepath.Ext(dest), ".")
 	if ext == "gz" || ext == "gzip" {
 		return false
 	}
-	if !compressFileTypes.Has("*") && !compressFileTypes.Has(ext) {
-		return false
-	}
-
-	fileInfo, err := os.Stat(dest)
-	if err != nil {
-		logrus.WithError(err).Warnf("unable to stat file: %s to determine if we should compress", dest)
-		return false
-	}
-
-	// Don't compress files smaller than 1KB as it will likely result in a larger file
-	if fileInfo.Size() < 1024 {
-		return false
-	}
-
-	file, err := os.Open(dest)
-	if err != nil {
-		logrus.WithError(err).Warnf("unable to open file: %s to determine if we should compress", dest)
-		return false
-	}
-	defer file.Close()
-
-	header := make([]byte, 3)
-	_, err = file.Read(header)
-	if err != nil {
-		if err == io.EOF {
-			return false
-		}
-		logrus.WithError(err).Warnf("unable to read file: %s to determine if we should compress", dest)
-		return false
-	}
-
-	if http.DetectContentType(header) == "application/x-gzip" {
-		return false
-	}
-
-	return true
+	return compressFileTypes.Has("*") || compressFileTypes.Has(ext)
 }
 
 // LocalExport copies all of the data in the uploadTargets map to local files in parallel. The map
@@ -266,28 +230,42 @@ type dataWriter interface {
 	io.WriteCloser
 	fullUploadPath() string
 	ApplyWriterOptions(opts pkgio.WriterOptions)
-	compressData() bool
 }
 
 type openerObjectWriter struct {
 	pkgio.Opener
-	Context  context.Context
-	Bucket   string
-	Dest     string
-	compress bool
-	opts     []pkgio.WriterOptions
-	writer   pkgio.Writer
-	closers  []pkgio.Closer
+	Context          context.Context
+	Bucket           string
+	Dest             string
+	compressFileType bool
+	opts             []pkgio.WriterOptions
+	writer           pkgio.Writer
+	closers          []pkgio.Closer
 }
 
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 	if w.writer == nil {
+		largerThanOneKB := len(p) > 1024
+		shouldCompressFile := w.compressFileType && largerThanOneKB && http.DetectContentType(p) != "application/x-gzip"
+		if shouldCompressFile {
+			path := w.fullUploadPath()
+			ext := filepath.Ext(path)
+			mediaType := mime.TypeByExtension(ext)
+			if mediaType == "" {
+				mediaType = "text/plain; charset=utf-8"
+			}
+			ce := "gzip"
+			w.opts = append(w.opts, pkgio.WriterOptions{
+				ContentType:     &mediaType,
+				ContentEncoding: &ce,
+			})
+		}
 		var storageWriter pkgio.WriteCloser
 		storageWriter, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
 		if err != nil {
 			return 0, err
 		}
-		if w.compress {
+		if shouldCompressFile {
 			zipWriter := gzip.NewWriter(storageWriter)
 			w.writer = zipWriter
 			w.closers = append(w.closers, zipWriter)
@@ -322,24 +300,9 @@ func (w *openerObjectWriter) Close() error {
 }
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
-	if w.compressData() {
-		path := w.fullUploadPath()
-		ext := filepath.Ext(path)
-		mediaType := mime.TypeByExtension(ext)
-		if mediaType == "" {
-			mediaType = "text/plain; charset=utf-8"
-		}
-		opts.ContentType = &mediaType
-		ce := "gzip"
-		opts.ContentEncoding = &ce
-	}
 	w.opts = append(w.opts, opts)
 }
 
 func (w *openerObjectWriter) fullUploadPath() string {
 	return fmt.Sprintf("%s/%s", w.Bucket, w.Dest)
-}
-
-func (w *openerObjectWriter) compressData() bool {
-	return w.compress
 }
