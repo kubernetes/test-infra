@@ -105,7 +105,7 @@ presubmits:
     optional: true
     always_run: false
     skip_report: false
-    run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
+    # run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -127,14 +127,12 @@ presubmits:
         - bash
         - -c
         # compile cloud-provider-kind with kubernetes changes on the PR
-        # hack/ci/add-kubernetes-to-workspace.sh and go workspaces do the magic
         - set -o errexit;
           set -o nounset;
           set -o pipefail;
           set -o xtrace;
           cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
-          KUBERNETES_ROOT=$GOPATH/src/k8s.io/kubernetes hack/ci/add-kubernetes-to-workspace.sh;
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e-k8s.sh
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
