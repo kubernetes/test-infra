@@ -24,8 +24,8 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -117,7 +117,7 @@ func TestSync(t *testing.T) {
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
 
-		var jobs []runtime.Object
+		var jobs []client.Object
 		now := time.Now()
 		if tc.jobName != "" {
 			job := &prowapi.ProwJob{
@@ -139,7 +139,7 @@ func TestSync(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
+		fakeProwJobClient := newCreateTrackingClient(jobs)
 		fc := &fakeCron{}
 		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
@@ -225,7 +225,7 @@ func TestSyncMinimumInterval(t *testing.T) {
 		cfg.Periodics[0].MinimumInterval = "1m"
 		cfg.Periodics[0].SetMinimumInterval(time.Minute)
 
-		var jobs []runtime.Object
+		var jobs []client.Object
 		now := time.Now()
 		if tc.jobName != "" {
 			job := &prowapi.ProwJob{
@@ -251,7 +251,7 @@ func TestSyncMinimumInterval(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
+		fakeProwJobClient := newCreateTrackingClient(jobs)
 		fc := &fakeCron{}
 		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
@@ -267,10 +267,11 @@ func TestSyncMinimumInterval(t *testing.T) {
 // Test sync periodic job scheduled by cron.
 func TestSyncCron(t *testing.T) {
 	testcases := []struct {
-		testName    string
-		jobName     string
-		jobComplete bool
-		shouldStart bool
+		testName         string
+		jobName          string
+		jobComplete      bool
+		shouldStart      bool
+		enableScheduling bool
 	}{
 		{
 			testName:    "no job",
@@ -294,18 +295,24 @@ func TestSyncCron(t *testing.T) {
 			jobComplete: true,
 			shouldStart: true,
 		},
+		{
+			testName:         "no job",
+			shouldStart:      true,
+			enableScheduling: true,
+		},
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
 			ProwConfig: config.ProwConfig{
 				ProwJobNamespace: "prowjobs",
+				Scheduler:        config.Scheduler{Enabled: tc.enableScheduling},
 			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}, Cron: "@every 1m"}},
 			},
 		}
 
-		var jobs []runtime.Object
+		var jobs []client.Object
 		now := time.Now()
 		if tc.jobName != "" {
 			job := &prowapi.ProwJob{
@@ -327,15 +334,24 @@ func TestSyncCron(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
+		fakeProwJobClient := newCreateTrackingClient(jobs)
 		fc := &fakeCron{}
 		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
 
 		sawCreation := fakeProwJobClient.sawCreate
-		if tc.shouldStart != sawCreation {
-			t.Errorf("For case %s, did the wrong thing.", tc.testName)
+		if tc.shouldStart {
+			if tc.shouldStart != sawCreation {
+				t.Errorf("For case %s, did the wrong thing.", tc.testName)
+			}
+			if tc.enableScheduling {
+				for _, obj := range fakeProwJobClient.created {
+					if pj, isPJ := obj.(*prowapi.ProwJob); isPJ && pj.Status.State != prowapi.SchedulingState {
+						t.Errorf("expected state %s but got %s", prowapi.SchedulingState, pj.Status.State)
+					}
+				}
+			}
 		}
 	}
 }
@@ -448,9 +464,18 @@ func TestFlags(t *testing.T) {
 type createTrackingClient struct {
 	ctrlruntimeclient.Client
 	sawCreate bool
+	created   []ctrlruntimeclient.Object
 }
 
 func (ct *createTrackingClient) Create(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.CreateOption) error {
 	ct.sawCreate = true
+	ct.created = append(ct.created, obj)
 	return ct.Client.Create(ctx, obj, opts...)
+}
+
+func newCreateTrackingClient(objs []client.Object) *createTrackingClient {
+	return &createTrackingClient{
+		Client:  fakectrlruntimeclient.NewClientBuilder().WithObjects(objs...).Build(),
+		created: make([]ctrlruntimeclient.Object, 0),
+	}
 }

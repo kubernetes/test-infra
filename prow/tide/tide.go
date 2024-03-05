@@ -1359,6 +1359,7 @@ func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs 
 	// If multiple required jobs have the same context, we assume the
 	// same shard will be run to provide those contexts
 	triggeredContexts := sets.New[string]()
+	enableScheduling := c.config().Scheduler.Enabled
 	for _, ps := range presubmits {
 		if triggeredContexts.Has(string(ps.Context)) {
 			continue
@@ -1374,7 +1375,7 @@ func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs 
 			spec = pjutil.BatchSpec(ps, refs)
 		}
 		labels, annotations := c.provider.labelsAndAnnotations(sp.org, ps.Labels, ps.Annotations, prs...)
-		pj := pjutil.NewProwJob(spec, labels, annotations)
+		pj := pjutil.NewProwJob(spec, labels, annotations, pjutil.RequireScheduling(enableScheduling))
 		pj.Namespace = c.config().ProwJobNamespace
 		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()

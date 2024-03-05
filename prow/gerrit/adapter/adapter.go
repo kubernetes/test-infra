@@ -776,10 +776,13 @@ func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, cha
 		}
 	}
 
+	schedulerEnabled := c.config().Scheduler.Enabled
+
 	for _, jSpec := range jobSpecs {
 		labels, annotations := LabelsAndAnnotations(instance, jSpec.labels, jSpec.annotations, change)
 
-		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
+		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations, pjutil.RequireScheduling(schedulerEnabled))
+
 		logger := logger.WithField("prowjob", pj.Name)
 		timeBeforeCreate := time.Now()
 		if _, err := c.prowJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {

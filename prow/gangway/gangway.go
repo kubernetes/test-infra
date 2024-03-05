@@ -79,7 +79,7 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 	// https://firebase.blog/posts/2015/02/the-2120-ways-to-ensure-unique_68.
 
 	// Identify the client from the request metadata.
-	mainConfig := gw.ConfigAgent.Config()
+	mainConfig := ProwCfgAdapter{gw.ConfigAgent.Config()}
 	allowedApiClient, err := mainConfig.IdentifyAllowedClient(md)
 	if err != nil {
 		logrus.WithError(err).Debug("could not find client in allowlist")
@@ -95,7 +95,7 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 	var reporterFunc ReporterFunc = nil
 	requireTenantID := true
 
-	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigGetter, allowedApiClient, requireTenantID, allowedClusters)
+	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, &mainConfig, gw.InRepoConfigGetter, allowedApiClient, requireTenantID, allowedClusters)
 	if err != nil {
 		logrus.WithError(err).Debugf("failed to create job %q", cjer.GetJobName())
 		return nil, err
@@ -387,7 +387,7 @@ func (pull *Pull) Validate() error {
 // Ensure interface is intact. I.e., this declaration ensures that the type
 // "*config.Config" implements the "prowCfgClient" interface. See
 // https://golang.org/doc/faq#guarantee_satisfies_interface.
-var _ prowCfgClient = (*config.Config)(nil)
+var _ prowCfgClient = (*ProwCfgAdapter)(nil)
 
 // prowCfgClient is a subset of all the various behaviors that the
 // "*config.Config" type implements, which we will test here.
@@ -396,7 +396,14 @@ type prowCfgClient interface {
 	GetPresubmitsStatic(identifier string) []config.Presubmit
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
 	GetProwJobDefault(repo, cluster string) *prowcrd.ProwJobDefault
+	GetScheduler() config.Scheduler
 }
+
+type ProwCfgAdapter struct {
+	*config.Config
+}
+
+func (c *ProwCfgAdapter) GetScheduler() config.Scheduler { return c.Scheduler }
 
 type ReporterFunc func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err error)
 
@@ -468,7 +475,9 @@ func HandleProwJob(l *logrus.Entry,
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
 		l.WithError(err).WithField("name", cjer.GetJobName()).Info("Failed getting prowjob spec")
-		prowJobCR = pjutil.NewProwJob(prowcrd.ProwJobSpec{}, nil, cjer.GetPodSpecOptions().GetAnnotations())
+		prowJobCR = pjutil.NewProwJob(prowcrd.ProwJobSpec{}, nil, cjer.GetPodSpecOptions().GetAnnotations(),
+			pjutil.RequireScheduling(mainConfig.GetScheduler().Enabled))
+
 		if reporterFunc != nil {
 			reporterFunc(&prowJobCR, prowcrd.ErrorState, err)
 		}
@@ -479,8 +488,8 @@ func HandleProwJob(l *logrus.Entry,
 	}
 
 	combinedLabels, combinedAnnotations := mergeMapFields(cjer, labels, annotations)
-
-	prowJobCR = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
+	prowJobCR = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations,
+		pjutil.RequireScheduling(mainConfig.GetScheduler().Enabled))
 	// Adds / Updates Environments to containers
 	if prowJobCR.Spec.PodSpec != nil {
 		for i, c := range prowJobCR.Spec.PodSpec.Containers {
