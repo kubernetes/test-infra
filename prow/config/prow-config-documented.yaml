@@ -1072,6 +1072,10 @@ push_gateway:
     interval: 0s
     # ServeMetrics tells if or not the components serve metrics.
     serve_metrics: false
+# Scheduler contains configuration for the additional scheduler.
+# It has to be explicitly enabled.
+scheduler:
+    enabled: true
 sinker:
     # ExcludeClusters are build clusters that don't want to be managed by sinker.
     exclude_clusters:
