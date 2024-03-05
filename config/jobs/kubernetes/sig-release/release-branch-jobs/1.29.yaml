@@ -1337,6 +1337,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.29
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-node-arm64-ubuntu-serial-gce
     decorate: true
     decoration_config:
