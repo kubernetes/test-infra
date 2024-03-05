@@ -121,12 +121,11 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240111-cf1d81388e-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
         command:
-        - runner.sh
-        args:
-        - "/bin/bash"
-        - "-c"
+        - wrapper.sh
+        - bash
+        - -c
         # compile cloud-provider-kind with kubernetes changes on the PR
         # hack/ci/add-kubernetes-to-workspace.sh and go workspaces do the magic
         - set -o errexit;
