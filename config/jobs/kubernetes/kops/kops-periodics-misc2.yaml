@@ -2120,7 +2120,7 @@ periodics:
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:SELinux\]" \
-          --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\FeatureGate:SELinuxMount\]" \
+          --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]" \
           --parallel=1
       env:
       - name: KUBE_SSH_KEY_PATH

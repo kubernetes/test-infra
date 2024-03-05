@@ -881,7 +881,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
                    #   in v1.30.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\FeatureGate:SELinuxMount\]", # pylint: disable=line-too-long
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]", # pylint: disable=line-too-long
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
