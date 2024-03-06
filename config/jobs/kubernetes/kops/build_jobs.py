@@ -1393,6 +1393,7 @@ def generate_network_plugins():
             k8s_version = 'ci'
         results.append(
             build_test(
+                build_cluster='k8s-infra-kops-prow-build',
                 distro='u2204',
                 k8s_version=k8s_version,
                 kops_channel='alpha',
