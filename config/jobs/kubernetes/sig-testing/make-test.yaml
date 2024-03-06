@@ -31,10 +31,10 @@ presubmits:
           resources:
             limits:
               cpu: 4
-              memory: "36Gi"
+              memory: "16Gi"
             requests:
               cpu: 4
-              memory: "36Gi"
+              memory: "16Gi"
   - name: pull-kubernetes-unit-go-compatibility
     annotations:
       fork-per-release: "true"
@@ -69,11 +69,11 @@ presubmits:
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
             requests:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
   - name: pull-kubernetes-unit-experimental
     # try clonerefs with preclone
     decoration_config:
@@ -106,11 +106,11 @@ presubmits:
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
             requests:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
   - name: pull-kubernetes-unit-go-canary
     annotations:
       testgrid-num-failures-to-alert: '10'
@@ -141,11 +141,11 @@ presubmits:
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
             requests:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
 periodics:
   - interval: 1h
     name: ci-kubernetes-unit
@@ -181,8 +181,8 @@ periodics:
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"
             requests:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7
+              memory: "16Gi"

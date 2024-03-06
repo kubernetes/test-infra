@@ -23,10 +23,10 @@ presubmits:
         resources:
           limits:
             cpu: 5
-            memory: 32Gi
+            memory: 16Gi
           requests:
             cpu: 5
-            memory: 32Gi
+            memory: 16Gi
         args:
         - verify
         env:

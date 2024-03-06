@@ -170,10 +170,10 @@ periodics:
       resources:
         limits:
           cpu: "7"
-          memory: 34Gi
+          memory: 30Gi
         requests:
           cpu: "7"
-          memory: 34Gi
+          memory: 30Gi
       securityContext:
         privileged: true
 - annotations:
@@ -397,11 +397,11 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: "4"
-          memory: 36Gi
+          cpu: "7"
+          memory: 30Gi
         requests:
-          cpu: "4"
-          memory: 36Gi
+          cpu: "7"
+          memory: 30Gi
       securityContext:
         allowPrivilegeEscalation: false
     securityContext:
@@ -1977,11 +1977,11 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "4"
-            memory: 36Gi
+            cpu: "7"
+            memory: 30Gi
           requests:
-            cpu: "4"
-            memory: 36Gi
+            cpu: "7"
+            memory: 30Gi
         securityContext:
           allowPrivilegeEscalation: false
       securityContext:
@@ -2009,11 +2009,11 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "4"
-            memory: 36Gi
+            cpu: "7"
+            memory: 30Gi
           requests:
-            cpu: "4"
-            memory: 36Gi
+            cpu: "7"
+            memory: 30Gi
         securityContext:
           allowPrivilegeEscalation: false
       securityContext:
@@ -2041,10 +2041,10 @@ presubmits:
         resources:
           limits:
             cpu: "5"
-            memory: 32Gi
+            memory: 16Gi
           requests:
             cpu: "5"
-            memory: 32Gi
+            memory: 16Gi
   - always_run: false
     branches:
     - release-1.29

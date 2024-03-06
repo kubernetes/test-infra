@@ -92,10 +92,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
   - name: pull-kueue-test-e2e-release-0-4-1-25
     cluster: eks-prow-build-cluster
     branches:
@@ -130,10 +130,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
   - name: pull-kueue-test-e2e-release-0-4-1-26
     cluster: eks-prow-build-cluster
     branches:
@@ -168,10 +168,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
   - name: pull-kueue-test-e2e-release-0-4-1-27
     cluster: eks-prow-build-cluster
     branches:
@@ -206,10 +206,10 @@ presubmits:
         resources:
           requests:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
           limits:
             cpu: "10"
-            memory: "40Gi"
+            memory: "24Gi"
   - name: pull-kueue-verify-release-0-4
     cluster: eks-prow-build-cluster
     branches:

@@ -109,10 +109,10 @@ periodics:
       resources:
         requests:
           cpu: 6
-          memory: 32Gi
+          memory: 24Gi
         limits:
           cpu: 6
-          memory: 32Gi
+          memory: 24Gi
 
 - name: ci-test-infra-autobump-prowjobs
   cron: "06 14-23 * * 1-5"  # Run every hour at 7:06 - 16:06 PDT (in UTC) Mon-Fri

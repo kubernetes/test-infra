@@ -24,10 +24,10 @@ presubmits:
         resources:
           limits:
             cpu: 7300m
-            memory: "41Gi"
+            memory: "16Gi"
           requests:
             cpu: 7300m
-            memory: "41Gi"
+            memory: "16Gi"
     annotations:
       testgrid-create-test-group: 'true'
 
@@ -62,10 +62,10 @@ periodics:
       resources:
         limits:
           cpu: "7"
-          memory: "34Gi"
+          memory: "30Gi"
         requests:
           cpu: "7"
-          memory: "34Gi"
+          memory: "30Gi"
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes

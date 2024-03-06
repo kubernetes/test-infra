@@ -125,7 +125,7 @@ periodics:
       resources:
         requests:
           cpu: "10"
-          memory: "48Gi"
+          memory: 30Gi
         limits:
           cpu: "10"
-          memory: "48Gi"
+          memory: 30Gi
