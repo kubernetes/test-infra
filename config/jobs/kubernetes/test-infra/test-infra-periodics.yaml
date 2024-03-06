@@ -140,3 +140,16 @@ periodics:
     testgrid-tab-name: test-infra-cfl-prune
     testgrid-broken-column-threshold: '0.5'
     description: Runs clusterfuzzlite corpora prune every day
+
+- name: job-migration-todo-report
+  decorate: true
+  interval: 24h
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      command:
+      - hack/cluster-migration/update_todo.sh
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: job-migration-todo-report
+    description: Reports the status of the job migration to Prow
