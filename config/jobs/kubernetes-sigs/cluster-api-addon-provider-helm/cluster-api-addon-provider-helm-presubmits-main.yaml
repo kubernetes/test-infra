@@ -134,6 +134,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-mink8s-main
   - name: pull-cluster-api-addon-provider-helm-e2e
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     optional: false
@@ -156,6 +157,13 @@ presubmits:
             value: \[REQUIRED\]
           - name: GINKGO_SKIP
             value: ""
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -200,6 +208,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-capi-e2e-main
   - name: pull-cluster-api-addon-provider-helm-e2e-workload-upgrade
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -229,12 +238,17 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
           requests:
-            cpu: 7300m
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-e2e-upgrade
   - name: pull-cluster-api-addon-provider-helm-apiversion-upgrade
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -263,8 +277,12 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              cpu: 7300m
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-apiversion-upgrade-main
