@@ -162,6 +162,10 @@ type ProwConfig struct {
 	// Moonraker.
 	Moonraker Moonraker `json:"moonraker,omitempty"`
 
+	// Scheduler contains configuration for the additional scheduler.
+	// It has to be explicitly enabled.
+	Scheduler Scheduler `json:"scheduler,omitempty"`
+
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
 

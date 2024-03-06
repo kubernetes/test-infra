@@ -890,6 +890,296 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 	}
 }
 
+func TestNewProwJobWithModifiers(t *testing.T) {
+	stime, _ := time.Parse(time.DateOnly, "2024-02-27")
+	fakeStartTime := metav1.NewTime(stime)
+	fakeName := "foo"
+
+	for _, testCase := range []struct {
+		name        string
+		spec        *prowapi.ProwJobSpec
+		labels      map[string]string
+		annotations map[string]string
+		options     []Modifier
+		wantProwJob prowapi.ProwJob
+	}{
+		{
+			name: "no options",
+			spec: &prowapi.ProwJobSpec{
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
+			},
+			labels:      map[string]string{"extra-label": "foo"},
+			annotations: map[string]string{"extra-annotation": "bar"},
+			wantProwJob: prowapi.ProwJob{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "prow.k8s.io/v1",
+					Kind:       "ProwJob",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: fakeName,
+					Labels: map[string]string{
+						kube.CreatedByProw:     "true",
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+						kube.ProwJobTypeLabel:  string(prowapi.PeriodicJob),
+						"extra-label":          "foo",
+					},
+					Annotations: map[string]string{
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+						"extra-annotation":     "bar",
+					},
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "job",
+					Context: "job-context",
+					Type:    prowapi.PeriodicJob,
+				},
+				Status: prowapi.ProwJobStatus{
+					StartTime: fakeStartTime,
+					State:     prowapi.TriggeredState,
+				},
+			},
+		},
+		{
+			name: "require scheduling",
+			spec: &prowapi.ProwJobSpec{
+				Job:     "job",
+				Context: "job-context",
+				Type:    prowapi.PeriodicJob,
+			},
+			labels:      map[string]string{"extra-label": "foo"},
+			annotations: map[string]string{"extra-annotation": "bar"},
+			options:     []Modifier{RequireScheduling(true)},
+			wantProwJob: prowapi.ProwJob{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "prow.k8s.io/v1",
+					Kind:       "ProwJob",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: fakeName,
+					Labels: map[string]string{
+						kube.CreatedByProw:     "true",
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+						kube.ProwJobTypeLabel:  string(prowapi.PeriodicJob),
+						"extra-label":          "foo",
+					},
+					Annotations: map[string]string{
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+						"extra-annotation":     "bar",
+					},
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "job",
+					Context: "job-context",
+					Type:    prowapi.PeriodicJob,
+				},
+				Status: prowapi.ProwJobStatus{
+					StartTime: fakeStartTime,
+					State:     prowapi.SchedulingState,
+				},
+			},
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			pj := NewProwJob(*testCase.spec, testCase.labels, testCase.annotations, testCase.options...)
+			pj.Name = fakeName
+			pj.Status.StartTime = fakeStartTime
+
+			if diff := cmp.Diff(&testCase.wantProwJob, &pj); diff != "" {
+				t.Errorf("prowjob doesn't match: %s", diff)
+			}
+		})
+	}
+}
+
+func TestNewPresubmitWithModifiers(t *testing.T) {
+	stime, _ := time.Parse(time.DateOnly, "2024-02-27")
+	fakeStartTime := metav1.NewTime(stime)
+	fakeName := "foo"
+	pr := github.PullRequest{
+		Number:  42,
+		Title:   "pr-title",
+		HTMLURL: "https://github.example.com/kubernetes/test-infra/pull/42",
+		Head: github.PullRequestBranch{
+			SHA: "123456",
+			Ref: "head-ref",
+		},
+		Base: github.PullRequestBranch{
+			Ref: "base-ref",
+			Repo: github.Repo{
+				Name:    "repo-name",
+				HTMLURL: "https://github.example.com/kubernetes/test-infra",
+				Owner: github.User{
+					Login: "kubernetes",
+				},
+			},
+		},
+		User: github.User{
+			Login:   "user-login",
+			HTMLURL: "https://github.example.com/user-login",
+		},
+	}
+
+	for _, testCase := range []struct {
+		name        string
+		spec        *prowapi.ProwJobSpec
+		labels      map[string]string
+		pr          *github.PullRequest
+		baseSHA     string
+		job         *config.Presubmit
+		eventGUID   string
+		options     []Modifier
+		wantProwJob prowapi.ProwJob
+	}{
+		{
+			name:    "no options",
+			labels:  map[string]string{"extra-label": "foo"},
+			pr:      &pr,
+			baseSHA: "987654",
+			job: &config.Presubmit{
+				JobBase:  config.JobBase{Name: "job"},
+				Reporter: config.Reporter{Context: "job-context"},
+			},
+			eventGUID: "0001",
+			wantProwJob: prowapi.ProwJob{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "prow.k8s.io/v1",
+					Kind:       "ProwJob",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: fakeName,
+					Labels: map[string]string{
+						kube.CreatedByProw:     "true",
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+						kube.ProwJobTypeLabel:  string(prowapi.PresubmitJob),
+						github.EventGUID:       "0001",
+						kube.IsOptionalLabel:   "false",
+						kube.OrgLabel:          "kubernetes",
+						kube.RepoLabel:         "repo-name",
+						kube.BaseRefLabel:      "base-ref",
+						kube.PullLabel:         "42",
+						"extra-label":          "foo",
+					},
+					Annotations: map[string]string{
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+					},
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "job",
+					Context: "job-context",
+					Type:    prowapi.PresubmitJob,
+					Report:  true,
+					Refs: &prowapi.Refs{
+						Org:      "kubernetes",
+						Repo:     "repo-name",
+						BaseSHA:  "987654",
+						RepoLink: "https://github.example.com/kubernetes/test-infra",
+						BaseRef:  "base-ref",
+						BaseLink: "https://github.example.com/kubernetes/test-infra/commit/987654",
+						Pulls: []prowapi.Pull{{
+							Number:     42,
+							Author:     "user-login",
+							SHA:        "123456",
+							Title:      "pr-title",
+							HeadRef:    "head-ref",
+							Link:       "https://github.example.com/kubernetes/test-infra/pull/42",
+							CommitLink: "https://github.example.com/kubernetes/test-infra/pull/42/commits/123456",
+							AuthorLink: "https://github.example.com/user-login",
+						}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					StartTime: fakeStartTime,
+					State:     prowapi.TriggeredState,
+				},
+			},
+		},
+		{
+			name:    "require scheduling",
+			labels:  map[string]string{"extra-label": "foo"},
+			pr:      &pr,
+			baseSHA: "987654",
+			job: &config.Presubmit{
+				JobBase:  config.JobBase{Name: "job"},
+				Reporter: config.Reporter{Context: "job-context"},
+			},
+			eventGUID: "0001",
+			options:   []Modifier{RequireScheduling(true)},
+			wantProwJob: prowapi.ProwJob{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "prow.k8s.io/v1",
+					Kind:       "ProwJob",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: fakeName,
+					Labels: map[string]string{
+						kube.CreatedByProw:     "true",
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+						kube.ProwJobTypeLabel:  string(prowapi.PresubmitJob),
+						github.EventGUID:       "0001",
+						kube.IsOptionalLabel:   "false",
+						kube.OrgLabel:          "kubernetes",
+						kube.RepoLabel:         "repo-name",
+						kube.BaseRefLabel:      "base-ref",
+						kube.PullLabel:         "42",
+						"extra-label":          "foo",
+					},
+					Annotations: map[string]string{
+						kube.ProwJobAnnotation: "job",
+						kube.ContextAnnotation: "job-context",
+					},
+				},
+				Spec: prowapi.ProwJobSpec{
+					Job:     "job",
+					Context: "job-context",
+					Type:    prowapi.PresubmitJob,
+					Report:  true,
+					Refs: &prowapi.Refs{
+						Org:      "kubernetes",
+						Repo:     "repo-name",
+						BaseSHA:  "987654",
+						RepoLink: "https://github.example.com/kubernetes/test-infra",
+						BaseRef:  "base-ref",
+						BaseLink: "https://github.example.com/kubernetes/test-infra/commit/987654",
+						Pulls: []prowapi.Pull{{
+							Number:     42,
+							Author:     "user-login",
+							SHA:        "123456",
+							Title:      "pr-title",
+							HeadRef:    "head-ref",
+							Link:       "https://github.example.com/kubernetes/test-infra/pull/42",
+							CommitLink: "https://github.example.com/kubernetes/test-infra/pull/42/commits/123456",
+							AuthorLink: "https://github.example.com/user-login",
+						}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					StartTime: fakeStartTime,
+					State:     prowapi.SchedulingState,
+				},
+			},
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			pj := NewPresubmit(*testCase.pr, testCase.baseSHA, *testCase.job, testCase.eventGUID, testCase.labels, testCase.options...)
+			pj.Name = fakeName
+			pj.Status.StartTime = fakeStartTime
+
+			if diff := cmp.Diff(&testCase.wantProwJob, &pj); diff != "" {
+				t.Errorf("prowjob doesn't match: %s", diff)
+			}
+		})
+	}
+}
+
 func TestJobURL(t *testing.T) {
 	var testCases = []struct {
 		name        string
@@ -1226,7 +1516,7 @@ func TestSpecFromJobBase(t *testing.T) {
 							BloblessFetch: boolPtr(false),
 						},
 						{
-							Org: "default-org",
+							Org:           "default-org",
 							BloblessFetch: nil,
 						},
 					},
@@ -1260,7 +1550,7 @@ func TestSpecFromJobBase(t *testing.T) {
 							BloblessFetch: boolPtr(false),
 						},
 						{
-							Org: "default-org",
+							Org:           "default-org",
 							BloblessFetch: nil,
 						},
 					},
@@ -1291,7 +1581,7 @@ func TestSpecFromJobBase(t *testing.T) {
 							BloblessFetch: boolPtr(false),
 						},
 						{
-							Org: "default-org",
+							Org:           "default-org",
 							BloblessFetch: nil,
 						},
 					},

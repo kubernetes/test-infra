@@ -330,7 +330,7 @@ func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJob
 
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, labels)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, labels, pjutil.RequireScheduling(c.Config.Scheduler.Enabled))
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj, millisecondOverride...); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")
