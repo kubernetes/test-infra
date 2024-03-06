@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-addon-provider-helm-capi-e2e-main
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -27,6 +28,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: 4Gi
+        limits:
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
     testgrid-tab-name: caaph-periodic-capi-e2e-main
@@ -72,6 +80,7 @@ periodics:
     testgrid-tab-name: caaph-periodic-e2e-upgrade-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-helm@kubernetes.io
 - name: periodic-cluster-api-addon-provider-helm-apiversion-upgrade-main
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -101,12 +110,17 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
     testgrid-tab-name: caaph-periodic-apiversion-upgrade-main
     description: This job creates clusters with an older version of Cluster API and Cluster API Add-on Provider Helm, then upgrades them to the latest version of Cluster API and to the main branch of Cluster API Add-on Provider Helm.
 - name: periodic-cluster-api-addon-provider-helm-e2e
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -134,6 +148,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: 4Gi
+        limits:
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
     testgrid-tab-name: caaph-periodic-e2e-main
