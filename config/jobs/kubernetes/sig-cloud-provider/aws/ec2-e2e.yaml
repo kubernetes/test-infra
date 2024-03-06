@@ -1243,7 +1243,7 @@ periodics:
         - --ttl=6h
         - --path=s3://provider-aws-test-infra/objs.json
         - --region=us-east-1
-        image: gcr.io/k8s-staging-boskos/aws-janitor:v20240212-5972d0c
+        image: gcr.io/k8s-staging-boskos/aws-janitor:v20240306-786da16
         resources:
           requests:
             cpu: 1
