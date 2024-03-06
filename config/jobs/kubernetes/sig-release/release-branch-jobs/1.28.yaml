@@ -884,6 +884,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.28
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-e2e-gce-device-plugin-gpu
     labels:
       preset-dind-enabled: "true"
@@ -918,13 +919,16 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.28
         name: ""
         resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
           requests:
+            cpu: "2"
             memory: 6Gi
         securityContext:
           privileged: true
@@ -1160,6 +1164,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.28
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-node-arm64-ubuntu-serial-gce
     decorate: true
     decoration_config:
