@@ -4906,14 +4906,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia-bond
+    name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia-bond
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6634,6 +6634,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-upi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-upi
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-v6primary
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -6939,33 +6966,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-sdn
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-upi
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-upi
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -7647,8 +7647,8 @@ test_groups:
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-ipv4
   name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-ipv4
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia-bond
-  name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia-bond
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia
+  name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-ovn-serial-virtualmedia
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-sdn-bm-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.15-e2e-metal-ipi-sdn-bm-upgrade
 - days_of_results: 60
@@ -7801,6 +7801,8 @@ test_groups:
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-csi-manila
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack
+- gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-upi
+  name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-upi
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-v6primary
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-dualstack-v6primary
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-externallb
@@ -7825,8 +7827,6 @@ test_groups:
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-proxy
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-sdn
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-sdn
-- gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-upi
-  name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-e2e-openstack-upi
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-upgrade-from-stable-4.14-e2e-openstack-ovn-upgrade
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.15-upgrade-from-stable-4.14-e2e-openstack-ovn-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4-15-lp-interop-acs-tests-aws
