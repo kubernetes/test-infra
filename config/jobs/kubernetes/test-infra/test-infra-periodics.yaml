@@ -144,6 +144,10 @@ periodics:
 - name: job-migration-todo-report
   decorate: true
   interval: 24h
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   spec:
     containers:
     - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
