@@ -163,7 +163,7 @@ presubmits:
             memory: 4Gi
           requests:
             cpu: 2
-            memory: 4Gi  
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -234,7 +234,7 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "\\[K8s-Upgrade\\]"
-        # we need privileged mode in order to do docker in docker      
+        # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
