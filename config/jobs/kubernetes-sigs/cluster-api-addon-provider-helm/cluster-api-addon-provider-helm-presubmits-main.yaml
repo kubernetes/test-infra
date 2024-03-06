@@ -234,19 +234,16 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "\\[K8s-Upgrade\\]"
-        # we need privileged mode in order to do docker in docker
+        # we need privileged mode in order to do docker in docker      
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 2
             memory: 4Gi
           requests:
             cpu: 2
-            memory: 4Gi      
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 7300m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-e2e-upgrade
@@ -277,18 +274,15 @@ presubmits:
             - name: GINKGO_FOCUS
               value: "API Version Upgrade"
           # we need privileged mode in order to do docker in docker
-          resources:
-            limits:
-              cpu: 2
-              memory: 4Gi
-            requests:
-              cpu: 2
-              memory: 4Gi
           securityContext:
             privileged: true
           resources:
-            requests:
-              cpu: 7300m
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-apiversion-upgrade-main
