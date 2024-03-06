@@ -104,6 +104,8 @@ func TestRerun(t *testing.T) {
 		shouldCreateProwJob bool
 		httpCode            int
 		httpMethod          string
+		enableScheduling    bool
+		wantProwJobState    prowapi.ProwJobState
 	}{
 		{
 			name:                "Handler returns ProwJob",
@@ -114,6 +116,7 @@ func TestRerun(t *testing.T) {
 			shouldCreateProwJob: true,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "User not authorized to create prow job",
@@ -144,6 +147,7 @@ func TestRerun(t *testing.T) {
 			shouldCreateProwJob: true,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "Direct rerun disabled, post request",
@@ -164,6 +168,7 @@ func TestRerun(t *testing.T) {
 			shouldCreateProwJob: true,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "User on permitted team",
@@ -174,6 +179,7 @@ func TestRerun(t *testing.T) {
 			shouldCreateProwJob: true,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "Org member permitted for presubmits",
@@ -184,6 +190,19 @@ func TestRerun(t *testing.T) {
 			shouldCreateProwJob: true,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
+		},
+		{
+			name:                "Rerun ProwJob in scheduling state",
+			login:               "authorized",
+			authorized:          []string{"authorized", "alsoauthorized"},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+			enableScheduling:    true,
+			wantProwJobState:    prowapi.SchedulingState,
 		},
 	}
 
@@ -251,7 +270,9 @@ func TestRerun(t *testing.T) {
 			rc := fakegithub.NewFakeClient()
 			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
 			pca := plugins.NewFakeConfigAgent()
-			cfg := func() *config.Config { return &config.Config{} }
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{Scheduler: config.Scheduler{Enabled: tc.enableScheduling}}}
+			}
 			handler := handleRerun(cfg, fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
@@ -266,7 +287,12 @@ func TestRerun(t *testing.T) {
 				if numPJs := len(pjs.Items); numPJs != 2 {
 					t.Errorf("expected to get two prowjobs, got %d", numPJs)
 				}
-
+				for i := range pjs.Items {
+					pj := &pjs.Items[i]
+					if pj.Name != "wowsuch" && pj.Status.State != tc.wantProwJobState {
+						t.Errorf("expected state %s but got %s in pj %s", tc.wantProwJobState, pj.Status.State, pj.Spec.Job)
+					}
+				}
 			} else if !tc.rerunCreatesJob && tc.httpCode == http.StatusOK {
 				resp := rr.Result()
 				defer resp.Body.Close()
@@ -304,6 +330,8 @@ func TestLatestRerun(t *testing.T) {
 		reported            bool
 		httpCode            int
 		httpMethod          string
+		enableScheduling    bool
+		wantProwJobState    prowapi.ProwJobState
 	}{
 		{
 			name:                "Handler returns Presubmit ProwJob",
@@ -317,6 +345,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "Handler returns Periodic ProwJob",
@@ -330,6 +359,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "User not authorized to create prow job",
@@ -369,6 +399,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "Direct rerun disabled, post request",
@@ -394,6 +425,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "User on permitted team",
@@ -407,6 +439,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "Org member permitted for presubmits",
@@ -420,6 +453,7 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+			wantProwJobState:    prowapi.TriggeredState,
 		},
 		{
 			name:                "Org member not permitted for periodic",
@@ -433,6 +467,21 @@ func TestLatestRerun(t *testing.T) {
 			reported:            false,
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
+		},
+		{
+			name:                "Rerun ProwJob in scheduling state",
+			pjType:              prowapi.PresubmitJob,
+			config:              getPresubmitConfig(),
+			login:               "authorized",
+			authorized:          []string{"authorized", "alsoauthorized"},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			reported:            false,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+			enableScheduling:    true,
+			wantProwJobState:    prowapi.SchedulingState,
 		},
 	}
 
@@ -510,7 +559,9 @@ func TestLatestRerun(t *testing.T) {
 			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
 			pca := plugins.NewFakeConfigAgent()
 			cfg := func() *config.Config {
-				return tc.config
+				cfg := tc.config
+				cfg.Scheduler.Enabled = tc.enableScheduling
+				return cfg
 			}
 			handler := handleRerun(cfg, fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
@@ -525,6 +576,12 @@ func TestLatestRerun(t *testing.T) {
 				}
 				if numPJs := len(pjs.Items); numPJs != 2 {
 					t.Errorf("expected to get two prowjobs, got %d", numPJs)
+				}
+				for i := range pjs.Items {
+					pj := &pjs.Items[i]
+					if pj.Name != "wowsuch" && pj.Status.State != tc.wantProwJobState {
+						t.Errorf("expected state %s but got %s in pj %s", tc.wantProwJobState, pj.Status.State, pj.Spec.Job)
+					}
 				}
 			} else if !tc.rerunCreatesJob && tc.httpCode == http.StatusOK {
 				expectedProwJob := prowapi.ProwJob{

@@ -202,7 +202,8 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 			}).Debug("Trigger time has not yet been reached.")
 		}
 		if !previousFound || shouldTrigger {
-			prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+			prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations,
+				pjutil.RequireScheduling(cfg.Scheduler.Enabled))
 			prowJob.Namespace = cfg.ProwJobNamespace
 			logger.WithFields(logrus.Fields{
 				"should-trigger": shouldTrigger,

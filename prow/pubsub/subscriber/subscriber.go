@@ -166,7 +166,8 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	var allowedApiClient *config.AllowedApiClient = nil
 	var requireTenantID bool = false
 
-	if _, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigGetter, allowedApiClient, requireTenantID, allowedClusters); err != nil {
+	cfgAdapter := gangway.ProwCfgAdapter{Config: s.ConfigAgent.Config()}
+	if _, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, &cfgAdapter, s.InRepoConfigGetter, allowedApiClient, requireTenantID, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,

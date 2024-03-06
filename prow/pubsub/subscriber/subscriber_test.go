@@ -599,7 +599,8 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t1.Error("programmer error: could not convert ProwJobEvent to CreateJobExecutionRequest")
 			}
 
-			_, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigGetter, nil, false, tc.allowedClusters)
+			cfgAdapter := gangway.ProwCfgAdapter{Config: s.ConfigAgent.Config()}
+			_, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, &cfgAdapter, s.InRepoConfigGetter, nil, false, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())

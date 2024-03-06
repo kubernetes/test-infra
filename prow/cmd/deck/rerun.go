@@ -260,6 +260,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 			}
 			return
 		}
+		enableScheduling := cfg().Scheduler.Enabled
 		var newPJ prowapi.ProwJob
 		if mode == LATEST {
 			prowJobSpec, labels, annotations, err := getProwJobSpec(pj.Spec.Type, cfg, pj.Spec.Job, pj.Spec.Refs, pj.Labels)
@@ -289,9 +290,9 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 				}
 			}
 
-			newPJ = pjutil.NewProwJob(*prowJobSpec, labels, annotations)
+			newPJ = pjutil.NewProwJob(*prowJobSpec, labels, annotations, pjutil.RequireScheduling(enableScheduling))
 		} else {
-			newPJ = pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
+			newPJ = pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations, pjutil.RequireScheduling(enableScheduling))
 		}
 		l = l.WithField("job", newPJ.Spec.Job)
 		switch r.Method {

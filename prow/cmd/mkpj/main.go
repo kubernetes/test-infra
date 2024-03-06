@@ -257,7 +257,7 @@ func main() {
 			logrus.WithError(err).Fatal("Failed to default base ref")
 		}
 	}
-	pj := pjutil.NewProwJob(pjs, job.Labels, job.Annotations)
+	pj := pjutil.NewProwJob(pjs, job.Labels, job.Annotations, pjutil.RequireScheduling(conf.Scheduler.Enabled))
 	if !o.triggerJob {
 		b, err := yaml.Marshal(&pj)
 		if err != nil {

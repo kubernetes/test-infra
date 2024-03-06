@@ -1419,14 +1419,15 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 	testcases := []struct {
 		name string
 
-		batchPending    bool
-		successes       []int
-		pendings        []int
-		nones           []int
-		batchMerges     []int
-		presubmits      map[int][]config.Presubmit
-		preExistingJobs []runtime.Object
-		mergeErrs       map[int]error
+		batchPending     bool
+		successes        []int
+		pendings         []int
+		nones            []int
+		batchMerges      []int
+		presubmits       map[int][]config.Presubmit
+		preExistingJobs  []runtime.Object
+		mergeErrs        map[int]error
+		enableScheduling bool
 
 		merged           int
 		triggered        int
@@ -1823,13 +1824,37 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			triggered:   0,
 			action:      MergeBatch,
 		},
+		{
+			name: "pending batch, should trigger serial in scheduling state",
+
+			batchPending: true,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{0, 1, 2},
+			batchMerges:  []int{},
+			presubmits: map[int][]config.Presubmit{
+				100: {
+					{Reporter: config.Reporter{Context: "foo"}},
+					{Reporter: config.Reporter{Context: "if-changed"}},
+				},
+			},
+			merged:           0,
+			triggered:        1,
+			action:           Trigger,
+			enableScheduling: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			ca := &config.Agent{}
 			pjNamespace := "pj-ns"
-			cfg := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: pjNamespace}}
+			cfg := &config.Config{
+				ProwConfig: config.ProwConfig{
+					ProwJobNamespace: pjNamespace,
+					Scheduler:        config.Scheduler{Enabled: tc.enableScheduling},
+				},
+			}
 			if err := cfg.SetPresubmits(
 				map[string][]config.Presubmit{
 					"o/r": {
@@ -1997,6 +2022,13 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 
 			if tc.triggered != numCreated {
 				t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
+			}
+			if tc.triggered > 0 && tc.enableScheduling {
+				for _, pj := range filteredProwJobs {
+					if pj.Status.State != prowapi.SchedulingState {
+						t.Errorf("Wrong ProwJob state. Got %s, expected %s.", pj.Status.State, prowapi.SchedulingState)
+					}
+				}
 			}
 			if tc.merged != fgc.merged {
 				t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
