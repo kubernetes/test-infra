@@ -914,11 +914,12 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-nodes=4
+        - --gcp-nodes=2
         - --gcp-project=k8s-jkns-pr-gce-gpus
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
+        - --stage=gs://k8s-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-1.28
