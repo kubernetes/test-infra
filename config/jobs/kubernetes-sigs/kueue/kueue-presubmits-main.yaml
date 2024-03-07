@@ -227,9 +227,10 @@ presubmits:
         securityContext:
           privileged: true
         command:
-        - make
+        - runner.sh
         args:
-        - verify
+          - make
+          - verify
         env:
         - name: GOMAXPROCS
           value: "2"
