@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Includes go and gcloud
-FROM golang:1.19
+FROM golang:1.20
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
