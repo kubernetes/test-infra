@@ -29,6 +29,7 @@ import (
 	status "google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/validation"
 	prowcrd "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -50,10 +51,12 @@ type Gangway struct {
 }
 
 // ProwJobClient describes a Kubernetes client for the Prow Job CR. Unlike a
-// general-purpose client, it only expects 2 methods, Create() and Get().
+// general-purpose client, it only expects 4 methods, Create(), Get(), List() and UpdateStatus().
 type ProwJobClient interface {
 	Create(context.Context, *prowcrd.ProwJob, metav1.CreateOptions) (*prowcrd.ProwJob, error)
 	Get(context.Context, string, metav1.GetOptions) (*prowcrd.ProwJob, error)
+	List(context.Context, metav1.ListOptions) (*prowcrd.ProwJobList, error)
+	UpdateStatus(context.Context, *prowcrd.ProwJob, metav1.UpdateOptions) (*prowcrd.ProwJob, error)
 }
 
 // CreateJobExecution triggers a new Prow job.
@@ -115,9 +118,18 @@ func (gw *Gangway) GetJobExecution(ctx context.Context, gjer *GetJobExecutionReq
 		return nil, err
 	}
 
+	jobExec := &JobExecution{
+		Id:        prowJobCR.Name,
+		JobStatus: TranslateProwJobStatus(prowJobCR),
+	}
+
+	return jobExec, nil
+}
+
+// Translate ProwJobStatus.State in the Prow Job CR into a JobExecutionStatus.
+func TranslateProwJobStatus(prowJobCR *prowcrd.ProwJob) JobExecutionStatus {
 	var jobStatus JobExecutionStatus
 
-	// Translate ProwJobStatus.State in the Prow Job CR into a JobExecutionStatus.
 	switch prowJobCR.Status.State {
 	case prowcrd.TriggeredState:
 		jobStatus = JobExecutionStatus_TRIGGERED
@@ -135,13 +147,82 @@ func (gw *Gangway) GetJobExecution(ctx context.Context, gjer *GetJobExecutionReq
 		jobStatus = JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED
 
 	}
+	return jobStatus
+}
 
-	jobExec := &JobExecution{
-		Id:        prowJobCR.Name,
-		JobStatus: jobStatus,
+// Translate ProwjobType into JobExecutionType
+func TranslateProwJobType(prowJobType prowcrd.ProwJobType) JobExecutionType {
+	var jobExecutionType JobExecutionType
+
+	switch prowJobType {
+	case prowcrd.PeriodicJob:
+		jobExecutionType = JobExecutionType_PERIODIC
+	case prowcrd.PostsubmitJob:
+		jobExecutionType = JobExecutionType_POSTSUBMIT
+	case prowcrd.PresubmitJob:
+		jobExecutionType = JobExecutionType_PRESUBMIT
+	case prowcrd.BatchJob:
+		jobExecutionType = JobExecutionType_BATCH
+	default:
+		jobExecutionType = JobExecutionType_JOB_EXECUTION_TYPE_UNSPECIFIED
+	}
+	return jobExecutionType
+}
+
+func (gw *Gangway) BulkJobStatusChange(ctx context.Context, bjscr *BulkJobStatusChangeRequest) (*JobExecutions, error) {
+	if err := bjscr.Validate(); err != nil {
+		return nil, err
 	}
 
-	return jobExec, nil
+	pjStateString := bjscr.GetJobStatusChange().GetCurrent().String()
+	pjCluster := bjscr.GetCluster()
+	pjTypeString := bjscr.GetJobType().String()
+	pjRefs := bjscr.GetRefs()
+	startedBefore := bjscr.GetStartedBefore()
+	startedAfter := bjscr.GetStartedAfter()
+	fieldSelector := fields.SelectorFromSet(map[string]string{
+		"status.state":   pjStateString,
+		"spec.cluster":   pjCluster,
+		"spec.refs.org":  pjRefs.GetOrg(),
+		"spec.refs.repo": pjRefs.GetRepo(),
+		"spec.type":      pjTypeString,
+	})
+	pjList, err := gw.ProwJobClient.List(context.TODO(), metav1.ListOptions{
+		FieldSelector: fieldSelector.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	jobExecutions := &JobExecutions{}
+	for _, pj := range pjList.Items {
+
+		if startedBefore != nil {
+			if pj.Status.StartTime.Time.After(startedBefore.AsTime()) {
+				continue
+			}
+		}
+		if startedAfter != nil {
+			if pj.Status.StartTime.Time.Before(startedAfter.AsTime()) {
+				continue
+			}
+		}
+		pj.Status.State = prowcrd.ProwJobState(bjscr.GetJobStatusChange().GetDesired().String())
+
+		updatedPj, err := gw.ProwJobClient.UpdateStatus(context.TODO(), &pj, metav1.UpdateOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		jobExec := &JobExecution{
+			Id:        updatedPj.Name,
+			JobName:   updatedPj.Spec.Job,
+			JobType:   JobExecutionType(TranslateProwJobType(prowcrd.ProwJobType(updatedPj.Spec.Type))),
+			JobStatus: TranslateProwJobStatus(updatedPj),
+		}
+		jobExecutions.JobExecution = append(jobExecutions.JobExecution, jobExec)
+	}
+	return jobExecutions, nil
 }
 
 // ClientAuthorized checks whether or not a client can run a Prow job based on
@@ -346,6 +427,17 @@ func (cjer *CreateJobExecutionRequest) Validate() error {
 		}
 	}
 
+	return nil
+}
+
+func (bjscr *BulkJobStatusChangeRequest) Validate() error {
+
+	if bjscr.GetJobStatusChange().GetCurrent() == JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED {
+		return errors.New("current status is unspecified")
+	}
+	if bjscr.GetJobStatusChange().GetDesired() == JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED {
+		return errors.New("desired status is unspecified")
+	}
 	return nil
 }
 
