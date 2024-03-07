@@ -37,6 +37,7 @@ periodics:
                      /aws/service/eks/optimized-ami/1.29/amazon-linux-2-gpu/recommended/image_id \
                      --query 'Parameters[0].[Value]' --output text)
             VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+            export TEST_MAX_GPU_COUNT=1
             export NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.14.5/nvidia-device-plugin.yml
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/ \
