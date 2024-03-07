@@ -224,10 +224,13 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        securityContext:
+          privileged: true
         command:
-        - make
+        - runner.sh
         args:
-        - verify
+          - make
+          - verify
         env:
         - name: GOMAXPROCS
           value: "2"
