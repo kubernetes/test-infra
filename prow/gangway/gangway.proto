@@ -36,7 +36,17 @@ service Prow {
       get: "/v1/executions"
     };
   }
-}
+  rpc BulkJobStatusChange(BulkJobStatusChangeRequest) returns (JobExecutions) {
+    option (google.api.http) = {
+      custom: {
+        kind: "POST",
+        path: "/v1/bulk-job-status-update",
+      }
+      body: "*"  // See
+                 // https://cloud.google.com/endpoints/docs/grpc/transcoding#use_wildcard_in_body
+    };
+  }
+} 
 
 message CreateJobExecutionRequest {
   string job_name = 1;
@@ -131,4 +141,18 @@ message Pull {
   string link = 6;
   string commit_link = 7;
   string author_link = 8;
+}
+
+message BulkJobStatusChangeRequest {
+  JobStatusChange job_status_change = 1;
+  string cluster = 2;
+  google.protobuf.Timestamp started_before = 3;
+  google.protobuf.Timestamp started_after = 4;
+  JobExecutionType job_type = 5;
+  Refs refs = 6;
+}
+
+message JobStatusChange {
+  JobExecutionStatus current = 1;
+  JobExecutionStatus desired = 2;
 }
