@@ -284,7 +284,7 @@ presubmits:
               export NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.14.5/nvidia-device-plugin.yml
               kubetest2 ec2 \
                --build \
-               --instance-type=g4ad.8xlarge \
+               --instance-type=g4dn.xlarge \
                --worker-image="$AMI_ID" \
                --region us-east-1 \
                --target-build-arch linux/amd64 \
