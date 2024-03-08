@@ -366,6 +366,42 @@ periodics:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-blocking
     testgrid-tab-name: git-repo-kubernetes-fast-forward
+
+- interval: 6h
+  name: ci-fast-forward-website
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  spec:
+    serviceAccountName: gcb-builder
+    containers:
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - fast-forward
+      - --non-interactive
+      - --submit
+      - --github-org=kubernetes
+      - --github-repo=website
+      # TODO: enable no mock after a few runs to check
+      # - --nomock
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+        limits:
+          cpu: 4
+          memory: "8Gi"
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: git-repo-kubernetes-website-fast-forward
+
 - name: periodic-release-verify-image-signatures
   cluster: k8s-infra-prow-build-trusted
   interval: 4h
