@@ -446,9 +446,10 @@ postsubmits:
           requests:
             cpu: "1000m"
         command:
-        - "make"
+        - runner.sh
         args:
-        - "release-push"
+        - make
+        - release-push
         securityContext:
           privileged: true
     annotations:
@@ -477,9 +478,10 @@ postsubmits:
           requests:
             cpu: "1000m"
         command:
-        - "make"
+        - runner.sh
         args:
-        - "release-push"
+        - make
+        - release-push
         securityContext:
           privileged: true
     annotations:
