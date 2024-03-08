@@ -1328,6 +1328,8 @@ def generate_conformance():
     for version in ['1.29', '1.28', '1.27']:
         results.append(
             build_test(
+                cloud='aws',
+                build_cluster='k8s-infra-kops-prow-build',
                 k8s_version=version,
                 kops_version=version,
                 kops_channel='alpha',
@@ -1339,11 +1341,12 @@ def generate_conformance():
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]',
-                build_cluster='k8s-infra-kops-prow-build',
             )
         )
         results.append(
             build_test(
+                cloud='aws',
+                build_cluster='k8s-infra-kops-prow-build',
                 k8s_version=version,
                 kops_version=version,
                 kops_channel='alpha',
