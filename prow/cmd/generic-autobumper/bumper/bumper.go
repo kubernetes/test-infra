@@ -30,9 +30,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/cmd/generic-autobumper/updater"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/robots/pr-creator/updater"
 )
 
 const (
