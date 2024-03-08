@@ -29,12 +29,12 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
+	"k8s.io/test-infra/prow/statusreconciler/migrator"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
