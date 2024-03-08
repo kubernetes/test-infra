@@ -121,7 +121,101 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
+{{ if eq $.branch "main" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-vcsim-govmomi-{{ ReplaceAll $.branch "." "-" }}
+  cluster: eks-prow-build-cluster
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  interval: {{ $.config.Interval }}
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: {{ $.branch }}
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: {{ $.config.TestImage }}
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[vcsim\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-vcsim-govmomi-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs all e2e tests
 
+- name: periodic-cluster-api-provider-vsphere-e2e-vcsim-supervisor-{{ ReplaceAll $.branch "." "-" }}
+  cluster: eks-prow-build-cluster
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  interval: {{ $.config.Interval }}
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: {{ $.branch }}
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: {{ $.config.TestImage }}
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[vcsim\\] \\[supervisor\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-vcsim-supervisor-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs all e2e tests
+{{ end }}
 - name: periodic-cluster-api-provider-vsphere-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"

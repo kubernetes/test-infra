@@ -203,11 +203,11 @@ presubmits:
       description: Runs all e2e tests
 {{ if eq $.branch "main" }}
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-govmomi-{{ ReplaceAll $.branch "." "-" }}
+    cluster: eks-prow-build-cluster
     branches:
     - ^{{ $.branch }}$
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
@@ -234,17 +234,20 @@ presubmits:
           requests:
             cpu: "4000m"
             memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-govmomi-{{ ReplaceAll $.branch "." "-" }}
       description: Runs e2e tests with vcsim / govmomi mode
 
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-supervisor-{{ ReplaceAll $.branch "." "-" }}
+    cluster: eks-prow-build-cluster
     branches:
     - ^{{ $.branch }}$
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
@@ -269,6 +272,9 @@ presubmits:
             add: ["NET_ADMIN"]
         resources:
           requests:
+            cpu: "4000m"
+            memory: "6Gi"
+          limits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
