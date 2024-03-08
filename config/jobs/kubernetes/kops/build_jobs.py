@@ -1765,6 +1765,8 @@ def generate_versions():
     for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
         results.append(
             build_test(
+                cloud='aws',
+                build_cluster='k8s-infra-kops-prow-build',
                 k8s_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
@@ -1786,6 +1788,8 @@ def generate_pipeline():
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
         results.append(
             build_test(
+                cloud="aws",
+                build_cluster="k8s-infra-kops-prow-build",
                 k8s_version=version.replace('master', 'latest'),
                 kops_version=kops_version,
                 kops_channel='alpha',
