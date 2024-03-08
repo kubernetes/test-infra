@@ -29,8 +29,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/experiment/clustersecretbackup/secretmanager"
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/cmd/webhook-server/secretmanager"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
