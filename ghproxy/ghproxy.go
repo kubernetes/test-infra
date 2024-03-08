@@ -33,8 +33,8 @@ import (
 
 	"k8s.io/test-infra/ghproxy/apptokenequalizer"
 	"k8s.io/test-infra/ghproxy/ghcache"
-	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/diskutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
