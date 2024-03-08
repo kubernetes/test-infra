@@ -41,8 +41,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - fmt
         resources:
           limits:
@@ -71,8 +72,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - lint
         resources:
           limits:
@@ -101,8 +103,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - vet
         resources:
           limits:
@@ -186,8 +189,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - staticcheck
         resources:
           limits:
@@ -219,9 +223,10 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - "make"
+        - runner.sh
         args:
-        - "build"
+        - make
+        - build
         resources:
           limits:
             cpu: 2
@@ -250,9 +255,10 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - "make"
+        - runner.sh
         args:
-        - "unit-test"
+        - make
+        - unit-test
         resources:
           limits:
             cpu: 2
@@ -284,9 +290,10 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
         command:
-        - "make"
+        - runner.sh
         args:
-        - "integration-test"
+        - make
+        - integration-test
         securityContext:
           privileged: true
         resources:
@@ -446,9 +453,10 @@ postsubmits:
           requests:
             cpu: "1000m"
         command:
-        - "make"
+        - runner.sh
         args:
-        - "release-push"
+        - make
+        - release-push
         securityContext:
           privileged: true
     annotations:
@@ -477,9 +485,10 @@ postsubmits:
           requests:
             cpu: "1000m"
         command:
-        - "make"
+        - runner.sh
         args:
-        - "release-push"
+        - make
+        - release-push
         securityContext:
           privileged: true
     annotations:
