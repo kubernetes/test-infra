@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -x -o pipefail
+set -x -e
 
 # Cd to the root of the repository
 cd "$(git rev-parse --show-toplevel)"
@@ -22,7 +22,7 @@ cd "$(git rev-parse --show-toplevel)"
 go run hack/cluster-migration/main.go --config config/prow/config.yaml --job-config config/jobs --todo-report
 
 # Move the report to the docs folder
-mv cluster-migration-todo.md docs/cluster-migration-todo.md
+mv job-migration-todo.md docs/job-migration-todo.md
 
 # Commit the changes and open a PR
 git config user.name "k8s-infra-ci-robot"
@@ -31,8 +31,8 @@ git config user.email "k8s-infra-ci-robot@email.com"
 branch=migration-report-$(date +'%m-%d-%Y')
 git checkout -b $branch
 
-git add docs/cluster-migration-todo.md
-git commit -m "Update cluster migration todo report $(date +'%m-%d-%Y')"
+git add docs/job-migration-todo.md
+git commit -m "Update job migration todo report $(date +'%m-%d-%Y')"
 git remote add k8s-infra-ci-robot git@github.com:k8s-infra-ci-robot/test-infra.git
 git push -f k8s-infra-ci-robot ${branch}
 
