@@ -38,6 +38,8 @@ printf '%0.s=' {1..80} >&2; echo >&2
 
 cleanup(){
   if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
+    >&2 echo "wrapper.sh] [CLEANUP] Waiting 30 seconds for pods stopped with terminationGracePeriod:30"
+    sleep 30
     >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after Docker in Docker ..."
     docker ps -aq | xargs -r docker rm -f || true
     >&2 echo "wrapper.sh] [CLEANUP] Waiting for docker to stop for 30 seconds"

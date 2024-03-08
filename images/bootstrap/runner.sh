@@ -27,6 +27,8 @@ fi
 # runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {
     if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
+        echo "Waiting 30 seconds for pods stopped with terminationGracePeriod:30"
+        sleep 30
         echo "Cleaning up after docker"
         docker ps -aq | xargs -r docker rm -f || true
         echo "Waiting for docker to stop for 30 seconds"

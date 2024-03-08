@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
+	"k8s.io/test-infra/prow/scheduler"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -46,7 +47,7 @@ import (
 	_ "k8s.io/test-infra/prow/version"
 )
 
-var allControllers = sets.New[string](plank.ControllerName)
+var allControllers = sets.New(plank.ControllerName, scheduler.ControllerName)
 
 type options struct {
 	totURL string
@@ -64,11 +65,11 @@ type options struct {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	o.enabledControllers = prowflagutil.NewStrings(sets.List(allControllers)...)
+	o.enabledControllers = prowflagutil.NewStrings(plank.ControllerName)
 	fs.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", sets.List(allControllers)))
+	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to controllers: %s", plank.ControllerName))
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
@@ -95,7 +96,7 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if n := len(allControllers.Intersection(sets.New[string](o.enabledControllers.Strings()...))); n == 0 {
+	if n := len(allControllers.Intersection(sets.New(o.enabledControllers.Strings()...))); n == 0 {
 		errs = append(errs, errors.New("no controllers configured"))
 	}
 
@@ -124,8 +125,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
-	o.kubernetes.SetDisabledClusters(sets.New[string](cfg().DisabledClusters...))
-	
+	o.kubernetes.SetDisabledClusters(sets.New(cfg().DisabledClusters...))
+
 	var logOpts []zap.Opts
 	if cfg().LogLevel == "debug" {
 		logOpts = append(logOpts, func(o *zap.Options) {
@@ -191,7 +192,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 	}
 
-	enabledControllersSet := sets.New[string](o.enabledControllers.Strings()...)
+	enabledControllersSet := sets.New(o.enabledControllers.Strings()...)
 	knownClusters, err := o.kubernetes.KnownClusters(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to resolve known clusters in kubeconfig.")
@@ -200,6 +201,12 @@ func main() {
 	if enabledControllersSet.Has(plank.ControllerName) {
 		if err := plank.Add(mgr, buildClusterManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
+		}
+	}
+
+	if enabledControllersSet.Has(scheduler.ControllerName) {
+		if err := scheduler.Add(mgr, cfg, 1); err != nil {
+			logrus.WithError(err).Fatal("Failed to add scheduler to manager")
 		}
 	}
 
