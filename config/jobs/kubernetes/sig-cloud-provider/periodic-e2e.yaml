@@ -31,7 +31,6 @@ periodics:
           - bash
           - -c
           - |
-            source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
             AMI_ID=$(aws ssm get-parameters --names \
                      /aws/service/eks/optimized-ami/1.29/amazon-linux-2-gpu/recommended/image_id \
