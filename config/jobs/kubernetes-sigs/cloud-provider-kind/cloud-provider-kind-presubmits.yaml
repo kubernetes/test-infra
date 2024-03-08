@@ -23,7 +23,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -73,7 +73,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -129,7 +129,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         command:
         - wrapper.sh
         - bash
