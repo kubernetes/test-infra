@@ -454,6 +454,7 @@ def generate_grid():
                         continue
                     results.append(
                         build_test(cloud="aws",
+                                   build_cluster="k8s-infra-kops-prow-build",
                                    distro=distro,
                                    extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
