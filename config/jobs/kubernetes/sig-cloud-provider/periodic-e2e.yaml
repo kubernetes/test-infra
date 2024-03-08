@@ -50,6 +50,9 @@ periodics:
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
              --focus-regex="\[Feature:GPUDevicePlugin\]" \
+             --test-package-url=https://dl.k8s.io/ \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --parallel=5
         env:
           - name: USE_DOCKERIZED_BUILD
