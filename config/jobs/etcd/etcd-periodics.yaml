@@ -30,3 +30,71 @@ periodics:
         limits:
           cpu: "4"
           memory: "8Gi"
+- name: ci-etcd-unit-test-amd64
+  interval: 4h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-unit-test-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-unit
+      resources:
+        requests:
+          cpu: "4"
+          memory: "4Gi"
+        limits:
+          cpu: "4"
+          memory: "4Gi"
+- name: ci-etcd-robustness-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-robustness-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
+        make install-lazyfs
+        set -euo pipefail
+        GO_TEST_FLAGS="-v --count 150 --failfast --run TestRobustnessExploratory"
+        make gofail-enable
+        make build
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness
+      resources:
+        requests:
+          cpu: "8"
+          memory: "8Gi"
+        limits:
+          cpu: "8"
+          memory: "8Gi"
+      # fuse needs privileged mode
+      securityContext:
+        privileged: true
