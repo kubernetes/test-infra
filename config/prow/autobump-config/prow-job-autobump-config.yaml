@@ -39,3 +39,13 @@ prefixes:
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false
     consistentImages: false
+  - name: "k8s-staging-apisnoop-test-infra"
+    prefix: "gcr.io/k8s-staging-apisnoop/"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: false
+    consistentImages: false
+  - name: "k8s-staging-apisnoop-apisnoop"
+    prefix: "gcr.io/k8s-staging-apisnoop/"
+    repo: "https://github.com/kubernetes-sigs/apisnoop"
+    summarise: false
+    consistentImages: false
