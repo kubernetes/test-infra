@@ -61,10 +61,10 @@ postsubmits:
           # request most of one node 🚀
           requests:
             cpu: 7
-            memory: "40Gi"
+            memory: 30Gi
           limits:
             cpu: 7
-            memory: "40Gi"
+            memory: 30Gi
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -259,10 +259,10 @@ periodics:
         # request most of one node 🚀
         requests:
           cpu: 7
-          memory: "40Gi"
+          memory: 30Gi
         limits:
           cpu: 7
-          memory: "40Gi"
+          memory: 30Gi
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
