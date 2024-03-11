@@ -8,8 +8,10 @@ test_groups:
   gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
 - name: gcp-guest-osconfig-presubmit-gocheck
   gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gocheck
-- name: gcp-guest-cloud-image-tests
-  gcs_prefix: gcp-guest-testgrid/logs/cit-periodic
+- name: cit-periodics
+  gcs_prefix: oss-prow/logs/cit-periodics
+- name: oslogin-periodics
+  gcs_prefix: oss-prow/logs/oslogin-periodics
 
 #
 # Define dashboards
@@ -24,4 +26,13 @@ dashboards:
   - name: OSConfig presubmits - gocheck
     test_group_name: gcp-guest-osconfig-presubmit-gocheck
   - name: CIT periodics
-    test_group_name: gcp-guest-cloud-image-tests
+    test_group_name: cit-periodics
+    alert_options:
+      alert_mail_to_addresses: 'buganizer-system+117405@google.com'
+      debug_url: 'http://go/cit-alert-runbook'
+  - name: OSLogin periodics
+    test_group_name: oslogin-periodics
+    alert_options:
+      alert_mail_to_addresses: 'buganizer-system+117405@google.com'
+      debug_url: 'http://go/cit-alert-runbook'
+
