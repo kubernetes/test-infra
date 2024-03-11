@@ -29,7 +29,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         command:
         - wrapper.sh
         args:
@@ -74,7 +74,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         command:
         - wrapper.sh
         - bash
@@ -82,11 +82,11 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FEATURE_GATES
-          value: '{"VolumeAttributesClass":true}'
+          value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true}'
         - name: RUNTIME_CONFIG
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true"}'
         - name: FOCUS
-          value: \[Feature:VolumeAttributesClass\]
+          value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -122,7 +122,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         command:
         - wrapper.sh
         args:
@@ -168,7 +168,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240222-d3b49dd525-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240308-3b134c2624-master
         command:
         - wrapper.sh
         - bash
@@ -176,11 +176,11 @@ periodics:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FEATURE_GATES
-          value: '{"VolumeAttributesClass":true}'
+          value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true}'
         - name: RUNTIME_CONFIG
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true"}'
         - name: FOCUS
-          value: \[Feature:VolumeAttributesClass\]
+          value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker

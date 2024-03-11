@@ -24,7 +24,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240310-bac0a3c105-master
         command:
           - runner.sh
         args:
@@ -92,7 +92,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240310-bac0a3c105-master
         command:
           - runner.sh
         args:
@@ -108,6 +108,7 @@ periodics:
              --version $VERSION \
              --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true" \
              --runtime-config="api/all=true" \
+             --external-cloud-provider true \
              --up \
              --down \
              --test=ginkgo \
@@ -154,7 +155,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240310-bac0a3c105-master
         command:
           - runner.sh
         args:

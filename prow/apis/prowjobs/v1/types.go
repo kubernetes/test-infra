@@ -1048,7 +1048,7 @@ type ProwJobStatus struct {
 	PendingTime *metav1.Time `json:"pendingTime,omitempty"`
 	// CompletionTime is the timestamp for when the job goes to a final state
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
-	// +kubebuilder:validation:Enum=triggered;pending;success;failure;aborted;error
+	// +kubebuilder:validation:Enum=scheduling;triggered;pending;success;failure;aborted;error
 	// +kubebuilder:validation:Required
 	State       ProwJobState `json:"state,omitempty"`
 	Description string       `json:"description,omitempty"`
