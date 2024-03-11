@@ -156,7 +156,6 @@ presubmits:
     branches:
     - master
     always_run: true
-    skip_report: true
     decorate: true
     path_alias: k8s.io/node-problem-detector
     labels:
@@ -202,7 +201,6 @@ presubmits:
     branches:
     - master
     always_run: true
-    skip_report: true
     decorate: true
     path_alias: k8s.io/node-problem-detector
     labels:
@@ -288,7 +286,6 @@ presubmits:
     branches:
     - master
     always_run: true
-    skip_report: true
     decorate: true
     path_alias: k8s.io/node-problem-detector
     labels:
@@ -336,7 +333,6 @@ presubmits:
     branches:
     - master
     always_run: true
-    skip_report: true
     decorate: true
     path_alias: k8s.io/node-problem-detector
     labels:
