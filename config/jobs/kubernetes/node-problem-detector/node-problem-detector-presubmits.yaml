@@ -314,7 +314,7 @@ presubmits:
           --gcp-zone=us-west1-b
           --ginkgo-parallel=30
           --image-family=pipeline-1-24
-          --mage-project=ubuntu-os-gke-cloud
+          --image-project=ubuntu-os-gke-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
         resources:
@@ -362,7 +362,7 @@ presubmits:
           --gcp-zone=us-west1-b
           --ginkgo-parallel=30
           --image-family=pipeline-1-24
-          --mage-project=ubuntu-os-gke-cloud
+          --image-project=ubuntu-os-gke-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
         resources:
