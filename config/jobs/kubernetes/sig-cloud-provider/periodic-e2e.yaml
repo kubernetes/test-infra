@@ -49,6 +49,9 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+             --test-package-url=https://dl.k8s.io/ \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --focus-regex="\[Feature:GPUDevicePlugin\]" \
              --test-package-url=https://dl.k8s.io/ \
              --test-package-dir=ci/fast \
@@ -102,9 +105,9 @@ periodics:
             source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
 
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
-            VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+            VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
             kubetest2 ec2 \
-             --stage https://dl.k8s.io/ci/ \
+             --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
              --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true" \
              --runtime-config="api/all=true" \
@@ -114,6 +117,9 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+             --test-package-url=https://dl.k8s.io/ \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0" \
              --parallel=25
         env:
@@ -165,9 +171,9 @@ periodics:
             source $(go env GOPATH)/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/scripts/check-ami.sh
 
             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
-            VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+            VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
             kubetest2 ec2 \
-             --stage https://dl.k8s.io/ci/ \
+             --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
              --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
@@ -176,6 +182,9 @@ periodics:
              --test=ginkgo \
              -- \
              --test-args="--node-os-arch=$NODE_OS_ARCH --provider=aws --minStartupPods=8" \
+             --test-package-url=https://dl.k8s.io/ \
+             --test-package-dir=ci/fast \
+             --test-package-marker=latest-fast.txt \
              --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection|ValidatingAdmissionPolicy)\]|Networking" \
              --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
              --parallel=25

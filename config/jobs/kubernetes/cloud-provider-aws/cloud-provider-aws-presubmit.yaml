@@ -165,9 +165,9 @@ presubmits:
               docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
               docker push "${IMAGE_NAME}:${IMAGE_TAG}"
 
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/ \
+               --stage https://dl.k8s.io/ci/fast/ \
                --external-cloud-provider true \
                --external-cloud-provider-image="${IMAGE_NAME}:${IMAGE_TAG}" \
                --version $VERSION \
@@ -176,7 +176,10 @@ presubmits:
                --test=ginkgo \
                -- \
                --parallel=30 \
-              --focus-regex='Pods should be submitted and removed'
+               --test-package-url=https://dl.k8s.io/ \
+               --test-package-dir=ci/fast \
+               --test-package-marker=latest-fast.txt \
+               --focus-regex='Pods should be submitted and removed'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
