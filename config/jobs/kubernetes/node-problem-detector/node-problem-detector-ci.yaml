@@ -1,6 +1,7 @@
 periodics:
 - name: ci-npd-build
-  cluster: k8s-infra-prow-build
+  # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+  cluster: default
   interval: 2h
   decorate: true
   labels:
