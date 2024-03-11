@@ -63,7 +63,7 @@ periodics:
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 210m
   extra_refs:
     - org: etcd-io
       repo: etcd
@@ -84,7 +84,7 @@ periodics:
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --failfast --run TestRobustnessExploratory"
+        GO_TEST_FLAGS="-v --count 150 --failfast --timeout '200m' --run TestRobustnessExploratory"
         make gofail-enable
         make build
         VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness
