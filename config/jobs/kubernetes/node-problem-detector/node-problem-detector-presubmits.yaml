@@ -96,7 +96,8 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-node
-    cluster: k8s-infra-prow-build
+    # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+    cluster: default
     branches:
     - master
     always_run: true
@@ -150,7 +151,8 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci
-    cluster: k8s-infra-prow-build
+    # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+    cluster: default
     branches:
     - master
     always_run: true
@@ -194,7 +196,8 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
-    cluster: k8s-infra-prow-build
+    # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+    cluster: default
     branches:
     - master
     always_run: true
@@ -278,7 +281,8 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
-    cluster: k8s-infra-prow-build
+    # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+    cluster: default
     branches:
     - master
     always_run: true
@@ -324,7 +328,8 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
-    cluster: k8s-infra-prow-build
+    # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+    cluster: default
     branches:
     - master
     always_run: true
