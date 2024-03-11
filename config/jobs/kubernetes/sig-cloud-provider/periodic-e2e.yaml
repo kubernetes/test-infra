@@ -108,6 +108,7 @@ periodics:
              --version $VERSION \
              --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true" \
              --runtime-config="api/all=true" \
+             --external-cloud-provider true \
              --up \
              --down \
              --test=ginkgo \
