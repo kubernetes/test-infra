@@ -234,6 +234,9 @@ presubmits:
                --down \
                --test=ginkgo \
                -- \
+               --test-package-url=https://dl.k8s.io/ \
+               --test-package-dir=ci/fast \
+               --test-package-marker=latest-fast.txt \
                --parallel=30 \
                --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Services should fallback to local terminating endpoints when there are no ready endpoints with externalTrafficPolicy|Services should preserve source pod IP for traffic thru service cluster IP'
           env:

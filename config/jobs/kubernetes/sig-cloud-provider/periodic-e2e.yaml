@@ -53,9 +53,6 @@ periodics:
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
              --focus-regex="\[Feature:GPUDevicePlugin\]" \
-             --test-package-url=https://dl.k8s.io/ \
-             --test-package-dir=ci/fast \
-             --test-package-marker=latest-fast.txt \
              --parallel=5
         env:
           - name: USE_DOCKERIZED_BUILD
