@@ -226,9 +226,9 @@ presubmits:
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
               export CONTAINERD_PULL_REFS=$PULL_REFS
               echo "CONTAINERD_PULL_REFS: $CONTAINERD_PULL_REFS"
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/ \
+               --stage https://dl.k8s.io/ci/fast/ \
                --version $VERSION \
                --up \
                --down \

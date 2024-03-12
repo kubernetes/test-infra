@@ -341,16 +341,19 @@ presubmits:
             - -c
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/ \
+               --stage https://dl.k8s.io/ci/fast/ \
                --version $VERSION \
                --up \
                --down \
                --test=ginkgo \
                -- \
                --parallel=30 \
-              --focus-regex='Pods should be submitted and removed'
+               --test-package-url=https://dl.k8s.io/ \
+               --test-package-dir=ci/fast \
+               --test-package-marker=latest-fast.txt \
+               --focus-regex='Pods should be submitted and removed'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
@@ -393,9 +396,9 @@ presubmits:
             - -c
             - |
               cd kubetest2-ec2 && GOPROXY=direct go install .
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
               kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/ \
+               --stage https://dl.k8s.io/ci/fast/ \
                --external-cloud-provider true \
                --version $VERSION \
                --up \
@@ -403,7 +406,10 @@ presubmits:
                --test=ginkgo \
                -- \
                --parallel=30 \
-              --focus-regex='Pods should be submitted and removed'
+               --test-package-url=https://dl.k8s.io/ \
+               --test-package-dir=ci/fast \
+               --test-package-marker=latest-fast.txt \
+               --focus-regex='Pods should be submitted and removed'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
