@@ -3,7 +3,6 @@
 reviewers:
 - andyzhangx
 - brendandburns
-- CecileRobertMichon
 - feiskyer
 - karataliu
 - khenidak
@@ -15,6 +14,7 @@ approvers:
 - khenidak
 emeritus_approvers:
 - chewong
+- CecileRobertMichon
 
 labels:
 - area/provider/azure

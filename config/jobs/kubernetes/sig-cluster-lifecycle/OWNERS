@@ -1,6 +1,5 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
-- CecileRobertMichon
 - fabriziopandini
 - justinsb
 - neolit123
@@ -10,5 +9,6 @@ approvers:
 emeritus_approvers:
 - luxas
 - timothysc
+- CecileRobertMichon
 labels:
 - sig/cluster-lifecycle
