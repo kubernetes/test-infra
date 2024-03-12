@@ -1076,6 +1076,13 @@ push_gateway:
 # It has to be explicitly enabled.
 scheduler:
     enabled: true
+    # Scheduling strategies
+    failover:
+        # ClusterMappings maps a cluster to another one. It is used when we
+        # want to schedule a ProJob to a cluster other than the one it was
+        # configured to in the first place.
+        mappings:
+            "": ""
 sinker:
     # ExcludeClusters are build clusters that don't want to be managed by sinker.
     exclude_clusters:
