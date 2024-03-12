@@ -34,8 +34,12 @@ type Interface interface {
 	Schedule(context.Context, *prowv1.ProwJob) (Result, error)
 }
 
-func Get(*config.Config) Interface {
-	// TODO: Add more strategies and then get one according to the config
+// Get gets a scheduling strategy in accordance to configuration. It defaults
+// to Passthrough stategy if none has been configured.
+func Get(cfg *config.Config) Interface {
+	if cfg.Scheduler.Failover != nil {
+		return NewFailover(*cfg.Scheduler.Failover)
+	}
 	return &Passthrough{}
 }
 
