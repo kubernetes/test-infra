@@ -281,6 +281,44 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-supervisor-{{ ReplaceAll $.branch "." "-" }}
       description: Runs e2e tests with vcsim / supervisor mode
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-{{ ReplaceAll $.branch "." "-" }}
+    branches:
+    - ^{{ $.branch }}$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-{{ ReplaceAll $.branch "." "-" }}
+      description: Runs e2e tests withsupervisor mode
 {{ end }}{{ if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     labels:
