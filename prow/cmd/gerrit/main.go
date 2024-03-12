@@ -28,8 +28,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/diskutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/moonraker"
 	"k8s.io/test-infra/prow/pjutil/pprof"
