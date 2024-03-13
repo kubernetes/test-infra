@@ -144,10 +144,7 @@ def build_test(cloud='aws',
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
-        # https://github.com/kubernetes/kops/issues/16352 older k/k versions dont have a
-        # new enough AWS SDK. TODO: remove guard once we stop testing upgrades to k8s 1.26
-        if scenario != "upgrade-ab":
-            build_cluster = "k8s-infra-kops-prow-build"
+        if build_cluster == "k8s-infra-kops-prow-build":
             env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
             env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
             env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
@@ -804,6 +801,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-addon-resource-tracking",
                    cloud="aws",
+                   build_cluster="k8s-infra-kops-prow-build",
                    networking="cilium",
                    kops_channel="alpha",
                    k8s_version="stable",
@@ -1522,6 +1520,12 @@ def generate_upgrades():
             'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
             'KOPS_CONTROL_PLANE_SIZE': '3',
         }
+        build_cluster = 'k8s-infra-kops-prow-build'
+        # Older k/k builds dont have new enough aws-sdk-go versions to support
+        # running their e2e.test binary from community-owned EKS clusters.
+        if re.match(r'v1\.2[4-6]', k8s_a):
+            build_cluster = 'default'
+
         results.append(
             build_test(name_override=job_name,
                        distro='u2204',
@@ -1533,6 +1537,7 @@ def generate_upgrades():
                        test_timeout_minutes=120,
                        scenario='upgrade-ab',
                        env=env,
+                       build_cluster=build_cluster,
                        )
         )
         results.append(
@@ -1546,6 +1551,7 @@ def generate_upgrades():
                        runs_per_day=runs_per_day,
                        scenario='upgrade-ab',
                        env=addonsenv,
+                       build_cluster=build_cluster,
                        )
         )
 
