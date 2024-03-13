@@ -1,7 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- CecileRobertMichon
 - chrischdi
 - fabriziopandini
 - JoelSpeed
@@ -11,7 +10,6 @@ reviewers:
 - neolit123
 - vincepri
 approvers:
-- CecileRobertMichon
 - chrischdi
 - fabriziopandini
 - justinsb
@@ -25,5 +23,6 @@ emeritus_approvers:
 - timothysc
 - detiber
 - davidewatson
+- CecileRobertMichon
 labels:
 - sig/cluster-lifecycle

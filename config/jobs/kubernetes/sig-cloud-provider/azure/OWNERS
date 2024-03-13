@@ -2,7 +2,6 @@
 
 reviewers:
 - andyzhangx
-- CecileRobertMichon
 - feiskyer
 - jackfrancis
 - karataliu
@@ -10,13 +9,13 @@ reviewers:
 - mboersma
 approvers:
 - andyzhangx
-- CecileRobertMichon
 - feiskyer
 - karataliu
 emeritus_approvers:
 - brendandburns
 - chewong
 - khenidak
+- CecileRobertMichon
 
 labels:
 - area/provider/azure
