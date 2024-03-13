@@ -1284,7 +1284,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                        "--set=spec.kubeAPIServer.runtimeConfig=api/all=true"
                    ],
-                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
+                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders,-EventedPLEG", # pylint: disable=line-too-long
                    focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
                    test_timeout_minutes=240,
@@ -1306,9 +1306,10 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
-                       "--set=spec.kubeAPIServer.runtimeConfig=api/all=true"
+                       "--set=spec.kubeAPIServer.runtimeConfig=api/all=true",
+                       "--gce-service-account=default",
                    ],
-                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders", # pylint: disable=line-too-long
+                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders,-EventedPLEG", # pylint: disable=line-too-long
                    focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
                    test_timeout_minutes=240,
