@@ -18,4 +18,15 @@ package config
 
 type Scheduler struct {
 	Enabled bool `json:"enabled,omitempty"`
+
+	// Scheduling strategies
+	Failover *FailoverScheduling `json:"failover,omitempty"`
+}
+
+// FailoverScheduling is a configuration for the Failover scheduling strategy
+type FailoverScheduling struct {
+	// ClusterMappings maps a cluster to another one. It is used when we
+	// want to schedule a ProJob to a cluster other than the one it was
+	// configured to in the first place.
+	ClusterMappings map[string]string `json:"mappings,omitempty"`
 }
