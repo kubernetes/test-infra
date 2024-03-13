@@ -144,10 +144,7 @@ def build_test(cloud='aws',
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
-        # https://github.com/kubernetes/kops/issues/16352 older k/k versions dont have a
-        # new enough AWS SDK. TODO: remove guard once we stop testing upgrades to k8s 1.26
-        if scenario != "upgrade-ab":
-            build_cluster = "k8s-infra-kops-prow-build"
+        if build_cluster == "k8s-infra-kops-prow-build":
             env['KOPS_STATE_STORE'] = "s3://k8s-kops-ci-prow-state-store"
             env['KOPS_DNS_DOMAIN'] = "tests-kops-aws.k8s.io"
             env['DISCOVERY_STORE'] = "s3://k8s-kops-ci-prow"
@@ -804,6 +801,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-addon-resource-tracking",
                    cloud="aws",
+                   build_cluster="k8s-infra-kops-prow-build",
                    networking="cilium",
                    kops_channel="alpha",
                    k8s_version="stable",
