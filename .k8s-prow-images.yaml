@@ -1,0 +1,10 @@
+# The following images are published to gcr.io/k8s-prow even though they are not Prow images for legacy purposes.
+images:
+  - dir: label_sync
+  - dir: robots/commenter
+  - dir: robots/pr-creator
+  - dir: robots/issue-creator
+  - dir: testgrid/cmd/configurator
+  - dir: gcsweb/cmd/gcsweb
+  - dir: gencred
+  - dir: experiment/ml/analyze

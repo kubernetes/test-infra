@@ -17,6 +17,9 @@
 # get the repo root and output path
 REPO_ROOT:=${CURDIR}
 OUT_DIR=$(REPO_ROOT)/_output
+# image building and publishing config
+REGISTRY ?= gcr.io/k8s-prow
+PROW_IMAGE ?=
 ################################################################################
 # ================================= Testing ====================================
 # unit tests (hermetic)
@@ -56,6 +59,27 @@ update-go-deps:
 .PHONY: verify-go-deps
 verify-go-deps:
 	hack/make-rules/verify/go-deps.sh
+# ======================== Image Building/Publishing ===========================
+# Build and publish miscellaneous images that get pushed to "gcr.io/k8s-prow/".
+# These are not prow images, but published there for legacy reasons.
+# The full set of images covered by these targets is configured in
+# .k8s-prow-images.yaml.
+.PHONY: push-misc-images
+push-misc-images:
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="${REGISTRY}" --push=true
+
+.PHONY: build-misc-images
+build-misc-images:
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="ko.local" --push=false
+
+.PHONY: push-single-image
+push-single-image:
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="${REGISTRY}" --push=true --image=${PROW_IMAGE}
+
+.PHONY: build-single-image
+build-single-image:
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="ko.local" --push=false --image=${PROW_IMAGE}
+
 ################################################################################
 # ================================== Linting ===================================
 # run linters, ensure generated code, etc.
