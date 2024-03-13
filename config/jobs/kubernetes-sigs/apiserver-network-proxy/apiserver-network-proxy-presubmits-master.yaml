@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/apiserver-network-proxy:
   - name: pull-apiserver-network-proxy-test-master
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^master$
@@ -28,6 +29,7 @@ presubmits:
       description: Tests the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-amd64-master
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^master$
@@ -63,6 +65,7 @@ presubmits:
       description: Build amd64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-arm64-master
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^master$
@@ -98,6 +101,7 @@ presubmits:
       description: Build arm64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-make-lint-master
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^master$
