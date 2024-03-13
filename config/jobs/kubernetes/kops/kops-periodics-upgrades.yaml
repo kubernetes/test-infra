@@ -142,12 +142,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '40 4-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -160,6 +159,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -208,12 +208,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '3 23-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -226,6 +225,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -418,12 +418,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '40 4-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -436,6 +435,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -484,12 +484,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '24 12-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -502,6 +501,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -556,12 +556,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '23 23-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -574,6 +573,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -622,12 +622,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '48 16-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -640,6 +639,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1246,12 +1246,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '55 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1264,6 +1263,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1312,12 +1312,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '31 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1330,6 +1329,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1798,12 +1798,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '55 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1816,6 +1815,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1864,12 +1864,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '42 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1882,6 +1881,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1936,12 +1936,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '46 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1954,6 +1953,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2002,12 +2002,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '0 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2020,6 +2019,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2074,12 +2074,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '11 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2092,6 +2091,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2140,12 +2140,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '22 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2158,6 +2157,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2626,12 +2626,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '59 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2644,6 +2643,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2692,12 +2692,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '7 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2710,6 +2709,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2764,12 +2764,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '52 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2782,6 +2781,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2830,12 +2830,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '20 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2848,6 +2847,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
