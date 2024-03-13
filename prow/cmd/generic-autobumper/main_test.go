@@ -159,6 +159,22 @@ func TestValidateOptions(t *testing.T) {
 	whateverStr := "whatever"
 	emptyArr := make([]string, 0)
 	emptyPrefixes := make([]prefix, 0)
+	validExceptionPrefixes := []prefix{{
+		Name:                      "test",
+		Prefix:                    "gcr.io/test/",
+		ConsistentImages:          true,
+		ConsistentImageExceptions: []string{"gcr.io/test/foo", "gcr.io/test/bar"},
+		RefConfigFile:             "",
+		StagingRefConfigFile:      "",
+	}}
+	invalidExceptionPrefixes := []prefix{{
+		Name:                      "test",
+		Prefix:                    "gcr.io/test/",
+		ConsistentImages:          false,
+		ConsistentImageExceptions: []string{"gcr.io/test/foo", "gcr.io/test/bar"},
+		RefConfigFile:             "",
+		StagingRefConfigFile:      "",
+	}}
 	latestPrefixes := []prefix{{
 		Name:                 "test",
 		Prefix:               "gcr.io/test/",
@@ -215,6 +231,16 @@ func TestValidateOptions(t *testing.T) {
 		{
 			name:     "must include at least one prefix",
 			prefixes: &emptyPrefixes,
+			err:      true,
+		},
+		{
+			name:     "can enable consistentImageExceptions with consistentImages",
+			prefixes: &validExceptionPrefixes,
+			err:      false,
+		},
+		{
+			name:     "cannot enable consistentImageExceptions without consistentImages",
+			prefixes: &invalidExceptionPrefixes,
 			err:      true,
 		},
 		{
@@ -791,6 +817,11 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 	prowPrefix := prefix{Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
 	boskosPrefix := prefix{Prefix: "gcr.io/k8s-boskos/", ConsistentImages: true}
 	inconsistentPrefix := prefix{Prefix: "inconsistent/", ConsistentImages: false}
+	consistentPrefixWithExceptions := prefix{
+		Prefix:                    "consistent/",
+		ConsistentImages:          true,
+		ConsistentImageExceptions: []string{"consistent/foo", "consistent/bar"},
+	}
 	testCases := []struct {
 		name             string
 		images           map[string]string
@@ -852,6 +883,26 @@ func TestGetVersionsAndCheckConsistency(t *testing.T) {
 			images:           map[string]string{"gcr.io/k8s-prow/test:tag1": "newtag1", "gcr.io/k8s-prow/test2:newtag1": "newtag1"},
 			err:              false,
 			expectedVersions: map[string][]string{"newtag1": {"gcr.io/k8s-prow/test:tag1"}},
+		},
+		{
+			name:             "prefix is not consistent but all images are excepted",
+			prefixes:         []prefix{consistentPrefixWithExceptions},
+			images:           map[string]string{"consistent/foo:tag1": "newtag1", "consistent/bar:tag2": "newtag2"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"consistent/foo:tag1"}, "newtag2": {"consistent/bar:tag2"}},
+		},
+		{
+			name:             "prefix is not consistent but inconsistent images are excepted",
+			prefixes:         []prefix{consistentPrefixWithExceptions},
+			images:           map[string]string{"consistent/banana:tag1": "newtag3", "consistent/apple:tag2": "newtag3", "consistent/foo:tag1": "newtag1", "consistent/bar:tag2": "newtag2", "consistent/orange:tag0": "newtag3"},
+			err:              false,
+			expectedVersions: map[string][]string{"newtag1": {"consistent/foo:tag1"}, "newtag2": {"consistent/bar:tag2"}, "newtag3": {"consistent/banana:tag1", "consistent/apple:tag2", "consistent/orange:tag0"}},
+		},
+		{
+			name:     "prefix is not consistent and not all inconsistent images are excepted",
+			prefixes: []prefix{consistentPrefixWithExceptions},
+			images:   map[string]string{"consistent/banana:tag1": "newtag4", "consistent/apple:tag2": "newtag4", "consistent/foo:tag1": "newtag1", "consistent/bar:tag2": "newtag2", "consistent/orange:tag0": "newtag3"},
+			err:      true,
 		},
 	}
 	for _, tc := range testCases {

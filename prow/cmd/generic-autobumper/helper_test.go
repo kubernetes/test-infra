@@ -20,6 +20,46 @@ import (
 	"testing"
 )
 
+// TestImageAndTagFromName tests ImageFromName() and TagFromName().
+func TestImageAndTagFromName(t *testing.T) {
+	cases := []struct {
+		name          string
+		imageName     string
+		expectedImage string
+		expectedTag   string
+	}{
+		{
+			name:          "empty",
+			imageName:     "",
+			expectedImage: "",
+			expectedTag:   "",
+		},
+		{
+			name:          "basically works",
+			imageName:     "gcr.io/k8s-prow/test:tag1",
+			expectedImage: "gcr.io/k8s-prow/test",
+			expectedTag:   "tag1",
+		},
+		{
+			name:          "just an image",
+			imageName:     "gcr.io/k8s-prow/test",
+			expectedImage: "",
+			expectedTag:   "",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if actual := imageFromName(tc.imageName); actual != tc.expectedImage {
+				t.Errorf("imageFromName(%q) got %q, want %q", tc.imageName, actual, tc.expectedImage)
+			}
+			if actual := tagFromName(tc.imageName); actual != tc.expectedTag {
+				t.Errorf("tagFromName(%q) got %q, want %q", tc.imageName, actual, tc.expectedTag)
+			}
+		})
+	}
+}
+
 func TestCommitToRef(t *testing.T) {
 	cases := []struct {
 		name     string
