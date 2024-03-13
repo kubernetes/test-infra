@@ -34,6 +34,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/cmd/generic-autobumper/bumper"
 	"k8s.io/test-infra/prow/cmd/generic-autobumper/imagebumper"
 
@@ -164,6 +165,8 @@ type prefix struct {
 	Summarise bool `yaml:"summarise"`
 	// Whether the prefix tags should be consistent after the bump
 	ConsistentImages bool `yaml:"consistentImages"`
+	// A list of images whose tags are not required to be consistent after the bump. Requires `consistentImages: true`.
+	ConsistentImageExceptions []string `yaml:"consistentImageExceptions"`
 }
 
 func parseOptions() (*options, *bumper.Options, error) {
@@ -208,6 +211,11 @@ func parseOptions() (*options, *bumper.Options, error) {
 func validateOptions(o *options) error {
 	if len(o.Prefixes) == 0 {
 		return errors.New("must have at least one Prefix specified")
+	}
+	for _, prefix := range o.Prefixes {
+		if len(prefix.ConsistentImageExceptions) > 0 && !prefix.ConsistentImages {
+			return fmt.Errorf("consistentImageExceptions requires consistentImages to be true, found in prefix %q", prefix.Name)
+		}
 	}
 	if len(o.IncludedConfigPaths) == 0 {
 		return errors.New("includedConfigPaths is mandatory")
@@ -476,13 +484,18 @@ func getVersionsAndCheckConsistency(prefixes []prefix, images map[string]string)
 	versions := map[string][]string{}
 	consistencyChecker := map[string]string{}
 	for _, prefix := range prefixes {
+		exceptions := sets.NewString(prefix.ConsistentImageExceptions...)
 		for k, v := range images {
 			if strings.HasPrefix(k, prefix.Prefix) {
+				image := imageFromName(k)
 				found, ok := consistencyChecker[prefix.Prefix]
-				if ok && (found != v) && prefix.ConsistentImages {
-					return nil, fmt.Errorf("%s:%s not bumped consistently for prefix %s(%s), expected version: %s", k, v, prefix.Prefix, prefix.Name, found)
-				} else if !ok {
-					consistencyChecker[prefix.Prefix] = v
+				if prefix.ConsistentImages && !exceptions.Has(image) {
+					if ok && (found != v) {
+						return nil, fmt.Errorf("%s:%s not bumped consistently for prefix %s(%s), expected version: %s", k, v, prefix.Prefix, prefix.Name, found)
+					}
+					if !ok {
+						consistencyChecker[prefix.Prefix] = v
+					}
 				}
 
 				//Only add bumped images to the new versions map
