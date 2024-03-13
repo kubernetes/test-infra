@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/apiserver-network-proxy:
   - name: pull-apiserver-network-proxy-test-0-28
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     - release-0.28
     skip_report: false
@@ -27,6 +28,7 @@ presubmits:
       description: Tests the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-amd64-0-28
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     - release-0.28
     skip_report: false
@@ -61,6 +63,7 @@ presubmits:
       description: Build amd64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-arm64-0-28
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     - release-0.28
     skip_report: false
@@ -95,6 +98,7 @@ presubmits:
       description: Build arm64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-make-lint-0-28
     cluster: eks-prow-build-cluster
+    always_run: true
     branches:
     - release-0.28
     skip_report: false
