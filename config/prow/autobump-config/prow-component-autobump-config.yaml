@@ -22,6 +22,15 @@ prefixes:
     repo: "https://github.com/kubernetes/test-infra"
     summarise: true
     consistentImages: true
+    consistentImageExceptions:
+      - "gcr.io/k8s-prow/label_sync"
+      - "gcr.io/k8s-prow/robots/commenter"
+      - "gcr.io/k8s-prow/robots/pr-creator"
+      - "gcr.io/k8s-prow/robots/issue-creator"
+      - "gcr.io/k8s-prow/testgrid/cmd/configurator"
+      - "gcr.io/k8s-prow/gcsweb/cmd/gcsweb"
+      - "gcr.io/k8s-prow/gencred"
+      - "gcr.io/k8s-prow/experiment/ml/analyze"
   - name: "Boskos"
     prefix: "gcr.io/k8s-staging-boskos/"
     refConfigFile: "config/prow/cluster/build/boskos.yaml"
