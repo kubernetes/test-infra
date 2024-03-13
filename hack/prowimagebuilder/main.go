@@ -238,8 +238,10 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	// So far only supports certain arch
 	isSupportedArch := (id.Arch == defaultArch || id.Arch == allArch)
 	for _, otherArch := range otherArches {
-		if id.Arch == otherArch {
-			isSupportedArch = true
+		for _, arch := range strings.Split(id.Arch, ",") {
+			if strings.TrimSpace(arch) == otherArch {
+				isSupportedArch = true
+			}
 		}
 	}
 	if !isSupportedArch {
@@ -249,9 +251,13 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	if push {
 		publishArgs = []string{"publish", "--push=true"}
 	}
-	tags, err := allTags(id.Arch)
-	if err != nil {
-		return fmt.Errorf("collecting tags: %w", err)
+	var tags []string
+	for _, arch := range strings.Split(id.Arch, ",") {
+		ts, err := allTags(strings.TrimSpace(arch))
+		if err != nil {
+			return fmt.Errorf("collecting tags: %w", err)
+		}
+		tags = append(tags, ts...)
 	}
 	for _, tag := range tags {
 		publishArgs = append(publishArgs, fmt.Sprintf("--tags=%s", tag))
@@ -268,7 +274,7 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	// to subsequent identical docker repo(s) is relatively cheap.
 	for _, dockerRepo := range dockerRepos {
 		logger.WithField("args", publishArgs).Info("Running ko.")
-		if _, err = runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo}, "_bin/ko", publishArgs...); err != nil {
+		if _, err := runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo}, "_bin/ko", publishArgs...); err != nil {
 			return fmt.Errorf("running ko: %w", err)
 		}
 	}
