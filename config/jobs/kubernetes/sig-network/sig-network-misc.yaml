@@ -38,7 +38,7 @@ presubmits:
         - --build=quick
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.13
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -109,7 +109,7 @@ presubmits:
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=calico
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.13
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -183,7 +183,7 @@ presubmits:
         args:
         - --build=quick
         - --env=ALLOW_PRIVILEGED=true
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.13
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -855,7 +855,7 @@ periodics:
       - --check-leaked-resources
       - --env=ALLOW_PRIVILEGED=true
       - --env=NETWORK_POLICY_PROVIDER=calico
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.13
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
