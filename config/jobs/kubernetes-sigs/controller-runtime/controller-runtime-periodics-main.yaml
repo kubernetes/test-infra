@@ -9,7 +9,7 @@ periodics:
     base_ref: main
   spec:
     containers:
-    - image: public.ecr.aws/docker/library/golang:1.21
+    - image: public.ecr.aws/docker/library/golang:1.22
       command:
       - ./hack/ci-check-everything.sh
       resources:
