@@ -1559,6 +1559,7 @@ def generate_upgrades():
     # Exit criteria: Remove when https://github.com/kubernetes/kops/issues/16276 is fixed
     results.append(
         build_test(name_override='kops-aws-upgrade-bug16276-calico',
+                   build_cluster='k8s-infra-kops-prow-build',
                    cluster_name='bug16276-calico.k8s.local',
                    distro='u2204',
                    networking='calico',
@@ -1581,6 +1582,7 @@ def generate_upgrades():
     # Exit criteria: Remove when https://github.com/kubernetes/kops/issues/16276 is fixed
     results.append(
         build_test(name_override='kops-aws-upgrade-bug16276-cilium',
+                   build_cluster='k8s-infra-kops-prow-build',
                    cluster_name='bug16276-cilium.k8s.local',
                    distro='u2204',
                    networking='cilium',

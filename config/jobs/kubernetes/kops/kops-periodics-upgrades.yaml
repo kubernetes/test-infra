@@ -2974,12 +2974,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-bug16276-calico
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '16 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2992,6 +2991,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -3006,14 +3006,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.28.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "bug16276-calico.k8s.local"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
@@ -3040,12 +3044,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-upgrade-bug16276-cilium
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '58 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -3058,6 +3061,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -3072,14 +3076,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.28.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "bug16276-cilium.k8s.local"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
