@@ -20,7 +20,7 @@ dashboards:
 - name: ibm-k8s-e2e-node-ppc64le
   dashboard_tab:
     - name: periodic-k8s-e2e-node-ppc64le
-      description: k8s e2e node tests on ibm ppc64le architechture
+      description: k8s e2e node tests on ibm ppc64le architecture
       test_group_name: k8s-e2e-node
 - name: ibm-etcd-tests-ppc64le
   dashboard_tab:

@@ -27,16 +27,24 @@ source ./hack/build/setup-go.sh
 echo "Install misspell."
 cd "hack/tools"
 go build -o "${REPO_ROOT}/_bin/misspell" github.com/client9/misspell/cmd/misspell
+MISSPELL="${REPO_ROOT}/_bin/misspell/misspell"
 cd "${REPO_ROOT}"
 
 find -L . -type f -not \( \
   \( \
     -path '*/vendor/*' \
+    -o -path '*/external/*' \
     -o -path '*/static/*' \
     -o -path '*/third_party/*' \
     -o -path '*/node_modules/*' \
     -o -path '*/localdata/*' \
-    -o -path 'go.mod' \
+    -o -path './.git/*' \
+    -o -path './_bin/*' \
+    -o -path './_output/*' \
+    -o -path './_artifacts/*' \
+    -o -path './bazel-*/*' \
+    -o -path './hack/tools/go.mod' \
     -o -path './hack/tools/go.sum' \
+    -o -path './.python_virtual_env/*' \
     \) -prune \
-  \) -exec "${REPO_ROOT}/_bin/misspell" '{}' +
+    \) | xargs "${MISSPELL}" -w
