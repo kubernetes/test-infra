@@ -3,7 +3,7 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
 - name: e2e-kops-aws-scale-amazonvpc
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '37 0-23/24 * * *'
   labels:
     preset-service-account: "true"
@@ -36,7 +36,11 @@ periodics:
       - name: CLUSTER_NAME
         value: "e2e-f21a47a3cd-b6b27.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
