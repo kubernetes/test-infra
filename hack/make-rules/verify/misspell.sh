@@ -61,7 +61,7 @@ if find -L . -type f -not \( \
 fi
 
 
-trap 'echo ERROR: bad spelling, fix with hack/update-spelling.sh' ERR
+trap 'echo ERROR: bad spelling, fix with hack/update/misspell.sh' ERR
 
 echo "Check for spelling..."
 # Unit test: lang auge (remove space)
@@ -82,6 +82,6 @@ find -L . -type f -not \( \
     -o -path './hack/tools/go.sum' \
     -o -path './.python_virtual_env/*' \
     \) -prune \
-    \) -exec "$MISSPELL" '{}' '+'
+    \) | xargs "$MISSPELL" --error
 
 echo 'PASS: No spelling issues detected'
