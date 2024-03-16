@@ -104,7 +104,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.22-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -130,7 +130,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.22-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -155,7 +155,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.22-bookworm
         imagePullPolicy: Always
         command:
         - make
@@ -180,7 +180,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.21-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.22-bookworm
         imagePullPolicy: Always
         command:
         - make
