@@ -18,11 +18,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            memory: "3Gi"
+            cpu: "3"
           limits:
-            memory: "6Gi"
-            cpu: "2"
+            memory: "3Gi"
+            cpu: "3"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-build
@@ -66,28 +66,28 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
-          env:
-          - name: "BOSKOS_HOST"
-            value: "boskos.test-pods.svc.cluster.local"
-          - name: E2E_GINKGO_FOCUS
-            value: "\\[PR-Blocking\\]"
-          command:
-          - "runner.sh"
-          - "./scripts/ci-e2e.sh"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
-            limits:
-              memory: "9000Mi"
-              cpu: 2000m
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+        env:
+        - name: "BOSKOS_HOST"
+          value: "boskos.test-pods.svc.cluster.local"
+        - name: E2E_GINKGO_FOCUS
+          value: "\\[PR-Blocking\\]"
+        command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
+            cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-e2e-test
@@ -114,27 +114,27 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
-          env:
-          - name: "BOSKOS_HOST"
-            value: "boskos.test-pods.svc.cluster.local"
-          command:
-          - "runner.sh"
-          - "./scripts/ci-conformance.sh"
-          - "--use-ci-artifacts"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
-            limits:
-              memory: "9000Mi"
-              cpu: 2000m
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+        env:
+        - name: "BOSKOS_HOST"
+          value: "boskos.test-pods.svc.cluster.local"
+        command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+        - "--use-ci-artifacts"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
+            cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-conformance-test
@@ -157,35 +157,35 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
-          env:
-          - name: "BOSKOS_HOST"
-            value: "boskos.test-pods.svc.cluster.local"
-          # The PR-Blocking tests are run as in pull-cluster-api-provider-openstack-e2e-test
-          # so we skip them here and run only the rest.
-          - name: E2E_GINKGO_SKIP
-            value: "\\[PR-Blocking\\]"
-          # These tests can use more than 2 machines per cluster and even 2 clusters
-          # per test for clusterctl upgrade tests, so we limit the parallel jobs
-          # to avoid capacity issues.
-          - name: E2E_GINKGO_PARALLEL
-            value: "1"
-          command:
-          - "runner.sh"
-          - "./scripts/ci-e2e.sh"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
-            limits:
-              memory: "9000Mi"
-              cpu: 2000m
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+        env:
+        - name: "BOSKOS_HOST"
+          value: "boskos.test-pods.svc.cluster.local"
+        # The PR-Blocking tests are run as in pull-cluster-api-provider-openstack-e2e-test
+        # so we skip them here and run only the rest.
+        - name: E2E_GINKGO_SKIP
+          value: "\\[PR-Blocking\\]"
+        # These tests can use more than 2 machines per cluster and even 2 clusters
+        # per test for clusterctl upgrade tests, so we limit the parallel jobs
+        # to avoid capacity issues.
+        - name: E2E_GINKGO_PARALLEL
+          value: "1"
+        command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
+            cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-e2e-full-test
