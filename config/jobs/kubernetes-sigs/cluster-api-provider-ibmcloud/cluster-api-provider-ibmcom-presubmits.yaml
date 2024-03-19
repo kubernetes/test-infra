@@ -23,11 +23,11 @@ presubmits:
         imagePullPolicy: Always
         resources:
           limits:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "1"
+            memory: "1Gi"
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "1"
+            memory: "1Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-make
