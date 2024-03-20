@@ -63,7 +63,6 @@ dashboard_groups:
   - google-aws
   - google-cel
   - google-gce
-  - google-gcp-guest
   - google-gci
   - google-kops-gce
   - google-osconfig
