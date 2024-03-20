@@ -47,6 +47,7 @@ import (
 	clocktesting "k8s.io/utils/clock/testing"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -2418,4 +2419,64 @@ func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.Object
 
 	*pjList = result
 	return nil
+}
+
+func TestPredicates(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		obj        ctrlruntimeclient.Object
+		selector   string
+		wantResult bool
+	}{
+		{
+			name:       "Accept PJ",
+			obj:        &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Agent: prowapi.KubernetesAgent}},
+			wantResult: true,
+		},
+		{
+			name:       "Accept Pod if created by Prow",
+			obj:        &v1.Pod{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{kube.CreatedByProw: "true"}}},
+			wantResult: true,
+		},
+		{
+			name:       "Accept Pod if matches additional selector",
+			obj:        &v1.Pod{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{kube.CreatedByProw: "true", "foo": "bar"}}},
+			selector:   "foo=bar",
+			wantResult: true,
+		},
+		{
+			name: "Filter scheduling",
+			obj: &prowapi.ProwJob{
+				Spec:   prowapi.ProwJobSpec{Agent: prowapi.KubernetesAgent},
+				Status: prowapi.ProwJobStatus{State: prowapi.SchedulingState},
+			},
+		},
+		{
+			name: "Filter completed",
+			obj: &prowapi.ProwJob{
+				Spec:   prowapi.ProwJobSpec{Agent: prowapi.KubernetesAgent},
+				Status: prowapi.ProwJobStatus{CompletionTime: &metav1.Time{}},
+			},
+		},
+		{
+			name: "Filter non k8s agent",
+			obj:  &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Agent: prowapi.JenkinsAgent}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			predicate, err := predicates(tc.selector, nil)
+			if err != nil {
+				t.Fatalf("Unexpected error %s", err)
+			}
+
+			actualResult := predicate.Create(event.CreateEvent{Object: tc.obj}) &&
+				predicate.Update(event.UpdateEvent{ObjectNew: tc.obj}) &&
+				predicate.Delete(event.DeleteEvent{Object: tc.obj}) &&
+				predicate.Generic(event.GenericEvent{Object: tc.obj})
+
+			if actualResult != tc.wantResult {
+				t.Errorf("Expected %t but got %t", tc.wantResult, actualResult)
+			}
+		})
+	}
 }
