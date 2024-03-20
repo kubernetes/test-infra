@@ -1,6 +1,43 @@
 periodics:
 - interval: 3h
   cluster: k8s-infra-prow-build
+  name: ci-kubernetes-gce-conformance-latest
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
+    testgrid-dashboards: conformance-all, conformance-gce
+    testgrid-tab-name: Conformance - GCE - master
+    description: Runs conformance tests using kubetest against kubernetes master on GCE
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 220m
+  spec:
+    containers:
+    - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
+- interval: 3h
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-gce-conformance-latest-kubetest2
   annotations:
     fork-per-release: "true"
