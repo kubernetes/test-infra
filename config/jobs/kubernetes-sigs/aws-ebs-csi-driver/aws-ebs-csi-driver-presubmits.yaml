@@ -84,10 +84,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
           limits:
             cpu: "2"
-            memory: "4Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
       testgrid-tab-name: verify-ebs
