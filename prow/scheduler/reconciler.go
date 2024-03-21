@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -56,11 +57,11 @@ func Add(mgr controllerruntime.Manager, cfg config.Getter, numWorkers int) error
 type Reconciler struct {
 	pjClient client.Client
 	strategy strategy.Interface
+	log      *logrus.Entry
 }
 
 func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-	logger := controllerruntime.LoggerFrom(ctx).WithValues("request", request.NamespacedName)
-	logger.Info("Reconciliation started")
+	log := r.log.WithField("request", request)
 
 	pj := &prowv1.ProwJob{}
 	if err := r.pjClient.Get(ctx, request.NamespacedName, pj); err != nil {
@@ -70,11 +71,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 		return reconcile.Result{}, nil
 	}
 
+	log = log.WithField("job", pj.Spec.Job)
+
 	result, err := r.strategy.Schedule(ctx, pj)
 	if err != nil {
 		return reconcile.Result{}, fmt.Errorf("schedule prowjob %s: %w", request.Name, err)
 	}
-	logger.WithValues("cluster", result.Cluster).Info("Cluster assigned")
+	log.WithField("cluster", result.Cluster).Info("Cluster assigned")
 
 	// Don't mess the cache up
 	scheduled := pj.DeepCopy()
@@ -85,7 +88,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 		return reconcile.Result{}, fmt.Errorf("patch prowjob: %w", err)
 	}
 
-	logger.Info("Reconciliation completed")
 	return reconcile.Result{}, nil
 }
 
@@ -93,5 +95,6 @@ func NewReconciler(pjClient client.Client, strategy strategy.Interface) *Reconci
 	return &Reconciler{
 		pjClient: pjClient,
 		strategy: strategy,
+		log:      logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
 	}
 }
