@@ -1523,6 +1523,8 @@ periodics:
         value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
+      - name: WORKER_MACHINE_COUNT # CAZP config
+        value: "3"
       - name: CLUSTER_TEMPLATE # CAPZ config
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
