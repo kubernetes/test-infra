@@ -35,6 +35,8 @@ presubmits:
             value: \[SIG AUTOSCALING\]
           - name: GINKGO_SKIP
             value: ""
+          - name: TEST_CLUSTER_AUTOSCALER
+            value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
