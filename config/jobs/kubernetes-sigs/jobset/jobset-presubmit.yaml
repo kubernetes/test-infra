@@ -43,7 +43,7 @@ presubmits:
       description: "Run jobset integration tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
@@ -167,7 +167,7 @@ presubmits:
       description: "Run jobset verify checks"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
