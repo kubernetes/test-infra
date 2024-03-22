@@ -96,6 +96,7 @@ type Configuration struct {
 	Help                 Help                         `json:"help,omitempty"`
 	UpdateBot            UpdateBot                    `json:"updatebot,omitempty"`
 	Topic                []Topic                      `json:"topic,omitempty"`
+	CheckBinaries        []CheckBinaries              `json:"check_binaries,omitempty"`
 }
 
 type Help struct {
@@ -695,6 +696,13 @@ type Topic struct {
 	Repos              []string `json:"repos,omitempty"`
 	IntegrateRepo      string   `json:"integrate_repo,omitempty"`
 	IntegrateMilestone string   `json:"integrate_milestone"`
+}
+
+// Check binaries is config for the topic plugin.
+type CheckBinaries struct {
+	// Repos is either of the form org/repos or just org.
+	Repos           []string `json:"repos,omitempty"`
+	CheckBinariesRe string   `json:"check_binaries_re,omitempty"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.

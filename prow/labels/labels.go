@@ -53,4 +53,5 @@ const (
 	TriageAccepted              = "triage/accepted"
 	WorkInProgress              = "do-not-merge/work-in-progress"
 	ValidBug                    = "bugzilla/valid-bug"
+	InvalidBinaries             = "do-not-merge/source-include-binaries"
 )
