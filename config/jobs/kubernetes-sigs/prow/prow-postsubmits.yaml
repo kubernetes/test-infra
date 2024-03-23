@@ -1,0 +1,82 @@
+postsubmits:
+  kubernetes-sigs/prow:
+  - name: post-prow-test-verify
+    cluster: eks-prow-build-cluster
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+        - verify
+        env:
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
+    annotations:
+      testgrid-dashboards: sig-testing-prow-repo
+      testgrid-tab-name: post-test-verify
+      description: Runs 'make test verify' on the prow repo on each commit
+
+### Trusted Jobs ###
+
+# - name: post-push-prow
+#   cluster: test-infra-trusted
+#   # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
+#   skip_if_only_changed: '^site/'
+#   decorate: true
+#   labels:
+#     # Building deck requires docker for typescript compilation.
+#     preset-dind-enabled: "true"
+#   branches:
+#   - ^main$
+#   max_concurrency: 1
+#   spec:
+#     serviceAccountName: pusher
+#     containers:
+#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+#       command:
+#       - runner.sh
+#       args:
+#       - make
+#       - -C
+#       - prow
+#       - push-images
+#       env:
+#       # docker-in-docker needs privileged mode
+#       securityContext:
+#         privileged: true
+#       resources:
+#         requests:
+#           cpu: "15"
+#     tolerations:
+#     - key: "highcpu"
+#       operator: "Equal"
+#       value: "true"
+#       effect: "NoSchedule"
+#     nodeSelector:
+#       highcpu: "true"
+#   annotations:
+#     testgrid-dashboards: sig-testing-prow-repo
+#     testgrid-tab-name: push-images
+#     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+#     testgrid-num-failures-to-alert: '1'
+#     description: Builds and pushes all prow container images on each commit by running make -C prow push-images
+#   rerun_auth_config:
+#     github_users:
+#     - alvaroaleman
