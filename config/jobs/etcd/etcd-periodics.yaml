@@ -90,11 +90,11 @@ periodics:
         VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness
       resources:
         requests:
-          cpu: "8"
-          memory: "8Gi"
+          cpu: "10"
+          memory: "10Gi"
         limits:
-          cpu: "8"
-          memory: "8Gi"
+          cpu: "10"
+          memory: "10Gi"
       # fuse needs privileged mode
       securityContext:
         privileged: true
