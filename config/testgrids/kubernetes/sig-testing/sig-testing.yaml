@@ -10,6 +10,7 @@ test_groups:
 dashboard_groups:
 - name: sig-testing
   dashboard_names:
+  - sig-testing-prow-repo
   - sig-testing-boskos
   - sig-testing-canaries
   - sig-testing-e2e-framework
@@ -23,6 +24,7 @@ dashboard_groups:
 # Dashboards
 
 dashboards:
+- name: sig-testing-prow-repo
 - name: sig-testing-boskos
 - name: sig-testing-canaries
   dashboard_tab:

@@ -1,13 +1,10 @@
 presubmits:
-  kubernetes/test-infra:
-  - name: pull-test-infra-integration
+  kubernetes-sigs/prow:
+  - name: pull-prow-integration
     cluster: eks-prow-build-cluster
-    branches:
-    - master
-    skip_if_only_changed: '(^config/jobs/)|(^images/)|(^scenarios/)|(^jenkins/)|(^kubetest/)'
+    skip_if_only_changed: '^site/'
     decorate: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
@@ -31,12 +28,10 @@ presubmits:
             cpu: "14"
             memory: "16Gi"
     annotations:
-      testgrid-dashboards: presubmits-test-infra
+      testgrid-dashboards: sig-testing-prow-repo
       testgrid-tab-name: integration
-  - name: pull-test-infra-unit-test-race-detector-nonblocking
+  - name: pull-prow-unit-test-race-detector-nonblocking
     cluster: eks-prow-build-cluster
-    branches:
-    - master
     always_run: true
     decorate: true
     optional: true
@@ -66,12 +61,10 @@ presubmits:
             cpu: "8"
             memory: "8Gi"
     annotations:
-      testgrid-dashboards: presubmits-test-infra
+      testgrid-dashboards: sig-testing-prow-repo
       testgrid-tab-name: unit-test-race-detector-nonblocking
-  - name: pull-test-infra-unit-test
+  - name: pull-prow-unit-test
     cluster: eks-prow-build-cluster
-    branches:
-    - master
     always_run: true
     decorate: true
     labels:
@@ -96,13 +89,11 @@ presubmits:
             cpu: "8"
             memory: "8Gi"
     annotations:
-      testgrid-dashboards: presubmits-test-infra
+      testgrid-dashboards: sig-testing-prow-repo
       testgrid-tab-name: unit-test
-  - name: pull-test-infra-prow-image-build-test
+  - name: pull-prow-image-build-test
     cluster: eks-prow-build-cluster
-    branches:
-    - master
-    run_if_changed: '^(\.ko\.yaml|hack/(ts-rollup|make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    skip_if_only_changed: '^site/'
     decorate: true
     labels:
       # Building deck requires docker for typescript compilation.
@@ -130,12 +121,10 @@ presubmits:
             cpu: "14"
             memory: "16Gi"
     annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: prow-image-build-test
-  - name: pull-test-infra-verify-lint
+      testgrid-dashboards: sig-testing-prow-repo
+      testgrid-tab-name: image-build-test
+  - name: pull-prow-verify-lint
     cluster: eks-prow-build-cluster
-    branches:
-    - master
     always_run: true
     decorate: true
     labels:
@@ -160,5 +149,5 @@ presubmits:
             cpu: "8"
             memory: "8Gi"
     annotations:
-      testgrid-dashboards: presubmits-test-infra
+      testgrid-dashboards: sig-testing-prow-repo
       testgrid-tab-name: verify-test

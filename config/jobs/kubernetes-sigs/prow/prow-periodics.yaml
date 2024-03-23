@@ -1,11 +1,11 @@
 periodics:
-- name: ci-test-infra-continuous-test
+- name: ci-prow-continuous-test-verify
   cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
+  - org: kubernetes-sigs
+    repo: prow
+    base_ref: main
   interval: 1h
   labels:
     # Enable dind for linters that required docker to run, for example typescript.
@@ -30,7 +30,7 @@ periodics:
           cpu: 2
           memory: 4Gi
   annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: continuous
+    testgrid-dashboards: sig-testing-prow-repo
+    testgrid-tab-name: continuous-test-verify
     testgrid-broken-column-threshold: '0.5'
-    description: Runs `make test verify` on the test-infra repo every hour
+    description: Runs `make test verify` on the prow repo every hour
