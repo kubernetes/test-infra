@@ -1,0 +1,36 @@
+periodics:
+- name: ci-test-infra-continuous-test
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 1h
+  labels:
+    # Enable dind for linters that required docker to run, for example typescript.
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+      command:
+      - runner.sh
+      args:
+      - make
+      - test
+      - verify
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: continuous
+    testgrid-broken-column-threshold: '0.5'
+    description: Runs `make test verify` on the test-infra repo every hour

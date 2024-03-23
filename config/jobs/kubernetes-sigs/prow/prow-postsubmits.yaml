@@ -1,0 +1,88 @@
+postsubmits:
+  kubernetes/test-infra:
+  - name: post-test-infra-test-all
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+        - verify
+        env:
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: post-test-all
+      description: Runs 'make test verify' on the test-infra repo on each commit
+
+### Trusted Jobs ###
+
+# - name: post-test-infra-push-prow
+#   cluster: test-infra-trusted
+#   # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
+#   run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|gencred|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+#   decorate: true
+#   labels:
+#     # Building deck requires docker for typescript compilation.
+#     preset-dind-enabled: "true"
+#   branches:
+#   - ^master$
+#   max_concurrency: 1
+#   spec:
+#     serviceAccountName: pusher
+#     containers:
+#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+#       command:
+#       - runner.sh
+#       args:
+#       - make
+#       - -C
+#       - prow
+#       - push-images
+#       env:
+#       # TODO(chaodaiG): remove once this becomes the default in `prow/Makefile`
+#       - name: REGISTRY
+#         value: gcr.io/k8s-prow
+#       # docker-in-docker needs privileged mode
+#       securityContext:
+#         privileged: true
+#       resources:
+#         requests:
+#           cpu: "15"
+#     tolerations:
+#     - key: "highcpu"
+#       operator: "Equal"
+#       value: "true"
+#       effect: "NoSchedule"
+#     nodeSelector:
+#       highcpu: "true"
+#   annotations:
+#     testgrid-dashboards: sig-testing-prow
+#     testgrid-tab-name: push-prow
+#     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+#     testgrid-num-failures-to-alert: '1'
+#     description: builds and pushes all prow on each commit by running make -C prow push-images
+#   rerun_auth_config:
+#     github_users:
+#     - alvaroaleman

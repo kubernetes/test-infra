@@ -1,0 +1,164 @@
+presubmits:
+  kubernetes/test-infra:
+  - name: pull-test-infra-integration
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    skip_if_only_changed: '(^config/jobs/)|(^images/)|(^scenarios/)|(^jenkins/)|(^kubetest/)'
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - ./prow/test/integration/integration-test.sh
+        env:
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: integration
+  - name: pull-test-infra-unit-test-race-detector-nonblocking
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    optional: true
+    skip_report: false
+    labels:
+      # Python unit tests run in docker.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit
+        env:
+        - name: PROW_UNIT_TEST_EXTRA_FLAGS
+          value: "-race"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "8"
+            memory: "8Gi"
+          limits:
+            cpu: "8"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: unit-test-race-detector-nonblocking
+  - name: pull-test-infra-unit-test
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      # Python unit tests run in docker.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "8"
+            memory: "8Gi"
+          limits:
+            cpu: "8"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: unit-test
+  - name: pull-test-infra-prow-image-build-test
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    run_if_changed: '^(\.ko\.yaml|hack/(ts-rollup|make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    decorate: true
+    labels:
+      # Building deck requires docker for typescript compilation.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - -C
+        - prow
+        - build-images
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: prow-image-build-test
+  - name: pull-test-infra-verify-lint
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      # Enable dind for linters that required docker to run, for example typescript.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "8"
+            memory: "8Gi"
+          limits:
+            cpu: "8"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-test
