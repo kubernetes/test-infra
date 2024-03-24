@@ -19,14 +19,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
+    name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.12-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift-412
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
+    test_group_name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.12-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift-412
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -46,14 +46,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.12-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift-412
+    name: periodic-ci-openshift-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.12-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift-412
+    test_group_name: periodic-ci-openshift-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -245,10 +245,10 @@ dashboards:
     test_group_name: periodic-ci-rhpit-interop-tests-main-web-terminal-hypershift-4.12-lp-rosa-hypershift-web-terminal-aws-rosa-hypershift-412
   name: redhat-openshift-lp-rosa-hypershift-release-4.12-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
-  name: periodic-ci-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.12-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift-412
   name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-hypershift-4.12-lp-rosa-hypershift-servicemesh-aws-rosa-hypershift-412
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
+  name: periodic-ci-openshift-jaegertracing-jaeger-operator-main-jaeger-product-hypershift-4.12-lp-rosa-hypershift-jaeger-product-rosa-hypershift-412
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-jenkins-release-4.12-jenkins-hypershift4.12-aws-jenkins-lp-rosa-hypershift-412
   name: periodic-ci-openshift-jenkins-release-4.12-jenkins-hypershift4.12-aws-jenkins-lp-rosa-hypershift-412
 - gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.3.x-4.12-acceptance-lp-rosa-hypershift-412
