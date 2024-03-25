@@ -77,13 +77,30 @@ func TestReconcile(t *testing.T) {
 		wantError       error
 	}{
 		{
-			name:    "Successfully assign a cluster",
-			pj:      &prowv1.ProwJob{ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"}},
+			name: "Successfully assign a cluster when agent is k8s",
+			pj: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"},
+				Spec:       prowv1.ProwJobSpec{Agent: prowv1.KubernetesAgent},
+			},
 			request: reconcile.Request{NamespacedName: types.NamespacedName{Name: "pj", Namespace: "ns"}},
 			cluster: "foo",
 			wantPJ: &prowv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "2"},
-				Spec:       prowv1.ProwJobSpec{Cluster: "foo"},
+				Spec:       prowv1.ProwJobSpec{Cluster: "foo", Agent: prowv1.KubernetesAgent},
+				Status:     prowv1.ProwJobStatus{State: prowv1.TriggeredState},
+			},
+		},
+		{
+			name: "Successfully assign a cluster when agent is tekton",
+			pj: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"},
+				Spec:       prowv1.ProwJobSpec{Agent: prowv1.TektonAgent},
+			},
+			request: reconcile.Request{NamespacedName: types.NamespacedName{Name: "pj", Namespace: "ns"}},
+			cluster: "foo",
+			wantPJ: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "2"},
+				Spec:       prowv1.ProwJobSpec{Cluster: "foo", Agent: prowv1.TektonAgent},
 				Status:     prowv1.ProwJobStatus{State: prowv1.TriggeredState},
 			},
 		},
@@ -100,7 +117,10 @@ func TestReconcile(t *testing.T) {
 		{
 			name:    "Error patching Prowjob",
 			request: reconcile.Request{NamespacedName: types.NamespacedName{Name: "pj", Namespace: "ns"}},
-			pj:      &prowv1.ProwJob{ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"}},
+			pj: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"},
+				Spec:       prowv1.ProwJobSpec{Agent: prowv1.KubernetesAgent},
+			},
 			cluster: "foo",
 			wantPJ: &prowv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "2"},
@@ -111,11 +131,28 @@ func TestReconcile(t *testing.T) {
 			wantError:    errors.New("patch prowjob: expected"),
 		},
 		{
-			name:            "Scheduling error",
-			pj:              &prowv1.ProwJob{ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"}},
+			name: "Scheduling error",
+			pj: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"},
+				Spec:       prowv1.ProwJobSpec{Agent: prowv1.KubernetesAgent},
+			},
 			request:         reconcile.Request{NamespacedName: types.NamespacedName{Name: "pj", Namespace: "ns"}},
 			schedulingError: errors.New("expected"),
 			wantError:       errors.New("schedule prowjob pj: expected"),
+		},
+		{
+			name: "No agent set then schedule passthrough",
+			pj: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "1"},
+				Spec:       prowv1.ProwJobSpec{Cluster: "untouched"},
+			},
+			request: reconcile.Request{NamespacedName: types.NamespacedName{Name: "pj", Namespace: "ns"}},
+			cluster: "untouched",
+			wantPJ: &prowv1.ProwJob{
+				ObjectMeta: v1.ObjectMeta{Name: "pj", Namespace: "ns", ResourceVersion: "2"},
+				Spec:       prowv1.ProwJobSpec{Cluster: "untouched"},
+				Status:     prowv1.ProwJobStatus{State: prowv1.TriggeredState},
+			},
 		},
 	} {
 		tc := tc

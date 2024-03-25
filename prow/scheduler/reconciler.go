@@ -24,7 +24,7 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/scheduler/strategy"
+	schedulingstrategy "k8s.io/test-infra/prow/scheduler/strategy"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -37,10 +37,10 @@ const ControllerName = "scheduler"
 func Add(mgr controllerruntime.Manager, cfg config.Getter, numWorkers int) error {
 	predicates := predicate.NewPredicateFuncs(func(object client.Object) bool {
 		pj, isPJ := object.(*prowv1.ProwJob)
-		return isPJ && pj.Status.State == prowv1.SchedulingState && pj.Spec.Agent == prowv1.KubernetesAgent
+		return isPJ && pj.Status.State == prowv1.SchedulingState
 	})
 
-	strategy := strategy.Get(cfg())
+	strategy := schedulingstrategy.Get(cfg())
 	reconciler := NewReconciler(mgr.GetClient(), strategy)
 	if err := controllerruntime.NewControllerManagedBy(mgr).
 		Named(ControllerName).
@@ -55,9 +55,10 @@ func Add(mgr controllerruntime.Manager, cfg config.Getter, numWorkers int) error
 }
 
 type Reconciler struct {
-	pjClient client.Client
-	strategy strategy.Interface
-	log      *logrus.Entry
+	pjClient    client.Client
+	passthrough schedulingstrategy.Interface
+	strategy    schedulingstrategy.Interface
+	log         *logrus.Entry
 }
 
 func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
@@ -73,7 +74,17 @@ func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 
 	log = log.WithField("job", pj.Spec.Job)
 
-	result, err := r.strategy.Schedule(ctx, pj)
+	var result schedulingstrategy.Result
+	var err error
+	// So far only k8s and tekton use the cluster field in a meaninful way. Hence
+	// if we're reconciling a job having a different agent (or no agent at all) applying
+	// the passthrough strategy may be the safest approach.
+	if pj.Spec.Agent == prowv1.KubernetesAgent || pj.Spec.Agent == prowv1.TektonAgent {
+		result, err = r.strategy.Schedule(ctx, pj)
+	} else {
+		result, err = r.passthrough.Schedule(ctx, pj)
+	}
+
 	if err != nil {
 		return reconcile.Result{}, fmt.Errorf("schedule prowjob %s: %w", request.Name, err)
 	}
@@ -91,10 +102,11 @@ func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 	return reconcile.Result{}, nil
 }
 
-func NewReconciler(pjClient client.Client, strategy strategy.Interface) *Reconciler {
+func NewReconciler(pjClient client.Client, strategy schedulingstrategy.Interface) *Reconciler {
 	return &Reconciler{
-		pjClient: pjClient,
-		strategy: strategy,
-		log:      logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
+		pjClient:    pjClient,
+		passthrough: &schedulingstrategy.Passthrough{},
+		strategy:    strategy,
+		log:         logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
 	}
 }
