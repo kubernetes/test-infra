@@ -13,7 +13,7 @@ presubmits:
       description: "Run kueue unit tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -43,7 +43,7 @@ presubmits:
       description: "Run kueue test-integration"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
@@ -78,7 +78,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.21
+          value: public.ecr.aws/docker/library/golang:1.22
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -116,7 +116,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.28.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.21
+              value: public.ecr.aws/docker/library/golang:1.22
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -154,7 +154,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.29.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.21
+              value: public.ecr.aws/docker/library/golang:1.22
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -233,7 +233,7 @@ presubmits:
         - name: GOMAXPROCS
           value: "2"
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.21
+          value: public.ecr.aws/docker/library/golang:1.22
         resources:
           requests:
             cpu: "2"
