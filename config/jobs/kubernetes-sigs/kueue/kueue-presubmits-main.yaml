@@ -228,6 +228,7 @@ presubmits:
         args:
         - make
         - image-local-build
+        - importer-image
         env:
         - name: GOMAXPROCS
           value: "2"
