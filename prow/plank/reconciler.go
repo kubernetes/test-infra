@@ -964,7 +964,7 @@ func predicates(additionalSelector string, callback func(bool)) (predicate.Predi
 				return false
 			}
 
-			return pj.Spec.Agent == prowv1.KubernetesAgent
+			return pj.Spec.Agent == prowv1.KubernetesAgent && pj.Status.State != prowv1.SchedulingState
 		}()
 		if callback != nil {
 			callback(result)
