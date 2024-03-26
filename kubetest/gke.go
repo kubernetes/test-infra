@@ -946,15 +946,15 @@ func (g *gkeDeployer) Down() error {
 		return fmt.Errorf("failed to list clusters in project %s with filter (name=%s AND location=%s): %w", g.project, g.cluster, g.locationRaw, err)
 	}
 
-	operationNameBytes, err := control.Output(exec.Command(
+	operationNamesBytes, err := control.Output(exec.Command(
 		"gcloud", g.containerArgs("operations", "list", "--project="+g.project,
 			g.location, "--format=value(name)", fmt.Sprintf("--filter=(status!=DONE AND (targetLink ~ /clusters/%s$ OR targetLink ~ /clusters/%s/))", g.cluster, g.cluster))...))
 	if err != nil {
 		return fmt.Errorf("failed to list not DONE operations for cluster %s: %w", g.cluster, err)
 	}
 
-	operationName := strings.TrimSpace(string(operationNameBytes))
-	if operationName != "" {
+	operationNames := strings.Split(strings.TrimSpace(string(operationNamesBytes)), "\n")
+	for _, operationName := range operationNames {
 		log.Printf("Found RUNNING operation %q blocking cluster deletion. Will wait for its completion.", operationName)
 		err := control.FinishRunning(exec.Command(
 			"gcloud", g.containerArgs("operations", "wait", "--project="+g.project,
