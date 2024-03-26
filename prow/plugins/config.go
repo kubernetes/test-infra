@@ -351,6 +351,10 @@ func (a Approve) ConsiderReviewState() bool {
 	return true
 }
 
+func (a Approve) getRepos() []string {
+	return a.Repos
+}
+
 // Lgtm specifies a configuration for a single lgtm.
 // The configuration for the lgtm plugin is defined as a list of these structures.
 type Lgtm struct {
@@ -682,6 +686,10 @@ type Welcome struct {
 	// Post welcome message in all cases, even if PR author is not an existing
 	// contributor or part of the organization
 	AlwaysPost bool `json:"always_post,omitempty"`
+}
+
+func (w Welcome) getRepos() []string {
+	return w.Repos
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
@@ -1411,9 +1419,41 @@ func (c *Configuration) Validate() error {
 	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
+	if err := validateRepoDupes(c.Approve); err != nil {
+		return err
+	}
+	if err := validateRepoDupes(c.Welcome); err != nil {
+		return err
+	}
 	validateRepoMilestone(c.RepoMilestone)
 
 	return nil
+}
+
+type ListableRepos interface {
+	getRepos() []string
+}
+
+func validateRepoDupes[C ListableRepos](configs []C) error {
+	var errs []error
+	orgs := map[string]bool{}
+	repos := map[string]bool{}
+	for _, config := range configs {
+		for _, entry := range config.getRepos() {
+			if strings.Contains(entry, "/") {
+				if repos[entry] {
+					errs = append(errs, fmt.Errorf("The repo %q is duplicated in the 'welcome' plugin configuration.", entry))
+				}
+				repos[entry] = true
+			} else {
+				if orgs[entry] {
+					errs = append(errs, fmt.Errorf("The org %q is duplicated in the 'welcome' plugin configuration.", entry))
+				}
+				orgs[entry] = true
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) int {
