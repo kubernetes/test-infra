@@ -1,1 +1,14 @@
-../../../../../../config/prow/cluster/horologium_service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: horologium
+  namespace: default
+  name: horologium
+spec:
+  ports:
+    - name: metrics
+      port: 9090
+      protocol: TCP
+  selector:
+    app: horologium

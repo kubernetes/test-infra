@@ -1,1 +1,14 @@
-../../../../../../config/prow/cluster/crier_service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: crier
+  namespace: default
+  name: crier
+spec:
+  ports:
+    - name: metrics
+      port: 9090
+      protocol: TCP
+  selector:
+    app: crier
