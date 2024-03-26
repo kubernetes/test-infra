@@ -161,21 +161,17 @@ periodics:
 1. If the job had no [testgrid annotations], ensure its [`testgrid/config.yaml`] entries are gone
 1. Open a PR with the changes; when it merges [@k8s-ci-robot] will deploy the changes automatically
 
-## Testing Jobs Locally
+## Testing Jobs
 
-Please try using [`phaino`](https://docs.prow.k8s.io/docs/components/cli-tools/phaino/), it will interactively
-help you run a docker command that approximates the pod that would be scheduled
-on behalf of an actual prow job.
+You can read about how to test changes to ProwJobs both locally and remotely in the [prow documentation](https://docs.prow.k8s.io/docs/build-test-update/#how-to-test-a-prowjob).
 
-## Testing Jobs Remotely
+### Testing Jobs Remotely
 
 This requires a running instance of prow. In general, we discourage the use of
 [prow.k8s.io] as a testbed for job development, and recommend the use of your
 own instance of prow for faster iteration. That said, an approach that people
 have used in the past with mostly-there jobs is to iterate via PRs; just
 recognize this is going to depend on review latency.
-
-For more details, please refer to [How to Test a ProwJob](https://docs.prow.k8s.io/docs/build-test-update/#how-to-test-a-prowjob)
 
 ## Running a Production Job
 
