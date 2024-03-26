@@ -17,7 +17,7 @@ limitations under the License.
 package tests
 
 // This file validates kubernetes's jobs configs.
-// See also prow/config/jobstests for generic job tests that
+// See also from_prow_test.go for generic job tests that
 // all deployments should consider using.
 
 import (
@@ -285,11 +285,6 @@ func TestRetestMatchJobsName(t *testing.T) {
 	for repo, presubmits := range c.PresubmitsStatic {
 		checkRetest(t, repo, presubmits)
 	}
-}
-
-type SubmitQueueConfig struct {
-	// this is the only field we need for the tests below
-	RequiredRetestContexts string `json:"required-retest-contexts"`
 }
 
 // Enforce conventions for jobs that run in test-infra-trusted cluster

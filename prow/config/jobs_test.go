@@ -18,144 +18,13 @@ package config
 
 import (
 	"errors"
-	"flag"
-	"fmt"
-	"os"
 	"reflect"
-	"regexp"
 	"testing"
 
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	coreapi "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
-
-var c *Config
-var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
-var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
-var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
-
-// Returns if two brancher has overlapping branches
-func checkOverlapBrancher(b1, b2 Brancher) bool {
-	if b1.RunsAgainstAllBranch() || b2.RunsAgainstAllBranch() {
-		return true
-	}
-
-	for _, run1 := range b1.Branches {
-		if b2.ShouldRun(run1) {
-			return true
-		}
-	}
-
-	for _, run2 := range b2.Branches {
-		if b1.ShouldRun(run2) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func TestMain(m *testing.M) {
-	flag.Parse()
-	if *configPath == "" {
-		panic("--config must set")
-	}
-
-	conf, err := Load(*configPath, *jobConfigPath, nil, "")
-	if err != nil {
-		panic(fmt.Sprintf("Could not load config: %v", err))
-	}
-	c = conf
-
-	os.Exit(m.Run())
-}
-
-func TestPresubmits(t *testing.T) {
-	if len(c.PresubmitsStatic) == 0 {
-		t.Fatalf("No jobs found in presubmit.yaml.")
-	}
-
-	for _, rootJobs := range c.PresubmitsStatic {
-		for i, job := range rootJobs {
-			if job.Name == "" {
-				t.Errorf("Job %v needs a name.", job)
-				continue
-			}
-			if !job.SkipReport && job.Context == "" {
-				t.Errorf("Job %s needs a context.", job.Name)
-			}
-			if job.RerunCommand == "" || job.Trigger == "" {
-				t.Errorf("Job %s needs a trigger and a rerun command.", job.Name)
-				continue
-			}
-
-			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {
-				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
-			}
-			// Next check that the rerun command doesn't run any other jobs.
-			for j, job2 := range rootJobs[i+1:] {
-				if job.Name == job2.Name {
-					// Make sure max_concurrency are the same
-					if job.MaxConcurrency != job2.MaxConcurrency {
-						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
-					}
-					// Make sure branches are not overlapping
-					if checkOverlapBrancher(job.Brancher, job2.Brancher) {
-						t.Errorf("Two jobs have the same name: %s, and have conflicting branches", job.Name)
-					}
-				} else {
-					if job.Context == job2.Context {
-						t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
-					}
-					if job2.re.MatchString(job.RerunCommand) {
-						t.Errorf("%d, %d, RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", i, j, job.RerunCommand, job.Name, job2.Trigger, job2.Name)
-					}
-				}
-			}
-		}
-	}
-}
-
-// TODO(krzyzacy): technically this, and TestPresubmits above should belong to config/ instead of prow/
-func TestPostsubmits(t *testing.T) {
-	if len(c.PostsubmitsStatic) == 0 {
-		t.Fatalf("No jobs found in presubmit.yaml.")
-	}
-
-	for _, rootJobs := range c.PostsubmitsStatic {
-		for i, job := range rootJobs {
-			if job.Name == "" {
-				t.Errorf("Job %v needs a name.", job)
-				continue
-			}
-			if !job.SkipReport && job.Context == "" {
-				t.Errorf("Job %s needs a context.", job.Name)
-			}
-
-			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {
-				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
-			}
-			// Next check that the rerun command doesn't run any other jobs.
-			for _, job2 := range rootJobs[i+1:] {
-				if job.Name == job2.Name {
-					// Make sure max_concurrency are the same
-					if job.MaxConcurrency != job2.MaxConcurrency {
-						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
-					}
-					// Make sure branches are not overlapping
-					if checkOverlapBrancher(job.Brancher, job2.Brancher) {
-						t.Errorf("Two jobs have the same name: %s, and have conflicting branches", job.Name)
-					}
-				} else {
-					if job.Context == job2.Context {
-						t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
-					}
-				}
-			}
-		}
-	}
-}
 
 func TestRunIfChangedPresubmits(t *testing.T) {
 	PresubmitsStatic := []Presubmit{
@@ -522,44 +391,6 @@ func TestRunAgainstBranch(t *testing.T) {
 		if !job.Brancher.ShouldRun("r") {
 			t.Errorf("Job %s should run branch r", job.Name)
 		}
-	}
-}
-
-func TestValidPodNames(t *testing.T) {
-	for _, j := range c.AllStaticPresubmits([]string{}) {
-		if !podRe.MatchString(j.Name) {
-			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
-		}
-	}
-	for _, j := range c.AllStaticPostsubmits([]string{}) {
-		if !podRe.MatchString(j.Name) {
-			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
-		}
-	}
-	for _, j := range c.AllPeriodics() {
-		if !podRe.MatchString(j.Name) {
-			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
-		}
-	}
-}
-
-func TestNoDuplicateJobs(t *testing.T) {
-	// Presubmit test is covered under TestPresubmits() above
-
-	allJobs := make(map[string]bool)
-	for _, j := range c.AllStaticPostsubmits([]string{}) {
-		if allJobs[j.Name] {
-			t.Errorf("Found duplicate job in postsubmit: %s.", j.Name)
-		}
-		allJobs[j.Name] = true
-	}
-
-	allJobs = make(map[string]bool)
-	for _, j := range c.AllPeriodics() {
-		if allJobs[j.Name] {
-			t.Errorf("Found duplicate job in periodic %s.", j.Name)
-		}
-		allJobs[j.Name] = true
 	}
 }
 

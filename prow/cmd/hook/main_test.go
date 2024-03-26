@@ -28,16 +28,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
-	"k8s.io/test-infra/prow/plugins"
 )
-
-// Make sure that our plugins are valid.
-func TestPlugins(t *testing.T) {
-	pa := &plugins.ConfigAgent{}
-	if err := pa.Load("../../../config/prow/plugins.yaml", nil, "", true, false); err != nil {
-		t.Fatalf("Could not load plugins: %v.", err)
-	}
-}
 
 func Test_gatherOptions(t *testing.T) {
 	cases := []struct {
