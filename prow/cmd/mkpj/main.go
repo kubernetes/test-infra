@@ -48,8 +48,6 @@ type options struct {
 	org         string
 	repo        string
 
-	local bool
-
 	github       prowflagutil.GitHubOptions
 	githubClient githubClient
 	pullRequest  *github.PullRequest
@@ -204,7 +202,6 @@ func gatherOptions() options {
 	var o options
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.jobName, "job", "", "Job to run.")
-	fs.BoolVar(&o.local, "local", false, "Print help for running locally")
 	fs.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
 	fs.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
@@ -242,10 +239,7 @@ func main() {
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
-	// local mode runs with phaino, which uses local source code instead of cloing, so
-	// no need to fetch refs from github.
-	// Aside, this also makes mkpj usable for source control system other than github.
-	if pjs.Refs != nil && !o.local {
+	if pjs.Refs != nil {
 		o.org = pjs.Refs.Org
 		o.repo = pjs.Refs.Repo
 		if len(pjs.Refs.Pulls) != 0 {
@@ -264,9 +258,6 @@ func main() {
 			logrus.WithError(err).Fatal("Error marshalling YAML.")
 		}
 		fmt.Print(string(b))
-		if o.local {
-			logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
-		}
 		return
 	}
 
