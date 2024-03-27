@@ -1533,6 +1533,8 @@ periodics:
         value: "capz"
       - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
         value: "30"
+      - name: K8S_FEATURE_GATES # CAPZ config
+        value: "ServiceTrafficDistribution=true"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
