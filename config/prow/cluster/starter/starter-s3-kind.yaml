@@ -51,6 +51,15 @@ stringData:
   hmac: $HMAC_TOKEN
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  namespace: prow
+  name: minio-root-creds
+stringData:
+  user: "$MINIO_ROOT_USER"
+  password: "$MINIO_ROOT_PASSWORD"
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   namespace: prow
@@ -1374,9 +1383,15 @@ spec:
         - /data
         env:
         - name: MINIO_ROOT_USER
-          value: "$MINIO_ROOT_USER"
+          valueFrom:
+            secretKeyRef:
+              name: minio-root-creds
+              key: user
         - name: MINIO_ROOT_PASSWORD
-          value: "$MINIO_ROOT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: minio-root-creds
+              key: password
         - name: MINIO_REGION_NAME
           value: minio
         - name: MINIO_CONSOLE_ADDRESS
