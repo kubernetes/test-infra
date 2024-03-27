@@ -35,8 +35,8 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
-  # TODO(1.30): Comment this out when moving 1.30 to stable1
   # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  # TODO(1.30): comment this out when we move 1.30 to stable1
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -254,8 +254,8 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
-  # TODO(1.30): Comment this out when moving 1.30 to stable1.
   # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  # TODO(1.30): comment this out when we move 1.30 to stable1
   beta:
     args:
     - --extract=ci/latest-1.30
