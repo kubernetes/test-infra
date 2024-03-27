@@ -318,7 +318,7 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-supervisor-{{ ReplaceAll $.branch "." "-" }}
-      description: Runs e2e tests withsupervisor mode
+      description: Runs e2e tests with supervisor mode
 {{ end }}{{ if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     labels:
