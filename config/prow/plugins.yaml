@@ -459,10 +459,10 @@ milestone_applier:
     master: v1.30
   kubernetes/kubernetes:
     master: v1.30
+    release-1.30: v1.30
     release-1.29: v1.29
     release-1.28: v1.28
     release-1.27: v1.27
-    release-1.26: v1.26
   kubernetes/org:
     main: v1.30
   kubernetes/release:
