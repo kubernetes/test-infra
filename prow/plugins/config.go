@@ -314,8 +314,8 @@ type Approve struct {
 	// IssueRequired indicates if an associated issue is required for approval in
 	// the specified repos.
 	IssueRequired bool `json:"issue_required,omitempty"`
-	// RequireSelfApproval requires PR authors to explicitly approve their PRs.
-	// Otherwise the plugin assumes the author of the PR approves the changes in the PR.
+	// RequireSelfApproval disables automatic approval from PR authors with approval rights.
+	// Otherwise the plugin assumes the author of the PR with approval rights approves the changes in the PR.
 	RequireSelfApproval *bool `json:"require_self_approval,omitempty"`
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
