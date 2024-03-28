@@ -18,6 +18,7 @@ package trigger
 
 import (
 	"context"
+	"k8s.io/test-infra/prow/git/v2"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -25,8 +26,17 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-func listPushEventChanges(pe github.PushEvent) config.ChangedFilesProvider {
+func listPushEventChanges(gc git.ClientFactory, pe github.PushEvent) config.ChangedFilesProvider {
 	return func() ([]string, error) {
+		if gc != nil {
+			repoClient, err := gc.ClientFor(pe.Repo.Owner.Name, pe.Repo.Name)
+			if err != nil {
+				// Use git client since Github PushEvent is limited to 3000 keys:
+				// https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests-files
+				return repoClient.Diff(pe.After, pe.Before)
+			}
+		}
+		// Fallback to use PushEvent
 		changed := make(map[string]bool)
 		for _, commit := range pe.Commits {
 			for _, added := range commit.Added {
@@ -74,7 +84,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 	postsubmits := getPostsubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, shaGetter)
 
 	for _, j := range postsubmits {
-		if shouldRun, err := j.ShouldRun(pe.Branch(), listPushEventChanges(pe)); err != nil {
+		if shouldRun, err := j.ShouldRun(pe.Branch(), listPushEventChanges(c.GitClient, pe)); err != nil {
 			return err
 		} else if !shouldRun {
 			continue
