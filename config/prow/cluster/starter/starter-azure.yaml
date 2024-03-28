@@ -51,6 +51,15 @@ stringData:
   hmac: $HMAC_TOKEN
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  namespace: prow
+  name: minio-root-creds
+stringData:
+  user: "$AZURE_STORAGE_ACCOUNT_USER"
+  password: "$AZURE_STORAGE_ACCOUNT_PASSWORD"
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   namespace: prow
@@ -1296,9 +1305,15 @@ spec:
         - --console-address=:0.0.0.0:$MINIO_CONSOLE_PORT
         env:
         - name: MINIO_ROOT_USER
-          value: "$AZURE_STORAGE_ACCOUNT_USER"
+          valueFrom:
+            secretKeyRef:
+              name: minio-root-creds
+              key: user
         - name: MINIO_ROOT_PASSWORD
-          value: "$AZURE_STORAGE_ACCOUNT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: minio-root-creds
+              key: password
         - name: MINIO_REGION_NAME
           value: minio
         ports:
