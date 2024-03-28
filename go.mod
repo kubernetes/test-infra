@@ -36,7 +36,7 @@ require (
 	github.com/djherbis/atime v1.0.0
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/felixge/fgprof v0.9.1
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-git/go-git/v5 v5.6.1
