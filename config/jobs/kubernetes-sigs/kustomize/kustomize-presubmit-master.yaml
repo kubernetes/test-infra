@@ -25,3 +25,79 @@ presubmits:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: kustomize-presubmit-master
       description: kustomize presubmit tests on master branch
+  - name: pull-kustomize-lint
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/kustomize
+    branches:
+      - ^master$
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.20
+          command:
+            - make
+          args:
+            - lint
+            - check-license
+          resources:
+            requests:
+              cpu: "2"
+              memory: "6Gi"
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: pull-kustomize-lint
+      description: kustomize lint check on master branch
+  - name: pull-kustomize-api-diff
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/kustomize
+    branches:
+      - ^master$
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.20
+          command:
+            - make
+          args:
+            - apidiff
+          resources:
+            requests:
+              cpu: "2"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: pull-kustomize-api-diff
+      description: kustomize api diff check on master branch
+  - name: pull-kustomize-test-unit-linux
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/kustomize
+    branches:
+      - ^master$
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.20
+          command:
+            - make
+          args:
+            - test-unit-non-plugin
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: pull-kustomize-test-unit-linux
+      description: kustomize unit test on master branch in linux
