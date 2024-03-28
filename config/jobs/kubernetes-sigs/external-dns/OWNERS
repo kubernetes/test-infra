@@ -4,17 +4,18 @@
 
 approvers:
   - johngmyers
+  - mloiseleur
   - raffo
-  - njuettner
   - szuecs
 
 reviewers:
   - johngmyers
-  - njuettner
+  - mloiseleur
   - raffo
   - szuecs
 
 emeritus_approvers:
   - hjacobs
   - linki
+  - njuettner
   - seanmalloy
