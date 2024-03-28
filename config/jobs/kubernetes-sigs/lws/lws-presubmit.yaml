@@ -71,8 +71,9 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.11
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - test-e2e
         securityContext:
           privileged: true
@@ -101,8 +102,9 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.28.7
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - test-e2e
         securityContext:
           privileged: true
@@ -131,8 +133,9 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.29.2
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - test-e2e
         securityContext:
           privileged: true
