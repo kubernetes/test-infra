@@ -192,11 +192,11 @@ presubmits:
             - "./images/capi/scripts/ci-container-image.sh"
           resources:
             requests:
-              cpu: 4
-              memory: 6Gi
+              cpu: 2
+              memory: 1Gi
             limits:
-              cpu: 4
-              memory: 6Gi
+              cpu: 2
+              memory: 1Gi
           securityContext:
             privileged: true
             capabilities:
