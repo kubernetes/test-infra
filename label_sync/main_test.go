@@ -270,7 +270,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "change", Current: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
+					{Why: "change", Current: &Label{Name: "lab1", Description: "Test Label 1", Color: "bebeef"}, Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 			},
 		},
@@ -286,7 +286,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "change", Current: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
+					{Why: "change", Current: &Label{Name: "lab1", Description: "Test Label 5", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 			},
 		},
@@ -396,11 +396,11 @@ func TestSyncLabels(t *testing.T) {
 					{Why: "rename", Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}, Current: &Label{Name: "LGTM", Description: "LGTM", Color: "00ff00"}},
 				},
 				"repo2": {
-					{Why: "change", Current: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}, Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}},
+					{Why: "change", Current: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ee3333"}, Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}},
 				},
 				"repo3": {
 					{Why: "rename", Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}, Current: &Label{Name: "PRIORITY/P0", Description: "P0 Priority", Color: "ff0000"}},
-					{Why: "change", Current: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}, Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}},
+					{Why: "change", Current: &Label{Name: "lgtm", Description: "LGTM", Color: "0000ff"}, Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}},
 				},
 				"repo4": {
 					{Why: "missing", Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}},

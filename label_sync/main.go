@@ -467,9 +467,9 @@ func rename(repo string, previous, wanted Label) Update {
 }
 
 // Update the label color/description
-func change(repo string, label Label) Update {
-	logrus.WithField("repo", repo).WithField("label", label.Name).WithField("color", label.Color).Info("change")
-	return Update{Why: "change", Current: &label, Wanted: &label, repo: repo}
+func change(repo string, previous, wanted Label) Update {
+	logrus.WithField("repo", repo).WithField("label", previous.Name).WithField("color", previous.Color).Info("change")
+	return Update{Why: "change", Current: &previous, Wanted: &wanted, repo: repo}
 }
 
 // Migrate labels to another label
@@ -584,9 +584,9 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 			case l.Name != cur.Name:
 				actions = append(actions, rename(repo, cur, l))
 			case l.Color != cur.Color:
-				actions = append(actions, change(repo, l))
+				actions = append(actions, change(repo, cur, l))
 			case l.Description != cur.Description:
-				actions = append(actions, change(repo, l))
+				actions = append(actions, change(repo, cur, l))
 			}
 		}
 
