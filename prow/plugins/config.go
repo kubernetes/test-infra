@@ -694,16 +694,15 @@ func (w Welcome) getRepos() []string {
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
 type Dco struct {
-	// SkipDCOCheckForMembers is used to skip DCO check for trusted org members
+	// SkipDCOCheckForMembers is used to skip DCO check for org members.
 	SkipDCOCheckForMembers bool `json:"skip_dco_check_for_members,omitempty"`
 	// TrustedApps defines list of apps which commits will not be checked for DCO singoff.
 	// The list should contain usernames of each GitHub App without [bot] suffix.
-	// By default, this option is ignored.
 	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
-	// if the skip DCO option is enabled. The default is the PR's org.
+	// if the SkipDCOCheckForMembers option is enabled. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
-	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
+	// SkipDCOCheckForCollaborators is used to skip DCO check for repository collaborators.
 	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
 	// ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
 	ContributingRepo string `json:"contributing_repo,omitempty"`
