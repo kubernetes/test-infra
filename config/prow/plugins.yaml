@@ -70,6 +70,7 @@ approve:
   - kubernetes/kops
   - kubernetes/website
   - kubernetes-sigs/external-dns
+  - kubernetes-sigs/cluster-api-provider-openstack
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
