@@ -203,10 +203,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 32Gi
+            memory: 4Gi
           limits:
             cpu: 7300m
-            memory: 32Gi
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-blocking-main
