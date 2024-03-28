@@ -33,7 +33,7 @@ a future date).
 
 **WARNING:** Release branch jobs generation for 1.28+ requires special steps
 that are yet to be documented. See [#29387](https://github.com/kubernetes/test-infra/pull/29387)
-and "TODO(1.30)" comments for more details.
+and "TODO(1.31)" comments for more details.
 
 This task should be done after the release is complete and previous PRs are
 merged. The following steps should be run from the root of this repository.
