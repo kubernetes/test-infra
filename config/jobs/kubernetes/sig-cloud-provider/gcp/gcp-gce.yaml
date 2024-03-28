@@ -460,6 +460,7 @@ presubmits:
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
