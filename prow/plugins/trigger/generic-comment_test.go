@@ -17,6 +17,7 @@ limitations under the License.
 package trigger
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -1477,6 +1478,41 @@ func TestRetestFilter(t *testing.T) {
 				if actualDefault != expectedDefault {
 					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
 				}
+			}
+		})
+	}
+}
+
+func TestFailingWorkflow(t *testing.T) {
+	var testCases = []struct {
+		name                             string
+		triggerFailedGitHubWorkflowError error
+		expectedMessage                  string
+	}{
+		{
+			name:                             "riggered workflow failed",
+			triggerFailedGitHubWorkflowError: nil,
+			expectedMessage:                  "",
+		},
+		{
+			name:                             "Triggered workflow failed due to expired workflow",
+			triggerFailedGitHubWorkflowError: errors.New(`{"message": "Unable to retry this workflow run because it was created over a month ago","documentation_url": "https://docs.github.com/rest/actions/workflow-runs#re-run-failed-jobs-from-a-workflow-run"}`),
+			expectedMessage:                  `{"message": "Unable to retry this workflow run because it was created over a month ago","documentation_url": "https://docs.github.com/rest/actions/workflow-runs#re-run-failed-jobs-from-a-workflow-run"}`,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := fakegithub.NewFakeClient()
+			c.TriggerFailedGitHubWorkflowError = tc.triggerFailedGitHubWorkflowError
+			err := c.TriggerFailedGitHubWorkflow("org", "repo", 1)
+			if c.TriggerFailedGitHubWorkflowError == nil && err != nil {
+				t.Errorf("Expected error message:\n%s\nGot:\n%s", tc.expectedMessage, err.Error())
+			}
+			if c.TriggerFailedGitHubWorkflowError != nil  && err == nil{
+				t.Errorf("Expected error message:\n%s\nGot:\n<nil>", tc.expectedMessage)
+			}
+			if c.TriggerFailedGitHubWorkflowError != nil  && err.Error() != tc.expectedMessage  {
+				t.Errorf("Expected error message:\n%s\nGot:\n%s", tc.expectedMessage, err.Error())
 			}
 		})
 	}

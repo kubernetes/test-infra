@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"fmt"
+	"strings"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/kube"
@@ -148,6 +150,10 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			if err != nil {
 				c.Logger.Errorf("%v: unable to get failed github action runs for branch %v", err, pr.Head.Ref)
 			} else {
+				var expiredWorkflows []string
+				var wg sync.WaitGroup
+				var mu sync.Mutex
+
 				for _, run := range failedRuns {
 					log := c.Logger.WithFields(logrus.Fields{
 						"runID":   run.ID,
@@ -155,14 +161,31 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 						"org":     org,
 						"repo":    repo,
 					})
-					runID := run.ID
-					go func() {
+					wg.Add(1)
+					go func(runName string, runID int, log *logrus.Entry) {
+						defer wg.Done()
+
 						if err := c.GitHubClient.TriggerFailedGitHubWorkflow(org, repo, runID); err != nil {
-							log.Errorf("attempt to trigger github run failed: %v", err)
+							log.Errorf("attempt to trigger github run failed for %v: %v", runName, err)
+							if strings.Contains(err.Error(), "Unable to retry this workflow run because it was created over a month ago") {
+								mu.Lock()
+								expiredWorkflows = append(expiredWorkflows, runName)
+								mu.Unlock()
+							}
 						} else {
 							log.Infof("successfully triggered action run")
 						}
-					}()
+					}(run.Name, run.ID, log)
+				}
+
+				wg.Wait()
+
+				if len(expiredWorkflows) > 0 {
+					comment := fmt.Sprintf(`The following workflows could not be re-triggered because they are now expired (created over a month ago):
+- %s
+`, strings.Join(expiredWorkflows, "\n- "))
+					c.Logger.Infof("Commenting \"%s\".", comment)
+					c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, comment))
 				}
 			}
 		}

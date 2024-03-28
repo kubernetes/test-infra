@@ -141,6 +141,9 @@ type FakeClient struct {
 	// ListIssueCommentsWithContextError will be returned if set when ListIssueCommentsWithContext is called
 	ListIssueCommentsWithContextError error
 
+	// TriggerFailedGitHubWorkflowError will be returned if set when TriggerFailedGitHubWorkflow is called
+	TriggerFailedGitHubWorkflowError error
+
 	// WasLabelAddedByHumanVal determines the return of the method with the same name
 	WasLabelAddedByHumanVal bool
 
@@ -1194,7 +1197,7 @@ func (f *FakeClient) TriggerGitHubWorkflow(org, repo string, id int) error {
 }
 
 func (f *FakeClient) TriggerFailedGitHubWorkflow(org, repo string, id int) error {
-	return nil
+	return f.TriggerFailedGitHubWorkflowError
 }
 
 func (f *FakeClient) RequestReview(org, repo string, number int, logins []string) error {
