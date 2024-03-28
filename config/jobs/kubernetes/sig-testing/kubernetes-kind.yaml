@@ -27,7 +27,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Beta\]|\[Alpha\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -121,7 +121,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Beta\]|\[Alpha\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
