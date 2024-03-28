@@ -97,6 +97,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   decoration_config:
     timeout: 90m
