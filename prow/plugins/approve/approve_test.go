@@ -1357,7 +1357,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 type fakeOwnersClient struct{}
 
-func (foc fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (foc fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return fakeRepoOwners{}, nil
 }
 
@@ -1395,6 +1395,10 @@ func (fro fakeRepoOwners) Reviewers(path string) layeredsets.String {
 
 func (fro fakeRepoOwners) RequiredReviewers(path string) sets.Set[string] {
 	return sets.New[string]()
+}
+
+func (fro fakeRepoOwners) OwnersAliases() repoowners.RepoAliases {
+	return make(repoowners.RepoAliases)
 }
 
 func TestHandleGenericComment(t *testing.T) {

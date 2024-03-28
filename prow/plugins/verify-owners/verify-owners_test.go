@@ -204,7 +204,7 @@ type fakeRepoownersClient struct {
 	foc *fakeOwnersClient
 }
 
-func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return froc.foc, nil
 }
 
@@ -272,6 +272,10 @@ func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
 
 func (foc *fakeOwnersClient) IsAutoApproveUnownedSubfolders(path string) bool {
 	return false
+}
+
+func (foc *fakeOwnersClient) OwnersAliases() repoowners.RepoAliases {
+	return make(repoowners.RepoAliases)
 }
 
 func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {

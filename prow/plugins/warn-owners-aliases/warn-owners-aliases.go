@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rewardowners
+package warnownersaliases
 
 import (
 	"fmt"
-	"path/filepath"
-	"strings"
 
 	"github.com/sirupsen/logrus"
-
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -35,19 +31,7 @@ import (
 
 const (
 	// PluginName defines this plugin's registered name.
-	PluginName    = "reward-owners"
-	RewardMessage = `
-Thanks to %s for serving the community in this new capacity!
-
-Next steps:
-1- Reach out in [slack.k8s.io](http://slack.k8s.io/) -> #sig-contribex for your special badge swag!
-
-2- Join [slack.k8s.io](http://slack.k8s.io/) -> #kubernetes-contributors in slack and [dev@kubernetes.io](https://groups.google.com/a/kubernetes.io/g/dev) for all upstream info
-
-3- Review the [community-membership.md](https://github.com/kubernetes/community/blob/master/community-membership.md) doc for your role. If for some reason you can't perform the duties associated, Emeritus is a great way to take a break! [OWNERs](https://github.com/kubernetes/community/blob/master/contributors/guide/owners.md) is another great resource for how this works.
-
-4- Look over our [governance](https://github.com/kubernetes/community/blob/master/governance.md) docs now that you are actively involved in the maintenance of the project.
-`
+	PluginName = "warn-owners-aliases"
 )
 
 func init() {
@@ -56,7 +40,7 @@ func init() {
 
 func helpProvider(_ *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: fmt.Sprintf("The reward-owners plugin watches in %s and %s files for modifications and welcomes new approvers and reviewers.", ownersconfig.DefaultOwnersFile, ownersconfig.DefaultOwnersAliasesFile),
+		Description: fmt.Sprintf("The warn-owners-aliases plugin watches %s files for modifications and comments with OWNERS files that contain the modified alias.", ownersconfig.DefaultOwnersAliasesFile),
 	}
 	return pluginHelp, nil
 }
@@ -77,11 +61,12 @@ type info struct {
 	org          string
 	repo         string
 	repoFullName string
+	user         string
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	// Only consider closed PRs that got merged
-	if pre.Action != github.PullRequestActionClosed || !pre.PullRequest.Merged {
+	// Only consider newly opened PRs
+	if pre.Action != github.PullRequestActionOpened {
 		return nil
 	}
 
@@ -92,29 +77,30 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 		org:          pre.Repo.Owner.Login,
 		repo:         pre.Repo.Name,
 		repoFullName: pre.Repo.FullName,
+		user:         pre.PullRequest.User.Login,
 	}
+
 	return handle(pc.GitHubClient, pc.OwnersClient, pc.Logger, prInfo, pc.PluginConfig.OwnersFilenames)
 }
 
 func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, info info, resolver ownersconfig.Resolver) error {
-
 	// Get changes.
 	changes, err := ghc.GetPullRequestChanges(info.org, info.repo, info.number)
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 
-	// Check if OWNERS or OWNERS_ALIASES have been modified.
-	var ownersModified bool
+	// Check if OWNERS_ALIASES has been modified.
+	var ownersAliasesModified bool
 	filenames := resolver(info.org, info.repo)
 	for _, change := range changes {
-		if (filepath.Base(change.Filename) == filenames.Owners || change.Filename == filenames.OwnersAliases) &&
+		if change.Filename == filenames.OwnersAliases &&
 			change.Status != github.PullRequestFileRemoved {
-			ownersModified = true
+			ownersAliasesModified = true
 			break
 		}
 	}
-	if !ownersModified {
+	if !ownersAliasesModified {
 		return nil
 	}
 
@@ -123,25 +109,69 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, info info, res
 	if err != nil {
 		return err
 	}
+	// This shouldn't happen, but if the repo had no owners
+	// aliases defined, don't do anything and return.
+	if len(baseRepo.OwnersAliases()) == 0 {
+		return nil
+	}
 
 	log.Debug("Resolving repository owners for head branch...")
 	headRepo, err := oc.LoadRepoOwnersSha(info.org, info.repo, info.head.Ref, info.head.SHA, false)
 	if err != nil {
 		return err
 	}
-
-	// Reward only new owners.
-	newOwners := headRepo.AllOwners().Difference(baseRepo.AllOwners())
-	if newOwners.Len() == 0 {
-		log.Debug("No new owner to reward, exiting.")
+	// If for some reason all owners aliases were deleted as part of this PR,
+	// don't do anything and return.
+	if len(headRepo.OwnersAliases()) == 0 {
 		return nil
 	}
 
-	// Tag users by prepending @ to their names.
-	taggedNewOwners := make([]string, newOwners.Len())
-	for i, o := range sets.List(newOwners) {
-		taggedNewOwners[i] = fmt.Sprintf("@%s", o)
+	aliasesAddedTo := findOwnersAliasesAddedTo(baseRepo.OwnersAliases(), headRepo.OwnersAliases())
+	// if no relevant changes, don't do anything.
+	if len(aliasesAddedTo) == 0 {
+		return nil
 	}
 
-	return ghc.CreateComment(info.org, info.repo, info.number, fmt.Sprintf(RewardMessage, strings.Join(taggedNewOwners, ", ")))
+	return ghc.CreateComment(info.org, info.repo, info.number, constructComment(info.org, info.repo, info.user, aliasesAddedTo))
+}
+
+// findOwnersAliasesAddedTo finds the existing aliases that were added to
+// by comparing the lengths of the owners under each alias.
+func findOwnersAliasesAddedTo(base, head repoowners.RepoAliases) []string {
+	result := []string{}
+	for alias := range head {
+		owners, ok := base[alias]
+		if !ok { // newly added alias.
+			continue
+		}
+		// If someone was added to this already existing alias
+		// as part of this PR, return this alias.
+		if head[alias].Difference(owners).Len() > 0 {
+			result = append(result, alias)
+		}
+	}
+
+	return result
+}
+
+func constructComment(org, repo, user string, aliases []string) string {
+	const message = `@%s **warning**: this PR adds users to one or more owners aliases.
+  
+The changed aliases are present in one or more OWNERS files, please ensure that the added  
+users meet the requirements of a [reviewer/approver](https://github.com/kubernetes/community/blob/master/community-membership.md) for each of the OWNERS files this alias is present in.  
+This helps us regulate unintentional grant of reviewer/approver privileges.
+  
+The list of aliases changes and potential corresponding OWNERS files that contain this alias in this repo is as follows:
+%s`
+
+	changeList := ""
+	for _, alias := range aliases {
+		changeList += fmt.Sprintf("- %s: [OWNERS files containing alias](%s)\n", alias, getHoundLink(org, repo, alias))
+	}
+
+	return fmt.Sprintf(message, user, changeList)
+}
+
+func getHoundLink(org, repo, alias string) string {
+	return fmt.Sprintf("https://cs.k8s.io/?q=%s&i=nope&files=OWNERS$&excludeFiles=vendor&repos=%s/%s", alias, org, repo)
 }

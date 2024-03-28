@@ -142,8 +142,8 @@ func (entry cacheEntry) fullyLoaded() bool {
 
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
-	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
-	LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error)
+	LoadRepoOwners(org, repo, base string) (RepoOwnerWithAliases, error)
+	LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwnerWithAliases, error)
 
 	WithFields(fields logrus.Fields) Interface
 	WithGitHubClient(client github.Client) Interface
@@ -261,6 +261,13 @@ type RepoOwner interface {
 
 var _ RepoOwner = &RepoOwners{}
 
+type RepoOwnerWithAliases interface {
+	RepoOwner
+	OwnersAliases() RepoAliases
+}
+
+var _ RepoOwnerWithAliases = &RepoOwners{}
+
 // RepoOwners contains the parsed OWNERS config.
 type RepoOwners struct {
 	RepoAliases
@@ -283,9 +290,13 @@ func (r *RepoOwners) Filenames() ownersconfig.Filenames {
 	return r.filenames
 }
 
+func (r *RepoOwners) OwnersAliases() RepoAliases {
+	return r.RepoAliases
+}
+
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
-func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
+func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerWithAliases, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
@@ -303,7 +314,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	return c.LoadRepoOwnersSha(org, repo, base, sha, true)
 }
 
-func (c *Client) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error) {
+func (c *Client) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwnerWithAliases, error) {
 	c.used = true
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base, "sha": sha})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)

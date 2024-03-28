@@ -72,7 +72,7 @@ type githubClient interface {
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error)
 }
 
 type state struct {

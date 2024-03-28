@@ -129,7 +129,7 @@ type githubClient interface {
 }
 
 type repoownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error)
 }
 
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {

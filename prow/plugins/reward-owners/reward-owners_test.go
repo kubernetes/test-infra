@@ -34,7 +34,7 @@ import (
 
 type fakeOwnersClient struct{}
 
-func (f *fakeOwnersClient) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwner, error) {
+func (f *fakeOwnersClient) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwnerWithAliases, error) {
 	return &fakeRepoOwners{sha: sha}, nil
 }
 
@@ -72,6 +72,8 @@ func (f *fakeRepoOwners) AllOwners() sets.Set[string] {
 func (f *fakeRepoOwners) AllReviewers() sets.Set[string] {
 	return ownersBySha[f.sha]
 }
+
+func (f *fakeRepoOwners) OwnersAliases() repoowners.RepoAliases { return nil }
 
 var ownersBySha = map[string]sets.Set[string]{
 	"base":         sets.New[string]("alice", "bob"),
