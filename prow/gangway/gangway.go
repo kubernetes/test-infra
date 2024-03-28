@@ -29,6 +29,7 @@ import (
 	status "google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/validation"
 	prowcrd "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -50,10 +51,12 @@ type Gangway struct {
 }
 
 // ProwJobClient describes a Kubernetes client for the Prow Job CR. Unlike a
-// general-purpose client, it only expects 2 methods, Create() and Get().
+// general-purpose client, it only expects 4 methods, Create(), Get(), List() and UpdateStatus().
 type ProwJobClient interface {
 	Create(context.Context, *prowcrd.ProwJob, metav1.CreateOptions) (*prowcrd.ProwJob, error)
 	Get(context.Context, string, metav1.GetOptions) (*prowcrd.ProwJob, error)
+	List(context.Context, metav1.ListOptions) (*prowcrd.ProwJobList, error)
+	UpdateStatus(context.Context, *prowcrd.ProwJob, metav1.UpdateOptions) (*prowcrd.ProwJob, error)
 }
 
 // CreateJobExecution triggers a new Prow job.
@@ -115,9 +118,18 @@ func (gw *Gangway) GetJobExecution(ctx context.Context, gjer *GetJobExecutionReq
 		return nil, err
 	}
 
+	jobExec := &JobExecution{
+		Id:        prowJobCR.Name,
+		JobStatus: TranslateProwJobStatus(prowJobCR),
+	}
+
+	return jobExec, nil
+}
+
+// Translate ProwJobStatus.State in the Prow Job CR into a JobExecutionStatus.
+func TranslateProwJobStatus(prowJobCR *prowcrd.ProwJob) JobExecutionStatus {
 	var jobStatus JobExecutionStatus
 
-	// Translate ProwJobStatus.State in the Prow Job CR into a JobExecutionStatus.
 	switch prowJobCR.Status.State {
 	case prowcrd.TriggeredState:
 		jobStatus = JobExecutionStatus_TRIGGERED
@@ -135,13 +147,36 @@ func (gw *Gangway) GetJobExecution(ctx context.Context, gjer *GetJobExecutionReq
 		jobStatus = JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED
 
 	}
+	return jobStatus
+}
 
-	jobExec := &JobExecution{
-		Id:        prowJobCR.Name,
-		JobStatus: jobStatus,
+func (gw *Gangway) BulkJobStatusChange(ctx context.Context, bjscr *BulkJobStatusChangeRequest) (*JobExecutions, error) {
+	if err := bjscr.Validate(); err != nil {
+		return nil, err
 	}
 
-	return jobExec, nil
+	pjStateString := bjscr.GetJobStatusChange().GetCurrent().String()
+	selector := fields.SelectorFromSet(map[string]string{"status.state": pjStateString})
+	pjList, err := gw.ProwJobClient.List(context.TODO(), metav1.ListOptions{FieldSelector: selector.String()})
+	if err != nil {
+		return nil, err
+	}
+
+	jobExecutions := &JobExecutions{}
+	for _, pj := range pjList.Items {
+		pj.Status.State = prowcrd.ProwJobState(bjscr.GetJobStatusChange().GetDesired().String())
+		newPj, err := gw.ProwJobClient.UpdateStatus(context.TODO(), &pj, metav1.UpdateOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		jobExec := &JobExecution{
+			Id:        newPj.Name,
+			JobStatus: TranslateProwJobStatus(newPj),
+		}
+		jobExecutions.JobExecution = append(jobExecutions.JobExecution, jobExec)
+	}
+	return jobExecutions, nil
 }
 
 // ClientAuthorized checks whether or not a client can run a Prow job based on
@@ -346,6 +381,17 @@ func (cjer *CreateJobExecutionRequest) Validate() error {
 		}
 	}
 
+	return nil
+}
+
+func (bjscr *BulkJobStatusChangeRequest) Validate() error {
+
+	if bjscr.GetJobStatusChange().GetCurrent() == JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED {
+		return errors.New("current status is unspecified")
+	}
+	if bjscr.GetJobStatusChange().GetDesired() == JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED {
+		return errors.New("desired status is unspecified")
+	}
 	return nil
 }
 
