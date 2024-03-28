@@ -215,3 +215,49 @@ periodics:
             limits:
               cpu: "10"
               memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-multikueue-e2e-main-1-29
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-multikueue-e2e-main-1-29
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic multikueue end to end tests for Kubernetes 1.29"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.29.0
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.22
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-multikueue-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
