@@ -43,7 +43,7 @@ type TestCase struct {
 	ClassName    string     `xml:"class_name,attr"`
 	Name         string     `xml:"name,attr"`
 	Time         string     `xml:"time,attr"`
-	Failure      bool       `xml:"failure,omitempty"`
+	Failure      string     `xml:"failure,omitempty"`
 	PropertyList Properties `xml:"properties"`
 }
 
@@ -58,7 +58,6 @@ func (ts *Testsuite) addTestCase(coverageTargetName string, ratio, threshold flo
 		ClassName: "go_coverage",
 		Name:      coverageTargetName,
 		Time:      "0",
-		Failure:   ratio < threshold,
 		PropertyList: Properties{
 			PropertyList: []Property{
 				{
@@ -67,6 +66,9 @@ func (ts *Testsuite) addTestCase(coverageTargetName string, ratio, threshold flo
 				},
 			},
 		},
+	}
+	if ratio < threshold {
+		testCase.Failure = fmt.Sprintf("code coverage of %.0f%% is below threshold of %.0f%%", 100*ratio, 100*threshold)
 	}
 	ts.Testcases = append(ts.Testcases, testCase)
 }
