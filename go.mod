@@ -78,7 +78,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
-	k8s.io/client-go v0.25.9
+	k8s.io/client-go v0.28.3
 	k8s.io/code-generator v0.25.9
 	k8s.io/klog/v2 v2.100.1
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2
@@ -129,7 +129,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/btree v1.0.1 // indirect
-	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-containerregistry v0.15.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
