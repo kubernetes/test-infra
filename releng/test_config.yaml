@@ -35,8 +35,8 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
-  # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
-  # TODO(1.29): comment this out when we move 1.29 to stable1
+  # TODO(1.30): Comment this out when moving 1.30 to stable1
+  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -165,44 +165,46 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
+  # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
+  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
   # stable4
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
-  #     interval: 24h
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseBlocking: true
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
-  #     interval: 24h
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseBlocking: true
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-default:
-  #     interval: 24h
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseBlocking: true
-  #     testgridNumFailuresToAlert: 6
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
-  #     interval: 24h
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseInforming: true
-  #     testgridNumFailuresToAlert: 6
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
-  #     interval: 24h
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseInforming: true
-  #     testgridNumFailuresToAlert: 6
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
-  #     interval: 24h
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseBlocking: true
-  #   ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
-  #     interval: 24h
-  #     args:
-  #     - --env=KUBE_PROXY_DAEMONSET=true
-  #     - --env=ENABLE_POD_PRIORITY=true
-  #     # Panic if anything mutates a shared informer cache
-  #     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-  #     - --runtime-config=api/beta=true
-  #     sigOwners: [sig-cloud-provider-gcp]
-  #     releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
+    interval: 24h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/beta=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
 
 # The following settings are used by cluster e2e tests.
 
@@ -252,33 +254,35 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
-  # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
-  # TODO(1.29): comment this out when we move 1.29 to stable1
+  # TODO(1.30): Comment this out when moving 1.30 to stable1.
+  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
   beta:
+    args:
+    - --extract=ci/latest-1.30
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.30'
+  stable1:
     args:
     - --extract=ci/latest-1.29
     - --extract-ci-bucket=k8s-release-dev
     version: '1.29'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.28
     - --extract-ci-bucket=k8s-release-dev
     version: '1.28'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.27
     - --extract-ci-bucket=k8s-release-dev
     version: '1.27'
-  stable3:
+  # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
+  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  stable4:
     args:
     - --extract=ci/latest-1.26
     - --extract-ci-bucket=k8s-release-dev
     version: '1.26'
-  #   stable4:
-  #     args:
-  #     - --extract=ci/latest-1.25
-  #     - --extract-ci-bucket=k8s-release-dev
-  #     version: '1.25'
 
 testSuites:
   alphafeatures:
@@ -286,7 +290,7 @@ testSuites:
     - --timeout=180m
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -422,28 +426,30 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
-  # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
-  # TODO(1.29): comment this out when we move 1.29 to stable1
+  # TODO(1.30): Comment this out when moving 1.30 to stable1.
+  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
   beta:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.30
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-1.30
+  stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.29
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-1.29
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.28
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-1.28
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.27
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-1.27
-  stable3:
+  # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
+  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.26
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-1.26
-  # stable4:
-  #   args:
-  #   - --repo=k8s.io/kubernetes=release-1.25
-  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
 
 nodeTestSuites:
   default:

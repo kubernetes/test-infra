@@ -176,3 +176,52 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos-k8sstable4-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable4-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
