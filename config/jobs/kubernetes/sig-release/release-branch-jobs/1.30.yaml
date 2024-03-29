@@ -2311,7 +2311,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-windows-private-registry-cred: "true"
-    name: pull-kubernetes-e2e-capz-windows-master
+    name: pull-kubernetes-e2e-capz-windows-1-30
     optional: true
     path_alias: k8s.io/kubernetes
     run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
