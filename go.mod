@@ -81,7 +81,7 @@ require (
 	golang.org/x/text v0.13.0
 	golang.org/x/time v0.3.0
 	golang.org/x/tools v0.9.3
-	gomodules.xyz/jsonpatch/v2 v2.2.0
+	gomodules.xyz/jsonpatch/v2 v2.4.0
 	google.golang.org/api v0.121.0
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1
 	google.golang.org/grpc v1.55.0
