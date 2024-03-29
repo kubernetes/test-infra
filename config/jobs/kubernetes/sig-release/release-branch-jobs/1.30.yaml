@@ -2285,7 +2285,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.30
-    context: pull-kubernetes-e2e-capz-windows-1.30
+    context: pull-kubernetes-e2e-capz-windows-1-30
     decorate: true
     extra_refs:
     - base_ref: release-1.13
@@ -2301,6 +2301,10 @@ presubmits:
       path_alias: k8s.io/windows-testing
       repo: windows-testing
       workdir: true
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1-30
+      testgrid-num-columns-recent: '30'
     labels:
       preset-azure-anonymous-pull: "true"
       preset-azure-capz-sa-cred: "true"
