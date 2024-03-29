@@ -63,7 +63,7 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/client_model v0.4.0
-	github.com/prometheus/common v0.42.0
+	github.com/prometheus/common v0.44.0
 	github.com/shurcooL/githubv4 v0.0.0-20210725200734-83ba7b4c9228
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
