@@ -31,6 +31,12 @@ variants:
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
+  '1.30':
+    CONFIG: '1.30'
+    GO_VERSION: 1.22.1
+    K8S_RELEASE: latest-1.30
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
   '1.29':
     CONFIG: '1.29'
     GO_VERSION: 1.21.8
