@@ -27,7 +27,8 @@ periodics:
       - --env=ENABLE_POD_PRIORITY=true
       # TODO: Fix generate_tests.py to set DisableCloudProviders,DisableKubeletCloudCredentialProviders to true when --cloud-proider=external
       # And also add --env=ENABLE_AUTH_PROVIDER_GCP=true
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
+      # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
       - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
