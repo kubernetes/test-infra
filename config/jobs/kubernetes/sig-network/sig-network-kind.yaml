@@ -132,7 +132,7 @@ presubmits:
           set -o pipefail;
           set -o xtrace;
           cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e-k8s.sh
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
