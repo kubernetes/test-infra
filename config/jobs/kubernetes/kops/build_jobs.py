@@ -421,12 +421,13 @@ k8s_versions = [
     "1.26",
     "1.27",
     "1.28",
+    "1.29",
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.27",
     "1.28",
+    "1.29",
 ]
 
 
@@ -494,7 +495,7 @@ def generate_misc():
                    cloud="aws",
                    build_cluster="k8s-infra-kops-prow-build",
                    # Latest runs with a staging AWS CCM, not available in registry.k8s.io
-                   k8s_version='1.28',
+                   k8s_version='1.29',
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing the artifacts-sandbox.k8s.io mirror
@@ -1795,7 +1796,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.28', '1.27']:
+    for version in ['master', '1.29', '1.28', '1.27']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -2145,6 +2146,16 @@ def generate_presubmits_e2e():
             ],
         ),
 
+        presubmit_test(
+            distro='channels',
+            branch='release-1.29',
+            k8s_version='1.29',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-calico-1-29',
+            networking='calico',
+            tab_name='e2e-1-29',
+            always_run=True,
+        ),
         presubmit_test(
             distro='channels',
             branch='release-1.28',
