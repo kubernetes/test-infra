@@ -1803,7 +1803,7 @@ def generate_pipeline():
         results.append(
             build_test(
                 cloud="aws",
-                build_cluster="k8s-infra-kops-prow-build",
+                build_cluster="default",
                 k8s_version=version.replace('master', 'latest'),
                 kops_version=kops_version,
                 kops_channel='alpha',
