@@ -19,7 +19,7 @@ periodics:
     path_alias: k8s.io/release
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240307-5387c97ec5-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240329-fc17bdd16b-master
       command:
       - runner.sh
       args:
@@ -52,7 +52,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240307-5387c97ec5-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240329-fc17bdd16b-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -108,7 +108,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240307-5387c97ec5-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240329-fc17bdd16b-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -164,7 +164,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240307-5387c97ec5-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240329-fc17bdd16b-master
       imagePullPolicy: Always
       command:
       - runner.sh
