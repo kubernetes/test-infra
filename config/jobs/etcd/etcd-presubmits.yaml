@@ -11,7 +11,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-build
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-unit-test
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
         command:
         - runner.sh
         args:
@@ -61,7 +61,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-verify
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
         command:
         - /bin/bash
         args:
@@ -97,7 +97,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-e2e-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
         command:
         - runner.sh
         args:
