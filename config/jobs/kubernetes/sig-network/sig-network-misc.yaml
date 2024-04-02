@@ -120,7 +120,7 @@ presubmits:
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230919
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
-        - --ginkgo-parallel=15
+        - --ginkgo-parallel=30
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
@@ -130,7 +130,7 @@ presubmits:
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
         - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|SCTP|PerformanceDNS|KubeProxyDaemonSetMigration|ServiceCIDRs|SCTPConnectivity)\]|DualStack|GCE|Disruptive|Serial|SNAT|LoadBalancer|ESIPP
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
-        - --timeout=150m
+        - --timeout=100m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
         resources:
           requests:
@@ -866,7 +866,7 @@ periodics:
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230919
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
-      - --ginkgo-parallel=15
+      - --ginkgo-parallel=30
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --gcp-nodes=4
@@ -876,7 +876,7 @@ periodics:
       # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
       - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|ServiceCIDRs|SCTPConnectivity)\]|DualStack|GCE|Disruptive|Serial|SNAT|LoadBalancer|ESIPP
       - --extract=ci/latest
-      - --timeout=150m
+      - --timeout=100m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
       resources:
         limits:
