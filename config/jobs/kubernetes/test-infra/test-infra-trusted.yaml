@@ -51,28 +51,6 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/alpine/
-  - name: post-test-infra-push-clusterfuzzlite
-    cluster: test-infra-trusted
-    run_if_changed: '^(experiment/clusterfuzzlite)'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "clusterfuzzlite-push"
-      description: builds and pushes the clusterfuzzlite image on change
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - experiment/clusterfuzzlite/
   - name: post-test-infra-push-gcloud-terraform
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud-terraform/'
@@ -862,27 +840,6 @@ periodics:
     testgrid-tab-name: rotate-legacy-default-build-sa-json-key
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Rotate legacy build cluster service account json key.
-# This job keeps the Prow Clusterfuzzlite image up to date.
-- cron: "30 1 1,15 * *"  # At 01:30 on day-of-month 1 and 15.
-  name: update-clusterfuzz-lite
-  cluster: test-infra-trusted
-  decorate: true
-  spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - experiment/clusterfuzzlite/'
-  annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "clusterfuzzlite-update"
-      description: builds and pushes the clusterfuzzlite image regularly
-
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
