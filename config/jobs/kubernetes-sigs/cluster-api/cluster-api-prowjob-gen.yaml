@@ -2,28 +2,59 @@
 # at: https://github.com/kubernetes-sigs/cluster-api/blob/main/hack/tools/prowjob-gen/
 # This configuration is used to generate the presubmits and periodics for cluster-api.
 
-# prow_ignored is a well known, unparsed field where non-Prow fields can
-# be defined without conflicting with unknown field validation.
+# Format:
+#  # prow_ignored is a well known, unparsed field where non-Prow fields can
+#  # be defined without conflicting with unknown field validation.
+#  prow_ignored:
+#    # Branch specific configuration: for each configured branch the generator will create three
+#    # prowjob configuration files (presubmits, periodics, periodics for upgrade tests)
+#    branches:
+#      <branch>:
+#        # The kubekins "minor version" should match the minor version of Kubernetes dependencies used on this branch.
+#        testImage: "<kubekins-e2e-image>"
+#        interval: "2h"
+#        upgradesInterval: "24h"
+#        # This value should be the minimum Kubernetes supported version for Cluster API management cluster
+#        # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+#        # docs (look for minimum supported k8s version for management cluster, i.e N-3).
+#        # Please also make sure to refer a version where a kindest/node image exists for (see https://github.com/kubernetes-sigs/kind/releases/)
+#        kubernetesVersionManagement: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
+#        # This value determines the minimum Kubernetes
+#        # supported version for Cluster API management cluster
+#        # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+#        # docs (look for minimum supported k8s version for management cluster, i.e N-3).
+#        # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
+#        # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
+#        kubebuilderEnvtestKubernetesVersion: "1.26.1"
+#        # Upgrades defines tested upgrade paths.
+#        upgrades: []
+
 prow_ignored:
-  # Branch specific configuration: for each configured branch the generator will create three
-  # prowjob configuration files (presubmits, periodics, periodics for upgrade tests)
   branches:
     main:
-      # The kubekins "minor version" should match the minor version of Kubernetes dependencies used on this branch.
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-1.29"
       interval: "2h"
       upgradesInterval: "24h"
-      # This value should be the minimum Kubernetes supported version for Cluster API management cluster
-      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
-      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
-      # Please also make sure to refer a version where a kindest/node image exists for (see https://github.com/kubernetes-sigs/kind/releases/)
       kubernetesVersionManagement: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
-      # This value determines the minimum Kubernetes
-      # supported version for Cluster API management cluster
-      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
-      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
-      # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
-      # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
+      kubebuilderEnvtestKubernetesVersion: "1.26.1"
+      upgrades:
+      - from: "1.24"
+        to: "1.25"
+      - from: "1.25"
+        to: "1.26"
+      - from: "1.26"
+        to: "1.27"
+      - from: "1.27"
+        to: "1.28"
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
+    release-1.7:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-1.29"
+      interval: "4h"
+      upgradesInterval: "24h"
+      kubernetesVersionManagement: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
       kubebuilderEnvtestKubernetesVersion: "1.26.1"
       upgrades:
       - from: "1.24"
@@ -76,25 +107,6 @@ prow_ignored:
         to: "1.27"
       - from: "1.27"
         to: "1.28"
-    release-1.4:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-1.26"
-      interval: "4h"
-      upgradesInterval: "24h"
-      kubernetesVersionManagement: "v1.23.17"
-      kubebuilderEnvtestKubernetesVersion: "1.23.5"
-      upgrades:
-      - from: "1.21"
-        to: "1.22"
-      - from: "1.22"
-        to: "1.23"
-      - from: "1.23"
-        to: "1.24"
-      - from: "1.24"
-        to: "1.25"
-      - from: "1.25"
-        to: "1.26"
-      - from: "1.26"
-        to: "1.27"
 
   # The generator will run each template per branch and use a filename friendly
   # branch variable to format the target filename.
