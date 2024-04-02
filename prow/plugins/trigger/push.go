@@ -85,7 +85,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 			labels[k] = v
 		}
 		labels[github.EventGUID] = pe.GUID
-		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations)
+		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations, pjutil.RequireScheduling(c.Config.Scheduler.Enabled))
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj); err != nil {
 			return err

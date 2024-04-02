@@ -17,12 +17,14 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 	clienttesting "k8s.io/client-go/testing"
 
 	"k8s.io/apimachinery/pkg/api/equality"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
@@ -208,5 +210,80 @@ func TestHandlePE(t *testing.T) {
 		if numStarted != tc.jobsToRun {
 			t.Errorf("test %q: expected %d jobs to run, got %d", tc.name, tc.jobsToRun, numStarted)
 		}
+	}
+}
+
+func TestHandlePEScheduling(t *testing.T) {
+	job := config.JobBase{Name: "job"}
+	postsubmits := map[string][]config.Postsubmit{"org/repo": {{JobBase: job}}}
+
+	for _, tc := range []struct {
+		name             string
+		enableScheduling bool
+		pe               github.PushEvent
+		wantPJState      prowapi.ProwJobState
+	}{
+		{
+			name: "Create job in triggered state",
+			pe: github.PushEvent{
+				Ref: "refs/heads/master",
+				Repo: github.Repo{
+					Owner: github.User{Login: "org"},
+					Name:  "repo",
+				},
+			},
+			wantPJState: prowapi.TriggeredState,
+		},
+		{
+			name:             "Create job in scheduling state",
+			enableScheduling: true,
+			pe: github.PushEvent{
+				Ref: "refs/heads/master",
+				Repo: github.Repo{
+					Owner: github.User{Login: "org"},
+					Name:  "repo",
+				},
+			},
+			wantPJState: prowapi.SchedulingState,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ghClient := fakegithub.NewFakeClient()
+			fakeProwJobClient := fake.NewSimpleClientset()
+			c := Client{
+				GitHubClient:  ghClient,
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				Config: &config.Config{ProwConfig: config.ProwConfig{
+					ProwJobNamespace: "prowjobs",
+					Scheduler:        config.Scheduler{Enabled: tc.enableScheduling},
+				}},
+				Logger: logrus.WithField("plugin", PluginName),
+			}
+
+			c.Config.SetPostsubmits(postsubmits)
+
+			err := handlePE(c, tc.pe)
+			if err != nil {
+				t.Errorf("test %q: handlePE returned unexpected error %v", tc.name, err)
+			}
+
+			pjs, err := c.ProwJobClient.List(context.TODO(), v1.ListOptions{})
+			if err != nil {
+				t.Fatalf("Couldn't get PJs from the fake client: %s", err)
+			}
+
+			if len(pjs.Items) != 1 {
+				t.Errorf("Expected 1 job but got %d", len(pjs.Items))
+			}
+
+			resultPJ := pjs.Items[0]
+			if job.Name != resultPJ.Spec.Job {
+				t.Errorf("Expected job %s but got %s", job.Name, resultPJ.Spec.Job)
+			}
+
+			if tc.wantPJState != resultPJ.Status.State {
+				t.Errorf("Expected state %s but got %s", tc.wantPJState, resultPJ.Status.State)
+			}
+		})
 	}
 }
