@@ -20,18 +20,18 @@ IMG = gcr.io/k8s-testimages/kettle
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # These are the usual GKE variables.
-PROJECT       ?= k8s-gubernator
-ZONE          ?= us-west1-b
-CLUSTER       ?= g8r
+PROJECT       ?= kubernetes-public
+ZONE          ?= us-central1
+CLUSTER       ?= aaa
 
 get-cluster-credentials:
-	kubectl config use-context gke_k8s-gubernator_us-west1-b_g8r || gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
+	kubectl config use-context gke_kubernetes-public_us-central1_aaa || gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 push-prod:
-	../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. kettle/
+	../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-infra-tools --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. kettle/
 
 push:
-	../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-testimages --allow-dirty --build-dir=. kettle/
+	../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-infra-tools --allow-dirty --build-dir=. kettle/
 
 deploy: get-cluster-credentials
 	sed "s/:latest/:$(TAG)/g" deployment.yaml | kubectl apply -f - --record

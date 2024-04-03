@@ -29,9 +29,9 @@ Flags:
 # Create JSON Results and Upload
 This stage gets run for each [BigQuery] table that Kettle is tasked with uploading data to. Typically looking like either:
 - Fixed Time: `pypy3 make_json.py --days <num> | pv | gzip > build_<table>.json.gz`
-    and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s-gubernator:build.<table> build_<table>.json.gz schema.json`
+    and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s_infra_kettle:build.<table> build_<table>.json.gz schema.json`
 - All Results: `pypy3 make_json.py | pv | gzip > build_<table>.json.gz`
-    and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s-gubernator:build.<table> build_<table>.json.gz schema.json`
+    and `bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records={MAX_BAD_RECORDS} k8s_infra_kettle:build.<table> build_<table>.json.gz schema.json`
 
 ### Make Json
 `make_json.py` prepares an incremental table to track builds it has emitted to BQ. This table is named `build_emitted_<days>` (if days flag passed) or `build_emitted` otherwise. *This is important because if you change the days AND NOT the table being uploaded to, you will get duplicate results. If the `--reset_emitted` flag is passed, it will refresh the incremental table for fresh data. It then walks all of the builds to fetch within `<days>` or since epoch if unset, and dumps each as a json object to a build `tar.gz`.
@@ -49,6 +49,6 @@ After all historical data has been uploaded, Kettle enters a Streaming phase. It
 - inserts it into the tables (from flag)
 - adds the data to the respective incremental tables
 
-[BigQuery]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-gubernator
+[BigQuery]: https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=k8s-infra-kettle
 [Buckets]: https://github.com/kubernetes/test-infra/blob/master/kettle/buckets.yaml
 [Schema]: https://github.com/kubernetes/test-infra/blob/master/kettle/schema.json
