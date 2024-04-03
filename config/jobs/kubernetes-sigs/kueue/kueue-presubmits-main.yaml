@@ -242,7 +242,7 @@ presubmits:
             memory: "8Gi"
           limits:
             cpu: "4"
-            memory: "6Gi"
+            memory: "8Gi"
   - name: pull-kueue-build-image-main
     cluster: eks-prow-build-cluster
     branches:
