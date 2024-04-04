@@ -22,10 +22,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 9Gi
+          memory: 8Gi
         limits:
           cpu: 7300m
-          memory: 9Gi
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-test-main
@@ -63,10 +63,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 9Gi
+          memory: 8Gi
         limits:
           cpu: 7300m
-          memory: 9Gi
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-test-mink8s-main
@@ -106,11 +106,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-main
@@ -153,11 +153,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-dualstack-and-ipv6-main
@@ -205,11 +205,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 3000m
+          memory: 8Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 3000m
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-mink8s-main
@@ -250,11 +250,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 4000m
+          memory: 4Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 4000m
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-conformance-main
@@ -294,11 +294,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 4000m
+          memory: 4Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 4000m
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-conformance-ci-latest-main

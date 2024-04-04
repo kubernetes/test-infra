@@ -16,11 +16,11 @@ presubmits:
         - ./scripts/ci-build.sh
         resources:
           requests:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
+            memory: {{ if eq $.branch "main" }}4Gi{{ else }}9Gi{{ end }}
           limits:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
+            memory: {{ if eq $.branch "main" }}4Gi{{ else }}9Gi{{ end }}
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-build-{{ ReplaceAll $.branch "." "-" }}
@@ -41,11 +41,11 @@ presubmits:
         image: {{ $.config.TestImage }}
         resources:
           requests:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
+            memory: {{ if eq $.branch "main" }}2Gi{{ else }}9Gi{{ end }}
           limits:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
+            memory: {{ if eq $.branch "main" }}2Gi{{ else }}9Gi{{ end }}
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-apidiff-{{ ReplaceAll $.branch "." "-" }}
@@ -67,11 +67,11 @@ presubmits:
         - ./scripts/ci-verify.sh
         resources:
           requests:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: {{ if eq $.branch "main" }}5000m{{ else }}7300m{{ end }}
+            memory: {{ if eq $.branch "main" }}3Gi{{ else }}9Gi{{ end }}
           limits:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: {{ if eq $.branch "main" }}5000m{{ else }}7300m{{ end }}
+            memory: {{ if eq $.branch "main" }}3Gi{{ else }}9Gi{{ end }}
         securityContext:
           privileged: true
     annotations:
