@@ -44,11 +44,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
+          memory: {{ if eq $.branch "main" }}6Gi{{ else }}32Gi{{ end }}
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
+          memory: {{ if eq $.branch "main" }}6Gi{{ else }}32Gi{{ end }}
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}
