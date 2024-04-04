@@ -319,6 +319,117 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-supervisor-{{ ReplaceAll $.branch "." "-" }}
       description: Runs e2e tests with supervisor mode
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-{{ ReplaceAll $.branch "." "-" }}
+    branches:
+    - ^{{ $.branch }}$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Install\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-conformance-{{ ReplaceAll $.branch "." "-" }}
+      description: Runs conformance tests for CAPV with suprervisor mode
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+    branches:
+    - ^{{ $.branch }}$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Install-ci-latest\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+      description: Runs conformance tests with K8S ci latest for CAPV with suprervisor mode
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^{{ $.branch }}$
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "{{ index (index $.versions ((last $.config.Upgrades).From)) "k8sRelease" }}"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "{{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
 {{ end }}{{ if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     labels:
