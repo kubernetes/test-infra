@@ -58,10 +58,10 @@ presubmits:
               - verify
             resources:
               limits:
-                cpu: 1
+                cpu: 2
                 memory: 4Gi
               requests:
-                cpu: 1
+                cpu: 2
                 memory: 4Gi
       annotations:
         testgrid-dashboards: sig-testing-misc
