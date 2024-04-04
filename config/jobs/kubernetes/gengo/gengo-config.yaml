@@ -40,10 +40,9 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240329-fc17bdd16b-master
           command:
             - runner.sh
-            - bash
           args:
-           - -c
-           - hack/verify-examples.sh
+          - make
+           - verify
           resources:
             requests:
               memory: 4Gi
