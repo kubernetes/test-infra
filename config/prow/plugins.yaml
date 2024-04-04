@@ -222,7 +222,6 @@ lgtm:
   - kubernetes-sigs/aws-ebs-csi-driver
   - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
-  - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/cri-tools
@@ -260,9 +259,12 @@ lgtm:
   - kubernetes-sigs/cluster-api-operator
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/kueue
+  store_tree_hash: true
+- repos:
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/controller-tools
-  - kubernetes-sigs/kueue
+  review_acts_as_lgtm: true
   store_tree_hash: true
 
 blockades:
