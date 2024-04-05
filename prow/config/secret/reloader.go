@@ -50,6 +50,15 @@ func (p *parsingSecretReloader[T]) start(reloadCensor func()) error {
 func (p *parsingSecretReloader[T]) reloadSecret(reloadCensor func()) {
 	var lastModTime time.Time
 	logger := logrus.NewEntry(logrus.StandardLogger())
+	// Don't leave lastModTime uninitialized if possible.
+	// The secret is already loaded and parsed once before
+	// the reload goroutine begins in start(). Try using
+	// the modification time of that as a starting point.
+	secretStat, err := os.Stat(p.path)
+	if err != nil {
+		logger.WithField("secret-path", p.path).WithError(err).Warn("Error loading secret file.")
+	}
+	lastModTime = secretStat.ModTime()
 
 	skips := 0
 	for range time.Tick(1 * time.Second) {
