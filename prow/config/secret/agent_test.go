@@ -17,14 +17,16 @@ limitations under the License.
 package secret
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/logrusutil"
@@ -115,62 +117,88 @@ func TestAddWithParser(t *testing.T) {
 func testAddWithParser(t *testing.T) {
 	t.Parallel()
 
-	tmpDir := t.TempDir()
+	secretPath := filepath.Join(t.TempDir(), "secret")
 
-	secretPath := filepath.Join(tmpDir, "secret")
 	if err := os.WriteFile(secretPath, []byte("1"), 0644); err != nil {
 		t.Fatalf("failed to write initial content of secret: %v", err)
 	}
 
-	vals := make(chan int, 3)
-	errs := make(chan error, 3)
+	waitForErr := make(chan struct{})
+	// Since errs gets read and written by different goroutines, the test and the secret-agent,
+	// it should be r/w only when this lock is held
+	errsL := sync.Mutex{}
+	errs := make([]string, 0, 1)
+	vals := make([]int, 0, 2)
+
 	generator, err := AddWithParser(
 		secretPath,
 		func(raw []byte) (int, error) {
 			val, err := strconv.Atoi(string(raw))
 			if err != nil {
-				errs <- err
-				return val, err
+				errsL.Lock()
+				errs = append(errs, err.Error())
+				errsL.Unlock()
+				waitForErr <- struct{}{}
+				return 0, err
 			}
-			vals <- val
-			return val, err
+			return val, nil
 		},
 	)
 	if err != nil {
 		t.Fatalf("AddWithParser failed: %v", err)
 	}
 
-	checkValueAndErr := func(expected int, e error) {
+	// Get a value out of a generator. The value a generator pops out at
+	// a given time is compared with previous, if they differs then the function
+	// returns and the value is stored. When errorExpected is true, it waits for
+	// and error and then returns.
+	// The 10s timeout is there for safety reasons but hopefully it won't ever be hit.
+	// If that's the case we have a race condition (again).
+	generatorGetter := func(previous int, errorExpected bool) {
 		t.Helper()
-		select {
-		case v := <-vals:
-			if v != expected {
-				t.Errorf("expected value to get updated to %d but got updated to %d", expected, v)
+		for i := 0; i < 10; i++ {
+			if errorExpected {
+				select {
+				case <-waitForErr:
+					return
+				default:
+				}
+			} else if current := generator(); current != previous {
+				vals = append(vals, current)
+				return
 			}
-			break
-		case err := <-errs:
-			if e == nil || e.Error() != err.Error() {
-				t.Fatalf("expected error %v, got %v", e, err)
-			}
-		// the agent reloads every second, so ten seconds should be plenty
-		case <-time.After(10 * time.Second):
-			t.Fatalf("timed out waiting for value %d and error %d", expected, e)
+			time.Sleep(1 * time.Second)
 		}
-		if actual := generator(); actual != expected {
-			t.Errorf("expected value %d from generator, got %d", expected, actual)
-		}
+		t.Fatalf("timed out waiting for value. Previous value %d", previous)
 	}
-	checkValueAndErr(1, nil)
+
+	// Assume the previous value to be 0 here, anything other than 1 will just work
+	generatorGetter(0, false)
 
 	if err := os.WriteFile(secretPath, []byte("2"), 0644); err != nil {
 		t.Fatalf("failed to update secret on disk: %v", err)
 	}
-	// expect secret to get updated
-	checkValueAndErr(2, nil)
+
+	// Expect secret to get updated
+	generatorGetter(1, false)
 
 	if err := os.WriteFile(secretPath, []byte("not-a-number"), 0644); err != nil {
 		t.Fatalf("failed to update secret on disk: %v", err)
 	}
-	// expect secret to remain unchanged and an error in the parsing func
-	checkValueAndErr(2, errors.New(`strconv.Atoi: parsing "not-a-number": invalid syntax`))
+	// Expect secret to remain unchanged and an error in the parsing func
+	generatorGetter(0, true)
+
+	wantVals := []int{1, 2}
+	if diff := cmp.Diff(wantVals, vals); diff != "" {
+		t.Errorf("Unexpected values: %s", diff)
+	}
+
+	errsL.Lock()
+	resultErrs := slices.Clone(errs)
+	errsL.Unlock()
+
+	wantErrs := []string{`strconv.Atoi: parsing "not-a-number": invalid syntax`}
+	if diff := cmp.Diff(wantErrs, resultErrs); diff != "" {
+		t.Errorf("Unexpected errors: %s", diff)
+	}
 }
