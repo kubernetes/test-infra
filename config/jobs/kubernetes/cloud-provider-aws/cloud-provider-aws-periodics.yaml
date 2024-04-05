@@ -26,7 +26,7 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
       resources:
         limits:
           cpu: 2
@@ -69,7 +69,7 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
       resources:
         limits:
           cpu: 2
@@ -113,7 +113,7 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
       resources:
         limits:
           cpu: 8
@@ -193,7 +193,7 @@ periodics:
   spec:
     serviceAccountName: aws-shared-testing-role
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
       resources:
         limits:
           cpu: 8

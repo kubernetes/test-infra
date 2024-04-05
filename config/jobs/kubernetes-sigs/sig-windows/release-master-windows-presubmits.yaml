@@ -48,7 +48,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
         command:
         - "runner.sh"
         - "env"
@@ -104,7 +104,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
         command:
           - "runner.sh"
           - "env"
@@ -161,7 +161,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
         command:
           - "runner.sh"
           - "env"
@@ -217,7 +217,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
           command:
             - "runner.sh"
             - "env"
@@ -274,7 +274,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
           command:
             - "runner.sh"
             - "env"
@@ -333,7 +333,7 @@ presubmits:
       workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
           command:
             - "runner.sh"
             - "env"
@@ -383,7 +383,7 @@ presubmits:
       workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
           command:
             - "runner.sh"
             - "env"
@@ -437,7 +437,7 @@ presubmits:
       workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
           command:
             - "runner.sh"
             - "env"
@@ -498,7 +498,7 @@ presubmits:
       workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-master
           command:
             - "runner.sh"
             - "env"

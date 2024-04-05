@@ -1108,7 +1108,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-experimental
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-experimental
         name: ""
         resources:
           limits:
