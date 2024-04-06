@@ -98,3 +98,79 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+- name: ci-etcd-robustness-release35-amd64
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 210m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-robustness-release35-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
+        make install-lazyfs
+        set -euo pipefail
+        GO_TEST_FLAGS="-v --count 150 --failfast --timeout '200m' --run TestRobustnessExploratory"
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-release-3.5
+      resources:
+        requests:
+          cpu: "7"
+          memory: "14Gi"
+        limits:
+          cpu: "7"
+          memory: "14Gi"
+      # fuse needs privileged mode
+      securityContext:
+        privileged: true
+- name: ci-etcd-robustness-release34-amd64
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 210m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-robustness-release34-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
+        make install-lazyfs
+        set -euo pipefail
+        GO_TEST_FLAGS="-v --count 150 --failfast --timeout '200m' --run TestRobustnessExploratory"
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-release-3.4
+      resources:
+        requests:
+          cpu: "7"
+          memory: "14Gi"
+        limits:
+          cpu: "7"
+          memory: "14Gi"
+      # fuse needs privileged mode
+      securityContext:
+        privileged: true
