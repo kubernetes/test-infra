@@ -263,7 +263,7 @@ presubmits:
           args:
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -331,7 +331,7 @@ presubmits:
             - --build=quick
             - --cluster=
             - --env=KUBE_PROVIDERLESS=y
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -517,7 +517,7 @@ presubmits:
           args:
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -833,7 +833,7 @@ periodics:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.14
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -884,7 +884,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v1.7.14
+      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v1.7.15
       - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.1.12
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true
       - --env=KUBE_PROXY_DAEMONSET=true
