@@ -80,10 +80,6 @@ presubmits:
             command:
               - runner.sh
             env:
-              - name: K8S_VERSION
-                value: "v1.29.1"
-              - name: KIND_VERSION
-                value: "v0.21.0"
               - name: FOCUS
                 value: "Simple pod should contain last line of the log"
               - name: DRYRUN
@@ -125,10 +121,6 @@ presubmits:
             command:
               - runner.sh
             env:
-              - name: K8S_VERSION
-                value: "v1.29.1"
-              - name: KIND_VERSION
-                value: "v0.21.0"
               - name: FOCUS
                 value: "Simple pod should contain last line of the log"
               - name: CHECK_DURATION
@@ -154,3 +146,44 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-testing-misc
         testgrid-tab-name: hydrophone-simple-run
+    - name: pull-hydrophone-namespaced-run
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      path_alias: "sigs.k8s.io/hydrophone"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-master
+            command:
+              - runner.sh
+            env:
+              - name: FOCUS
+                value: "Simple pod should contain last line of the log"
+              - name: NAMESPACE
+                value: "e2e"
+              - name: CHECK_DURATION
+                value: "true"
+              - name: EXPECTED_NUM_TESTS
+                value: "1" # This is the number of specs expected to run.
+            args:
+              - bash
+              - -c
+              - |
+                make build
+                hack/run-e2e.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: 4Gi
+              limits:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-testing-misc
+        testgrid-tab-name: hydrophone-namespaced-run
