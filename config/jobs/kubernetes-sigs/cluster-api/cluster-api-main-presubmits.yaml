@@ -11,7 +11,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -39,7 +39,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         resources:
           requests:
             cpu: 6000m
@@ -62,7 +62,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -88,7 +88,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -112,7 +112,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -154,7 +154,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -200,7 +200,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -238,7 +238,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -280,7 +280,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -318,7 +318,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -367,7 +367,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -405,7 +405,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.30
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
