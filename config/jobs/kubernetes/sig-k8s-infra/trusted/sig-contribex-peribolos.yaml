@@ -1,0 +1,66 @@
+postsubmits:
+  kubernetes/org:
+  - name: post-org-peribolos
+    annotations:
+      testgrid-dashboards: sig-contribex-org
+      testgrid-tab-name: post-peribolos
+      testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    branches:
+    - ^main$
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20
+        command:
+        - ./admin/update.sh
+        args:
+        - --github-endpoint=http://ghproxy.default.svc.cluster.local
+        - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github/token
+        - --confirm
+        volumeMounts:
+        - name: github
+          mountPath: /etc/github
+      volumes:
+      - name: github
+        secret:
+          secretName: k8s-github-robot-github-token
+periodics:
+- interval: 24h
+  name: ci-org-peribolos
+  annotations:
+    testgrid-dashboards: sig-contribex-org
+    testgrid-tab-name: ci-peribolos
+    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '1'
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+  spec:
+    containers:
+    - image: public.ecr.aws/docker/library/golang:1.20
+      command:
+      - ./admin/update.sh
+      args:
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-endpoint=https://api.github.com
+      - --github-token-path=/etc/github/token
+      - --confirm
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-github-robot-github-token
