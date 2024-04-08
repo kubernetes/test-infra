@@ -78,7 +78,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs integration tests
 
-- name: periodic-cluster-api-provider-vsphere-e2e-main
+- name: periodic-cluster-api-provider-vsphere-e2e-govmomi-main
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -118,55 +118,10 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-main
+    testgrid-tab-name: periodic-e2e-govmomi-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
-
-- name: periodic-cluster-api-provider-vsphere-e2e-supervisor-main
-  labels:
-    preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
-    preset-kind-volume-mounts: "true"
-  interval: 24h
-  decorate: true
-  decoration_config:
-    timeout: 180m
-  rerun_auth_config:
-    github_team_slugs:
-    - org: kubernetes-sigs
-      slug: cluster-api-provider-vsphere-maintainers
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-vsphere
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
-      command:
-      - runner.sh
-      args:
-      - ./hack/e2e.sh
-      env:
-      - name: GINKGO_FOCUS
-        value: "\\[supervisor\\]"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-        capabilities:
-          add: ["NET_ADMIN"]
-      resources:
-        requests:
-          cpu: "4000m"
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-supervisor-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "4"
-    description: Runs e2e tests with supervisor mode
 
 - name: periodic-cluster-api-provider-vsphere-e2e-vcsim-govmomi-main
   cluster: eks-prow-build-cluster
@@ -215,54 +170,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 
-- name: periodic-cluster-api-provider-vsphere-e2e-vcsim-supervisor-main
-  cluster: eks-prow-build-cluster
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  interval: 24h
-  decorate: true
-  decoration_config:
-    timeout: 180m
-  rerun_auth_config:
-    github_team_slugs:
-    - org: kubernetes-sigs
-      slug: cluster-api-provider-vsphere-maintainers
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-vsphere
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
-      command:
-      - runner.sh
-      args:
-      - ./hack/e2e.sh
-      env:
-      - name: GINKGO_FOCUS
-        value: "\\[vcsim\\] \\[supervisor\\]"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-        capabilities:
-          add: ["NET_ADMIN"]
-      resources:
-        requests:
-          cpu: "4000m"
-          memory: "6Gi"
-        limits:
-          cpu: "4000m"
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-vcsim-supervisor-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "4"
-    description: Runs all e2e tests
-
-- name: periodic-cluster-api-provider-vsphere-e2e-conformance-main
+- name: periodic-cluster-api-provider-vsphere-e2e-govmomi-conformance-main
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -300,12 +208,12 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-conformance-main
+    testgrid-tab-name: periodic-e2e-govmomi-conformance-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
 
-- name: periodic-cluster-api-provider-vsphere-e2e-conformance-ci-latest-main
+- name: periodic-cluster-api-provider-vsphere-e2e-govmomi-conformance-ci-latest-main
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -343,7 +251,187 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-conformance-ci-latest-main
+    testgrid-tab-name: periodic-e2e-govmomi-conformance-ci-latest-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs conformance tests with K8S ci latest for CAPV
+
+- name: periodic-cluster-api-provider-vsphere-e2e-supervisor-main
+  labels:
+    preset-dind-enabled: "true"
+    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds: "true"
+    preset-kind-volume-mounts: "true"
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[supervisor\\]"
+      - name: GINKGO_SKIP
+        value: "\\[Conformance\\] \\[specialized-infra\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-supervisor-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs all e2e tests
+
+- name: periodic-cluster-api-provider-vsphere-e2e-vcsim-supervisor-main
+  cluster: eks-prow-build-cluster
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[supervisor\\] \\[vcsim\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-vcsim-supervisor-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs all e2e tests
+
+- name: periodic-cluster-api-provider-vsphere-e2e-supervisor-conformance-main
+  labels:
+    preset-dind-enabled: "true"
+    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds: "true"
+    preset-kind-volume-mounts: "true"
+  interval: 24h
+  decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Install\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-supervisor-conformance-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+    description: Runs conformance tests for CAPV
+
+- name: periodic-cluster-api-provider-vsphere-e2e-supervisor-conformance-ci-latest-main
+  labels:
+    preset-dind-enabled: "true"
+    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds: "true"
+    preset-kind-volume-mounts: "true"
+  interval: 24h
+  decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-provider-vsphere-maintainers
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-vsphere
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+      command:
+      - runner.sh
+      args:
+      - ./hack/e2e.sh
+      env:
+      - name: GINKGO_FOCUS
+        value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Install-ci-latest\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["NET_ADMIN"]
+      resources:
+        requests:
+          cpu: "4000m"
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-tab-name: periodic-e2e-supervisor-conformance-ci-latest-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests with K8S ci latest for CAPV

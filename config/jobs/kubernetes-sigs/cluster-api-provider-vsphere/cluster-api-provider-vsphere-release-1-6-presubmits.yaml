@@ -127,7 +127,7 @@ presubmits:
       testgrid-tab-name: pr-test-integration-release-1-6
       description: Runs integration tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-blocking-release-1-6
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-blocking-release-1-6
     branches:
     - ^release-1.6$
     labels:
@@ -162,10 +162,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-blocking-release-1-6
+      testgrid-tab-name: pr-e2e-govmomi-blocking-release-1-6
       description: Runs only PR Blocking e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-release-1-6
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-release-1-6
     branches:
     - ^release-1.6$
     labels:
@@ -200,10 +200,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-release-1-6
+      testgrid-tab-name: pr-e2e-govmomi-release-1-6
       description: Runs all e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-conformance-release-1-6
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-release-1-6
     branches:
     - ^release-1.6$
     labels:
@@ -236,5 +236,5 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-conformance-release-1-6
+      testgrid-tab-name: pr-e2e-govmomi-conformance-release-1-6
       description: Runs conformance tests for CAPV
