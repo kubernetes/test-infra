@@ -1,35 +1,4 @@
 postsubmits:
-  kubernetes/org:
-  - name: post-org-peribolos
-    cluster: test-infra-trusted
-    decorate: true
-    decoration_config:
-      timeout: 180m
-    branches:
-    - ^main$
-    max_concurrency: 1
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
-        command:
-        - ./admin/update.sh
-        args:
-        - --github-endpoint=http://ghproxy.default.svc.cluster.local
-        - --github-endpoint=https://api.github.com
-        - --github-token-path=/etc/github-token/oauth
-        # TODO(palnabarun): To be removed as soon as the org audit removal is complete
-        - --maximum-removal-delta=0.4
-        - --confirm
-        volumeMounts:
-        - name: github
-          mountPath: /etc/github-token
-      volumes:
-      - name: github
-        secret:
-          secretName: oauth-token
-    annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
   kubernetes/test-infra:
   - name: post-test-infra-push-alpine
     cluster: test-infra-trusted
@@ -563,41 +532,6 @@ postsubmits:
 
 
 periodics:
-- interval: 24h
-  name: ci-org-peribolos
-  annotations:
-    testgrid-dashboards: sig-contribex-org
-    testgrid-tab-name: ci-peribolos
-    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-num-failures-to-alert: '1'
-  cluster: test-infra-trusted
-  decorate: true
-  decoration_config:
-    timeout: 180m
-  max_concurrency: 1
-  extra_refs:
-  - org: kubernetes
-    repo: org
-    base_ref: main
-  spec:
-    containers:
-    - image: public.ecr.aws/docker/library/golang:1.20
-      command:
-      - ./admin/update.sh
-      args:
-      - --github-endpoint=http://ghproxy.default.svc.cluster.local
-      - --github-endpoint=https://api.github.com
-      - --github-token-path=/etc/github-token/oauth
-      # TODO(palnabarun): To be removed as soon as the org audit removal is complete
-      - --maximum-removal-delta=0.4
-      - --confirm
-      volumeMounts:
-      - name: github
-        mountPath: /etc/github-token
-    volumes:
-    - name: github
-      secret:
-        secretName: oauth-token
   # Save for standard time:
   # cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
   # Save for daylight savings time:

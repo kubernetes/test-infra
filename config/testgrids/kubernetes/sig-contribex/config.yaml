@@ -15,12 +15,6 @@ dashboards:
 - name: sig-contribex-k8s-triage-robot
 - name: sig-contribex-org
   dashboard_tab:
-    - name: post-peribolos
-      test_group_name: post-org-peribolos
-      alert_options:
-        alert_mail_to_addresses: kubernetes-github-managment-alerts@googlegroups.com
-      code_search_url_template:
-        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
     - name: test-all
       test_group_name: pull-org-test-all
       code_search_url_template:
