@@ -203,7 +203,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-main
       description: Runs all e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-vcsim-govmomi-main
+  - name: pull-cluster-api-provider-vsphere-e2e-vcsim-main
     cluster: eks-prow-build-cluster
     branches:
     - ^main$
@@ -240,86 +240,8 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-vcsim-govmomi-main
+      testgrid-tab-name: pr-e2e-vcsim-main
       description: Runs e2e tests with vcsim / govmomi mode
-
-  - name: pull-cluster-api-provider-vsphere-e2e-vcsim-supervisor-main
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 180m
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    max_concurrency: 3
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
-        command:
-        - runner.sh
-        args:
-        - ./hack/e2e.sh
-        env:
-        - name: GINKGO_FOCUS
-          value: "\\[vcsim\\] \\[supervisor\\]"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-          capabilities:
-            add: ["NET_ADMIN"]
-        resources:
-          requests:
-            cpu: "4000m"
-            memory: "6Gi"
-          limits:
-            cpu: "4000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-vcsim-supervisor-main
-      description: Runs e2e tests with vcsim / supervisor mode
-
-  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-main
-    branches:
-    - ^main$
-    labels:
-      preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
-      preset-kind-volume-mounts: "true"
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 180m
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    max_concurrency: 3
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
-        command:
-        - runner.sh
-        args:
-        - ./hack/e2e.sh
-        env:
-        - name: GINKGO_FOCUS
-          value: "\\[supervisor\\]"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-          capabilities:
-            add: ["NET_ADMIN"]
-        resources:
-          requests:
-            cpu: "4000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-supervisor-main
-      description: Runs e2e tests with supervisor mode
 
   - name: pull-cluster-api-provider-vsphere-e2e-upgrade-1-29-1-30-main
     labels:
@@ -430,4 +352,233 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-conformance-ci-latest-main
+      description: Runs conformance tests with K8S ci latest for CAPV
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-blocking-main
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
+    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[PR-Blocking\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-blocking-main
+      description: Runs only PR Blocking e2e tests
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-main
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\]"
+        - name: GINKGO_SKIP
+          value: "\\[Conformance\\] \\[specialized-infra\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-main
+      description: Runs all e2e tests
+
+  - name: pull-cluster-api-provider-vsphere-e2e-vcsim-supervisor-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[vcsim\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-vcsim-supervisor-main
+      description: Runs e2e tests with vcsim / govmomi mode
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-29-1-30-main
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.29"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "ci/latest-1.30"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-main-1-29-1-30
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-main
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Install\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-conformance-main
+      description: Runs conformance tests for CAPV
+
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-ci-latest-main
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-14b8bc2f76-1.28
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Install-ci-latest\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-supervisor-conformance-ci-latest-main
       description: Runs conformance tests with K8S ci latest for CAPV
