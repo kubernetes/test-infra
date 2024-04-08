@@ -1,0 +1,25 @@
+postsubmits:
+  # this is the github repo we'll build from; this block needs to be repeated for each repo.
+  kubernetes-sigs/controller-tools:
+    - name: post-controller-tools-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+        testgrid-tab-name: post-controller-tools-push-images
+      decorate: true
+      branches:
+        - ^main$
+        - ^tools-releases$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-controller-tools
+              - --scratch-bucket=gs://k8s-staging-controller-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .
