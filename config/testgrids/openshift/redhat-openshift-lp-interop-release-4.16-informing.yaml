@@ -559,14 +559,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-pipelines-release-tests-release-v1.13-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
+    name: periodic-ci-openshift-pipelines-release-tests-release-v1.14-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-pipelines-release-tests-release-v1.13-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
+    test_group_name: periodic-ci-openshift-pipelines-release-tests-release-v1.14-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1014,8 +1014,8 @@ test_groups:
   name: periodic-ci-openshift-jenkins-release-4.16-jenkins-ocp4.16-lp-interop-jenkins-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-knative-serverless-operator-main-ocp4.16-lp-interop-operator-e2e-interop-aws-ocp416
   name: periodic-ci-openshift-knative-serverless-operator-main-ocp4.16-lp-interop-operator-e2e-interop-aws-ocp416
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.13-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
-  name: periodic-ci-openshift-pipelines-release-tests-release-v1.13-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-pipelines-release-tests-release-v1.14-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
+  name: periodic-ci-openshift-pipelines-release-tests-release-v1.14-openshift-pipelines-ocp4.16-lp-interop-openshift-pipelines-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.16-lp-interop-quarkus-interop-aws
   name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.16-lp-interop-quarkus-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.16-lp-interop-odf-interop-aws
