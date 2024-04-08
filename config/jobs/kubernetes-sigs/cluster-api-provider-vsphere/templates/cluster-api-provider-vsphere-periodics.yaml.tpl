@@ -76,7 +76,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs integration tests
-{{ $modes := list "" "-supervisor" -}}
+{{ $modes := list "-govmomi" "-supervisor" -}}
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}
 {{ if eq $mode "-supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}

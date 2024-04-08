@@ -125,7 +125,7 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test-integration-{{ ReplaceAll $.branch "." "-" }}
       description: Runs integration tests
-{{ $modes := list "" "-supervisor" -}}
+{{ $modes := list "-govmomi" "-supervisor" -}}
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}
 {{ if eq $mode "-supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}

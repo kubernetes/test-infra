@@ -127,7 +127,7 @@ presubmits:
       testgrid-tab-name: pr-test-integration-main
       description: Runs integration tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-blocking-main
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-blocking-main
     branches:
     - ^main$
     labels:
@@ -162,10 +162,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-blocking-main
+      testgrid-tab-name: pr-e2e-govmomi-blocking-main
       description: Runs only PR Blocking e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-main
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-main
     branches:
     - ^main$
     labels:
@@ -200,10 +200,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-main
+      testgrid-tab-name: pr-e2e-govmomi-main
       description: Runs all e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-vcsim-main
+  - name: pull-cluster-api-provider-vsphere-e2e-vcsim-govmomi-main
     cluster: eks-prow-build-cluster
     branches:
     - ^main$
@@ -240,10 +240,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-vcsim-main
+      testgrid-tab-name: pr-e2e-vcsim-govmomi-main
       description: Runs e2e tests with vcsim / govmomi mode
 
-  - name: pull-cluster-api-provider-vsphere-e2e-upgrade-1-29-1-30-main
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-29-1-30-main
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -280,9 +280,9 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-main-1-29-1-30
+      testgrid-tab-name: pr-e2e-govmomi-main-1-29-1-30
 
-  - name: pull-cluster-api-provider-vsphere-e2e-conformance-main
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-main
     branches:
     - ^main$
     labels:
@@ -315,10 +315,10 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-conformance-main
+      testgrid-tab-name: pr-e2e-govmomi-conformance-main
       description: Runs conformance tests for CAPV
 
-  - name: pull-cluster-api-provider-vsphere-e2e-conformance-ci-latest-main
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-ci-latest-main
     branches:
     - ^main$
     labels:
@@ -351,7 +351,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-conformance-ci-latest-main
+      testgrid-tab-name: pr-e2e-govmomi-conformance-ci-latest-main
       description: Runs conformance tests with K8S ci latest for CAPV
 
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-blocking-main
