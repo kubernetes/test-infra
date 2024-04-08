@@ -6,6 +6,10 @@ postsubmits:
       testgrid-tab-name: post-peribolos
       testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: owners
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     decoration_config:
@@ -38,6 +42,10 @@ periodics:
     testgrid-tab-name: ci-peribolos
     testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: owners
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   decoration_config:
