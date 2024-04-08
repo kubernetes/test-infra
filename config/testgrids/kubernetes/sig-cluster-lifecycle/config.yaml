@@ -10,7 +10,6 @@ dashboard_groups:
     - sig-cluster-lifecycle-cluster-api-1.7
     - sig-cluster-lifecycle-cluster-api-addon-provider-helm
     - sig-cluster-lifecycle-cluster-api-provider-aws
-    - sig-cluster-lifecycle-cluster-api-provider-aws-1.5
     - sig-cluster-lifecycle-cluster-api-provider-aws-2.0
     - sig-cluster-lifecycle-cluster-api-provider-azure
     - sig-cluster-lifecycle-cluster-api-provider-digitalocean
@@ -39,7 +38,6 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-1.6
 - name: sig-cluster-lifecycle-cluster-api-1.7
 - name: sig-cluster-lifecycle-cluster-api-addon-provider-helm
-- name: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
 - name: sig-cluster-lifecycle-cluster-api-provider-aws-2.0
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
   dashboard_tab:
