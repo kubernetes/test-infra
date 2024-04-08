@@ -76,15 +76,15 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs integration tests
-{{ $modes := list "" "-supervisor" -}}
+{{ $modes := list "govmomi" "supervisor" -}}
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}
-{{ if eq $mode "-supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
 {{/* e2e full for supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch := list -}}
-{{ if eq $mode "-supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
-- name: periodic-cluster-api-provider-vsphere-e2e{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -128,7 +128,7 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
@@ -136,7 +136,7 @@ periodics:
 {{/* e2e with vcsim has been introduced with release-1.10 */ -}}
 {{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
 {{ if has $.branch $skipInBranch | not }}
-- name: periodic-cluster-api-provider-vsphere-e2e-vcsim{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
   labels:
     preset-dind-enabled: "true"
@@ -178,16 +178,16 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e-vcsim{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 {{ end -}}
 {{/* e2e conformance with supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch = list -}}
-{{ if eq $mode "-supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
-- name: periodic-cluster-api-provider-vsphere-e2e{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -229,7 +229,7 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
@@ -237,9 +237,9 @@ periodics:
 {{/* e2e conformance-ci-latest has been introduced with release-1.9 */ -}}
 {{/* e2e conformance-ci-latest with supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" -}}
-{{ if eq $mode "-supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
-- name: periodic-cluster-api-provider-vsphere-e2e{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+- name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -277,7 +277,7 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-tab-name: periodic-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests with K8S ci latest for CAPV
