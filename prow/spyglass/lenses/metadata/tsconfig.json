@@ -1,8 +1,0 @@
-{
-  "extends": "../../../../tsconfig.json",
-  "include": [
-    "metadata.ts",
-    "../lens.d.ts",
-    "../../../../../node_modules/moment"
-  ],
-}
