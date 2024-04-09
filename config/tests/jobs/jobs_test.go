@@ -292,7 +292,11 @@ func TestTrustedJobs(t *testing.T) {
 	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
 	// that uses a foo-trusted cluster
 	const trusted = "test-infra-trusted"
-	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
+	trustedPaths := sets.Set[string]{}
+	// This file contains most of the jobs that run in the trusted cluster:
+	trustedPaths.Insert(path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml"))
+	// The Prow image publishing postsubmits also run in the trusted cluster:
+	trustedPaths.Insert(path.Join(*jobConfigPath, "kubernetes-sigs", "prow", "prow-postsubmits.yaml"))
 
 	// Presubmits may not use trusted clusters.
 	for _, pre := range c.AllStaticPresubmits(nil) {
@@ -303,14 +307,14 @@ func TestTrustedJobs(t *testing.T) {
 
 	// Trusted postsubmits must be defined in trustedPath
 	for _, post := range c.AllStaticPostsubmits(nil) {
-		if post.Cluster == trusted && post.SourcePath != trustedPath {
+		if post.Cluster == trusted && !trustedPaths.Has(post.SourcePath) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
 		}
 	}
 
 	// Trusted periodics must be defined in trustedPath
 	for _, per := range c.AllPeriodics() {
-		if per.Cluster == trusted && per.SourcePath != trustedPath {
+		if per.Cluster == trusted && !trustedPaths.Has(per.SourcePath) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
 		}
 	}
