@@ -103,9 +103,10 @@ func TestAccumulateBatch(t *testing.T) {
 		sha    string
 	}
 	type prowjob struct {
-		prs   []pull
-		job   string
-		state prowapi.ProwJobState
+		prs     []pull
+		job     string
+		state   prowapi.ProwJobState
+		jobType prowapi.ProwJobType
 	}
 	tests := []struct {
 		name           string
@@ -126,26 +127,26 @@ func TestAccumulateBatch(t *testing.T) {
 				{Reporter: config.Reporter{Context: "foo"}},
 			},
 			pulls:    []pull{{1, "a"}, {2, "b"}},
-			prowJobs: []prowjob{{job: "foo", state: prowapi.PendingState, prs: []pull{{1, "a"}}}},
+			prowJobs: []prowjob{{job: "foo", state: prowapi.PendingState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}}}},
 			pending:  true,
 		},
 		{
 			name:       "pending batch missing presubmits is ignored",
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
-			prowJobs:   []prowjob{{job: "foo", state: prowapi.PendingState, prs: []pull{{1, "a"}}}},
+			prowJobs:   []prowjob{{job: "foo", state: prowapi.PendingState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}}}},
 		},
 		{
 			name:       "batch pending, successful previous run",
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.PendingState, prs: []pull{{1, "a"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}}},
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "foo", state: prowapi.PendingState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
 			},
 			pending: true,
 			merges:  []int{2},
@@ -155,9 +156,9 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
 			},
 			merges: []int{2},
 		},
@@ -166,9 +167,9 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
 			},
 			merges: []int{1, 2},
 		},
@@ -177,12 +178,12 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "foo", state: prowapi.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "baz", state: prowapi.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "foo", state: prowapi.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.FailureState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.FailureState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.FailureState, jobType: prowapi.BatchJob, prs: []pull{{1, "c"}, {2, "b"}}},
 			},
 			merges: []int{1, 2},
 		},
@@ -191,10 +192,10 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "baz", state: prowapi.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "foo", state: prowapi.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
+				{job: "foo", state: prowapi.FailureState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.FailureState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.FailureState, jobType: prowapi.BatchJob, prs: []pull{{1, "c"}, {2, "b"}}},
 			},
 		},
 		{
@@ -202,9 +203,9 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
 			},
 			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"a", "b"}, []config.Presubmit{{
 				AlwaysRun: true,
@@ -216,10 +217,10 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
-				{job: "boo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "boo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
 			},
 			merges: []int{1, 2},
 		},
@@ -233,13 +234,39 @@ func TestAccumulateBatch(t *testing.T) {
 			presubmits: jobSet,
 			pulls:      []pull{{2, "b"}},
 			prowJobs: []prowjob{
-				{job: "foo", state: prowapi.PendingState, prs: []pull{{1, "a"}}},
-				{job: "foo", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
-				{job: "bar", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
-				{job: "baz", state: prowapi.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "foo", state: prowapi.PendingState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{2, "b"}}},
 			},
 			pending: false,
 			merges:  []int{2},
+		},
+		{
+			name:       "successful run, multiple PRs, presubmit jobs success",
+			presubmits: jobSet,
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.PresubmitJob, prs: []pull{{1, "a"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.PresubmitJob, prs: []pull{{2, "b"}}},
+			},
+			merges: []int{1, 2},
+		},
+		{
+			name:       "successful run, multiple PRs, one presubmit job pending",
+			presubmits: jobSet,
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: prowapi.SuccessState, jobType: prowapi.BatchJob, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: prowapi.SuccessState, jobType: prowapi.PresubmitJob, prs: []pull{{1, "a"}}},
+				{job: "foo", state: prowapi.PendingState, jobType: prowapi.PresubmitJob, prs: []pull{{2, "b"}}},
+			},
+			pending: true,
 		},
 	}
 	for _, test := range tests {
@@ -259,7 +286,7 @@ func TestAccumulateBatch(t *testing.T) {
 					Spec: prowapi.ProwJobSpec{
 						Job:     pj.job,
 						Context: pj.job,
-						Type:    prowapi.BatchJob,
+						Type:    pj.jobType,
 						Refs:    new(prowapi.Refs),
 					},
 					Status: prowapi.ProwJobStatus{State: pj.state},
