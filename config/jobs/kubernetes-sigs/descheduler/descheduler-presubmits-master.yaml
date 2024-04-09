@@ -14,7 +14,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21.9
+      - image: public.ecr.aws/docker/library/golang:1.22.2
         command:
         - make
         args:
@@ -39,7 +39,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21.9
+      - image: public.ecr.aws/docker/library/golang:1.22.2
         command:
         - make
         args:
@@ -65,7 +65,7 @@ presubmits:
     run_if_changed: '\.go$'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21.9
+      - image: public.ecr.aws/docker/library/golang:1.22.2
         command:
         - make
         args:
