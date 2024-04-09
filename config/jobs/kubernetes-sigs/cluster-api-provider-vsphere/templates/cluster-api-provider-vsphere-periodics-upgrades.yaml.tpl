@@ -2,6 +2,9 @@
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}
 {{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
+{{/* Run govmomi at 00:00 UTC, supervisor at 03:00 UTC */ -}}
+{{ $cron := "'0 0 * * *'" -}}
+{{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
 {{/* e2e upgrade has been introduced in release-1.9 */ -}}
 {{/* e2e upgrade in supervisor mode has been introduced in release-1.10 */ -}}
 {{ $skipInBranch := list "release-1.5" "release-1.6" "release-1.7" "release-1.8" -}}
@@ -12,7 +15,7 @@ periodics:
 {{ end -}}
 {{- range $_, $upgrade := $.config.Upgrades }}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-upgrade-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
-  interval: {{ $.config.UpgradesInterval }}
+  cron: {{ $cron }}
   decorate: true
   rerun_auth_config:
     github_team_slugs:

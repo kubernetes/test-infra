@@ -84,7 +84,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 0 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -128,7 +128,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 0 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -176,7 +176,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 0 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -219,7 +219,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 0 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -262,7 +262,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 3 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -308,7 +308,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 3 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -356,7 +356,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 3 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -399,7 +399,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: 24h
+  cron: '0 3 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
