@@ -121,12 +121,6 @@ update-labels:
 .PHONY: verify-labels
 verify-labels:
 	hack/make-rules/verify/labels.sh
-.PHONY: update-codegen
-update-codegen:
-	hack/make-rules/update/codegen.sh
-.PHONY: verify-codegen
-verify-codegen:
-	hack/make-rules/verify/codegen.sh
 .PHONY: verify-boilerplate
 verify-boilerplate:
 	hack/make-rules/verify/boilerplate.sh
