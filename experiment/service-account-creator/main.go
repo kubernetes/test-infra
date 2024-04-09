@@ -27,7 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"k8s.io/test-infra/prow/flagutil"
+	"sigs.k8s.io/prow/prow/flagutil"
 )
 
 var re = regexp.MustCompile(`^([^@]+)@(.+)\.iam\.gserviceaccount\.com$`)

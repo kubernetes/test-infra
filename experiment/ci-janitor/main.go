@@ -26,8 +26,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/test-infra/prow/config"
-	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"sigs.k8s.io/prow/prow/config"
+	configflagutil "sigs.k8s.io/prow/prow/flagutil/config"
 )
 
 type options struct {

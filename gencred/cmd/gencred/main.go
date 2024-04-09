@@ -42,7 +42,7 @@ import (
 	"k8s.io/test-infra/gencred/pkg/certificate"
 	"k8s.io/test-infra/gencred/pkg/serviceaccount"
 	"k8s.io/test-infra/gencred/pkg/util"
-	"k8s.io/test-infra/prow/interrupts"
+	"sigs.k8s.io/prow/prow/interrupts"
 	"sigs.k8s.io/yaml"
 
 	"google.golang.org/api/container/v1"

@@ -40,8 +40,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/strings/slices"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	cfg "k8s.io/test-infra/prow/config"
+	prowapi "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
+	cfg "sigs.k8s.io/prow/prow/config"
 )
 
 var configPath = flag.String("config", "../../../config/prow/config.yaml", "Path to prow config")

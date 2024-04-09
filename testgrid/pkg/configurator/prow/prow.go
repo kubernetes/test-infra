@@ -27,11 +27,11 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
 	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowConfig "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/pjutil"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
-	prowGCS "k8s.io/test-infra/prow/pod-utils/gcs"
+	prowapi "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
+	prowConfig "sigs.k8s.io/prow/prow/config"
+	"sigs.k8s.io/prow/prow/pjutil"
+	"sigs.k8s.io/prow/prow/pod-utils/downwardapi"
+	prowGCS "sigs.k8s.io/prow/prow/pod-utils/gcs"
 )
 
 const testgridCreateTestGroupAnnotation = "testgrid-create-test-group"

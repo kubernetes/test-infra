@@ -24,9 +24,9 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
 	"github.com/GoogleCloudPlatform/testgrid/pb/config"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowConfig "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/pjutil"
+	prowapi "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
+	prowConfig "sigs.k8s.io/prow/prow/config"
+	"sigs.k8s.io/prow/prow/pjutil"
 )
 
 const ProwDefaultGCSPath = "pathPrefix/"

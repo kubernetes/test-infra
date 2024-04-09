@@ -20,7 +20,7 @@ import (
 	"io"
 	"text/template"
 
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
 )
 
 const tmplPageHeaderText = `

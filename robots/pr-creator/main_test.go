@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"k8s.io/test-infra/prow/flagutil"
+	"sigs.k8s.io/prow/prow/flagutil"
 	"reflect"
 	"testing"
 )
