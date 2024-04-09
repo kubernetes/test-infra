@@ -2,7 +2,7 @@
 periodics:
 
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-28-1-29-main
-  interval: 24h
+  cron: '0 0 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -48,7 +48,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-29-1-30-main
-  interval: 24h
+  cron: '0 0 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -94,7 +94,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-28-1-29-main
-  interval: 24h
+  cron: '0 3 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -140,7 +140,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-29-1-30-main
-  interval: 24h
+  cron: '0 3 * * *'
   decorate: true
   rerun_auth_config:
     github_team_slugs:

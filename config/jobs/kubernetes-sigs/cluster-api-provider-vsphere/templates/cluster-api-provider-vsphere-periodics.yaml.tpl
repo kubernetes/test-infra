@@ -80,6 +80,9 @@ periodics:
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}
 {{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
+{{/* Run govmomi at 00:00 UTC, supervisor at 03:00 UTC */ -}}
+{{ $cron := "'0 0 * * *'" -}}
+{{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
 {{/* e2e full for supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch := list -}}
 {{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
@@ -90,7 +93,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: {{ $.config.Interval }}
+  cron: {{ $cron }}
   decorate: true
   decoration_config:
     timeout: 180m
@@ -141,7 +144,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  interval: {{ $.config.Interval }}
+  cron: {{ $cron }}
   decorate: true
   decoration_config:
     timeout: 180m
@@ -193,7 +196,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: {{ $.config.Interval }}
+  cron: {{ $cron }}
   decorate: true
   rerun_auth_config:
     github_team_slugs:
@@ -245,7 +248,7 @@ periodics:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
-  interval: {{ $.config.Interval }}
+  cron: {{ $cron }}
   decorate: true
   rerun_auth_config:
     github_team_slugs:
