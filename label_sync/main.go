@@ -37,10 +37,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/logrusutil"
+	"sigs.k8s.io/prow/prow/config/secret"
+	"sigs.k8s.io/prow/prow/flagutil"
+	"sigs.k8s.io/prow/prow/github"
+	"sigs.k8s.io/prow/prow/logrusutil"
 )
 
 const maxConcurrentWorkers = 20

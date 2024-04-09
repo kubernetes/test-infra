@@ -56,12 +56,6 @@ if [[ "${VERIFY_LABELS:-true}" == "true" ]]; then
   hack/make-rules/verify/labels.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
-if [[ "${VERIFY_CODEGEN:-true}" == "true" ]]; then
-  name="codegen"
-  echo "verifying $name"
-  hack/make-rules/verify/codegen.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
-  cd "${REPO_ROOT}"
-fi
 if [[ "${VERIFY_ESLINT:-true}" == "true" ]]; then
   name="eslint"
   echo "verifying $name"

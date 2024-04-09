@@ -21,8 +21,8 @@ import (
 	"flag"
 	"strings"
 
-	"k8s.io/test-infra/prow/flagutil"
-	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"sigs.k8s.io/prow/prow/flagutil"
+	configflagutil "sigs.k8s.io/prow/prow/flagutil/config"
 
 	"github.com/sirupsen/logrus"
 )

@@ -28,7 +28,7 @@ import (
 	tgCfgUtil "github.com/GoogleCloudPlatform/testgrid/config"
 	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
-	prowConfig "k8s.io/test-infra/prow/config"
+	prowConfig "sigs.k8s.io/prow/prow/config"
 	"k8s.io/test-infra/testgrid/pkg/configurator/options"
 	"k8s.io/test-infra/testgrid/pkg/configurator/prow"
 

@@ -38,13 +38,13 @@ import (
 	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/gcsweb/pkg/version"
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/flagutil"
-	pkgio "k8s.io/test-infra/prow/io"
-	"k8s.io/test-infra/prow/io/providers"
+	prowv1 "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
+	"sigs.k8s.io/prow/prow/flagutil"
+	pkgio "sigs.k8s.io/prow/prow/io"
+	"sigs.k8s.io/prow/prow/io/providers"
 
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/pjutil"
+	"sigs.k8s.io/prow/prow/logrusutil"
+	"sigs.k8s.io/prow/prow/pjutil"
 )
 
 const (

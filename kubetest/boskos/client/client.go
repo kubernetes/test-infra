@@ -39,7 +39,7 @@ import (
 
 	"k8s.io/test-infra/kubetest/boskos/common"
 	"k8s.io/test-infra/kubetest/boskos/storage"
-	"k8s.io/test-infra/prow/config/secret"
+	"sigs.k8s.io/prow/prow/config/secret"
 )
 
 var (

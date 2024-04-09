@@ -27,7 +27,7 @@ import (
 	gyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config"
+	"sigs.k8s.io/prow/prow/config"
 )
 
 type options struct {

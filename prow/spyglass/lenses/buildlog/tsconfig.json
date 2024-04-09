@@ -1,7 +1,0 @@
-{
-  "extends": "../../../../tsconfig.json",
-  "include": [
-    "buildlog.ts",
-    "../lens.d.ts"
-  ],
-}

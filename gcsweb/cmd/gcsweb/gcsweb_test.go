@@ -31,9 +31,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pkgio "k8s.io/test-infra/prow/io"
-	"k8s.io/test-infra/prow/io/fakeopener"
+	prowv1 "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
+	pkgio "sigs.k8s.io/prow/prow/io"
+	"sigs.k8s.io/prow/prow/io/fakeopener"
 )
 
 type fakeOpener struct {

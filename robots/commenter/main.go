@@ -36,9 +36,9 @@ import (
 	"text/template"
 	"time"
 
-	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"sigs.k8s.io/prow/prow/config/secret"
+	"sigs.k8s.io/prow/prow/flagutil"
+	"sigs.k8s.io/prow/prow/github"
 )
 
 const (
