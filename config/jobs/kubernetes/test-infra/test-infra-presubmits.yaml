@@ -98,39 +98,6 @@ presubmits:
             memory: "2Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
-  - name: pull-test-infra-integration
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    skip_if_only_changed: '(^config/jobs/)|(^images/)|(^scenarios/)|(^jenkins/)|(^kubetest/)'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-test-infra
-        command:
-        - runner.sh
-        args:
-        - ./prow/test/integration/integration-test.sh
-        env:
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # This job is very CPU intensive as building prow images in
-            # parallel
-            cpu: "14"
-            memory: "16Gi"
-          limits:
-            cpu: "14"
-            memory: "16Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: integration
   - name: pull-test-infra-unit-test-race-detector-nonblocking
     cluster: eks-prow-build-cluster
     branches:
@@ -196,47 +163,12 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: unit-test
-  - name: pull-test-infra-prow-image-build-test
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    run_if_changed: '^(\.ko\.yaml|hack/(ts-rollup|make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
-    decorate: true
-    labels:
-      # Building deck requires docker for typescript compilation.
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-test-infra
-        command:
-        - runner.sh
-        args:
-        - make
-        - -C
-        - prow
-        - build-images
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # This job is very CPU intensive as building prow images in
-            # parallel
-            cpu: "14"
-            memory: "16Gi"
-          limits:
-            cpu: "14"
-            memory: "16Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: prow-image-build-test
   # The following test builds the images specified in .k8s-prow-images.yaml
   - name: pull-test-infra-misc-image-build-test
     cluster: eks-prow-build-cluster
     branches:
-    - master
-    # TODO: clean up this regexp once prow is published from kubernetes-sigs/prow.
-    run_if_changed: '^(\.ko\.yaml|hack/(ts-rollup|make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    - ^master$
+    run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
     labels:
       # Building deck requires docker for typescript compilation.
