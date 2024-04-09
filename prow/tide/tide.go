@@ -921,6 +921,22 @@ func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewC
 		// Store the best result for this ref+context.
 		states[ref].jobStates[context] = getBetterSimpleState(states[ref].jobStates[context], jobState)
 	}
+	presubmitStatesByPR := make(map[int]map[string]simpleState)
+	for _, pj := range sp.pjs {
+		if pj.Spec.Type != prowapi.PresubmitJob {
+			continue
+		}
+		for _, pull := range pj.Spec.Refs.Pulls {
+			if pr, ok := prNums[pull.Number]; ok && pr.HeadRefOID == pull.SHA {
+				if presubmitStatesByPR[pull.Number] == nil {
+					presubmitStatesByPR[pull.Number] = make(map[string]simpleState)
+				}
+				context := pj.Spec.Context
+				jobState := toSimpleState(pj.Status.State)
+				presubmitStatesByPR[pull.Number][context] = getBetterSimpleState(presubmitStatesByPR[pull.Number][context], jobState)
+			}
+		}
+	}
 	for ref, state := range states {
 		if !state.validPulls {
 			continue
@@ -950,6 +966,19 @@ func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewC
 				break
 			} else if s == pendingState && overallState == successState {
 				overallState = pendingState
+			}
+
+			// When creating batch jobs tide is creating presubmit jobs for the first PR of the batch too.
+			// Thus, the batch should remain in pending state as long as there are pending contexts for its members.
+			// Otherwise, branch protection rules might prevent these PRs from being merged.
+			for _, pr := range state.prs {
+				if contexts, ok := presubmitStatesByPR[pr.Number]; ok {
+					// pendingState is the only state of interest here. If the context failed, the PR was filtered out earlier anyway.
+					if contexts[p.Context] == pendingState && overallState == successState {
+						overallState = pendingState
+						sp.log.WithField("batch", ref).Debugf("batch state set to pending, required presubmit %s for PR %d is pending", p.Context, pr.Number)
+					}
+				}
 			}
 		}
 		switch overallState {
