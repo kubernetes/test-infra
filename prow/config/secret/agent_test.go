@@ -160,17 +160,27 @@ func testAddWithParser(t *testing.T) {
 			t.Errorf("expected value %d from generator, got %d", expected, actual)
 		}
 	}
+
+	// The secret is reloaded every second by the agent, so give it
+	// enough time to be reloaded (1.5s). If not done we run into
+	// flakes where we get the previous value of the secret for its
+	// current comparison.
+	time.Sleep(1500 * time.Millisecond)
 	checkValueAndErr(1, nil)
 
 	if err := os.WriteFile(secretPath, []byte("2"), 0644); err != nil {
 		t.Fatalf("failed to update secret on disk: %v", err)
 	}
+
+	time.Sleep(1500 * time.Millisecond)
 	// expect secret to get updated
 	checkValueAndErr(2, nil)
 
 	if err := os.WriteFile(secretPath, []byte("not-a-number"), 0644); err != nil {
 		t.Fatalf("failed to update secret on disk: %v", err)
 	}
+
+	time.Sleep(1500 * time.Millisecond)
 	// expect secret to remain unchanged and an error in the parsing func
 	checkValueAndErr(2, errors.New(`strconv.Atoi: parsing "not-a-number": invalid syntax`))
 }
