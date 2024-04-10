@@ -104,7 +104,7 @@ periodics:
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
       testgrid-num-failures-to-alert: "2"
   - name: periodic-cluster-api-provider-gcp-make-conformance-main-ci-artifacts
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
