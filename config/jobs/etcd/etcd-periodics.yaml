@@ -174,3 +174,168 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+- name: ci-etcd-performance-ratio-1-128-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-performance-ratio-1-128-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make build tools
+        RATIO_LIST=1/128 ./tools/rw-heatmaps/rw-benchmark.sh
+        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
+      resources:
+        requests:
+          cpu: "7"
+          memory: "4Gi"
+        limits:
+          cpu: "7"
+          memory: "4Gi"
+- name: ci-etcd-performance-ratio-1-8-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 10h
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-performance-ratio-1-8-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make build tools
+        RATIO_LIST=1/8 ./tools/rw-heatmaps/rw-benchmark.sh
+        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
+      resources:
+        requests:
+          cpu: "7"
+          memory: "8Gi"
+        limits:
+          cpu: "7"
+          memory: "8Gi"
+- name: ci-etcd-performance-ratio-1-4-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 14h
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-performance-ratio-1-4-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make build tools
+        RATIO_LIST=1/4 ./tools/rw-heatmaps/rw-benchmark.sh
+        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
+      resources:
+        requests:
+          cpu: "7"
+          memory: "8Gi"
+        limits:
+          cpu: "7"
+          memory: "8Gi"
+- name: ci-etcd-performance-ratio-1-2-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 16h
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-performance-ratio-1-2-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make build tools
+        RATIO_LIST=1/2 ./tools/rw-heatmaps/rw-benchmark.sh
+        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
+      resources:
+        requests:
+          cpu: "7"
+          memory: "10Gi"
+        limits:
+          cpu: "7"
+          memory: "10Gi"
+- name: ci-etcd-performance-ratio-2-1-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 16h
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-performance-ratio-2-1-amd64
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make build tools
+        RATIO_LIST=2/1 ./tools/rw-heatmaps/rw-benchmark.sh
+        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
+      resources:
+        requests:
+          cpu: "7"
+          memory: "10Gi"
+        limits:
+          cpu: "7"
+          memory: "10Gi"
