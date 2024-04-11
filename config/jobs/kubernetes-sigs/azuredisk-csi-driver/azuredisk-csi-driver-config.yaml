@@ -787,6 +787,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows-2019
     decorate: true
+    decoration_config:
+      timeout: 3h
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -842,6 +844,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows-2022
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -1022,6 +1026,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows-2019-hostprocess
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -1099,7 +1105,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.29
+        base_ref: release-1.28
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -1130,7 +1136,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.29"
+              value: "latest-1.28"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
