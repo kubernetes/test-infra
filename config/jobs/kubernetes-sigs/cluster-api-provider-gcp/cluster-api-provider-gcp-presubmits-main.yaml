@@ -108,7 +108,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-verify
   - name: pull-cluster-api-provider-gcp-e2e-test
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -147,7 +147,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-test
   - name: pull-cluster-api-provider-gcp-conformance-ci-artifacts
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -196,7 +196,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-ci-artifacts
   - name: pull-cluster-api-provider-gcp-conformance
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -235,7 +235,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance
   - name: pull-cluster-api-provider-gcp-capi-e2e
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -274,7 +274,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-capi-e2e-test
   - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
