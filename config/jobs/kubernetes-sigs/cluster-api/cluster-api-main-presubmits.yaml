@@ -95,10 +95,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-test-main
@@ -129,10 +129,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-test-mink8s-main
@@ -174,11 +174,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-mink8s-main
@@ -212,11 +212,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-blocking-main
@@ -253,11 +253,11 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
             limits:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-dualstack-and-ipv6-main
@@ -292,11 +292,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-main
@@ -340,11 +340,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 6000m
+            memory: 6Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 6000m
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-main-1-29-1-30
@@ -379,11 +379,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-conformance-main
@@ -417,11 +417,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-main

@@ -44,11 +44,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
     testgrid-tab-name: capi-e2e-release-1-6-1-23-1-24
@@ -99,11 +99,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
     testgrid-tab-name: capi-e2e-release-1-6-1-24-1-25
@@ -154,11 +154,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
     testgrid-tab-name: capi-e2e-release-1-6-1-25-1-26
@@ -209,11 +209,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
     testgrid-tab-name: capi-e2e-release-1-6-1-26-1-27
@@ -264,11 +264,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
     testgrid-tab-name: capi-e2e-release-1-6-1-27-1-28
@@ -319,11 +319,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
         limits:
-          cpu: 7300m
-          memory: 32Gi
+          cpu: 6000m
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
     testgrid-tab-name: capi-e2e-release-1-6-1-28-1-29

@@ -21,10 +21,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: {{ if eq $.branch "main" }}8Gi{{ else }}9Gi{{ end }}
+          memory: 8Gi
         limits:
           cpu: 7300m
-          memory: {{ if eq $.branch "main" }}8Gi{{ else }}9Gi{{ end }}
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-test-{{ ReplaceAll $.branch "." "-" }}
@@ -62,10 +62,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: {{ if eq $.branch "main" }}8Gi{{ else }}9Gi{{ end }}
+          memory: 8Gi
         limits:
           cpu: 7300m
-          memory: {{ if eq $.branch "main" }}8Gi{{ else }}9Gi{{ end }}
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-test-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -105,11 +105,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: {{ if eq $.branch "main" }}3000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}8Gi{{ else }}32Gi{{ end }}
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: {{ if eq $.branch "main" }}3000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}8Gi{{ else }}32Gi{{ end }}
+            cpu: 3000m
+            memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-e2e-{{ ReplaceAll $.branch "." "-" }}
@@ -153,11 +153,11 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: {{ if eq $.branch "main" }}3000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}8Gi{{ else }}32Gi{{ end }}
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: {{ if eq $.branch "main" }}3000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}8Gi{{ else }}32Gi{{ end }}
+            cpu: 3000m
+            memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-e2e-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
@@ -206,11 +206,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: {{ if eq $.branch "main" }}3000m{{ else }}7300m{{ end }}
-          memory: {{ if eq $.branch "main" }}8Gi{{ else }}32Gi{{ end }}
+          cpu: 3000m
+          memory: 8Gi
         limits:
-          cpu: {{ if eq $.branch "main" }}3000m{{ else }}7300m{{ end }}
-          memory: {{ if eq $.branch "main" }}8Gi{{ else }}32Gi{{ end }}
+          cpu: 3000m
+          memory: 8Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -251,11 +251,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: {{ if eq $.branch "main" }}4000m{{ else }}7300m{{ end }}
-          memory: {{ if eq $.branch "main" }}4Gi{{ else }}32Gi{{ end }}
+          cpu: 4000m
+          memory: 4Gi
         limits:
-          cpu: {{ if eq $.branch "main" }}4000m{{ else }}7300m{{ end }}
-          memory: {{ if eq $.branch "main" }}4Gi{{ else }}32Gi{{ end }}
+          cpu: 4000m
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -295,11 +295,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: {{ if eq $.branch "main" }}4000m{{ else }}7300m{{ end }}
-          memory: {{ if eq $.branch "main" }}4Gi{{ else }}32Gi{{ end }}
+          cpu: 4000m
+          memory: 4Gi
         limits:
-          cpu: {{ if eq $.branch "main" }}4000m{{ else }}7300m{{ end }}
-          memory: {{ if eq $.branch "main" }}4Gi{{ else }}32Gi{{ end }}
+          cpu: 4000m
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
     testgrid-tab-name: capi-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}

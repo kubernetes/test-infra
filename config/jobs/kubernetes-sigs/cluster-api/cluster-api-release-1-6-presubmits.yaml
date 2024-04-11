@@ -17,11 +17,11 @@ presubmits:
         - ./scripts/ci-build.sh
         resources:
           requests:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: 6000m
+            memory: 4Gi
           limits:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: 6000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-build-release-1-6
@@ -42,11 +42,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-1.28
         resources:
           requests:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: 6000m
+            memory: 2Gi
           limits:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: 6000m
+            memory: 2Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-apidiff-release-1-6
@@ -68,11 +68,11 @@ presubmits:
         - ./scripts/ci-verify.sh
         resources:
           requests:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: 5000m
+            memory: 3Gi
           limits:
-            cpu: 7300m
-            memory: 9Gi
+            cpu: 5000m
+            memory: 3Gi
         securityContext:
           privileged: true
     annotations:
@@ -95,10 +95,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-test-release-1-6
@@ -129,10 +129,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-test-mink8s-release-1-6
@@ -174,11 +174,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-e2e-mink8s-release-1-6
@@ -212,11 +212,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-e2e-blocking-release-1-6
@@ -253,11 +253,11 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
             limits:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-e2e-dualstack-and-ipv6-release-1-6
@@ -292,11 +292,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-e2e-release-1-6
@@ -340,11 +340,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 6000m
+            memory: 6Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 6000m
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-e2e-release-1-6-1-28-1-29
