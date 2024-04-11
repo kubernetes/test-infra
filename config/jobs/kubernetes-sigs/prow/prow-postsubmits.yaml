@@ -54,8 +54,6 @@ postsubmits:
         - runner.sh
         args:
         - make
-        - -C
-        - prow
         - push-images
         env:
         # docker-in-docker needs privileged mode
@@ -76,7 +74,7 @@ postsubmits:
       testgrid-tab-name: push-images
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
-      description: Builds and pushes all prow container images on each commit by running make -C prow push-images
+      description: Builds and pushes all prow container images on each commit by running make push-images
     rerun_auth_config:
       github_users:
       - alvaroaleman

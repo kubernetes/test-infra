@@ -13,7 +13,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./prow/test/integration/integration-test.sh
+        - ./test/integration/integration-test.sh
         env:
         # docker-in-docker needs privileged mode
         securityContext:
@@ -105,8 +105,6 @@ presubmits:
         - runner.sh
         args:
         - make
-        - -C
-        - prow
         - build-images
         # docker-in-docker needs privileged mode
         securityContext:
