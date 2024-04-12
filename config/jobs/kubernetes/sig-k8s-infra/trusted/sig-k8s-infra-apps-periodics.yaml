@@ -1,7 +1,7 @@
 periodics:
 - name: periodic-k8sio-deploy-app-codesearch
   cluster: k8s-infra-prow-build-trusted
-  cron: "0 10 * * 1,4" # At 10:00 UTC on Monday and Thursday.
+  cron: "0 */6 * * *" # Runs every 6 hours, we can further reduce if needed
   decorate: true
   extra_refs:
   - org: kubernetes
