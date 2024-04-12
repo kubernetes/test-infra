@@ -14,7 +14,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -45,7 +45,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -73,7 +73,7 @@ periodics:
     testgrid-tab-name: ci-etcd-robustness-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -113,7 +113,7 @@ periodics:
     testgrid-tab-name: ci-etcd-robustness-release35-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -151,7 +151,7 @@ periodics:
     testgrid-tab-name: ci-etcd-robustness-release34-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
