@@ -1,7 +1,7 @@
 periodics:
 - name: periodic-k8sio-deploy-app-codesearch
   cluster: k8s-infra-prow-build-trusted
-  interval: 24h
+  cron: "0 */6 * * *" # Runs every 6 hours, we can further reduce if needed
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -28,7 +28,7 @@ periodics:
     - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
       imagePullPolicy: Always
       command:
-      - ./apps/codesearch/deploy.sh
+      - ./apps/codesearch/restart.sh
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
