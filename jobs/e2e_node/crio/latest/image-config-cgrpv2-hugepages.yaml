@@ -1,0 +1,10 @@
+# To copy an image between projects:
+# `gcloud compute --project <to-project> disks create <image name> --image=https://www.googleapis.com/compute/v1/projects/<from-project>/global/images/<image-name>`
+# `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
+images:
+  ubuntu:
+    image_family: fedora-coreos-stable
+    project: fedora-coreos-cloud
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/crio_cgroupsv2_hugepages.ign"
+    # Using `n1-standard-2` to have enough memory for 1Gb huge pages allocation
+    machine: n1-standard-2

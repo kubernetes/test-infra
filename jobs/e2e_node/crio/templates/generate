@@ -32,6 +32,7 @@ declare -A CONFIGURATIONS=(
     ["crio_cgroupsv2_swap1g"]="root swap-1G"
     ["crio_cgroupsv2_imagefs"]="root imagefs"
     ["crio_cgroupsv2_splitfs"]="root splitfs"
+    ["crio_cgroupsv2_hugepages"]="root hugepages"
 )
 
 CONTAINER_RUNTIME=$(which podman 2>/dev/null) ||
