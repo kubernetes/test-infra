@@ -16,11 +16,11 @@ presubmits:
         - ./scripts/ci-build.sh
         resources:
           requests:
-            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}4Gi{{ else }}9Gi{{ end }}
+            cpu: 6000m
+            memory: 4Gi
           limits:
-            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}4Gi{{ else }}9Gi{{ end }}
+            cpu: 6000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-build-{{ ReplaceAll $.branch "." "-" }}
@@ -41,11 +41,11 @@ presubmits:
         image: {{ $.config.TestImage }}
         resources:
           requests:
-            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}2Gi{{ else }}9Gi{{ end }}
+            cpu: 6000m
+            memory: 2Gi
           limits:
-            cpu: {{ if eq $.branch "main" }}6000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}2Gi{{ else }}9Gi{{ end }}
+            cpu: 6000m
+            memory: 2Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-apidiff-{{ ReplaceAll $.branch "." "-" }}
@@ -67,11 +67,11 @@ presubmits:
         - ./scripts/ci-verify.sh
         resources:
           requests:
-            cpu: {{ if eq $.branch "main" }}5000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}3Gi{{ else }}9Gi{{ end }}
+            cpu: 5000m
+            memory: 3Gi
           limits:
-            cpu: {{ if eq $.branch "main" }}5000m{{ else }}7300m{{ end }}
-            memory: {{ if eq $.branch "main" }}3Gi{{ else }}9Gi{{ end }}
+            cpu: 5000m
+            memory: 3Gi
         securityContext:
           privileged: true
     annotations:
@@ -94,10 +94,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-test-{{ ReplaceAll $.branch "." "-" }}
@@ -128,10 +128,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
           limits:
             cpu: 7300m
-            memory: 9Gi
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-test-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -174,11 +174,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
@@ -213,11 +213,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
@@ -257,11 +257,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
@@ -300,11 +300,11 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
             limits:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
@@ -345,11 +345,11 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
             limits:
-              cpu: 7300m
-              memory: 32Gi
+              cpu: 3000m
+              memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-informing-ipv6-{{ ReplaceAll $.branch "." "-" }}
@@ -384,11 +384,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 3000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}
@@ -432,11 +432,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 6000m
+            memory: 6Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 6000m
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
@@ -471,11 +471,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -509,11 +509,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
           limits:
-            cpu: 7300m
-            memory: 32Gi
+            cpu: 4000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
