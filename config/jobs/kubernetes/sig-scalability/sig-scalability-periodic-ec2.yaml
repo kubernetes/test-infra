@@ -14,7 +14,7 @@ periodics:
       args:
       - --ttl=12h
       - --path=s3://k8s-infra-kops-scale-tests/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240306-786da16
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20240416-59dbd6c
       resources:
         requests:
           cpu: 1
