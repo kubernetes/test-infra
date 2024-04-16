@@ -139,6 +139,58 @@ periodics:
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
+- name: ci-crio-cgroupv2-node-e2e-features
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --deployment=node
+      - --env=KUBE_SSH_USER=core
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --timeout=180m
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      env:
+      - name: GOPATH
+        value: /go
+      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+        value: "1"
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-features
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v2"
 - name: ci-crio-cgroupv1-node-e2e-flaky
   cluster: k8s-infra-prow-build
   interval: 2h
@@ -241,6 +293,58 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-unlabelled
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
+- name: ci-crio-cgroupv2-node-e2e-unlabelled
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 400m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240311-b09cdeb92c-master
+      command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --deployment=node
+      - --env=KUBE_SSH_USER=core
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --timeout=300m
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      env:
+      - name: GOPATH
+        value: /go
+      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+        value: "1"
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-unlabelled
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - name: ci-crio-cgroupv1-node-e2e-eviction
