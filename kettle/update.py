@@ -63,10 +63,12 @@ def main():
 
     if os.getenv('DEPLOYMENT', 'staging') == "prod":
         call(f'{mj_cmd} {mj_ext} --days {DAY} | pv | gzip > build_day.json.gz')
-        call(f'{bq_cmd} {bq_ext} kubernetes-public:k8s_infra_kettle.day build_day.json.gz schema.json')
+        call(f'{bq_cmd} {bq_ext} ' \
+             f'kubernetes-public:k8s_infra_kettle.day build_day.json.gz schema.json')
 
         call(f'{mj_cmd} {mj_ext} --days {WEEK} | pv | gzip > build_week.json.gz')
-        call(f'{bq_cmd} {bq_ext} kubernetes-public:k8s_infra_kettle.week build_week.json.gz schema.json')
+        call(f'{bq_cmd} {bq_ext} ' \
+             f'kubernetes-public:k8s_infra_kettle.week build_week.json.gz schema.json')
 
         # TODO: (MushuEE) #20024, remove 30 day limit once issue with all uploads is found
         call(f'{mj_cmd} --days {MONTH} | pv | gzip > build_all.json.gz')
@@ -77,7 +79,8 @@ def main():
              f'--tables all:{MONTH} day:{DAY} week:{WEEK} --stop_at=1')
     else:
         call(f'{mj_cmd} | pv | gzip > build_staging.json.gz')
-        call(f'{bq_cmd} kubernetes-public:k8s_infra_kettle.staging build_staging.json.gz schema.json')
+        call(f'{bq_cmd} kubernetes-public:k8s_infra_kettle.staging ' \
+             f'build_staging.json.gz schema.json')
         call(f'python3 stream.py --poll {SUB_PATH} ' \
              f'--dataset kubernetes-public:k8s_infra_kettle --tables staging:0 --stop_at=1')
 
