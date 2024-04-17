@@ -1,0 +1,27 @@
+periodics:
+- name: metrics-kettle
+  cluster: k8s-infra-prow-build-trusted
+  interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    serviceAccountName: k8s-triage
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20240205-69ac5748ba
+      args:
+      - ./kettle/monitor.py
+      - --stale=6
+      - --table
+      - k8s_infra_kettle:build.all
+      - k8s_infra_kettle:build.week
+      - k8s_infra_kettle:build.day
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-broken-column-threshold: '0.5'
+    description: Monitors Kettle's BigQuery database freshness.

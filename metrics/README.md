@@ -56,9 +56,6 @@ jqfilter: |
 * weekly-consistency - compute overall weekly consistency for PRs
     - [Config](configs/weekly-consistency-config.yaml)
     - [weekly-consistency-latest.json](http://storage.googleapis.com/k8s-metrics/weekly-consistency-latest.json)
-* istio-job-flakes - compute overall weekly consistency for postsubmits
-    - [Config](configs/istio-flakes.yaml)
-    - [istio-job-flakes-latest.json](http://storage.googleapis.com/k8s-metrics/istio-job-flakes-latest.json)
 
 ## Adding a new metric
 

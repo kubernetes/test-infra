@@ -23,7 +23,7 @@ digraph G {
 	Gubernator [href="https://gubernator.k8s.io"]
 	"Testgrid (closed)" [href="https://testgrid.k8s.io"]
 	Deck [href="https://prow.k8s.io"]
-	BigQuery [href="https://bigquery.cloud.google.com/table/k8s-gubernator:build.week"]
+	BigQuery [href="https://bigquery.cloud.google.com/table/k8s_infra_kettle:build.week"]
 
 	subgraph cluster_Prow {
 		label="Prow"

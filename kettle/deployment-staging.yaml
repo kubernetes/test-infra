@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   annotations:
-    iam.gke.io/gcp-service-account: kettle@k8s-gubernator.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: kettle@kubernetes-public.iam.gserviceaccount.com
   name: kettle
 ---
 apiVersion: apps/v1
@@ -23,7 +23,7 @@ spec:
       serviceAccountName: kettle
       containers:
       - name: kettle-staging
-        image: gcr.io/k8s-testimages/kettle:latest
+        image: gcr.io/k8s-staging-infra-tools/kettle:latest
         imagePullPolicy: Always
         env:
         - name: BUILD_LIMIT

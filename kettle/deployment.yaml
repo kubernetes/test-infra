@@ -2,14 +2,18 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations:
-    iam.gke.io/gcp-service-account: kettle@k8s-gubernator.iam.gserviceaccount.com
   name: kettle
+  namespace: kettle
+  labels:
+    app: kettle
+  annotations:
+    iam.gke.io/gcp-service-account: kettle@kubernetes-public.iam.gserviceaccount.com
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kettle
+  namespace: kettle
 spec:
   replicas: 1
   selector:
@@ -23,13 +27,18 @@ spec:
       serviceAccountName: kettle
       containers:
       - name: kettle
-        image: gcr.io/k8s-testimages/kettle:latest
+        image: gcr.io/k8s-staging-infra-tools/kettle:latest
         imagePullPolicy: Always
         env:
         - name: DEPLOYMENT
           value: prod
         - name: SUBSCRIPTION_PATH
           value: kubernetes-jenkins/gcs-changes/kettle-filtered
+        resources:
+          requests:
+            memory: 4Gi
+          limits:
+            memory: 12Gi
         volumeMounts:
         - name: data
           mountPath: /data

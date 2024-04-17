@@ -149,7 +149,7 @@
 <!-- BigQuery -->
 <g id="node5" class="node">
 <title>BigQuery</title>
-<g id="a_node5"><a xlink:href="https://bigquery.cloud.google.com/table/k8s-gubernator:build.week" xlink:title="BigQuery">
+<g id="a_node5"><a xlink:href="https://bigquery.cloud.google.com/table/k8s_infra_kettle:build.week" xlink:title="BigQuery">
 <polygon fill="gray" stroke="black" points="1409.36,-332 1327.36,-332 1327.36,-250 1409.36,-250 1409.36,-332"/>
 <text text-anchor="middle" x="1368.36" y="-287.3" font-family="Times-Roman" font-size="14.00">BigQuery</text>
 </a>
