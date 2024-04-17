@@ -4,7 +4,7 @@ This collects test results scattered across a variety of GCS buckets,
 stores them in a local SQLite database, and outputs newline-delimited
 JSON files for import into BigQuery. *See [overview](./OVERVIEW.md) for more details.*
 
-Results are stored in the [k8s_infra_kettle:build BigQuery dataset][Big Query Tables],
+Results are stored in the [kubernetes-public:k8s_infra_kettle BigQuery dataset][Big Query Tables],
 which is publicly accessible.
 
 # Deploying
@@ -79,7 +79,7 @@ It can be deployed with `make -C kettle deploy-staging`. If already deployed, yo
 
 #### Adding Fields
 
-To add fields to the BQ table, Visit the [k8s_infra_kettle:build BigQuery dataset][Big Query Tables] and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
+To add fields to the BQ table, Visit the [kubernetes-public:k8s_infra_kettle BigQuery dataset][Big Query Tables] and Select the table (Ex. Build > All). Schema -> Edit Schema -> Add field. As well as update [schema.json](./schema.json)
 
 ## Adding Buckets
 

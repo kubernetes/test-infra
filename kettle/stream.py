@@ -320,7 +320,7 @@ def get_options(argv):
     )
     parser.add_argument(
         '--dataset',
-        help='BigQuery dataset (e.g. k8s_infra_kettle:build)'
+        help='BigQuery dataset (e.g. kubernetes-public:k8s_infra_kettle)'
     )
     parser.add_argument(
         '--tables',
