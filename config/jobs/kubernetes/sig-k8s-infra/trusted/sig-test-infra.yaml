@@ -15,9 +15,9 @@ periodics:
       - ./kettle/monitor.py
       - --stale=6
       - --table
-      - k8s_infra_kettle:build.all
-      - k8s_infra_kettle:build.week
-      - k8s_infra_kettle:build.day
+      - kubernetes-public:k8s_infra_kettle.all
+      - kubernetes-public:k8s_infra_kettle.week
+      - kubernetes-public:k8s_infra_kettle.day
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
