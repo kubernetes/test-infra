@@ -6391,14 +6391,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay310-ocp415-lp-interop
+    name: periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay311-ocp415-lp-interop
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay310-ocp415-lp-interop
+    test_group_name: periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay311-ocp415-lp-interop
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -7782,8 +7782,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.15-upgrade-from-stable-4.14-e2e-vsphere-zones-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.15-upgrade-from-stable-4.14-e2e-vsphere-zones-upgrade
-- gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay310-ocp415-lp-interop
-  name: periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay310-ocp415-lp-interop
+- gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay311-ocp415-lp-interop
+  name: periodic-ci-quay-quay-tests-master-ocp-415-quay-quay-e2e-tests-quay311-ocp415-lp-interop
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhobs-observability-operator-main-ocp-4.15-coo-qeindex
   name: periodic-ci-rhobs-observability-operator-main-ocp-4.15-coo-qeindex
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhobs-observability-operator-main-ocp-4.15-coo-stage
