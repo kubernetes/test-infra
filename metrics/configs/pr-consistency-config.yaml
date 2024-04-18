@@ -30,7 +30,7 @@ query: |
           regexp_extract(metadata.value, r'^[^,]+,\d+:([^,"]+)') commit, /* git hash of pr */
           result,
           cast(date(started) as date) day
-        FROM [k8s_infra_kettle:build.all]
+        FROM [kubernetes-public:k8s_infra_kettle.all]
         where
           /* Select results that have occurred on or after the day of <LAST_DATA_TIME> (those results were
              for the day before), but don't include results from today, only return results for complete days. */
