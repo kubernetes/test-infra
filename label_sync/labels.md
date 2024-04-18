@@ -227,7 +227,6 @@ larger set of contributors to apply/remove them.
 | <a id="kind/design" href="#kind/design">`kind/design`</a> | Categorizes issue or PR as related to design.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="kind/proposal" href="#kind/proposal">`kind/proposal`</a> | Issues or PRs related to proposals.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="kind/release-blocking" href="#kind/release-blocking">`kind/release-blocking`</a> | Issues or PRs that need to be closed before the next CAPI release| approvers |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
-| <a id="triage/needs-discussion" href="#triage/needs-discussion">`triage/needs-discussion`</a> | Indicates an issue or PR that needs further discussion before being actively worked on.| org members |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/cluster-api, only for PRs
 
