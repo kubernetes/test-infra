@@ -207,6 +207,67 @@ presubmits:
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
       description: Uses kubetest to run e2e Conformance, SIG-Network tests against a cluster using IPVS (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
+  - name: pull-kubernetes-e2e-gci-gce-nftables
+    cluster: k8s-infra-prow-build
+    branches:
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
+    always_run: false
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)'
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 120m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: "k8s.io/release"
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --env=ALLOW_PRIVILEGED=true
+        - --env=KUBE_PROXY_MODE=nftables
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --ginkgo-parallel=30
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
+        - --timeout=80m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-gce
+      testgrid-tab-name: presubmit-network-nftables, google-gce
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+      description: Uses kubetest to run e2e Conformance, SIG-Network tests against a cluster using nftables created with cluster/kube-up.sh
+
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
     cluster: eks-prow-build-cluster
@@ -684,6 +745,48 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '24'
+- interval: 6h
+  name: ci-kubernetes-e2e-gci-gce-nftables
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 170m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --env=KUBE_PROXY_MODE=nftables
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --provider=gce
+      # skip ESIPP should work from pods #97081
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers --minStartupPods=8
+      - --timeout=150m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    testgrid-tab-name: periodic-network-nftables, google-gce
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    description: Uses kubetest to run e2e Conformance, SIG-Network tests against a cluster using nftables created with cluster/kube-up.sh
+
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-kube-dns
   cluster: k8s-infra-prow-build
