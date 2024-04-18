@@ -88,7 +88,8 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test-{{ ReplaceAll $.branch "." "-" }}
       description: Runs unit tests
-
+{{ $testInBranch := list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
+{{ if has $.branch $testInBranch }}
   - name: pull-cluster-api-provider-vsphere-test-integration-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     branches:
@@ -125,6 +126,7 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test-integration-{{ ReplaceAll $.branch "." "-" }}
       description: Runs integration tests
+{{ end -}}
 {{ $modes := list "govmomi" "supervisor" -}}
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}
