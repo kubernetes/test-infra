@@ -17,7 +17,7 @@
 set -exu
 
 # dataset table to query for build info
-readonly BUILD_DATASET_TABLE="${BUILD_DATASET_TABLE:-"k8s_infra_kettle:build.all"}"
+readonly BUILD_DATASET_TABLE="${BUILD_DATASET_TABLE:-"kubernetes-public:k8s_infra_kettle.all"}"
 
 # dataset to write temp results to for triage
 readonly TRIAGE_DATASET_TABLE="${TRIAGE_DATASET_TABLE:-"k8s-gubernator:temp.triage"}"

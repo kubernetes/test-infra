@@ -33,7 +33,7 @@ query: |
           date(started) stamp,
           date(date_add(date(started), -dayofweek(started), "day")) wk, /* TODO(fejta): remove or use */
           result
-        FROM [k8s_infra_kettle:build.all]
+        FROM [kubernetes-public:k8s_infra_kettle.all]
         where
           started > date_add(current_timestamp(), -7, "DAY")
           and version != "unknown"
