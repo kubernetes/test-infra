@@ -2115,6 +2115,20 @@ repos:
         prowPlugin: label
         addedBy: anyone
       # End shared
+  kubernetes-sigs/cluster-api-provider-vsphere:
+      labels:
+      - color: 0052cc
+        description: Issues or PRs related to the govmomi mode
+        name: area/govmomi
+        target: both
+        addedBy: anyone
+        prowPlugin: label
+      - color: 0052cc
+        description: Issues or PRs related to the supervisor mode
+        name: area/supervisor
+        target: both
+        addedBy: anyone
+        prowPlugin: label
   kubernetes-sigs/krew:
     labels:
       - color: ee0000

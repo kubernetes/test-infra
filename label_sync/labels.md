@@ -15,6 +15,7 @@
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, only for issues](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-only-for-issues)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-azure-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-gcp, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-gcp-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/cluster-api-provider-vsphere, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-vsphere-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-tweets-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontroller-runtime-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for issues](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-issues)
@@ -292,6 +293,13 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="area/gke" href="#area/gke">`area/gke`</a> | Issues or PRs related to GKE| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/cluster-api-provider-vsphere, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/govmomi" href="#area/govmomi">`area/govmomi`</a> | Issues or PRs related to the govmomi mode| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
+| <a id="area/supervisor" href="#area/supervisor">`area/supervisor`</a> | Issues or PRs related to the supervisor mode| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs
 
