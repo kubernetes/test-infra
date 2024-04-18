@@ -279,3 +279,31 @@ presubmits:
           limits:
             cpu: "2"
             memory: "6Gi"
+  - name: pull-kueue-test-scheduling-perf-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-scheduling-perf-main
+      description: "Run kueue test-scheduling-perf"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.22
+        command:
+        - make
+        args:
+        - test-scalability
+        env:
+        - name: GOMAXPROCS
+          value: "4"
+        resources:
+          requests:
+            cpu: "6"
+            memory: "9Gi"
+          limits:
+            cpu: "6"
+            memory: "9Gi"
