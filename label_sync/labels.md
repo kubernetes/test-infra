@@ -265,6 +265,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/kubetest" href="#area/kubetest">`area/kubetest`</a> | Issues or PRs related to Cluster API Kubetest2 Provider| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="area/networking" href="#area/networking">`area/networking`</a> | Issues or PRs related to networking| label | |
 | <a id="area/provider/eks" href="#area/provider/eks">`area/provider/eks`</a> | Issues or PRs related to Amazon EKS provider| label | |
+| <a id="area/provider/rosa" href="#area/provider/rosa">`area/provider/rosa`</a> | Issues or PRs related to Red Hat ROSA provider| label | |
 | <a id="area/release" href="#area/release">`area/release`</a> | Issues or PRs related to releasing| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="area/security" href="#area/security">`area/security`</a> | Issues or PRs related to security| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="area/testing" href="#area/testing">`area/testing`</a> | Issues or PRs related to testing| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |

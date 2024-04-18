@@ -2015,6 +2015,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to Red Hat ROSA provider
+        name: area/provider/rosa
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to Amazon VPCs
         name: area/vpc
         target: both
