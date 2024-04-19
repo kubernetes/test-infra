@@ -416,7 +416,7 @@ periodics:
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-num-columns-recent: '3'
 # network test against kubernetes master branch with `kind`
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-kind-network-ipvs
   cluster: k8s-infra-prow-build
   labels:
@@ -466,7 +466,7 @@ periodics:
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-num-columns-recent: '3'
 # network test against kubernetes master branch with `kind` ipv6
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-kind-network-ipvs-ipv6
   cluster: k8s-infra-prow-build
   labels:
@@ -522,7 +522,7 @@ periodics:
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-num-columns-recent: '3'
 # network test against kubernetes master branch with `kind` dual stack
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-kind-network-ipvs-dual
   cluster: k8s-infra-prow-build
   labels:
