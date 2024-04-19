@@ -162,7 +162,7 @@ presubmits:
     optional: true
     always_run: false
     skip_report: false
-    run_if_changed: '^(pkg\/proxy\/nftables)'
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)'
     decorate: true
     labels:
       preset-dind-enabled: "true"
