@@ -183,7 +183,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-nftables-e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: PARALLEL
           value: "true"
@@ -837,51 +837,3 @@ periodics:
     testgrid-tab-name: sig-network-kind, detect-local-interface-name-prefix
     description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=InterfaceNamePrefix
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
-- interval: 12h
-  name: ci-kubernetes-kind-network-nftables
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  decoration_config:
-    timeout: 200m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: "k8s.io/test-infra"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240405-14b8bc2f76-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-nftables-e2e.sh
-      env:
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, nftables, master
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and the nftables proxy mode
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-    testgrid-num-columns-recent: '3'
