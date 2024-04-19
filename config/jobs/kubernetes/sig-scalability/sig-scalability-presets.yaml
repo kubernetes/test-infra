@@ -374,6 +374,8 @@ presets:
     value: gctrace=1
   - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
     value: "true"
+  - name: KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM
+    value: 256
 
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.
