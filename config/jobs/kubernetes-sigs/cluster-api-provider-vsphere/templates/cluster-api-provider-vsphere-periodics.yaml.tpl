@@ -33,7 +33,8 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs unit tests
-
+{{ $testInBranch := list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
+{{ if has $.branch $testInBranch }}
 - name: periodic-cluster-api-provider-vsphere-test-integration-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
   labels:
@@ -76,6 +77,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs integration tests
+{{ end -}}
 {{ $modes := list "govmomi" "supervisor" -}}
 {{ range $i, $mode := $modes -}}
 {{ $modeFocus := "" -}}

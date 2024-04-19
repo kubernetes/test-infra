@@ -35,49 +35,6 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs unit tests
 
-- name: periodic-cluster-api-provider-vsphere-test-integration-release-1-10
-  cluster: eks-prow-build-cluster
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  interval: 1h
-  decorate: true
-  rerun_auth_config:
-    github_team_slugs:
-    - org: kubernetes-sigs
-      slug: cluster-api-provider-vsphere-maintainers
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-vsphere
-    base_ref: release-1.10
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-        capabilities:
-          add: ["NET_ADMIN"]
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-      command:
-      - runner.sh
-      args:
-      - make
-      - test-integration
-  annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-test-integration-release-1-10
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "4"
-    description: Runs integration tests
-
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-release-1-10
   labels:
     preset-dind-enabled: "true"
