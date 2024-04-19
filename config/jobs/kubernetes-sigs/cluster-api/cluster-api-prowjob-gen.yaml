@@ -36,7 +36,7 @@ prow_ignored:
       interval: "2h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.27.11@sha256:681253009e68069b8e01aad36a1e0fa8cf18bb0ab3e5c4069b2e65cafdd70843"
-      kubebuilderEnvtestKubernetesVersion: "v1.27.1"
+      kubebuilderEnvtestKubernetesVersion: "1.27.1"
       upgrades:
       - from: "1.25"
         to: "1.26"
