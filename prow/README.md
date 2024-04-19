@@ -2,7 +2,7 @@
 
 # Prow source code has moved
 
-The Prow source code that previously lived here was moved along with ghProxy to the [kubernetes-sigs/prow](https://github.com/kubernetes-sigs/prow) repository on April 9, 2024. Specifically you can find the prow source code [here](https://github.com/kubernetes-sigs/prow/tree/main/prow).
+The Prow source code that previously lived here was moved along with ghProxy to the [kubernetes-sigs/prow](https://github.com/kubernetes-sigs/prow) repository on April 9, 2024.
 
 ## How this impacts you and what to do:
 
