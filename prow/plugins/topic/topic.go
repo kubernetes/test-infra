@@ -543,13 +543,18 @@ func integrateTopic(log *logrus.Entry, ghc githubClient, config *plugins.Configu
 		topicInfo.Repos = getProjectV2Items(log, ghc, org, pNumber)
 	}
 
-	if topicData, err := yaml.Marshal(topicInfo); err == nil {
+	if len(topicInfo.Repos) <= 0 {
+		return fmt.Errorf("can't get topic[%s]'s prs", topic)
+	}
+
+	topicData, err := yaml.Marshal(topicInfo)
+	if err == nil {
 		log.Infof("Topic[%s]'s integrate info: %s", topic, string(topicData))
 		integratePrsRepo := configForRepo(optionsForRepo(config, org, ""))
 		return createIntegratePr(log, ghc, integratePrsRepo, topic, ce, gc, topicData)
 	}
 
-	return nil
+	return err
 }
 
 // func getProjectV2Items
