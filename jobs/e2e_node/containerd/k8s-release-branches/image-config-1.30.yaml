@@ -1,5 +1,5 @@
 images:
-  cos-101:
+  cos-dev:
     image_family: cos-109-lts
     project: cos-cloud
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
