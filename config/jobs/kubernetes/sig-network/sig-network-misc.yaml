@@ -108,7 +108,7 @@ presubmits:
         - --build=quick
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
-        - --env=NETWORK_POLICY_PROVIDER=calico
+        - --env=NETWORK_POLICY_PROVIDER=kube-network-policies
         - --ginkgo-parallel=30
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
@@ -944,7 +944,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --env=ALLOW_PRIVILEGED=true
-      - --env=NETWORK_POLICY_PROVIDER=calico
+      - --env=NETWORK_POLICY_PROVIDER=kube-network-policies
       - --ginkgo-parallel=30
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
