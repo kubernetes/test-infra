@@ -17,9 +17,10 @@ limitations under the License.
 package main
 
 import (
-	"sigs.k8s.io/prow/prow/flagutil"
 	"reflect"
 	"testing"
+
+	"sigs.k8s.io/prow/pkg/flagutil"
 )
 
 func Test_options_getLabels(t *testing.T) {

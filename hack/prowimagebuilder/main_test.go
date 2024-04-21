@@ -26,7 +26,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"sigs.k8s.io/prow/prow/flagutil"
+	"sigs.k8s.io/prow/pkg/flagutil"
 )
 
 func TestImageAllowed(t *testing.T) {

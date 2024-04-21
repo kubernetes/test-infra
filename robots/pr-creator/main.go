@@ -25,8 +25,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/prow/prow/flagutil"
 	"k8s.io/test-infra/robots/pr-creator/updater"
+	"sigs.k8s.io/prow/pkg/flagutil"
 )
 
 type options struct {

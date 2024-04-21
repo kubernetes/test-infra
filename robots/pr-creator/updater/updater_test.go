@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/prow/prow/github"
-	"sigs.k8s.io/prow/prow/github/fakegithub"
+	"sigs.k8s.io/prow/pkg/github"
+	"sigs.k8s.io/prow/pkg/github/fakegithub"
 )
 
 func TestEnsurePRWithLabel(t *testing.T) {

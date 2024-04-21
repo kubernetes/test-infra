@@ -26,9 +26,9 @@ import (
 	"net/url"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/prow/prow/config/secret"
-	"sigs.k8s.io/prow/prow/flagutil"
-	"sigs.k8s.io/prow/prow/github"
+	"sigs.k8s.io/prow/pkg/config/secret"
+	"sigs.k8s.io/prow/pkg/flagutil"
+	"sigs.k8s.io/prow/pkg/github"
 )
 
 const (

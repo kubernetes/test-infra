@@ -39,7 +39,7 @@ import (
 
 	"k8s.io/test-infra/greenhouse/diskcache"
 	"k8s.io/test-infra/greenhouse/diskutil"
-	"sigs.k8s.io/prow/prow/logrusutil"
+	"sigs.k8s.io/prow/pkg/logrusutil"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"

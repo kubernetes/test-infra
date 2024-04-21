@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	v1 "k8s.io/api/core/v1"
-	cfg "sigs.k8s.io/prow/prow/config"
+	cfg "sigs.k8s.io/prow/pkg/config"
 )
 
 func TestConfigValidation_EmptyConfigPath(t *testing.T) {

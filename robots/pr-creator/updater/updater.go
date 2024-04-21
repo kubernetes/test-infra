@@ -21,7 +21,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/prow/prow/github"
+	"sigs.k8s.io/prow/pkg/github"
 )
 
 // Indicates whether maintainers can modify a pull request in fork.

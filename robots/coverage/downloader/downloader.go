@@ -31,7 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
-	prowv1 "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
+	prowv1 "sigs.k8s.io/prow/pkg/apis/prowjobs/v1"
 )
 
 // listGcsObjects get the slice of gcs objects under a given path
