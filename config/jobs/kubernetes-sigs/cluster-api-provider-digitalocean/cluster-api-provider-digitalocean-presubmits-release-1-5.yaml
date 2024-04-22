@@ -1,16 +1,16 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-digitalocean:
-    - name: pull-cluster-api-provider-digitalocean-test-release-1-3
+    - name: pull-cluster-api-provider-digitalocean-test-release-1-5
       always_run: true
       optional: false
       decorate: true
       cluster: eks-prow-build-cluster
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - "./scripts/ci-test.sh"
             resources:
@@ -22,18 +22,18 @@ presubmits:
                 memory: 4Gi
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-test-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-build-release-1-3
+        testgrid-tab-name: capdo-pr-test-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-build-release-1-5
       always_run: true
       optional: false
       decorate: true
       cluster: eks-prow-build-cluster
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - "./scripts/ci-build.sh"
             resources:
@@ -45,18 +45,18 @@ presubmits:
                 memory: 4Gi
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-build-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-verify-release-1-3
+        testgrid-tab-name: capdo-pr-build-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-verify-release-1-5
       always_run: true
       optional: false
       decorate: true
       cluster: eks-prow-build-cluster
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - make
             args:
@@ -70,18 +70,18 @@ presubmits:
                 memory: 4Gi
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-verify-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-lint-release-1-3
+        testgrid-tab-name: capdo-pr-verify-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-lint-release-1-5
       always_run: true
       optional: false
       decorate: true
       cluster: eks-prow-build-cluster
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - make
             args:
@@ -95,8 +95,8 @@ presubmits:
                 memory: 4Gi
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-lint-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-e2e-release-1-3
+        testgrid-tab-name: capdo-pr-lint-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-e2e-release-1-5
       always_run: true
       optional: false
       decorate: true
@@ -109,10 +109,10 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-do-credential: "true"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -124,8 +124,8 @@ presubmits:
                 memory: "4Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-e2e-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-capi-e2e-release-1-3
+        testgrid-tab-name: capdo-pr-e2e-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-capi-e2e-release-1-5
       always_run: false
       optional: true
       decorate: true
@@ -138,10 +138,10 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-do-credential: "true"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -158,15 +158,15 @@ presubmits:
                 memory: "4Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-capi-e2e-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-e2e-workload-upgrade-release-1-3
+        testgrid-tab-name: capdo-pr-capi-e2e-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-e2e-workload-upgrade-release-1-5
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
         preset-do-credential: "true"
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       always_run: false
       optional: true
       decorate: true
@@ -174,7 +174,7 @@ presubmits:
         timeout: 5h
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             args:
               - runner.sh
               - "./scripts/ci-e2e.sh"
@@ -190,8 +190,8 @@ presubmits:
                 cpu: 2000m
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-e2e-upgrade-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-conformance-release-1-3
+        testgrid-tab-name: capdo-pr-e2e-upgrade-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-conformance-release-1-5
       always_run: false
       optional: true
       decorate: true
@@ -204,10 +204,10 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-do-credential: "true"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - "runner.sh"
               - "./scripts/ci-conformance.sh"
@@ -219,8 +219,8 @@ presubmits:
                 memory: "9Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-conformance-release-1-3
-    - name: pull-cluster-api-provider-digitalocean-conformance-ci-artifacts-release-1-3
+        testgrid-tab-name: capdo-pr-conformance-release-1-5
+    - name: pull-cluster-api-provider-digitalocean-conformance-ci-artifacts-release-1-5
       always_run: false
       optional: true
       decorate: true
@@ -233,10 +233,10 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-do-credential: "true"
       branches:
-        - ^release-1.3$
+        - ^release-1.5$
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
             command:
               - "runner.sh"
               - "./scripts/ci-conformance.sh"
@@ -251,4 +251,4 @@ presubmits:
                 memory: "9Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-        testgrid-tab-name: capdo-pr-conformance-ci-artifacts-release-1-3
+        testgrid-tab-name: capdo-pr-conformance-ci-artifacts-release-1-5
