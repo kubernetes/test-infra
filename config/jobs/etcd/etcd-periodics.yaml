@@ -189,7 +189,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-128-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -222,7 +222,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-8-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -255,7 +255,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-4-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -288,7 +288,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-2-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
@@ -321,7 +321,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-2-1-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240408-d4d9f8e6b8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
       command:
       - runner.sh
       args:
