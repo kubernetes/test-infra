@@ -132,6 +132,90 @@ periodics:
           cpu: 2
           memory: "6Gi"
 
+- name: ci-kubernetes-e2e-gci-gce-scalability-nftables-proxy
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  tags:
+    - "perfDashPrefix: nftables-100Nodes-master"
+    - "perfDashJobType: performance"
+    - "perfDashBuildsCount: 500"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: nftables-100
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh using kube-proxy nftables"
+    testgrid-num-failures-to-alert: '2'
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=e2e-big
+      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+      - --env=KUBE_PROXY_MODE=nftables
+      - --extract=ci/fast/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --metadata-sources=cl2-metadata.json
+      - --env=CL2_ENABLE_DNS_PROGRAMMING=true
+      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+      - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+      - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+      - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-kubelets=true
+      - --test-cmd-args=--prometheus-scrape-node-exporter
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
+      - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=120m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 2
+          memory: 6Gi
+        limits:
+          cpu: 2
+          memory: 6Gi
+
 - name: ci-kubernetes-e2e-gci-gce-scalability-watch-list-off
   cluster: k8s-infra-prow-build
   interval: 24h
