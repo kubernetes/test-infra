@@ -127,14 +127,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
+    name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-ibmcloud
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
+    test_group_name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-ibmcloud
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -154,14 +154,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-aws
+    name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-ibmcloud
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-aws
+    test_group_name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-ibmcloud
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1171,10 +1171,10 @@ test_groups:
   name: periodic-ci-ansible-tower-qa-devel-ocp4.15-lp-interop-aap-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.13-lp-interop-data-grid-interop-aws
   name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.13-lp-interop-data-grid-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
-  name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-aws
-  name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-ibmcloud
+  name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.14-lp-interop-data-grid-interop-ibmcloud
+- gcs_prefix: test-platform-results/logs/periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-ibmcloud
+  name: periodic-ci-infinispan-infinispan-operator-stable-data-grid-ocp4.15-lp-interop-data-grid-interop-ibmcloud
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.13-lp-interop-servicemesh-interop-aws
   name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.13-lp-interop-servicemesh-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.14-lp-interop-servicemesh-interop-aws
