@@ -11,7 +11,7 @@ presubmits:
       description: Build test in sig-storage-lib-external-provisioner repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         # Plain make runs also verify
         - make
@@ -34,7 +34,7 @@ presubmits:
       description: Unit tests in sig-storage-lib-external-provisioner repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
