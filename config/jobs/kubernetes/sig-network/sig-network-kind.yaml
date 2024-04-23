@@ -105,7 +105,7 @@ presubmits:
     optional: true
     always_run: false
     skip_report: false
-    # run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
+    run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -998,3 +998,59 @@ periodics:
     testgrid-tab-name: sig-network-kind, detect-local-interface-name-prefix
     description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=InterfaceNamePrefix
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
+- interval: 12h
+  name: ci-kubernetes-kind-cloud-provider-loadbalancer
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-kind
+    base_ref: main
+    path_alias: sigs.k8s.io/cloud-provider-kind
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240405-14b8bc2f76-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      # compile cloud-provider-kind with kubernetes changes on the PR
+      - set -o errexit;
+        set -o nounset;
+        set -o pipefail;
+        set -o xtrace;
+        cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+      env:
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-network-kind
+    testgrid-tab-name: sig-network-kind, loadbalancer
+    description: Runs loadbalancer tests in kind with cloud-provider-kind
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    testgrid-num-columns-recent: '3'
