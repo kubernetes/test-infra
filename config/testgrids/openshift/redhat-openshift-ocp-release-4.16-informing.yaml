@@ -3097,6 +3097,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-baremetalds-sno-recert-cluster-rename
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-baremetalds-sno-recert-cluster-rename
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.16-console-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -5095,6 +5122,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-10y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-10y-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-180d
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -5257,6 +5311,87 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-3y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-3y-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-4y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-4y-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-5y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-5y-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-60d
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -5265,6 +5400,87 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-60d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-6y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-6y-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-7y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-7y-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-8y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-8y-age-90d
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -5319,6 +5535,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-90d-age-90d
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-9y-age-90d
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-9y-age-90d
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -7196,6 +7439,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.16-upgrade-from-stable-4.15-from-stable-4.14-e2e-aws-sdn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.16-upgrade-from-stable-4.15-from-stable-4.14-e2e-aws-sdn-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-baremetalds-sno-recert-cluster-rename
+  name: periodic-ci-openshift-release-master-nightly-4.16-baremetalds-sno-recert-cluster-rename
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.16-console-aws
@@ -7390,6 +7635,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-single-node-with-worker-live-iso
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-single-node-with-worker-live-iso
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-10y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-10y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-180d
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-180d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-180d-age-90d
@@ -7402,12 +7649,26 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-30d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-360d
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-360d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-3y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-3y-age-90d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-4y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-4y-age-90d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-5y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-5y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-60d
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-60d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-6y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-6y-age-90d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-7y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-7y-age-90d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-8y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-8y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-90d
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-90d-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-90d-age-90d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-9y-age-90d
+  name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-shutdown-9y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-suspend-180d
   name: periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-suspend-180d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.16-e2e-metal-ovn-sno-cert-rotation-suspend-30d
