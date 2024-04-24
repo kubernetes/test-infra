@@ -6,7 +6,6 @@ presubmits:
     always_run: true
     path_alias: sigs.k8s.io/controller-runtime
     branches:
-    # The script this job runs is not in all branches.
     - ^main$
     spec:
       containers:
