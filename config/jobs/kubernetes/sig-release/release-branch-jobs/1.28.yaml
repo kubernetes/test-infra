@@ -1421,6 +1421,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
+        - --kubemark-master-size=n2-standard-16
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
@@ -1499,6 +1500,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=5000
+        - --kubemark-master-size=n2-standard-64
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
@@ -2049,6 +2051,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=100
+        - --kubemark-master-size=n2-standard-8
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --provider=gce
         - --tear-down-previous
