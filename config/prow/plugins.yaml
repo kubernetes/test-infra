@@ -1631,6 +1631,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes/autoscaler:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes/ingress-nginx:
   - name: cherrypicker
     events:
