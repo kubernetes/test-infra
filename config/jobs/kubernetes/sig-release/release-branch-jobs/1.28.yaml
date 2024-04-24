@@ -208,7 +208,7 @@ periodics:
     - args:
       - --cluster=kubemark-500
       - --extract=ci/latest-1.28
-      - --gcp-master-size=n1-standard-4
+      - --gcp-master-size=n2-standard-4
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=8
@@ -1414,7 +1414,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --flush-mem-after-build=true
-        - --gcp-master-size=n1-standard-4
+        - --gcp-master-size=n2-standard-4
         - --gcp-node-size=e2-standard-8
         - --gcp-nodes=7
         - --gcp-project-type=scalability-project
@@ -2044,7 +2044,7 @@ presubmits:
       - args:
         - --cluster=
         - --extract=ci/latest
-        - --gcp-master-size=n1-standard-2
+        - --gcp-master-size=n2-standard-2
         - --gcp-node-size=e2-standard-4
         - --gcp-nodes=4
         - --gcp-project-type=scalability-project
