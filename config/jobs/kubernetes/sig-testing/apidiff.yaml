@@ -1,0 +1,44 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-apidiff
+    cluster: k8s-infra-prow-build
+    # A job which automatically runs for changes in staging and then only
+    # diffs staging might be useful. For now, this checks everything and
+    # has to be started manually with:
+    #   /test pull-kubernetes-apidiff
+    always_run: false
+    optional: true
+    decorate: true
+    annotations:
+      # The apidiff.sh script uses the latest revision of apidiff.
+      # There is no guarantee that this will continue to work for
+      # older branches, so let's not even create per-release
+      # copies of this job.
+      fork-per-release: "false"
+      testgrid-dashboards: sig-testing-misc
+      testgrid-create-test-group: 'true'
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - -c
+        - "./hack/apidiff.sh -r ${PULL_BASE_SHA}"
+        env:
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        resources:
+          # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
+          limits:
+            cpu: 2
+            memory: 12Gi
+          requests:
+            cpu: 2
+            memory: 12Gi
+
+# A periodic job which shows API diffs for staging repos since the last release
+# might be useful. Not done yet.
