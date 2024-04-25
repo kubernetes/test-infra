@@ -80,14 +80,17 @@ periodics:
       - bash
       - -c
       - |
+        result=0
         apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --failfast --timeout '200m' --run TestRobustnessExploratory"
+        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
         make gofail-enable
         make build
-        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness || result=$?
+        zip -r ${ARTIFACTS}/results.zip /tmp/results
+        exit $result
       resources:
         requests:
           cpu: "7"
@@ -120,12 +123,15 @@ periodics:
       - bash
       - -c
       - |
+        result=0
         apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --failfast --timeout '200m' --run TestRobustnessExploratory"
-        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-release-3.5
+        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-release-3.5 || result=$?
+        zip -r ${ARTIFACTS}/results.zip /tmp/results
+        exit $result
       resources:
         requests:
           cpu: "7"
@@ -158,12 +164,15 @@ periodics:
       - bash
       - -c
       - |
+        result=0
         apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --failfast --timeout '200m' --run TestRobustnessExploratory"
-        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-release-3.4
+        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-release-3.4 || result=$?
+        zip -r ${ARTIFACTS}/results.zip /tmp/results
+        exit $result
       resources:
         requests:
           cpu: "7"
