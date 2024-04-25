@@ -386,7 +386,6 @@ periodics:
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-master-size=n1-standard-96
       - --gcp-node-size=e2-standard-16
       - --gcp-nodes=1
       - --gcp-project-type=scalability-project
@@ -455,7 +454,6 @@ periodics:
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-master-size=n1-standard-96
       - --gcp-node-size=e2-standard-16
       - --gcp-nodes=1
       - --gcp-project-type=scalability-project
@@ -524,7 +522,6 @@ periodics:
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-master-size=n1-standard-96
       - --gcp-node-size=e2-standard-16
       - --gcp-nodes=1
       - --gcp-project-type=scalability-project
@@ -593,7 +590,6 @@ periodics:
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-master-size=n1-standard-96
       - --gcp-node-size=e2-standard-16
       - --gcp-nodes=1
       - --gcp-project-type=scalability-project
