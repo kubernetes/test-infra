@@ -27,7 +27,7 @@ presubmits:
         args:
         - /bin/sh
         - -c
-        - "./hack/apidiff.sh -r ${PULL_BASE_SHA}"
+        - "git checkout ${PULL_PULL_SHA} && ./hack/apidiff.sh -r ${PULL_BASE_SHA}"
         env:
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
