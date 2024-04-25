@@ -216,6 +216,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-nodes=500
+      - --kubemark-master-size=n2-standard-16
       - --metadata-sources=cl2-metadata.json
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --provider=gce
