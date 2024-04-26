@@ -27,7 +27,11 @@ presubmits:
         args:
         - /bin/sh
         - -c
-        - "./hack/apidiff.sh -r ${PULL_BASE_SHA} -t ${PULL_PULL_SHA}"
+        # PULL_BASE_SHA is the revision on the target branch that the
+        # PR gets merged into. What we want instead is the revision at
+        # which the PR branch diverged from the target branch.
+        # We get that from "git merge-base".
+        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA}"
         env:
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
