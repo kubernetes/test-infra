@@ -296,7 +296,7 @@ presubmits:
         command:
         - make
         args:
-        - test-scalability
+        - test-performance-scheduler
         env:
         - name: GOMAXPROCS
           value: "4"
