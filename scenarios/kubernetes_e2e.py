@@ -122,10 +122,6 @@ class LocalMode(object):
         """Returns path."""
         return path
 
-    def add_k8s(self, *a, **kw):
-        """Add specified k8s.io repos (noop)."""
-        pass
-
     def start(self, args):
         """Starts kubetest."""
         print('starts with local mode', file=sys.stderr)
@@ -254,10 +250,6 @@ def main(args):
             runner_args.append('--build')
         else:
             runner_args.append('--build=%s' % args.build)
-        k8s = os.getcwd()
-        if not os.path.basename(k8s) == 'kubernetes':
-            raise ValueError(k8s)
-        mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
     if args.stage is not None:
         runner_args.append('--stage=%s' % args.stage)
