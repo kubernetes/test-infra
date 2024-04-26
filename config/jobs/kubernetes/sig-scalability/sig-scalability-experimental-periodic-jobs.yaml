@@ -100,6 +100,11 @@ periodics:
       - --check-leaked-resources
       - --cluster=e2e-scalability-calico
       - --env=CL2_ENABLE_NETWORKPOLICIES=true
+      - --env=CL2_ENABLE_NETWORK_POLICY_ENFORCEMENT_LATENCY_TEST=true
+      - --env=CL2_NET_POLICY_ENFORCEMENT_LATENCY_MAX_TARGET_PODS_PER_NS=200
+      - --env=CL2_NET_POLICY_ENFORCEMENT_LATENCY_NODE_LABEL_VALUE=net-policy-client
+      - --env=CL2_NET_POLICY_ENFORCEMENT_LOAD_COUNT=1000
+      - --env=CL2_NET_POLICY_ENFORCEMENT_LOAD_QPS=20
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -120,6 +125,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-network-policies.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
