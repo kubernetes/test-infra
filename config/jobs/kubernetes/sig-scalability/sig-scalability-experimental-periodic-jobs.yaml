@@ -82,7 +82,7 @@ periodics:
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: calico
+    testgrid-tab-name: kube-network-policies
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
@@ -91,7 +91,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       env:
       - name: NETWORK_POLICY_PROVIDER
-        value: "calico"
+        value: "kube-network-policies"
       - name: ADDITIONAL_MACHINE_TYPE
         value: "e2-standard-2"
       - name: NUM_ADDITIONAL_NODES
