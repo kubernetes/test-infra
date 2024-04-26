@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-apidiff
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     # A job which automatically runs for changes in staging and then only
     # diffs staging might be useful. For now, this checks everything and
     # has to be started manually with:
@@ -27,7 +27,7 @@ presubmits:
         args:
         - /bin/sh
         - -c
-        - "git checkout ${PULL_PULL_SHA} && ./hack/apidiff.sh -r ${PULL_BASE_SHA}"
+        - "./hack/apidiff.sh -r ${PULL_BASE_SHA} -t ${PULL_PULL_SHA}"
         env:
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
