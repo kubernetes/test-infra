@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/jobset:
-  - name: pull-jobset-test-unit-release-0-4
+  - name: pull-jobset-test-unit-release-0-5
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.5
@@ -9,7 +9,7 @@ presubmits:
     path_alias: sigs.k8s.io/jobset
     annotations:
       testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-unit-release-0-4
+      testgrid-tab-name: pull-jobset-test-unit-release-0-5
       description: "Run jobset unit tests"
     labels:
       preset-dind-enabled: "true"
@@ -34,7 +34,7 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  - name: pull-jobset-test-integration-release-0-4
+  - name: pull-jobset-test-integration-release-0-5
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.5
@@ -43,7 +43,7 @@ presubmits:
     path_alias: sigs.k8s.io/jobset
     annotations: 
       testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-integration-release-0-4
+      testgrid-tab-name: pull-jobset-test-integration-release-0-5
       description: "Run jobset integration tests"
     spec:
       containers:
@@ -60,7 +60,7 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  - name: pull-jobset-test-e2e-release-0-4-1-27
+  - name: pull-jobset-test-e2e-release-0-5-1-27
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.5
@@ -69,7 +69,7 @@ presubmits:
     path_alias: sigs.k8s.io/jobset
     annotations:
       testgrid-dashboards: sig-apps
-      estgrid-tab-name: pull-jobset-test-e2e-release-0-4-1-27
+      estgrid-tab-name: pull-jobset-test-e2e-release-0-5-1-27
       description: "Run jobset end to end tests for Kubernetes 1.27"
     labels:
       preset-dind-enabled: "true"
@@ -98,7 +98,7 @@ presubmits:
           limits:
             cpu: "10"
             memory: "10Gi"
-  - name: pull-jobset-test-e2e-release-0-4-1-28
+  - name: pull-jobset-test-e2e-release-0-5-1-28
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.5
@@ -107,7 +107,7 @@ presubmits:
     path_alias: sigs.k8s.io/jobset
     annotations:
       testgrid-dashboards: sig-apps
-      estgrid-tab-name: pull-jobset-test-e2e-release-0-4-1-28
+      estgrid-tab-name: pull-jobset-test-e2e-release-0-5-1-28
       description: "Run jobset end to end tests for Kubernetes 1.28"
     labels:
       preset-dind-enabled: "true"
@@ -135,7 +135,7 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  - name: pull-jobset-test-e2e-release-0-4-1-29
+  - name: pull-jobset-test-e2e-release-0-5-1-29
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.5
@@ -144,7 +144,7 @@ presubmits:
     path_alias: sigs.k8s.io/jobset
     annotations:
       testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-e2e-release-0-4-1-29
+      testgrid-tab-name: pull-jobset-test-e2e-release-0-5-1-29
       description: "Run jobset end to end tests for Kubernetes 1.29"
     labels:
       preset-dind-enabled: "true"
