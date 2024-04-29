@@ -21,7 +21,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - ./admin/update.sh
         args:
@@ -61,7 +61,7 @@ periodics:
     base_ref: main
   spec:
     containers:
-    - image: public.ecr.aws/docker/library/golang:1.20
+    - image: public.ecr.aws/docker/library/golang:1.22
       command:
       - ./admin/update.sh
       args:
