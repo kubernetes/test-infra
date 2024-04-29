@@ -1,0 +1,25 @@
+---
+variant: fcos
+version: 1.4.0
+storage:
+  files:
+    # Note: this ignition file assumes FCOS has shadow-utils installed.
+    # As of the time of writing this, it does.
+    - path: /etc/subuid
+      contents:
+        local: 50-subid.toml
+      mode: 0644
+    - path: /etc/subgid
+      contents:
+        local: 50-subid.toml
+      mode: 0644
+    # Note: This also assumes the crun handler is enabled in the base crio.conf,
+    # crun is installed, and the version of crun supports the `crun features` command.
+    # All of this is true at the time of writing.
+    # TODO(haircommander): This can be removed when runc 1.2.0 is released
+    - path: /etc/crio/crio.conf.d/99-crun.conf
+      contents:
+        local: crun.conf
+passwd:
+  users:
+    - name: kubelet
