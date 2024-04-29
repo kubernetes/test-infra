@@ -7,7 +7,7 @@ presubmits:
       preset-k8s-ssh: "true"
     decorate: true
     decoration_config:
-      timeout: 30m
+      timeout: 60m
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
