@@ -188,4 +188,3 @@ periodics:
           requests:
             cpu: 3
             memory: 10Gi
-            
