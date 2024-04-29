@@ -41,7 +41,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/jobset
-    annotations: 
+    annotations:
       testgrid-dashboards: sig-apps
       testgrid-tab-name: pull-jobset-test-integration-release-0-4
       description: "Run jobset integration tests"
@@ -172,3 +172,4 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
+            
