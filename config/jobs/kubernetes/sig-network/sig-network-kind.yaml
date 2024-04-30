@@ -107,6 +107,8 @@ presubmits:
     skip_report: false
     run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
     decorate: true
+    branches:
+    - master
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes-sigs
@@ -159,6 +161,8 @@ presubmits:
       testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
   - name: pull-kubernetes-e2e-kind-nftables
     cluster: k8s-infra-prow-build
+    branches:
+    - master
     optional: true
     always_run: false
     skip_report: false
