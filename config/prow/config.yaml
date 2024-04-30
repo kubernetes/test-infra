@@ -319,6 +319,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cri-client:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         csi-translation-lib:
           restrictions:
             users: []
