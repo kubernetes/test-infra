@@ -1670,6 +1670,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/apiserver-network-proxy:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/cloud-provider-azure:
   - name: cherrypicker
     events:
