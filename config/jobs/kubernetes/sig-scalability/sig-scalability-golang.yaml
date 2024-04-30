@@ -63,7 +63,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
-    preset-e2e-kubemark-common-legacy: "true"
+    preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
@@ -95,6 +95,7 @@ periodics:
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
       - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.23.txt
+      - --gcp-master-size=n2-standard-4
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
       - --gcp-project-type=scalability-project
@@ -102,6 +103,7 @@ periodics:
       - --provider=gce
       - --kubemark
       - --kubemark-nodes=2500
+      - --kubemark-master-size=n2-standard-64
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/golang/run-e2e.sh
       - --test-cmd-args=cluster-loader2
