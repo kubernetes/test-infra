@@ -40,10 +40,10 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-            cpu: "2"
+            cpu: "4"
           limits:
             memory: "6Gi"
-            cpu: "2"
+            cpu: "4"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-test
