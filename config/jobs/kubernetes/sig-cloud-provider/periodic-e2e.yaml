@@ -106,7 +106,7 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
-             --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,ValidatingAdmissionPolicy=true" \
+             --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
              --external-cloud-provider true \
              --up \
@@ -182,7 +182,7 @@ periodics:
              --test-package-url=https://dl.k8s.io/ \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
-             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection|ValidatingAdmissionPolicy)\]|Networking" \
+             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking" \
              --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
              --parallel=25
         env:
