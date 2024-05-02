@@ -141,9 +141,10 @@ presubmits:
           value: "true"
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
-        #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+        # cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+        # currently does not support UDP or affinity
         - name: SKIP
-          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|LoadBalancer.*(UDP|affinity)
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
