@@ -1533,6 +1533,10 @@ plugins:
     - override
     - release-note
 
+  kubernetes-sigs/karpenter:
+    plugins:
+    - require-matching-label
+
   kubernetes-sigs/kubebuilder:
     plugins:
     - override
