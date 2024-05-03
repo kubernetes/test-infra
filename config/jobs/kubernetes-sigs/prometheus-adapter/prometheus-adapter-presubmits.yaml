@@ -7,7 +7,7 @@ presubmits:
     path_alias: sigs.k8s.io/prometheus-adapter
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
@@ -29,7 +29,7 @@ presubmits:
     path_alias: sigs.k8s.io/prometheus-adapter
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
