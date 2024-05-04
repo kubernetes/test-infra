@@ -38,7 +38,7 @@ presubmits:
         - --build=quick
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -170,7 +170,7 @@ presubmits:
         args:
         - --build=quick
         - --env=ALLOW_PRIVILEGED=true
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
