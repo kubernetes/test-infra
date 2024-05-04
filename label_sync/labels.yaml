@@ -634,6 +634,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Serving.
+      name: wg/serving
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Structured Logging.
       name: wg/structured-logging
       target: both
