@@ -67,8 +67,9 @@ presubmits:
         args:
         - -c
         - |
-          make verify
-          make fix
+          set -euo pipefail
+          export PATH=$GOPATH/bin:$PATH && make verify
+          export PATH=$GOPATH/bin:$PATH && make fix
           DIFF=$(git status --porcelain)
           if [ -n "$DIFF" ]; then
             echo "These files were modified:"
