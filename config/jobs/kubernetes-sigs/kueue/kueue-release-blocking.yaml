@@ -69,14 +69,14 @@ periodics:
             - test-integration
           env:
             - name: GOMAXPROCS
-              value: "4"
+              value: "6"
           resources:
             requests:
-              cpu: "4"
-              memory: "6Gi"
+              cpu: "6"
+              memory: "9Gi"
             limits:
-              cpu: "4"
-              memory: "6Gi"
+              cpu: "6"
+              memory: "9Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-27
     cluster: eks-prow-build-cluster
