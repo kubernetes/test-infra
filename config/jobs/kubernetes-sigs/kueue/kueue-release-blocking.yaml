@@ -78,6 +78,44 @@ periodics:
               cpu: "6"
               memory: "9Gi"
   - interval: 12h
+    name: periodic-kueue-test-scheduling-perf-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-scheduling-perf-main
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue test-scheduling-perf"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: main
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.22
+          command:
+            - make
+          args:
+            - test-performance-scheduler
+          env:
+            - name: GOMAXPROCS
+              value: "6"
+          resources:
+            requests:
+              cpu: "6"
+              memory: "9Gi"
+            limits:
+              cpu: "6"
+              memory: "9Gi"
+  - interval: 12h
     name: periodic-kueue-test-e2e-main-1-27
     cluster: eks-prow-build-cluster
     annotations:
