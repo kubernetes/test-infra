@@ -4,8 +4,6 @@ version: 1.4.0
 kernel_arguments:
   should_not_exist:
     - mitigations=auto,nosmt
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
@@ -43,6 +41,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: tools-install.service
       enabled: true
       contents: |
@@ -62,6 +61,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: selinux-install.service
       enabled: true
       contents: |
@@ -80,6 +80,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: crio-install.service
       enabled: true
       contents: |
@@ -104,6 +105,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: authorized-key.service
       enabled: true
       contents: |
@@ -120,20 +122,6 @@ systemd:
             >> /home/core/.ssh/authorized_keys && \
           /usr/bin/chown -R core:core /home/core/.ssh && \
           /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: allocate-1G-hugepages.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Allocate 1G hugepages.
-        After=network-online.target
-
-        [Service]
-        Type=oneshot
-        ExecStart=/bin/sh -c '/usr/bin/echo 1 > \
-          /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages'
 
         [Install]
         WantedBy=multi-user.target
