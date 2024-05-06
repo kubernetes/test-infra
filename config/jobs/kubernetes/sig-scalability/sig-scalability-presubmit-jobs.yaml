@@ -192,7 +192,7 @@ presubmits:
         args:
         - --build=quick
         - --cluster=gce-cluster
-        - --env=CONCURRENT_SERVICE_SYNCS=5
+        - --env=CONCURRENT_SERVICE_SYNCS=20 # support 20 LoadBalancer Services in parallel to deal with existing CI load #122286
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --extract=local
