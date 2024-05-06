@@ -25,7 +25,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
         command:
         - runner.sh
         args:
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
       command:
       - runner.sh
       args:
