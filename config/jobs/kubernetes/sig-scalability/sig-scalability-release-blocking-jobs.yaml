@@ -28,7 +28,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=gce-scale-cluster
-      - --env=CONCURRENT_SERVICE_SYNCS=5
+      - --env=CONCURRENT_SERVICE_SYNCS=20 # support 20 LoadBalancer Services in parallel to deal with existing CI load #122286
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/fast/latest-fast
       - --extract-ci-bucket=k8s-release-dev
