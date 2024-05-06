@@ -50,7 +50,7 @@ presubmits:
         - test-integration
         env:
         - name: GOMAXPROCS
-          value: "4"
+          value: "6"
         resources:
           requests:
             cpu: "6"
