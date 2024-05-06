@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 
-	"sigs.k8s.io/prow/prow/config"
+	"sigs.k8s.io/prow/pkg/config"
 )
 
 func TestContainers(t *testing.T) {

@@ -32,12 +32,12 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/config"
 	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
-	prow_config "sigs.k8s.io/prow/prow/config"
-	"sigs.k8s.io/prow/prow/flagutil"
 	"k8s.io/test-infra/testgrid/pkg/configurator/configurator"
 	"k8s.io/test-infra/testgrid/pkg/configurator/options"
+	prow_config "sigs.k8s.io/prow/pkg/config"
+	"sigs.k8s.io/prow/pkg/flagutil"
 
-	configflagutil "sigs.k8s.io/prow/prow/flagutil/config"
+	configflagutil "sigs.k8s.io/prow/pkg/flagutil/config"
 )
 
 type SQConfig struct {

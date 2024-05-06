@@ -25,8 +25,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
-	prowapi "sigs.k8s.io/prow/prow/apis/prowjobs/v1"
-	"sigs.k8s.io/prow/prow/config"
+	prowapi "sigs.k8s.io/prow/pkg/apis/prowjobs/v1"
+	"sigs.k8s.io/prow/pkg/config"
 )
 
 func TestCleanAnnotations(t *testing.T) {

@@ -27,8 +27,8 @@ import (
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
-	cfg "sigs.k8s.io/prow/prow/config"
 	"k8s.io/utils/strings/slices"
+	cfg "sigs.k8s.io/prow/pkg/config"
 )
 
 type Config struct {

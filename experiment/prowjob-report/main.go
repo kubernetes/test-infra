@@ -38,8 +38,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	cfg "sigs.k8s.io/prow/prow/config"
-	configflagutil "sigs.k8s.io/prow/prow/flagutil/config"
+	cfg "sigs.k8s.io/prow/pkg/config"
+	configflagutil "sigs.k8s.io/prow/pkg/flagutil/config"
 )
 
 // TODO: parse testgrid config to catch

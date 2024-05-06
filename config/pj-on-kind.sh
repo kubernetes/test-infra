@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Runs sigs.k8s.io/prow/prow/pj-on-kind.sh with config arguments specific to the prow.k8s.io instance.
+# Runs sigs.k8s.io/prow/pkg/pj-on-kind.sh with config arguments specific to the prow.k8s.io instance.
 
 set -o errexit
 set -o nounset

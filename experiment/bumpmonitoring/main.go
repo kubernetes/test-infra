@@ -29,7 +29,7 @@ import (
 	flag "github.com/spf13/pflag"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/prow/prow/cmd/generic-autobumper/bumper"
+	"sigs.k8s.io/prow/cmd/generic-autobumper/bumper"
 	"sigs.k8s.io/yaml"
 )
 

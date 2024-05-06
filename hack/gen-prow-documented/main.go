@@ -25,8 +25,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/pkg/genyaml"
-	"sigs.k8s.io/prow/prow/config"
-	"sigs.k8s.io/prow/prow/plugins"
+	"sigs.k8s.io/prow/pkg/config"
+	"sigs.k8s.io/prow/pkg/plugins"
 )
 
 const (

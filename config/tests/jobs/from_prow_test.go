@@ -22,7 +22,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/prow/prow/config"
+	"sigs.k8s.io/prow/pkg/config"
 )
 
 // This file contains tests that previously lived in prow/config/jobs_test.go and prow/config/jobtests/job_config_test.go
