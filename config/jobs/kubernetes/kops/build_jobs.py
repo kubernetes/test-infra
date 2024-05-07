@@ -748,7 +748,7 @@ def generate_misc():
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-updown",
-                   build_cluster="k8s-infra-kops-prow-build",
+                   build_cluster="default",
                    k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
