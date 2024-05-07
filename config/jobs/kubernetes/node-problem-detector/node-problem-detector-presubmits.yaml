@@ -12,7 +12,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -47,7 +47,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -77,7 +77,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -118,7 +118,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -164,7 +164,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -209,7 +209,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -252,7 +252,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         env:
         - name: ZONE
           value: us-central1-a
@@ -294,7 +294,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -341,7 +341,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240506-e1212ac574-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
