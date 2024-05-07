@@ -32,4 +32,4 @@ presubmits:
         env:
         # Space separated list of the checks to run
         - name: WHAT
-          value: typecheck typecheck-providerless
+          value: typecheck
