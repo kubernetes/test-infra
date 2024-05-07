@@ -1316,7 +1316,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  cluster: k8s-infra-kops-prow-build
+  cluster: default
   decorate: true
   decoration_config:
     timeout: 90m
