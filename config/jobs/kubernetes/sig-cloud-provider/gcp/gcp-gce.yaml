@@ -1116,7 +1116,7 @@ periodics:
       - --gcp-zone=europe-west1-c
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       resources:
@@ -1156,7 +1156,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
@@ -1194,7 +1194,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
@@ -1231,7 +1231,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
@@ -1268,7 +1268,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
@@ -1305,7 +1305,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
