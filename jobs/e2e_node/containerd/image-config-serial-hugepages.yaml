@@ -5,6 +5,6 @@ images:
   ubuntu:
     image_family: pipeline-1-29
     project: ubuntu-os-gke-cloud
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/ubuntu-init-hugepages-1G-allocation.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/ubuntu-init-hugepages-1G-allocation.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
     # Using `n1-standard-2` to have enough memory for 1Gb huge pages allocation
     machine: n1-standard-2
