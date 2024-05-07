@@ -6472,6 +6472,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhobs-observability-operator-main-ocp-e2e-test-harness
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhobs-observability-operator-main-ocp-e2e-test-harness
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.16-e2e-openstack-additional-ipv6-network
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -7755,6 +7782,8 @@ test_groups:
   name: periodic-ci-quay-quay-tests-master-ocp-416-quay-quay-e2e-tests-quay311-ocp416-lp-interop
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhbk-interop-ocp-ci-main-rhsso-product-ocp4.16-lp-interop-rhsso-interop-aws
   name: periodic-ci-rhbk-interop-ocp-ci-main-rhsso-product-ocp4.16-lp-interop-rhsso-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-rhobs-observability-operator-main-ocp-e2e-test-harness
+  name: periodic-ci-rhobs-observability-operator-main-ocp-e2e-test-harness
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.16-e2e-openstack-additional-ipv6-network
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.16-e2e-openstack-additional-ipv6-network
 - gcs_prefix: test-platform-results/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.16-e2e-openstack-ccpmso
