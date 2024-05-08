@@ -2,14 +2,14 @@
 
 approvers:
 - jackfrancis
+- Jont828
 - mboersma
 - nojnhuh
+- willie-yao
 reviewers:
-- Jont828
 - jsturtevant
 - marosset
 - nawazkh
-- willie-yao
 
 labels:
 - sig/cluster-lifecycle
