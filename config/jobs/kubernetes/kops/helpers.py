@@ -149,6 +149,8 @@ distro_images = {
     'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
     'u2204': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2204arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
+    'u2404': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*'), # pylint: disable=line-too-long
+    'u2404arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
@@ -166,4 +168,6 @@ distros_ssh_user = {
     'u2004arm64': 'ubuntu',
     'u2204': 'ubuntu',
     'u2204arm64': 'ubuntu',
+    'u2404': 'ubuntu',
+    'u2404arm64': 'ubuntu',
 }
