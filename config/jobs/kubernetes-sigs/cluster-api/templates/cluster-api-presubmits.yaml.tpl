@@ -159,8 +159,11 @@ presubmits:
         - runner.sh
         - ./scripts/ci-e2e.sh
         env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
         - name: GINKGO_SKIP
-          value: "\\[Conformance\\]|\\[IPv6\\]"
+          value: "\\[Conformance\\]"
         # This value determines the minimum Kubernetes
         # supported version for Cluster API management cluster
         # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
@@ -266,94 +269,6 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
 {{- end }}
-{{- if eq $.branch "release-1.4" | not }}
-  - name: pull-cluster-api-e2e-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    decorate: true
-    always_run: false
-    branches:
-      # The script this job runs is not in all branches.
-      - ^{{ $.branch }}$
-    path_alias: sigs.k8s.io/cluster-api
-    spec:
-      containers:
-        - image: {{ $.config.TestImage }}
-          args:
-            - runner.sh
-            - "./scripts/ci-e2e.sh"
-          env:
-            # enable IPV6 in bootstrap image
-            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-              value: "true"
-            - name: GINKGO_SKIP
-              value: "\\[Conformance\\]"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 3000m
-              memory: 8Gi
-            limits:
-              cpu: 3000m
-              memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
-      testgrid-tab-name: capi-pr-e2e-dualstack-and-ipv6-{{ ReplaceAll $.branch "." "-" }}
-{{ else }}
-  - name: pull-cluster-api-e2e-informing-ipv6-{{ ReplaceAll $.branch "." "-" }}
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    decorate: true
-    optional: true
-    branches:
-      # The script this job runs is not in all branches.
-      - ^{{ $.branch }}$
-    path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
-    spec:
-      containers:
-        - image: {{ $.config.TestImage }}
-          args:
-            - runner.sh
-            - "./scripts/ci-e2e.sh"
-          env:
-            # enable IPV6 in bootstrap image
-            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-              value: "true"
-            - name: GINKGO_FOCUS
-              value: "\\[IPv6\\] \\[PR-Informing\\]"
-            - name: IP_FAMILY
-              value: "IPv6"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 3000m
-              memory: 8Gi
-            limits:
-              cpu: 3000m
-              memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
-      testgrid-tab-name: capi-pr-e2e-informing-ipv6-{{ ReplaceAll $.branch "." "-" }}
-{{- end }}
   - name: pull-cluster-api-e2e-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
@@ -377,8 +292,11 @@ presubmits:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          # enable IPV6 in bootstrap image
+          - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+            value: "true"
           - name: GINKGO_SKIP
-            value: "\\[Conformance\\]|\\[IPv6\\]"
+            value: "\\[Conformance\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
