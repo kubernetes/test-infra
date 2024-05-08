@@ -74,9 +74,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-providerless
-    test_group_name: pull-kubernetes-e2e-gce-providerless
-    base_options: width=10
   - name: pull-kubernetes-e2e-ec2
     test_group_name: pull-kubernetes-e2e-ec2
     base_options: width=10

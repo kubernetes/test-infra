@@ -805,7 +805,7 @@ presubmits:
     branches:
     - release-1.30
     cluster: k8s-infra-prow-build
-    context: pull-kubernetes-e2e-gce-providerless
+    context: pull-kubernetes-e2e-gce-providerless-1-30
     decorate: true
     decoration_config:
       timeout: 1h45m0s
@@ -814,13 +814,19 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/release
       repo: release
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-providerless
+    name: pull-kubernetes-e2e-gce-providerless-1-30
     optional: true
     path_alias: k8s.io/kubernetes
     run_if_changed: (provider|cloud-controller-manager|cloud|ipam|azure|legacy-cloud-providers|test\/e2e\/cloud\/gcp|test\/e2e\/framework\/provider|nvidia|accelerator|test\/e2e\/network|test\/e2e\/storage)
