@@ -21,10 +21,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-apidiff-release-1-10
@@ -53,10 +53,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-verify-release-1-10
@@ -197,10 +197,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "3Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "3Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-govmomi-release-1-10
@@ -426,10 +426,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "3Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "3Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-supervisor-release-1-10

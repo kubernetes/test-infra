@@ -116,10 +116,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-vcsim-govmomi-main
@@ -296,10 +296,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-vcsim-supervisor-main
@@ -435,10 +435,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "4Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-test-coverage-main
