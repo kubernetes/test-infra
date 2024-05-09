@@ -387,7 +387,7 @@ presubmits:
         - --build=quick
         - --cluster=
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,EventedPLEG=false
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
@@ -818,7 +818,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v1.7.16
       - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.1.12
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
@@ -858,7 +858,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast

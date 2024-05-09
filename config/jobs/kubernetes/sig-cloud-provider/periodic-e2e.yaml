@@ -106,7 +106,7 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
-             --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
+             --feature-gates="AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
              --external-cloud-provider true \
              --up \
@@ -172,7 +172,7 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
-             --feature-gates="AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
+             --feature-gates="AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
              --up \
              --down \
