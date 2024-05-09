@@ -977,6 +977,19 @@ presets:
     - name: azure-cred
       mountPath: /etc/azure-cred
       readOnly: true
+- labels:
+    preset-azure-capz-sa-cred: "true"
+  env:
+  - name: SERVICE_ACCOUNT_SIGNING_PUB
+    valueFrom:
+      secretKeyRef:
+        name: azure-capz-sa-cred
+        key: serviceAccountSigningPub
+  - name: SERVICE_ACCOUNT_SIGNING_KEY
+    valueFrom:
+      secretKeyRef:
+        name: azure-capz-sa-cred
+        key: serviceAccountSigningKey
 # storage / caching presets
 - labels:
     preset-bazel-scratch-dir: "true"
