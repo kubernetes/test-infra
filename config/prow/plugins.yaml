@@ -1586,6 +1586,8 @@ plugins:
     - skip
     - wip
     - yuks
+    - owners-label
+    - verify-owners
 
   containerd/containerd:
     plugins:
