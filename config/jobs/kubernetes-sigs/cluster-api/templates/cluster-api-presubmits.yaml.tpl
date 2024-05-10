@@ -135,7 +135,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-test-mink8s-{{ ReplaceAll $.branch "." "-" }}
-{{- if eq $.branch "release-1.4" | not }}
   - name: pull-cluster-api-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
@@ -185,7 +184,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
-{{- end }}
   - name: pull-cluster-api-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
@@ -224,7 +222,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
-{{- if eq $.branch "release-1.4" "release-1.5" }}
+{{- if eq $.branch "release-1.5" }}
   - name: pull-cluster-api-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
@@ -251,10 +249,6 @@ presubmits:
         env:
         - name: GINKGO_FOCUS
           value: "\\[PR-Informing\\]"
-{{- if eq $.branch "release-1.4" }}
-        - name: GINKGO_SKIP
-          value: "\\[IPv6\\]"
-{{- end }}
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -358,7 +352,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
-{{ if eq $.branch "release-1.4" "release-1.5" "release-1.6" | not }}
+{{ if eq $.branch "release-1.5" "release-1.6" | not }}
   - name: pull-cluster-api-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
