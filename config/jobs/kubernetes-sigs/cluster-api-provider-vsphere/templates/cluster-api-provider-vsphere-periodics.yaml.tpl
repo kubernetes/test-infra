@@ -62,10 +62,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 6Gi
+          memory: 3Gi
         requests:
           cpu: 4
-          memory: 6Gi
+          memory: 3Gi
       command:
       - runner.sh
       args:
@@ -177,10 +177,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -331,10 +331,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "4Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-test-coverage-{{ ReplaceAll $.branch "." "-" }}

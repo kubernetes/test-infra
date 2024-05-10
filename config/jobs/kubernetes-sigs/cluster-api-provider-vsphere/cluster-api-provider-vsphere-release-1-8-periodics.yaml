@@ -62,10 +62,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 6Gi
+          memory: 3Gi
         requests:
           cpu: 4
-          memory: 6Gi
+          memory: 3Gi
       command:
       - runner.sh
       args:
