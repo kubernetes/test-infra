@@ -105,7 +105,8 @@ presubmits:
     optional: true
     always_run: false
     skip_report: false
-    run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
+    # Pending https://github.com/kubernetes/kubernetes/pull/124729
+    # run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
     decorate: true
     branches:
     - master
