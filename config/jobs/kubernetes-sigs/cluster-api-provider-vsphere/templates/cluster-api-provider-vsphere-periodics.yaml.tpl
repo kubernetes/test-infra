@@ -168,7 +168,11 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "{{ $modeFocus }}\\[vcsim\\]"
+{{- if eq $mode "supervisor" }}
+        value: "\\[vcsim\\] \\[supervisor\\]"
+{{- else }}
+        value: "\\[vcsim\\]"
+{{- end }}
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

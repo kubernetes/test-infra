@@ -228,7 +228,7 @@ presubmits:
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.29"
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "ci/latest-1.30"
+          value: "stable-1.30"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
