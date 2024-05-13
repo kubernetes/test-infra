@@ -1,18 +1,21 @@
-presubmits:
-  kubernetes-sigs/jobset:
-  - name: pull-jobset-test-unit-release-0-5
+periodics:
+  - interval: 12h
+    name: periodic-jobset-test-unit-release-0.4
     cluster: eks-prow-build-cluster
-    branches:
-    - ^release-0.5
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    path_alias: sigs.k8s.io/jobset
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: jobset
+        base_ref: release-0.4
+        path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-unit-release-0-5
-      description: "Run jobset unit tests"
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-jobset-test-unit-release-0.4
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic jobset unit tests"
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
@@ -34,24 +37,29 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  - name: pull-jobset-test-integration-release-0-5
+  - interval: 12h
+    name: periodic-jobset-test-integration-release-0.4
     cluster: eks-prow-build-cluster
-    branches:
-    - ^release-0.5
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    path_alias: sigs.k8s.io/jobset
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: jobset
+        base_ref: release-0.4
+        path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-integration-release-0-5
-      description: "Run jobset integration tests"
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-jobset-test-integration-release-0.4
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic jobset integration tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.22
         command:
-        - runner.sh
-        args:
         - make
+        args:
         - test-integration
         resources:
           limits:
@@ -60,63 +68,29 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  - name: pull-jobset-test-e2e-release-0-5-1-27
+  - interval: 12h
+    name: peroodic-jobset-test-e2e-release-0.4-1-27
     cluster: eks-prow-build-cluster
-    branches:
-    - ^release-0.5
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    path_alias: sigs.k8s.io/jobset
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: jobset
+        base_ref: release-0.4
+        path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-apps
-      estgrid-tab-name: pull-jobset-test-e2e-release-0-5-1-27
-      description: "Run jobset end to end tests for Kubernetes 1.27"
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-jobset-test-e2e-release-0.4-1-27
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic jobset end to end tests for Kubernetes 1.27"
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
-        - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.21
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        args:
-        - make
-        - kind-image-build
-        - test-e2e-kind
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "10"
-            memory: "10Gi"
-          limits:
-            cpu: "10"
-            memory: "10Gi"
-  - name: pull-jobset-test-e2e-release-0-5-1-28
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^release-0.5
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    path_alias: sigs.k8s.io/jobset
-    annotations:
-      testgrid-dashboards: sig-apps
-      estgrid-tab-name: pull-jobset-test-e2e-release-0-5-1-28
-      description: "Run jobset end to end tests for Kubernetes 1.28"
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
-        env:
-        - name: E2E_KIND_VERSION
-          value: kindest/node:v1.28.0
         - name: BUILDER_IMAGE
           value: public.ecr.aws/docker/library/golang:1.22
         command:
@@ -125,7 +99,6 @@ presubmits:
         args:
         - make
         - test-e2e-kind
-        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
@@ -135,19 +108,63 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  - name: pull-jobset-test-e2e-release-0-5-1-29
+  - interval: 12h
+    name: periodic-jobset-test-e2e-release-0.4-1-28
     cluster: eks-prow-build-cluster
-    branches:
-    - ^release-0.5
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    path_alias: sigs.k8s.io/jobset
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: jobset
+        base_ref: release-0.4
+        path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-apps
-      testgrid-tab-name: pull-jobset-test-e2e-release-0-5-1-29
-      description: "Run jobset end to end tests for Kubernetes 1.29"
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-jobset-test-e2e-release-0.4-1-28
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic jobset end to end tests for Kubernetes 1.28"
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.28.3
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.22
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test-e2e-kind
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 3
+            memory: 10Gi
+          requests:
+            cpu: 3
+            memory: 10Gi
+  - interval: 12h
+    name: periodic-jobset-test-e2e-release-0.4-1-29
+    cluster: eks-prow-build-cluster
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: jobset
+        base_ref: release-0.4
+        path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-jobset-test-e2e-release-0.4-1-29
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic jobset end to end tests for Kubernetes 1.20"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
@@ -156,14 +173,12 @@ presubmits:
           value: kindest/node:v1.29.0
         - name: BUILDER_IMAGE
           value: public.ecr.aws/docker/library/golang:1.22
-
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         args:
         - make
         - test-e2e-kind
-        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
