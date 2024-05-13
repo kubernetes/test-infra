@@ -81,7 +81,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
