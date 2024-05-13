@@ -417,7 +417,7 @@ presubmits:
         - ./hack/e2e.sh
         env:
         - name: GINKGO_FOCUS
-          value: "\\[supervisor\\] \\[vcsim\\]"
+          value: "\\[vcsim\\] \\[supervisor\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
