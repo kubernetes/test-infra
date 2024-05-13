@@ -22,13 +22,13 @@ periodics:
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=gce-scale-cluster
-      - --env=CONCURRENT_SERVICE_SYNCS=5
+      - --env=CONCURRENT_SERVICE_SYNCS=20 # support 20 LoadBalancer Services in parallel to deal with existing CI load #122286
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/fast/latest-fast
       - --extract-ci-bucket=k8s-release-dev
@@ -44,7 +44,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8 --node-schedulable-timeout=90m
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
       - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
@@ -90,7 +90,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -189,7 +189,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py

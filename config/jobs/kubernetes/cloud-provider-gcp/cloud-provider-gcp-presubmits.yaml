@@ -16,7 +16,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - /bin/bash
         args:
@@ -57,7 +57,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
           command:
             - runner.sh
           args:
@@ -94,7 +94,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
           command:
             - runner.sh
           args:
@@ -108,6 +108,46 @@ presubmits:
             requests:
               cpu: 2
               memory: 4Gi
+
+  - name: pull-cloud-provider-gcp-e2e
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    path_alias: cloud-provider-gcp
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Runs the e2e scenario against PRs
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 14Gi
+          requests:
+            cpu: 4
+            memory: 14Gi
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          cd $GOPATH/src/cloud-provider-gcp;
+          tools/run-e2e-test.sh
 
   - name: pull-cloud-provider-gcp-scenario-kops-simple
     cluster: k8s-infra-prow-build
@@ -136,7 +176,7 @@ presubmits:
       path_alias: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         resources:
           limits:
             cpu: 4
@@ -177,7 +217,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -233,7 +273,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
           command:
             - runner.sh
           args:

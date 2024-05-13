@@ -13,10 +13,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20240424-0a3188200"
-        initupload: "gcr.io/k8s-prow/initupload:v20240424-0a3188200"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20240424-0a3188200"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20240424-0a3188200"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20240509-1d4d0b1e7"
+        initupload: "gcr.io/k8s-prow/initupload:v20240509-1d4d0b1e7"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20240509-1d4d0b1e7"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20240509-1d4d0b1e7"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -315,6 +315,11 @@ branch-protection:
             teams:
             - stage-bots
         cri-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        cri-client:
           restrictions:
             users: []
             teams:

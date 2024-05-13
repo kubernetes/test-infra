@@ -10,7 +10,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - "./scripts/ci-build.sh"
         # docker-in-docker needs privileged mode
@@ -34,16 +34,16 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - "./scripts/ci-test.sh"
         resources:
           requests:
             memory: "6Gi"
-            cpu: "2"
+            cpu: "4"
           limits:
             memory: "6Gi"
-            cpu: "2"
+            cpu: "4"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-test
@@ -66,7 +66,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
@@ -114,7 +114,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
@@ -157,7 +157,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"

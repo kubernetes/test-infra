@@ -26,7 +26,7 @@ periodics:
             secretKeyRef:
               name: k8s-release-enhancements-triage-github-token
               key: token
-- name: periodic-sync-bug-triage-github-project-beta-1-29
+- name: periodic-sync-bug-triage-github-project-beta-1-31
   interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -47,7 +47,7 @@ periodics:
         - name: PROJECT_NUMBER
           value: "80"
         - name: MILESTONE
-          value: "v1.29"
+          value: "v1.31"
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:

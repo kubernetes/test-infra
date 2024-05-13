@@ -173,7 +173,7 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
-	if dumpPreTestLogs != "" {
+	if !o.skipDumpClusterLogs && dumpPreTestLogs != "" {
 		errs = append(errs, dumpRemoteLogs(deploy, o, dumpPreTestLogs, "pre-test")...)
 	}
 
@@ -263,7 +263,7 @@ func run(deploy deployer, o options) error {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
-	if dump != "" {
+	if !o.skipDumpClusterLogs && dump != "" {
 		errs = append(errs, dumpRemoteLogs(deploy, o, dump, "")...)
 	}
 

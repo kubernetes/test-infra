@@ -13,7 +13,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:
@@ -21,10 +21,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-apidiff-release-1-9
@@ -41,7 +41,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:
@@ -53,10 +53,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-verify-release-1-9
@@ -72,7 +72,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         resources:
           limits:
             cpu: 2
@@ -104,7 +104,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -113,10 +113,10 @@ presubmits:
         resources:
           limits:
             cpu: 4
-            memory: 6Gi
+            memory: 3Gi
           requests:
             cpu: 4
-            memory: 6Gi
+            memory: 3Gi
         command:
         - runner.sh
         args:
@@ -143,7 +143,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:
@@ -181,7 +181,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:
@@ -217,7 +217,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:
@@ -256,7 +256,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:
@@ -292,7 +292,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         args:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Runs sigs.k8s.io/prow/prow/pj-on-kind.sh with config arguments specific to the prow.k8s.io instance.
+# Runs sigs.k8s.io/prow/pkg/pj-on-kind.sh with config arguments specific to the prow.k8s.io instance.
 
 set -o errexit
 set -o nounset
@@ -23,4 +23,4 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 export CONFIG_PATH="${root}/config/prow/config.yaml"
 export JOB_CONFIG_PATH="${root}/config/jobs"
 
-bash <(curl -s https://raw.githubusercontent.com/kubernetes-sigs/prow/main/prow/pj-on-kind.sh) "$@"
+bash <(curl -s https://raw.githubusercontent.com/kubernetes-sigs/prow/main/pkg/pj-on-kind.sh) "$@"

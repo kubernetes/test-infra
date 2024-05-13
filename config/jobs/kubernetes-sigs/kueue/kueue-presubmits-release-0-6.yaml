@@ -50,7 +50,7 @@ presubmits:
         - test-integration
         env:
         - name: GOMAXPROCS
-          value: "4"
+          value: "6"
         resources:
           requests:
             cpu: "6"
@@ -73,7 +73,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
@@ -111,7 +111,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.28.0
@@ -149,7 +149,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.29.0
@@ -215,7 +215,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         securityContext:
           privileged: true
         command:

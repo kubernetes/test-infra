@@ -20,10 +20,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-apidiff-{{ ReplaceAll $.branch "." "-" }}
@@ -52,10 +52,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 3Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-verify-{{ ReplaceAll $.branch "." "-" }}
@@ -88,7 +88,7 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test-{{ ReplaceAll $.branch "." "-" }}
       description: Runs unit tests
-{{ $testInBranch := list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
+{{ $testInBranch := list "release-1.7" "release-1.8" "release-1.9" -}}
 {{ if has $.branch $testInBranch }}
   - name: pull-cluster-api-provider-vsphere-test-integration-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -113,10 +113,10 @@ presubmits:
         resources:
           limits:
             cpu: 4
-            memory: 6Gi
+            memory: 3Gi
           requests:
             cpu: 4
-            memory: 6Gi
+            memory: 3Gi
         command:
         - runner.sh
         args:
@@ -133,7 +133,7 @@ presubmits:
 {{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
 {{/* e2e blocking for supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch := list -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-blocking-{{ ReplaceAll $.branch "." "-" }}
     branches:
@@ -175,7 +175,7 @@ presubmits:
 {{ end -}}
 {{/* e2e full for supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch = list -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
     branches:
@@ -220,7 +220,7 @@ presubmits:
       description: Runs all e2e tests
 {{ end -}}
 {{/* e2e with vcsim has been introduced with release-1.10 */ -}}
-{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
+{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" -}}
 {{ if has $.branch $skipInBranch | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -253,10 +253,10 @@ presubmits:
         resources:
           requests:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "3Gi"
           limits:
             cpu: "4000m"
-            memory: "6Gi"
+            memory: "3Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -264,8 +264,8 @@ presubmits:
 {{ end -}}
 {{/* e2e upgrade has been introduced in release-1.9 */ -}}
 {{/* e2e upgrade in supervisor mode has been introduced in release-1.10 */ -}}
-{{ $skipInBranch = list "release-1.5" "release-1.6" "release-1.7" "release-1.8" -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.5" "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ $skipInBranch = list "release-1.7" "release-1.8" -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     labels:
@@ -308,7 +308,7 @@ presubmits:
 {{ end -}}
 {{/* e2e conformance with supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch = list -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
     branches:
@@ -331,7 +331,7 @@ presubmits:
         - ./hack/e2e.sh
         env:
         - name: GINKGO_FOCUS
-{{- if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" }}
+{{- if eq $.branch "release-1.7" "release-1.8" }}
           value: "{{ $modeFocus }}\\[Conformance\\]"
 {{- else }}
           value: "{{ $modeFocus }}\\[Conformance\\] \\[K8s-Install\\]"
@@ -352,8 +352,8 @@ presubmits:
 {{ end -}}
 {{/* e2e conformance-ci-latest has been introduced with release-1.9 */ -}}
 {{/* e2e conformance-ci-latest with supervisor mode has been introduced with release-1.10 */ -}}
-{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ $skipInBranch = list "release-1.7" "release-1.8" -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     branches:

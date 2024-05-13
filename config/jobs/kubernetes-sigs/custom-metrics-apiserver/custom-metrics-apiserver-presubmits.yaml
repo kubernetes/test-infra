@@ -7,7 +7,7 @@ presubmits:
     path_alias: sigs.k8s.io/custom-metrics-apiserver
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
@@ -30,7 +30,7 @@ presubmits:
     path_alias: sigs.k8s.io/custom-metrics-apiserver
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:
@@ -52,7 +52,7 @@ presubmits:
     path_alias: sigs.k8s.io/custom-metrics-apiserver
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - make
         args:

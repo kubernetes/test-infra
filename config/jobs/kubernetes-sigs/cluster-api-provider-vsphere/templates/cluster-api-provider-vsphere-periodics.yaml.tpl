@@ -33,7 +33,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
     description: Runs unit tests
-{{ $testInBranch := list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
+{{ $testInBranch := list "release-1.7" "release-1.8" "release-1.9" -}}
 {{ if has $.branch $testInBranch }}
 - name: periodic-cluster-api-provider-vsphere-test-integration-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
@@ -62,10 +62,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 6Gi
+          memory: 3Gi
         requests:
           cpu: 4
-          memory: 6Gi
+          memory: 3Gi
       command:
       - runner.sh
       args:
@@ -87,7 +87,7 @@ periodics:
 {{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
 {{/* e2e full for supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch := list -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
   labels:
@@ -139,7 +139,7 @@ periodics:
     description: Runs all e2e tests
 {{ end -}}
 {{/* e2e with vcsim has been introduced with release-1.10 */ -}}
-{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" -}}
+{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" -}}
 {{ if has $.branch $skipInBranch | not }}
 - name: periodic-cluster-api-provider-vsphere-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
@@ -177,10 +177,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -190,7 +190,7 @@ periodics:
 {{ end -}}
 {{/* e2e conformance with supervisor mode has been introduced with release-1.10 */ -}}
 {{ $skipInBranch = list -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
   labels:
@@ -218,7 +218,7 @@ periodics:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-{{- if eq $.branch "release-1.5" "release-1.6" "release-1.7" "release-1.8" }}
+{{- if eq $.branch "release-1.7" "release-1.8" }}
         value: "{{ $modeFocus }}\\[Conformance\\]"
 {{- else }}
         value: "{{ $modeFocus }}\\[Conformance\\] \\[K8s-Install\\]"
@@ -241,8 +241,8 @@ periodics:
 {{ end -}}
 {{/* e2e conformance-ci-latest has been introduced with release-1.9 */ -}}
 {{/* e2e conformance-ci-latest with supervisor mode has been introduced with release-1.10 */ -}}
-{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.6" "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
+{{ $skipInBranch = list "release-1.7" "release-1.8" -}}
+{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
 {{ if has $.branch $skipInBranch | not }}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
   labels:
@@ -331,10 +331,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "4Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "4Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-test-coverage-{{ ReplaceAll $.branch "." "-" }}

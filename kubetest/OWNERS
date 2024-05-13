@@ -2,10 +2,12 @@
 
 reviewers:
 - wojtek-t # For European timezone emergencies.
+- tosi3k
 - marseel
 - feiskyer
 approvers:
 - wojtek-t # For European timezone emergencies.
+- tosi3k
 - marseel
 - feiskyer
 emeritus_approvers:

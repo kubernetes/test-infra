@@ -25,7 +25,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -64,7 +64,7 @@ periodics:
       - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; export GO111MODULE=on; go install sigs.k8s.io/kubetest2@latest; go install sigs.k8s.io/kubetest2/kubetest2-gce@latest; go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest; MARKER_VERSION=latest-1.30.txt; kubetest2 gce \; --v=9 \; --legacy-mode \; --up \; --down \; --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION \; --test=ginkgo \; -- \; --test-package-url=https://dl.k8s.io \; --test-package-dir=ci \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
       command:
       - runner.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -109,7 +109,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -279,7 +279,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -362,7 +362,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -401,7 +401,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -433,7 +433,7 @@ periodics:
     - command:
       - make
       - test
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         limits:
@@ -479,7 +479,7 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       - name: TYPECHECK_SERIAL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       imagePullPolicy: Always
       name: ""
       resources:
@@ -628,7 +628,7 @@ periodics:
       env:
       - name: IMAGE_VERSION
         value: 127.1.20230417
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
       name: ""
       resources:
         requests:
@@ -677,7 +677,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -730,7 +730,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -767,7 +767,7 @@ presubmits:
       - args:
         - --build=quick
         - --cluster=
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -790,7 +790,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -805,7 +805,7 @@ presubmits:
     branches:
     - release-1.30
     cluster: k8s-infra-prow-build
-    context: pull-kubernetes-e2e-gce-providerless
+    context: pull-kubernetes-e2e-gce-providerless-1-30
     decorate: true
     decoration_config:
       timeout: 1h45m0s
@@ -814,13 +814,19 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/release
       repo: release
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-providerless
+    name: pull-kubernetes-e2e-gce-providerless-1-30
     optional: true
     path_alias: k8s.io/kubernetes
     run_if_changed: (provider|cloud-controller-manager|cloud|ipam|azure|legacy-cloud-providers|test\/e2e\/cloud\/gcp|test\/e2e\/framework\/provider|nvidia|accelerator|test\/e2e\/network|test\/e2e\/storage)
@@ -830,7 +836,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=KUBE_PROVIDERLESS=y
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -853,7 +859,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -906,7 +912,7 @@ presubmits:
             --parallel=30
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -945,7 +951,7 @@ presubmits:
       - args:
         - --build=quick
         - --cluster=
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -967,7 +973,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1021,7 +1027,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1076,7 +1082,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1131,7 +1137,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1184,7 +1190,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1238,7 +1244,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1282,7 +1288,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1324,7 +1330,7 @@ presubmits:
           value: aws-instance.yaml
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1372,7 +1378,7 @@ presubmits:
           value: aws-instance-arm64.yaml
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=cgroupfs"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1424,7 +1430,7 @@ presubmits:
           value: aws-instance-arm64.yaml
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1477,7 +1483,7 @@ presubmits:
         env:
         - name: GOPATH
           value: /go
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1523,7 +1529,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1568,7 +1574,7 @@ presubmits:
           value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1647,7 +1653,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1727,7 +1733,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1802,7 +1808,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1874,7 +1880,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: main
         resources:
           limits:
@@ -1907,7 +1913,7 @@ presubmits:
           value: "8"
         - name: KUBE_TIMEOUT
           value: -timeout=1h30m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -1938,7 +1944,7 @@ presubmits:
         env:
         - name: GO_VERSION
           value: 1.22.1
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -2083,7 +2089,7 @@ presubmits:
       - command:
         - make
         - test
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -2115,7 +2121,7 @@ presubmits:
         env:
         - name: GO_VERSION
           value: 1.22.1
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -2146,7 +2152,7 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck typecheck-providerless
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: main
         resources:
           limits:
@@ -2181,7 +2187,7 @@ presubmits:
           value: release-1.30
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         imagePullPolicy: Always
         name: ""
         resources:
@@ -2221,7 +2227,7 @@ presubmits:
           value: release-1.30
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         imagePullPolicy: Always
         name: ""
         resources:
@@ -2248,7 +2254,7 @@ presubmits:
         - WHAT=golangci-lint golangci-lint-pr
         command:
         - make
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -2273,7 +2279,7 @@ presubmits:
         - WHAT=golangci-lint-pr-hints
         command:
         - make
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -2326,7 +2332,7 @@ presubmits:
         - env
         - KUBERNETES_VERSION=latest-1.30
         - ./capz/run-capz-e2e.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           requests:
@@ -2393,7 +2399,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:
@@ -2464,7 +2470,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.30
         name: ""
         resources:
           limits:

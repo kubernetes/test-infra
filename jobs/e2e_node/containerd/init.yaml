@@ -21,6 +21,10 @@ runcmd:
   - mkdir -p /etc/containerd
   - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -H "X-Google-Metadata-Request: True" -o /etc/containerd/config.toml http://metadata.google.internal/computeMetadata/v1/instance/attributes/containerd-config'
 
+  - echo "Set containerd registry configurations"
+  - mkdir -p /etc/containerd/certs.d/docker.io
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -H "X-Google-Metadata-Request: True" -o /etc/containerd/certs.d/docker.io/hosts.toml http://metadata.google.internal/computeMetadata/v1/instance/attributes/registry-config-docker'
+
   - echo "Restarting containerd"
   - systemctl restart containerd
 

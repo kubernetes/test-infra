@@ -11,7 +11,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-build
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-unit-test
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:
@@ -61,14 +61,15 @@ presubmits:
       testgrid-tab-name: pull-etcd-verify
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - /bin/bash
         args:
         - -c
         - |
-          make verify
-          make fix
+          set -euo pipefail
+          export PATH=$GOPATH/bin:$PATH && make verify
+          export PATH=$GOPATH/bin:$PATH && make fix
           DIFF=$(git status --porcelain)
           if [ -n "$DIFF" ]; then
             echo "These files were modified:"
@@ -97,7 +98,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-e2e-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         command:
         - runner.sh
         args:

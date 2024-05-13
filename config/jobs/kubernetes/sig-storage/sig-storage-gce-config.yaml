@@ -51,7 +51,7 @@ presubmits:
         - --timeout=120m
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         resources:
           limits:
             cpu: "4"
@@ -111,7 +111,7 @@ presubmits:
         - --timeout=150m
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         resources:
           limits:
             cpu: "4"
@@ -169,7 +169,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=150m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         resources:
           limits:
             cpu: "4"
@@ -218,7 +218,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=240m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
         resources:
           limits:
             cpu: "4"
@@ -247,7 +247,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.15
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -272,7 +272,7 @@ periodics:
         limits:
           memory: "2000Mi"
           cpu: 4000m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -304,7 +304,7 @@ periodics:
         limits:
           memory: "2000Mi"
           cpu: 4000m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
   annotations:
     testgrid-num-columns-recent: '20'
     testgrid-num-failures-to-alert: '6'

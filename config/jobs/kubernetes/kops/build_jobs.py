@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -748,7 +748,7 @@ def generate_misc():
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-updown",
-                   build_cluster="k8s-infra-kops-prow-build",
+                   build_cluster="default",
                    k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
@@ -1370,8 +1370,11 @@ def generate_conformance():
 # kops-periodics-distros.yaml #
 ###############################
 distros = ['debian10', 'debian11', 'debian12',
-           'ubuntu2004', 'ubuntu2004arm64', 'ubuntu2204', 'ubuntu2204arm64',
-           'amazonlinux2', 'al2023', 'rhel8', 'rhel9', 'rocky8',
+           'ubuntu2004', 'ubuntu2004arm64',
+           'ubuntu2204', 'ubuntu2204arm64',
+           'ubuntu2404', 'ubuntu2404arm64',
+           'amazonlinux2', 'al2023',
+           'rhel8', 'rhel9', 'rocky8',
            'flatcar']
 def generate_distros():
     results = []

@@ -2,7 +2,6 @@ dashboard_groups:
 - name: sig-windows
   dashboard_names:
     - sig-windows-signal
-    - sig-windows-1.26-release
     - sig-windows-1.27-release
     - sig-windows-1.28-release
     - sig-windows-master-release
@@ -16,7 +15,6 @@ dashboard_groups:
 
 dashboards:
 - name: sig-windows-signal
-- name: sig-windows-1.26-release
 - name: sig-windows-1.27-release
 - name: sig-windows-1.28-release
 - name: sig-windows-master-release

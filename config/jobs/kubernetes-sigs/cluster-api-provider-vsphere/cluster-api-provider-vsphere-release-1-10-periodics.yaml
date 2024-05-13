@@ -15,7 +15,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       resources:
         limits:
           cpu: 2
@@ -56,7 +56,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
@@ -100,7 +100,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
@@ -116,10 +116,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-vcsim-govmomi-release-1-10
@@ -146,7 +146,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
@@ -189,7 +189,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
@@ -234,7 +234,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
@@ -280,14 +280,14 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
       - ./hack/e2e.sh
       env:
       - name: GINKGO_FOCUS
-        value: "\\[supervisor\\] \\[vcsim\\]"
+        value: "\\[vcsim\\] \\[supervisor\\]"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -296,10 +296,10 @@ periodics:
       resources:
         requests:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
         limits:
           cpu: "4000m"
-          memory: "6Gi"
+          memory: "3Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-vcsim-supervisor-release-1-10
@@ -326,7 +326,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:
@@ -369,7 +369,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
       command:
       - runner.sh
       args:

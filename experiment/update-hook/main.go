@@ -22,8 +22,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/prow/prow/ghhook"
-	"sigs.k8s.io/prow/prow/logrusutil"
+	"sigs.k8s.io/prow/pkg/ghhook"
+	"sigs.k8s.io/prow/pkg/logrusutil"
 )
 
 func main() {

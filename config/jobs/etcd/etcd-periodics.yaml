@@ -14,7 +14,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -45,7 +45,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -73,7 +73,7 @@ periodics:
     testgrid-tab-name: ci-etcd-robustness-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -81,7 +81,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -118,7 +118,7 @@ periodics:
     testgrid-tab-name: ci-etcd-robustness-release35-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -161,7 +161,7 @@ periodics:
     testgrid-tab-name: ci-etcd-robustness-release34-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -204,7 +204,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-128-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -237,7 +237,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-8-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -270,7 +270,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-4-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -303,7 +303,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-2-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:
@@ -336,7 +336,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-2-1-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-master
       command:
       - runner.sh
       args:

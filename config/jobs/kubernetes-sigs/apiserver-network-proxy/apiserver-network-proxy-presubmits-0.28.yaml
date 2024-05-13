@@ -10,7 +10,7 @@ presubmits:
     path_alias: sigs.k8s.io/apiserver-network-proxy
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.10
+      - image: public.ecr.aws/docker/library/golang:1.20.12
         command:
         - make
         args:
@@ -38,7 +38,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - "runner.sh"
         args:
@@ -73,7 +73,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - "runner.sh"
         args:
@@ -108,7 +108,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230901-e9e5d470a5-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - "runner.sh"
         args:

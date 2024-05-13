@@ -10,10 +10,10 @@ images:
     image_regex: ".*[^-cgroupsv1]$"
     # Using `n2d-standard-32` that has 2 numa nodes to enable resource managers node e2e tests.
     machine: n2d-standard-32
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
   cos-stable1:
     image_family: cos-beta
     project: cos-cloud
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
     # Using `n2d-standard-32` that has 2 numa nodes to enable resource managers node e2e tests.
     machine: n2d-standard-32

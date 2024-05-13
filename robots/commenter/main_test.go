@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"sigs.k8s.io/prow/prow/github"
+	"sigs.k8s.io/prow/pkg/github"
 )
 
 func TestParseHTMLURL(t *testing.T) {

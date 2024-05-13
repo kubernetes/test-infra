@@ -4,12 +4,13 @@ filters:
   ".*":
     approvers:
       - sig-contributor-experience-technical-leads
-      - spiffxp
+      - cblecker
     reviewers:
       - sig-contributor-experience-technical-leads
-      - spiffxp
+      - cblecker
     emeritus_approvers:
       - fejta
+      - spiffxp
     labels:
       - area/label_sync
       - sig/contributor-experience

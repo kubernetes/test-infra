@@ -11,7 +11,7 @@ presubmits:
     - ^release-1.6$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -39,7 +39,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         resources:
           requests:
             cpu: 6000m
@@ -62,7 +62,7 @@ presubmits:
     - ^release-1.6$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -88,7 +88,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -112,7 +112,7 @@ presubmits:
     - ^release-1.6$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -154,13 +154,16 @@ presubmits:
     - ^release-1.6$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
         env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
         - name: GINKGO_SKIP
-          value: "\\[Conformance\\]|\\[IPv6\\]"
+          value: "\\[Conformance\\]"
         # This value determines the minimum Kubernetes
         # supported version for Cluster API management cluster
         # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
@@ -200,7 +203,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -220,48 +223,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
       testgrid-tab-name: capi-pr-e2e-blocking-release-1-6
-  - name: pull-cluster-api-e2e-dualstack-and-ipv6-release-1-6
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    decorate: true
-    always_run: false
-    branches:
-      # The script this job runs is not in all branches.
-      - ^release-1.6$
-    path_alias: sigs.k8s.io/cluster-api
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
-          args:
-            - runner.sh
-            - "./scripts/ci-e2e.sh"
-          env:
-            # enable IPV6 in bootstrap image
-            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-              value: "true"
-            - name: GINKGO_SKIP
-              value: "\\[Conformance\\]"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 3000m
-              memory: 8Gi
-            limits:
-              cpu: 3000m
-              memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.6
-      testgrid-tab-name: capi-pr-e2e-dualstack-and-ipv6-release-1-6
-
   - name: pull-cluster-api-e2e-release-1-6
     cluster: eks-prow-build-cluster
     labels:
@@ -280,13 +241,16 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          # enable IPV6 in bootstrap image
+          - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+            value: "true"
           - name: GINKGO_SKIP
-            value: "\\[Conformance\\]|\\[IPv6\\]"
+            value: "\\[Conformance\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -318,7 +282,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240409-13cd3acf7e-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.28
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
