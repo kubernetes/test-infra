@@ -79,7 +79,6 @@ presubmits:
         - runner.sh
         args:
         - make
-        - kind-image-build
         - test-e2e-kind
         # docker-in-docker needs privileged mode
         securityContext:
@@ -115,7 +114,6 @@ presubmits:
         - runner.sh
         args:
         - make
-        - kind-image-build
         - test-e2e-kind
         # docker-in-docker needs privileged mode
         securityContext:
@@ -152,7 +150,6 @@ presubmits:
         - runner.sh
         args:
         - make
-        - kind-image-build
         - test-e2e-kind
         # docker-in-docker needs privileged mode
         securityContext:

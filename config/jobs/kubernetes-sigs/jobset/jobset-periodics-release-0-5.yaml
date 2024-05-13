@@ -98,7 +98,6 @@ periodics:
         - runner.sh
         args:
         - make
-        - kind-image-build
         - test-e2e-kind
         securityContext:
           privileged: true
@@ -139,7 +138,6 @@ periodics:
         - runner.sh
         args:
         - make
-        - kind-image-build
         - test-e2e-kind
         securityContext:
           privileged: true
@@ -180,7 +178,6 @@ periodics:
         - runner.sh
         args:
         - make
-        - kind-image-build
         - test-e2e-kind
         securityContext:
           privileged: true
