@@ -888,16 +888,30 @@ require_matching_label:
     Area labels can be added by org members by writing `/area ${COMPONENT}` in a comment
 
     Please see the [labels list](https://github.com/kubernetes/test-infra/blob/master/label_sync/labels.md#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs) for possible areas.
+- missing_label: needs-priority
+  org: kubernetes-sigs
+  repo: cluster-api
+  issues: true
+  prs: false
+  regexp: ^priority/
+- missing_label: needs-kind
+  org: kubernetes-sigs
+  repo: cluster-api
+  issues: true
+  prs: false
+  regexp: ^kind/
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: cluster-api
   issues: true
   prs: false
-  regexp: ^triage/
+  regexp: ^triage/accepted$
   missing_comment: |
     This issue is currently awaiting triage.
 
-    CAPI contributors will take a look as soon as possible, apply one of the [`triage/*`](https://github.com/kubernetes-sigs/cluster-api/labels?q=triage%2F) labels and provide further guidance.
+    If CAPI contributors determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: cluster-api-operator
