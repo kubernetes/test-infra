@@ -13,7 +13,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -41,7 +41,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -72,7 +72,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         resources:
           limits:
             cpu: 2
@@ -106,7 +106,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -144,7 +144,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -181,7 +181,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -220,7 +220,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -259,7 +259,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -295,7 +295,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -333,7 +333,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -371,7 +371,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -410,7 +410,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -449,7 +449,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -488,7 +488,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
@@ -524,7 +524,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
         command:
         - runner.sh
         args:
