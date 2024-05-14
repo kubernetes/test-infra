@@ -488,7 +488,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-master-alpha-features
-- name: ci-kubernetes-e2e-capz-master-windows-alpha-nodelogquery
+- name: ci-kubernetes-e2e-capz-master-windows-nodelogquery
   interval: 24h
   decorate: true
   decoration_config:
@@ -541,7 +541,7 @@ periodics:
   annotations:
     testgrid-alert-email: sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: capz-master-windows-alpha-nodelogquery
+    testgrid-tab-name: capz-master-windows-nodelogquery
 - name: ci-kubernetes-e2e-capz-master-windows-annual-channel
   interval: 12h
   decorate: true

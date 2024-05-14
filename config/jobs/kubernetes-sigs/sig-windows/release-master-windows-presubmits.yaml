@@ -299,6 +299,63 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-alpha-feature-vertical-pod-autoscaler
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-master-windows-nodelogquery
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-capz-windows-common: "true"
+      preset-capz-windows-2022: "true"
+      preset-windows-private-registry-cred: "true"
+      preset-capz-containerd-1-7-latest: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+    - org: kubernetes-sigs
+      repo: windows-testing
+      base_ref: master
+      path_alias: sigs.k8s.io/windows-testing
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-master
+          command:
+            - "runner.sh"
+            - "env"
+            - "KUBERNETES_VERSION=latest"
+            - "./capz/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+          env:
+            - name: GINKGO_FOCUS
+              value: \[Feature:NodeLogQuery\] # run the NodeLogQuery tests
+            - name: GINKGO_SKIP
+              value: \[Serial\]|\[Slow\]
+            - name: NODE_FEATURE_GATES
+              value: "NodeLogQuery=true"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-master-windows-nodelogquery
+      testgrid-num-columns-recent: '30'
   kubernetes-sigs/windows-testing:
   - name: pull-e2e-capz-windows-2022-extension
     decorate: true
