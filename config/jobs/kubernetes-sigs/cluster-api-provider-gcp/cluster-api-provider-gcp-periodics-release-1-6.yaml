@@ -14,7 +14,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.28
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.28
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -45,7 +45,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.28
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.28
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
@@ -78,7 +78,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-7e596dd2a9-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.28
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
