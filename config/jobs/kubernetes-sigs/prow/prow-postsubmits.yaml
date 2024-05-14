@@ -71,7 +71,7 @@ postsubmits:
         highcpu: "true"
     annotations:
       testgrid-dashboards: sig-testing-prow-repo
-      testgrid-tab-name: push-images
+      testgrid-tab-name: push-images-legacy
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Builds and pushes all prow container images on each commit by running make push-images
