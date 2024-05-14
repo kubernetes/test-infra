@@ -158,6 +158,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
+  kubernetes/autoscaler:
   - name: pull-kubernetes-e2e-autoscaling-vpa-full
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa
@@ -167,13 +168,7 @@ presubmits:
     decoration_config:
       timeout: 120m
     run_if_changed: '^vertical-pod-autoscaler\/'
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: autoscaler
-      base_ref: master
-      path_alias: k8s.io/autoscaler
-      workdir: true
+    path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
