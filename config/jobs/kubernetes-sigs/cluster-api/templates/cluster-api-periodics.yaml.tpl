@@ -173,7 +173,7 @@ periodics:
     testgrid-tab-name: capi-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
-{{ if eq $.branch "release-1.4" "release-1.5" "release-1.6" | not }}
+{{ if eq $.branch "release-1.5" "release-1.6" | not }}
 - name: periodic-cluster-api-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
   cluster: eks-prow-build-cluster
   interval: {{ $.config.Interval }}
