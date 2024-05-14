@@ -1904,6 +1904,12 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  kubernetes-sigs/kubespray:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/scheduler-plugins:
   - name: cherrypicker
     events:
