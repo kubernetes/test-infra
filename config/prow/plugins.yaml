@@ -1434,6 +1434,10 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kubespray:
+    plugins:
+    - release-note
+
   kubernetes-sigs/kwok:
     plugins:
     - milestone
