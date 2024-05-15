@@ -65,23 +65,6 @@ presets:
       - key: vmc-capv-services.kubeconfig
         path: capv-services.conf
 - labels:
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
-  env:
-  - name: GCR_KEY_FILE
-    value: /root/.capv/keyfile.json
-  volumeMounts:
-  - name: capv-gcs-keyfile
-    mountPath: /root/.capv
-    readOnly: true
-  volumes:
-  - name: capv-gcs-keyfile
-    secret:
-      secretName: cluster-api-provider-vsphere-ci
-      items:
-      - key: capv-gcs-keyfile.json
-        path: keyfile.json
-        mode: 288
-- labels:
     # For kubernetes/cloud-provider-vsphere
     preset-cloud-provider-vsphere-e2e-config-capv: "true"
   env:

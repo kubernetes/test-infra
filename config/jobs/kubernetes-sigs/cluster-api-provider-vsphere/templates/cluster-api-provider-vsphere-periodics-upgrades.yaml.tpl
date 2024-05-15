@@ -24,7 +24,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
