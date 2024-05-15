@@ -11,7 +11,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -57,7 +56,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -103,7 +101,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -112,7 +109,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
       command:
       - runner.sh
       args:
@@ -149,7 +146,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -195,7 +191,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -241,7 +236,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -250,7 +244,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240507-6463cd4618-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29
       command:
       - runner.sh
       args:

@@ -141,7 +141,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
@@ -183,7 +182,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
@@ -275,7 +273,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
     always_run: false
@@ -320,7 +317,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
@@ -365,7 +361,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true

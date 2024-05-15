@@ -82,7 +82,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   cron: '0 0 * * *'
   decorate: true
@@ -127,7 +126,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   cron: '0 0 * * *'
   decorate: true
@@ -170,7 +168,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
     preset-kind-volume-mounts: "true"
   cron: '0 0 * * *'
   decorate: true
