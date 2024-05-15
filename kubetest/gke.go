@@ -60,6 +60,7 @@ var (
 	gkeInstanceGroupPrefix         = flag.String("gke-instance-group-prefix", "gke", "(gke only) Use a different instance group prefix.")
 	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
 	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
+	gkeCreateNatBeforeCluster      = flag.Bool("gke-create-nat-before-cluster", false, "(gke only) Create NAT before creating the cluster.")
 	gkeNodeTagFromFirewallRules    = flag.Bool("gke-node-tag-from-firewall-rules", false, "(gke only) Get node tag for creating firewall rules from already exisiting firewall rules.")
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
@@ -348,6 +349,12 @@ func (g *gkeDeployer) Up() error {
 		}
 		g.subnetwork = customSubnetFields[0]
 		g.subnetworkRegion = customSubnetFields[1]
+	}
+
+	if *gkeCreateNatBeforeCluster {
+		if err := g.ensureNat(); err != nil {
+			return fmt.Errorf("error ensuring NAT exists: %v", err)
+		}
 	}
 
 	def := g.shape[defaultPool]
@@ -653,7 +660,7 @@ func (g *gkeDeployer) setupBastion() error {
 		"--zone="+zone,
 		"--project="+g.project))
 
-	// Set KUBE_SSH_BASTION env parameter 
+	// Set KUBE_SSH_BASTION env parameter
 	err := setKubeShhBastionEnv(g.project, zone, bastion)
 	if err != nil {
 		return fmt.Errorf("setting KUBE_SSH_BASTION variable failed: %s", util.ExecError(err))
