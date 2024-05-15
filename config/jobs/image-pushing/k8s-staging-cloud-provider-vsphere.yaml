@@ -1,0 +1,64 @@
+postsubmits:
+  kubernetes/cloud-provider-vsphere:
+    - name: post-cloud-provider-vsphere-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere, sig-k8s-infra-gcb
+        testgrid-tab-name: post-cloud-provider-vsphere-push-images
+        testgrid-alert-email: k8s-infra-staging-cloud-pv-vsphere@kubernetes.io
+        testgrid-num-failures-to-alert: "2"
+      decorate: true
+      branches:
+        - ^master$
+        - ^release-.*
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-cloud-pv-vsphere
+              - --scratch-bucket=gs://k8s-staging-cloud-pv-vsphere-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .
+
+periodics:
+  - name: cloud-provider-vsphere-push-images-nightly
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    cron: '0 16 * * *' # everyday at 0:00 GMT+8 (16:00 UTC)
+    extra_refs:
+      - org: kubernetes
+        repo: cloud-provider-vsphere
+        base_ref: master
+        path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+          command:
+            - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            - --project=k8s-staging-cloud-pv-vsphere
+            - --scratch-bucket=gs://k8s-staging-cloud-pv-vsphere-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - --gcb-config=cloudbuild-nightly.yaml
+            - --with-git-dir
+            - .
+          env:
+          # We need to emulate a pull job for the cloud build to work the same
+          # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+    annotations:
+    # this is the name of some testgrid dashboard to report to.
+      testgrid-dashboards: sig-k8s-infra-gcb
+      testgrid-tab-name: cloud-provider-vsphere-push-images-nightly
+      testgrid-alert-email: k8s-infra-staging-cloud-pv-vsphere@kubernetes.io
