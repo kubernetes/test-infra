@@ -32,7 +32,7 @@
 prow_ignored:
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.30"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.30"
       interval: "2h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.27.11@sha256:681253009e68069b8e01aad36a1e0fa8cf18bb0ab3e5c4069b2e65cafdd70843"
@@ -51,7 +51,7 @@ prow_ignored:
       - from: "1.30"
         to: "1.31"
     release-1.7:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.29"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.29"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
@@ -70,7 +70,7 @@ prow_ignored:
       - from: "1.29"
         to: "1.30"
     release-1.6:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.28"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.28"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.25.11@sha256:227fa11ce74ea76a0474eeefb84cb75d8dad1b08638371ecf0e86259b35be0c8"
@@ -89,7 +89,7 @@ prow_ignored:
       - from: "1.28"
         to: "1.29"
     release-1.5:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240513-a9bd71bf01-1.27"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.24.15"
