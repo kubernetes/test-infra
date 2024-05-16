@@ -11,7 +11,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - ./test.sh
         resources:
@@ -90,7 +90,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-27-11
+  - name: pull-kubebuilder-e2e-k8s-1-30-0
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
@@ -107,7 +107,7 @@ presubmits:
             - ./test_e2e.sh
           env:
             - name: KIND_K8S_VERSION
-              value: "v1.27.11"
+              value: "v1.30.0"
           resources:
             limits:
               cpu: 4000m
@@ -119,7 +119,7 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-27-11
+      testgrid-tab-name: kubebuilder-e2e-1-30-0
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
