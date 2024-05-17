@@ -200,3 +200,39 @@ presubmits:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
+  - name: pull-cip-one-time-run
+    decorate: true
+    path_alias: "sigs.k8s.io/promo-tools"
+    skip_report: false
+    always_run: false
+    labels:
+      preset-dind-enabled: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - runner.sh
+        args:
+        - "./test-infra/config/jobs/kubernetes/sig-k8s-infra/releng/one-time-run.sh"
+        env:
+        - name: CIP_E2E_KEY_FILE
+          value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
+        volumeMounts:
+        - name: k8s-cip-test-prod-service-account-creds
+          mountPath: /etc/k8s-cip-test-prod-service-account
+          readOnly: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+      volumes:
+      - name: k8s-cip-test-prod-service-account-creds
+        secret:
+          secretName: k8s-cip-test-prod-service-account
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
