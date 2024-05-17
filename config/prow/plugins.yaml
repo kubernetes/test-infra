@@ -1437,6 +1437,7 @@ plugins:
   kubernetes-sigs/kubespray:
     plugins:
     - mergecommitblocker
+    - override
     - release-note
 
   kubernetes-sigs/kwok:
