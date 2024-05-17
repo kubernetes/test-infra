@@ -1,6 +1,8 @@
 postsubmits:
   kubernetes-sigs/prow:
   - name: post-prow-test-verify
+    branches:
+      - ^main$
     cluster: eks-prow-build-cluster
     decorate: true
     labels:

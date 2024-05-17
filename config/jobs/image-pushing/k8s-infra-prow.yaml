@@ -1,6 +1,8 @@
 postsubmits:
   kubernetes-sigs/prow:
     - name: post-k8s-infra-prow-images
+      branches:
+        - ^main$
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-k8s-infra-gcb,sig-testing-prow-repo
