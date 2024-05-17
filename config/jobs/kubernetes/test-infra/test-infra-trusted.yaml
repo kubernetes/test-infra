@@ -122,7 +122,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20240515-dd5d0eeaa
+      - image: gcr.io/k8s-prow/hmac:v20240517-ea10bd814
         command:
         - hmac
         args:
@@ -496,7 +496,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240515-dd5d0eeaa
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240517-ea10bd814
       command:
       - generic-autobumper
       args:
@@ -533,7 +533,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240515-dd5d0eeaa
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240517-ea10bd814
       command:
       - generic-autobumper
       args:
@@ -603,7 +603,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20240515-dd5d0eeaa
+      image: gcr.io/k8s-prow/branchprotector:v20240517-ea10bd814
       command:
       - branchprotector
       args:
@@ -739,7 +739,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20240515-dd5d0eeaa
+    - image: gcr.io/k8s-prow/checkconfig:v20240517-ea10bd814
       command:
       - checkconfig
       args:
