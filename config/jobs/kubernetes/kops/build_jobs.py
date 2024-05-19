@@ -1374,7 +1374,7 @@ distros = ['debian10', 'debian11', 'debian12',
            'ubuntu2204', 'ubuntu2204arm64',
            'ubuntu2404', 'ubuntu2404arm64',
            'amazonlinux2', 'al2023',
-           'rhel8', 'rhel9', 'rocky8',
+           'rhel8', 'rhel9', 'rocky9',
            'flatcar']
 def generate_distros():
     results = []

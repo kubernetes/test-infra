@@ -144,7 +144,7 @@ distro_images = {
     'flatcararm64': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm', 'arm64'),
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-*'),
     'rhel9': latest_aws_image('309956199498', 'RHEL-9.*_HVM-*-x86_64-*'),
-    'rocky8': latest_aws_image('792107900819', 'Rocky-8-ec2-8.*.x86_64'),
+    'rocky9': latest_aws_image('792107900819', 'Rocky-9-EC2-9.*.x86_64'),
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
     'u2204': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*'), # pylint: disable=line-too-long
@@ -163,7 +163,7 @@ distros_ssh_user = {
     'flatcararm64': 'core',
     'rhel8': 'ec2-user',
     'rhel9': 'ec2-user',
-    'rocky8': 'rocky',
+    'rocky9': 'rocky',
     'u2004': 'ubuntu',
     'u2004arm64': 'ubuntu',
     'u2204': 'ubuntu',
