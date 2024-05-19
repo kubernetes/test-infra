@@ -1434,6 +1434,12 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kubespray:
+    plugins:
+    - mergecommitblocker
+    - override
+    - release-note
+
   kubernetes-sigs/kwok:
     plugins:
     - milestone
@@ -1895,6 +1901,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/kwok:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/kubespray:
   - name: cherrypicker
     events:
     - issue_comment
