@@ -413,8 +413,8 @@ slack:
     channels:
     - github-management
     exempt_users:
-    - k8s-ci-robot # future home of tide
-    - k8s-release-robot # anago
+    - k8s-ci-robot # merge robot ("tide")
+    - k8s-release-robot # release automation ("krel")
   - repos:
     - kubernetes/test-infra
     channels:
