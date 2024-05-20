@@ -14,7 +14,7 @@ images:
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
     resources:
       accelerators:
-        - type: nvidia-tesla-k80
+        - type: nvidia-tesla-t4
           count: 2
   cos-stable1:
     image_family: cos-stable
