@@ -194,6 +194,8 @@ presubmits:
           value: "true"
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
         - name: SKIP
           value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
         # we need privileged mode in order to do docker in docker
