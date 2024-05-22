@@ -4,8 +4,10 @@ dashboard_groups:
   - sig-etcd-presubmits
   - sig-etcd-periodics
   - sig-etcd-postsubmits
+  - sig-etcd-robustness
 
 dashboards:
   - name: sig-etcd-presubmits
   - name: sig-etcd-periodics
   - name: sig-etcd-postsubmits
+  - name: sig-etcd-robustness
