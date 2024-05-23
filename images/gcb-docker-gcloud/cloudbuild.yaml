@@ -14,7 +14,7 @@ steps:
     - gcr.io/$PROJECT_ID/gcb-docker-gcloud:latest
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: 1.22.0
+  _GO_VERSION: 1.22.3
 images:
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:latest'
