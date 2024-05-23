@@ -88,7 +88,7 @@ for image in "${IMAGES[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
             command:
               - /run.sh
             args:
@@ -145,7 +145,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
           command:
             - /run.sh
           args:
