@@ -29,13 +29,14 @@ import (
 // githubToSlack maps (lowercase!) GitHub usernames to Slack user IDs.
 // Add yourself when you join the oncall rotation.
 // You can mostly easily find your user ID by visiting your Slack profile, clicking "...",
-// and clicking "Copy user ID".
+// and clicking "Copy member ID".
 var githubToSlack = map[string]string{
 	"airbornepony":   "U057DPPH17U",
 	"chases2":        "UJ9R0FWD6",
 	"cjwagner":       "U4QFZFMCM",
 	"michelle192837": "U3TRY5WV7",
 	"mpherman2":      "U01AJA1N8NL",
+	"nathanperkins":  "U01FNEF8SVC",
 	"timwangmusic":   "U05UKSMCY8H",
 }
 
