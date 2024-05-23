@@ -47,12 +47,6 @@ dashboards:
   - name: ltsc2022-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (LTSC 2022 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
     test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
-  - name: aks-ltsc2019-azurecni-1.26
-    description: Runs Kubernetes E2E tests on an AKS deployment (1.26 release) with LTSC 2019 nodes and AzureCNI.
-    test_group_name: aks-e2e-ltsc2019-azurecni-1.26
-  - name: aks-ltsc2022-azurecni-1.26
-    description: Runs Kubernetes E2E tests on an AKS deployment (1.26 release) with LTSC 2022 nodes and AzureCNI.
-    test_group_name: aks-e2e-ltsc2022-azurecni-1.26
   - name: aks-ltsc2019-azurecni-1.27
     description: Runs Kubernetes E2E tests on an AKS deployment (1.27 release) with LTSC 2019 nodes and AzureCNI.
     test_group_name: aks-e2e-ltsc2019-azurecni-1.27
@@ -65,6 +59,12 @@ dashboards:
   - name: aks-ltsc2022-azurecni-1.28
     description: Runs Kubernetes E2E tests on an AKS deployment (1.28 release) with LTSC 2022 nodes and AzureCNI.
     test_group_name: aks-e2e-ltsc2022-azurecni-1.28
+  - name: aks-ltsc2019-azurecni-1.29
+    description: Runs Kubernetes E2E tests on an AKS deployment (1.29 release) with LTSC 2019 nodes and AzureCNI.
+    test_group_name: aks-e2e-ltsc2019-azurecni-1.29
+  - name: aks-ltsc2022-azurecni-1.29
+    description: Runs Kubernetes E2E tests on an AKS deployment (1.29 release) with LTSC 2022 nodes and AzureCNI.
+    test_group_name: aks-e2e-ltsc2022-azurecni-1.29
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
   - name: win-2019-containerd-master-integration
@@ -90,10 +90,6 @@ test_groups:
 - name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 # AKS with AzureCNI test groups
-- name: aks-e2e-ltsc2019-azurecni-1.26
-  gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2019-azurecni-1.26
-- name: aks-e2e-ltsc2022-azurecni-1.26
-  gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2022-azurecni-1.26
 - name: aks-e2e-ltsc2019-azurecni-1.27
   gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2019-azurecni-1.27
 - name: aks-e2e-ltsc2022-azurecni-1.27
@@ -102,6 +98,10 @@ test_groups:
   gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2019-azurecni-1.28
 - name: aks-e2e-ltsc2022-azurecni-1.28
   gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2022-azurecni-1.28
+- name: aks-e2e-ltsc2019-azurecni-1.29
+  gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2019-azurecni-1.29
+- name: aks-e2e-ltsc2022-azurecni-1.29
+  gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2022-azurecni-1.29
 # Containerd Runtime integration test groups
 - name: integration-containerd-windows-ltsc2019
   gcs_prefix: containerd-integration/logs/windows-ltsc2019
