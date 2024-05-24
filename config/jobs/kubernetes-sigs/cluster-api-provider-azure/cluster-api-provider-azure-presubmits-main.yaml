@@ -438,6 +438,8 @@ presubmits:
             # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
             - name: CONFORMANCE_NODES
               value: "4"
+            - name: WINDOWS_SERVER_VERSION
+              value: "windows-2019"
           securityContext:
             privileged: true
           resources:
@@ -488,6 +490,8 @@ presubmits:
               value: "upstream-windows-serial-slow.yaml"
             - name: K8S_FEATURE_GATE
               value: "HPAContainerMetrics=true"
+            - name: WINDOWS_SERVER_VERSION
+              value: "windows-2019"
           securityContext:
             privileged: true
           resources:
@@ -720,6 +724,8 @@ presubmits:
             # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
             - name: CONFORMANCE_NODES
               value: "4"
+            - name: WINDOWS_SERVER_VERSION
+              value: "windows-2019"
           securityContext:
             privileged: true
           resources:
