@@ -171,7 +171,7 @@ presubmits:
         # Please also make sure to refer a version where a kindest/node image exists
         # for (see https://github.com/kubernetes-sigs/kind/releases/)
         - name: KUBERNETES_VERSION_MANAGEMENT
-          value: "v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
+          value: "v1.26.15"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
