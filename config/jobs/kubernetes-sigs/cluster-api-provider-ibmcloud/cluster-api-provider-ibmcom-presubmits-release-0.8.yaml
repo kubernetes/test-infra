@@ -1,11 +1,11 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
-  - name: pull-cluster-api-provider-ibmcloud-make
+  - name: pull-cluster-api-provider-ibmcloud-make-release-0-8
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.8
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     labels:
@@ -30,13 +30,13 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-make
-  - name: pull-cluster-api-provider-ibmcloud-test
+      testgrid-tab-name: pr-make-release-0-8
+  - name: pull-cluster-api-provider-ibmcloud-test-release-0-8
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.8
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     labels:
@@ -56,13 +56,13 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-test
-  - name: pull-cluster-api-provider-ibmcloud-smoke-test
+      testgrid-tab-name: pr-test-release-0-8
+  - name: pull-cluster-api-provider-ibmcloud-smoke-test-release-0-8
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.8
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     labels:
@@ -91,13 +91,13 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-smoke-test
-  - name: pull-cluster-api-provider-ibmcloud-build
+      testgrid-tab-name: pr-smoke-test-release-0-8
+  - name: pull-cluster-api-provider-ibmcloud-build-release-0-8
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.8
     optional: false
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
@@ -115,13 +115,13 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-build
-  - name: pull-cluster-api-provider-ibmcloud-verify
+      testgrid-tab-name: pr-build-release-0-8
+  - name: pull-cluster-api-provider-ibmcloud-verify-release-0-8
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.8
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
@@ -140,45 +140,8 @@ presubmits:
               memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-verify
-  - name: pull-cluster-api-provider-ibmcloud-coverage
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
-    extra_refs:
-      - org: kubernetes
-        repo: test-infra
-        base_ref: master
-        path_alias: k8s.io/test-infra
-    branches:
-      - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.29
-        command:
-          - runner.sh
-        args:
-          - bash
-          - -c
-          - |
-            result=0
-            ./scripts/ci-test-coverage.sh || result=$?
-            cp cover.* ${ARTIFACTS}
-            cd ../../k8s.io/test-infra/gopherage
-            GO111MODULE=on go build .
-            ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/cover.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-            ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-            ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
-            exit $result
-        resources:
-          limits:
-            cpu: "2"
-            memory: "6Gi"
-          requests:
-            cpu: "2"
-            memory: "6Gi"
-  - name: pull-cluster-api-provider-ibmcloud-apidiff
+      testgrid-tab-name: pr-verify-release-0-8
+  - name: pull-cluster-api-provider-ibmcloud-apidiff-release-0-8
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
@@ -187,7 +150,7 @@ presubmits:
     labels:
       preset-service-account: "true"
     branches:
-    - ^main$
+    - ^release-0.8
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.29
@@ -204,4 +167,4 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-apidiff-main
+      testgrid-tab-name: pr-apidiff-release-0-8
