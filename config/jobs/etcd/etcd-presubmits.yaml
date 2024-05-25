@@ -115,3 +115,33 @@ presubmits:
           limits:
             cpu: "4"
             memory: "8Gi"
+
+  - name: pull-etcd-integration-1-cpu-amd64
+    cluster: eks-prow-build-cluster
+    optional: true # remove this once the job is green
+    always_run: true
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-integration-1-cpu-amd64
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          make gofail-enable
+          GOOS=linux GOARCH=amd64 CPU=1 make test-integration
+        resources:
+          requests:
+            cpu: "1"
+            memory: "8Gi"
+          limits:
+            cpu: "1"
+            memory: "8Gi"
