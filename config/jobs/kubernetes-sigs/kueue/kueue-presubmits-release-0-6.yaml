@@ -192,14 +192,14 @@ presubmits:
         - verify
         env:
         - name: GOMAXPROCS
-          value: "2"
+          value: "4"
         resources:
           requests:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: "8Gi"
           limits:
-            cpu: "2"
-            memory: "6Gi"
+            cpu: "4"
+            memory: "8Gi"
   - name: pull-kueue-build-image-release-0-6
     cluster: eks-prow-build-cluster
     branches:
