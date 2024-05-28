@@ -593,7 +593,7 @@ presubmits:
             - name: GINKGO_FOCUS
               value: "API Version Upgrade"
             - name: KUBERNETES_VERSION
-              value: "v1.23.17"
+              value: "v1.26.15"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
