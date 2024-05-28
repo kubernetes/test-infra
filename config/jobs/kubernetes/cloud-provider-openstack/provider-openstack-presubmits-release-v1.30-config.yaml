@@ -1,0 +1,203 @@
+presubmits:
+  kubernetes/cloud-provider-openstack:
+  - name: openstack-cloud-controller-manager-e2e-test-release-130
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^release-1.30$
+    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile|tests\/playbooks)'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+          env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          command:
+          - "runner.sh"
+          - "./tests/ci-occm-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
+      testgrid-tab-name: presubmit-e2e-test-release-1.30
+
+  - name: openstack-cloud-csi-cinder-e2e-test-release-130
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^release-1.30$
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/|Dockerfile|tests\/playbooks)'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+          env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          command:
+          - "runner.sh"
+          - "./tests/ci-csi-cinder-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-csi-cinder
+      testgrid-tab-name: presubmit-e2e-test-release-1.30
+
+  - name: openstack-cloud-csi-manila-e2e-test-release-130
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^release-1.30$
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/|Dockerfile|tests\/playbooks)'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+          env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          command:
+          - "runner.sh"
+          - "./tests/ci-csi-manila-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-manila-csi-plugin
+      testgrid-tab-name: presubmit-e2e-test-release-1.30
+
+  - name: openstack-cloud-csi-cinder-sanity-test-release-130
+    cluster: eks-prow-build-cluster
+    always_run: false
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/|Dockerfile|tests\/playbooks)'
+    decorate: true
+    branches:
+      - ^release-1.30$
+    path_alias: "k8s.io/cloud-provider-openstack"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - make
+        args:
+        - test-cinder-csi-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-csi-cinder
+      testgrid-tab-name: presubmit-sanity-test-release-130
+      description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
+
+  - name: openstack-cloud-csi-manila-sanity-test-release-130
+    cluster: eks-prow-build-cluster
+    always_run: false
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/|Dockerfile|tests\/playbooks)'
+    decorate: true
+    branches:
+      - ^release-1.30$
+    path_alias: "k8s.io/cloud-provider-openstack"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - make
+        args:
+        - test-manila-csi-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-manila-csi-plugin
+      testgrid-tab-name: presubmit-sanity-test-release-1.30
+      description: Run cloud-provider-openstack csi sanity tests for manila-csi-plugin
+
+  - name: openstack-cloud-keystone-authentication-authorization-test-release-130
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^release-1.30$
+    run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/|Dockerfile|tests\/playbooks)'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+          env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          command:
+          - "runner.sh"
+          - "./tests/ci-keystone-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-openstack-keystone-authentication-authorization
+      testgrid-tab-name: presubmit-e2e-test-release-1.30
