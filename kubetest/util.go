@@ -290,6 +290,11 @@ func getChannelGKEVersion(project, zone, region, gkeChannel, extractionMethod st
 	}
 
 	res, err := control.Output(exec.Command("gcloud", cmd...))
+	maxAttempts := 5
+	for i := 0; err != nil && i < maxAttempts; i++ {
+		time.Sleep(5 * time.Second)
+		res, err = control.Output(exec.Command("gcloud", cmd...))
+	}
 	if err != nil {
 		return "", err
 	}
