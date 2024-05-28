@@ -22,3 +22,13 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
+            env:
+            - name: GOMAXPROCS
+              value: "2"
+            resources:
+              requests:
+                cpu: "2"
+                memory: "6Gi"
+              limits:
+                cpu: "2"
+                memory: "6Gi"
