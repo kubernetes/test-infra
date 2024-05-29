@@ -76,7 +76,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
         env:
         - name: E2E_KIND_VERSION
-          value: kindest/node:v1.27.3
+          value: kindest/node:v1.27.13
         - name: BUILDER_IMAGE
           value: public.ecr.aws/docker/library/golang:1.22
         command:
@@ -114,7 +114,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.28.0
+              value: kindest/node:v1.28.9
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.22
           command:
@@ -152,7 +152,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.29.0
+              value: kindest/node:v1.29.4
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.22
           command:
@@ -172,7 +172,7 @@ presubmits:
             limits:
               cpu: "10"
               memory: "10Gi"
-  - name: pull-kueue-test-multikueue-e2e-main-1-29
+  - name: pull-kueue-test-e2e-main-1-30
     cluster: eks-prow-build-cluster
     branches:
       - ^main
@@ -181,8 +181,8 @@ presubmits:
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-multikueue-e2e-main-1-29
-      description: "Run multikueue end to end tests for Kubernetes 1.29"
+      testgrid-tab-name: pull-kueue-test-e2e-main-1-30
+      description: "Run kueue end to end tests for Kubernetes 1.30"
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -190,7 +190,45 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.29.0
+              value: kindest/node:v1.30.0
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.22
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
+  - name: pull-kueue-test-multikueue-e2e-main
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-multikueue-e2e-main
+      description: "Run multikueue end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.30.0
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.22
           command:
