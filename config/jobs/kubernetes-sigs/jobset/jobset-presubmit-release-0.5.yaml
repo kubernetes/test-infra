@@ -49,9 +49,8 @@ presubmits:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.22
         command:
-        - runner.sh
-        args:
         - make
+        args:
         - test-integration
         resources:
           limits:
