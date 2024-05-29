@@ -79,7 +79,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.21
+          value: public.ecr.aws/docker/library/golang:1.22
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
