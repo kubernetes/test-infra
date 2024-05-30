@@ -57,7 +57,7 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		os.Exit(2)
 	}
 
-	profiles := make([][]*cover.Profile, len(args))
+	profiles := make([][]*cover.Profile, 0, len(args))
 	for _, path := range args {
 		profile, err := util.LoadProfile(path)
 		if err != nil {
