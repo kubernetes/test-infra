@@ -140,8 +140,8 @@ presubmits:
           GOOS=linux GOARCH=amd64 CPU=1 make test-integration
         resources:
           requests:
-            cpu: "1"
-            memory: "8Gi"
+            cpu: "2"
+            memory: "3Gi"
           limits:
-            cpu: "1"
-            memory: "8Gi"
+            cpu: "2"
+            memory: "3Gi"
