@@ -118,7 +118,6 @@ presubmits:
 
   - name: pull-etcd-integration-1-cpu-amd64
     cluster: eks-prow-build-cluster
-    optional: true # remove this once the job is green
     always_run: true
     branches:
     - main
