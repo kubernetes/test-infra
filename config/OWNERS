@@ -2,18 +2,21 @@
 
 reviewers:
 - cblecker
-- spiffxp
-- wojtek-t
 - chases2
 - dims
+- MadhavJivrajani
+- Priyankasaggu11929
 - rjsadow
+- wojtek-t
 approvers:
 - cblecker
-- spiffxp
-- wojtek-t
 - chases2
 - dims
+- MadhavJivrajani
+- Priyankasaggu11929
+- wojtek-t
 emeritus_approvers:
 - krzyzacy
+- spiffxp
 labels:
 - area/config
