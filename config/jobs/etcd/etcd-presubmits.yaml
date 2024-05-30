@@ -16,7 +16,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - build
+        - build-all
         resources:
           requests:
             cpu: "4"
