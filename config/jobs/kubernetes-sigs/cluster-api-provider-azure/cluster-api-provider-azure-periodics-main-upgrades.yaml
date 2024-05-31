@@ -1,50 +1,5 @@
 periodics:
 
-- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-25-1-26-main
-  interval: 24h
-  decorate: true
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-azure
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
-      args:
-        - runner.sh
-        - "./scripts/ci-e2e.sh"
-      env:
-        - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.25"
-        - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "stable-1.26"
-        - name: ETCD_VERSION_UPGRADE_TO
-          value: "3.5.6-0"
-        - name: COREDNS_VERSION_UPGRADE_TO
-          value: "v1.9.3"
-        - name: GINKGO_FOCUS
-          value: "\\[K8s-Upgrade\\]"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 7300m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capi-periodic-upgrade-main-1-25-1-26
-
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-26-1-27-main
   interval: 24h
   decorate: true
@@ -134,3 +89,48 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capi-periodic-upgrade-main-1-27-1-28
+
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-28-1-29-main
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      env:
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: "stable-1.28"
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: "stable-1.29"
+        - name: ETCD_VERSION_UPGRADE_TO
+          value: "3.5.10-0"
+        - name: COREDNS_VERSION_UPGRADE_TO
+          value: "v1.11.1"
+        - name: GINKGO_FOCUS
+          value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-periodic-upgrade-main-1-28-1-29
