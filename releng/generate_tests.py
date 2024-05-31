@@ -195,6 +195,8 @@ class E2ENodeTest:
         image = self.images[fields[3]]
         k8s_version = self.k8s_versions[fields[4][3:]]
         test_suite = self.test_suites[fields[5]]
+        if self.job.get("testSuite"):
+            test_suite = self.test_suites[self.job.get("testSuite")]
 
         # envs are disallowed in node e2e tests.
         if 'envs' in self.common or 'envs' in image or 'envs' in test_suite:
@@ -320,7 +322,9 @@ class E2ETest:
         cloud_provider = self.cloud_providers[fields[3]]
         image = self.images[fields[4]]
         k8s_version = self.k8s_versions[fields[5][3:]]
-        test_suite = self.test_suites[self.job.get("testSuite")]
+        test_suite = self.test_suites[fields[6]]
+        if self.job.get("testSuite"):
+            test_suite = self.test_suites[self.job.get("testSuite")]
 
         # Generates args.
         args = []
