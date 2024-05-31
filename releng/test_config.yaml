@@ -41,40 +41,48 @@ jobs:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: reboot
   ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: ingress
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
     args:
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: default
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: serial
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: slow
   ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-ccm-eventedpleg
 
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: reboot
   ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: ingress
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
@@ -82,78 +90,94 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
+    testSuite: default
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: serial
   ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: slow
   ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: reboot
   ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: ingress
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
+    testSuite: default
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: serial
   ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: slow
   ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-no-ccm
 
   # stable3
   ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: ingress
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: reboot
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
+    testSuite: default
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: serial
   ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: slow
   ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-no-ccm
   ci-kubernetes-e2e-gce-cos-k8sstable3-betaapis:
     interval: 24h
     args:
@@ -164,6 +188,7 @@ jobs:
     - --runtime-config=api/beta=true
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: betaapis
 
   # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
   # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
@@ -172,29 +197,35 @@ jobs:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: ingress
   ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: reboot
   ci-kubernetes-e2e-gce-cos-k8sstable4-default:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
+    testSuite: default
   ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: serial
   ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
+    testSuite: slow
   ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-no-ccm
   ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
     interval: 24h
     args:
@@ -205,6 +236,7 @@ jobs:
     - --runtime-config=api/beta=true
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: betaapis
 
 # The following settings are used by cluster e2e tests.
 
@@ -291,6 +323,33 @@ testSuites:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
+      --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
+      --minStartupPods=8
+    cluster: k8s-infra-prow-build
+  alphafeatures-ccm-eventedpleg:
+    args:
+    - --timeout=180m
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+    - --env=ENABLE_AUTH_PROVIDER_GCP=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
+      --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
+      --minStartupPods=8
+    cluster: k8s-infra-prow-build
+  alphafeatures-no-ccm:
+    args:
+    - --timeout=180m
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true

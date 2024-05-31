@@ -320,7 +320,7 @@ class E2ETest:
         cloud_provider = self.cloud_providers[fields[3]]
         image = self.images[fields[4]]
         k8s_version = self.k8s_versions[fields[5][3:]]
-        test_suite = self.test_suites[fields[6]]
+        test_suite = self.test_suites[self.job.get("testSuite")]
 
         # Generates args.
         args = []
