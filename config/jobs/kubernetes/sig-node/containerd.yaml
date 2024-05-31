@@ -863,7 +863,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]|\[NodeFeature:NodeSwap\]"
       - --timeout=65m
       env:
       - name: GOPATH
@@ -915,7 +915,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[NodeFeature:NodeSwap\]"
       - --timeout=180m
       env:
       - name: GOPATH
@@ -1026,7 +1026,7 @@ periodics:
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
       resources:
         limits:
@@ -1082,7 +1082,7 @@ periodics:
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
       resources:
@@ -1131,7 +1131,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]"
       - --timeout=240m
       env:
       - name: GOPATH
@@ -1172,7 +1172,7 @@ periodics:
       - --provider=gce
       # [Driver: gcepd] tests are skipped because CSIMigrationGCE is on in 1.23 and can be un-skipped once the cluster-up process
       # uses cloud-provider-gcp. see issue https://github.com/kubernetes/cloud-provider-gcp/issues/293
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[NodeFeature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
       resources:
