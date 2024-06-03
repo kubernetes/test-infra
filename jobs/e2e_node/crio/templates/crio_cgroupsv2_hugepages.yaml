@@ -88,7 +88,7 @@ systemd:
         [Service]
         Type=oneshot
         Environment="SCRIPT_COMMIT=3e02ed6de9f516af9d8884c06ee3d709b2fa413d"
-        Environment="CRIO_COMMIT=v1.30.1"
+        Environment="CRIO_COMMIT=fd87228975e28a2d53aa2960cb14520cf51f0245"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
         ExecStartPre=mount -o remount,rw /dev/sda4 /usr
