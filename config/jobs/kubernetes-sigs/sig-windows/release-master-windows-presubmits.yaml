@@ -418,6 +418,7 @@ presubmits:
               - serviceAccountToken:
                   expirationSeconds: 86400
                   path: token
+                  audience: api://AzureADTokenExchange
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension
