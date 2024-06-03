@@ -389,6 +389,7 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
           command:
@@ -405,6 +406,19 @@ presubmits:
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
+          volumeMounts:
+          - mountPath: /var/run/secrets/azure-token/serviceaccount
+            name: azure-token
+            readOnly: true
+      volumes:
+        - name: azure-token
+          projected:
+            defaultMode: 420
+            sources:
+              - serviceAccountToken:
+                  expirationSeconds: 86400
+                  path: token
+                  audience: api://AzureADTokenExchange
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension
