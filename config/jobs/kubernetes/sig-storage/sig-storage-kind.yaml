@@ -82,11 +82,11 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FEATURE_GATES
-          value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true}'
+          value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true, "CSIVolumeHealth": true}'
         - name: RUNTIME_CONFIG
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true"}'
         - name: FOCUS
-          value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]
+          value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]|\[Feature:CSIVolumeHealth\]
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -176,11 +176,11 @@ periodics:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FEATURE_GATES
-          value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true}'
+          value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true, "CSIVolumeHealth": true}'
         - name: RUNTIME_CONFIG
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true"}'
         - name: FOCUS
-          value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]
+          value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]|\[Feature:CSIVolumeHealth\]
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
