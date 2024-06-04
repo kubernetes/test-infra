@@ -1920,3 +1920,8 @@ external_plugins:
     events:
     - issue_comment
     - pull_request
+  etcd-io/etcd:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
