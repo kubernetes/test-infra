@@ -22,4 +22,5 @@ storage:
         local: crun.conf
 passwd:
   users:
+    - name: core
     - name: kubelet

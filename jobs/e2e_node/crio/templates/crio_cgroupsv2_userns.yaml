@@ -140,4 +140,5 @@ systemd:
         WantedBy=multi-user.target
 passwd:
   users:
+    - name: core
     - name: kubelet
