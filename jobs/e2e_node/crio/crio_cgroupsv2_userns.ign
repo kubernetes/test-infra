@@ -10,6 +10,9 @@
   "passwd": {
     "users": [
       {
+        "name": "core"
+      },
+      {
         "name": "kubelet"
       }
     ]
