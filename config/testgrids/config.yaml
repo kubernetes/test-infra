@@ -82,6 +82,7 @@ dashboards:
 - name: sig-auth-secrets-store-csi-driver-presubmit
 - name: sig-auth-secrets-store-csi-driver-release-signal
 - name: sig-auth-encryption-at-rest
+- name: sig-auth-secrets-store-sync-controller
 - name: vmware-cluster-api-provider-vsphere
 - name: vmware-presubmits-cloud-provider-vsphere
 - name: vmware-postsubmits-cloud-provider-vsphere
@@ -112,3 +113,4 @@ dashboard_groups:
   - sig-auth-secrets-store-csi-driver-presubmit
   - sig-auth-secrets-store-csi-driver-release-signal
   - sig-auth-encryption-at-rest
+  - sig-auth-secrets-store-sync-controller
