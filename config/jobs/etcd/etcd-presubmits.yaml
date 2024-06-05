@@ -25,7 +25,7 @@ presubmits:
             cpu: "4"
             memory: "4Gi"
 
-  - name: pull-etcd-unit-test
+  - name: pull-etcd-unit-test-amd64
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -33,15 +33,47 @@ presubmits:
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
-      testgrid-tab-name: pull-etcd-unit-test
+      testgrid-tab-name: pull-etcd-unit-test-amd64
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
         command:
         - runner.sh
         args:
-        - make
-        - test-unit
+        - bash
+        - -c
+        - |
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
+          GOOS=linux GOARCH=amd64 CPU=4 GO_TEST_FLAGS='-p=2' make test-unit
+        resources:
+          requests:
+            cpu: "4"
+            memory: "2Gi"
+          limits:
+            cpu: "4"
+            memory: "2Gi"
+
+  - name: pull-etcd-unit-test-386
+    cluster: eks-prow-build-cluster
+    optional: true # remove this once the job is green
+    always_run: true
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-unit-test-386
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
+          GOOS=linux GOARCH=386 CPU=1 GO_TEST_FLAGS='-p=4' make test-unit
         resources:
           requests:
             cpu: "4"
