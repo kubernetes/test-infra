@@ -394,6 +394,7 @@ presubmits:
 {{- if eq $.branch "main" }}
   - name: pull-cluster-api-provider-vsphere-janitor-main
     labels:
+      preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
     always_run: false
     optional: true

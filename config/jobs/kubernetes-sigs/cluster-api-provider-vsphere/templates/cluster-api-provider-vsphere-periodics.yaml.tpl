@@ -345,6 +345,7 @@ periodics:
 
 - name: periodic-cluster-api-provider-vsphere-janitor
   labels:
+    preset-dind-enabled: "true"
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   interval: 12h
   decorate: true
