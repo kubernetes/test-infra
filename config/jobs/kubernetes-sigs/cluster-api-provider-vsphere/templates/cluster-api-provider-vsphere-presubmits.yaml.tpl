@@ -391,3 +391,33 @@ presubmits:
       description: Runs conformance tests with K8S ci latest for CAPV
 {{ end -}}
 {{ end -}}
+{{- if eq $.branch "main" }}
+  - name: pull-cluster-api-provider-vsphere-janitor-main
+    labels:
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        command:
+        - runner.sh
+        args:
+        - ./hack/clean-ci.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "4Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-janitor-main
+      description: Runs the janitor to cleanup orphaned objects in CI
+{{ end -}}
