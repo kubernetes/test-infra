@@ -149,6 +149,11 @@ presets:
       secretKeyRef:
         name: cluster-api-provider-vsphere-ci
         key: vmc-vcenter-image-builder-password
+  - name: VSPHERE_TLS_THUMBPRINT
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-thumbprint
   volumeMounts:
   - name: vmc-vpn
     mountPath: /root/.openvpn
