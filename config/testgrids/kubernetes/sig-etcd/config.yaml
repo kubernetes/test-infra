@@ -11,3 +11,40 @@ dashboards:
   - name: sig-etcd-periodics
   - name: sig-etcd-postsubmits
   - name: sig-etcd-robustness
+    dashboard_tab:
+    - name: ci-etcd-robustness-amd64
+      test_group_name: ci-etcd-robustness-amd64
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: title
+          value: '[robustness tests] main-amd64: <test-name>'
+        - key: body
+          value: <test-url>
+    - name: ci-etcd-robustness-main-amd64
+      test_group_name: ci-etcd-robustness-main-amd64
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: title
+          value: '[robustness tests] main-amd64: <test-name>'
+        - key: body
+          value: <test-url>
+    - name: ci-etcd-robustness-release35-amd64
+      test_group_name: ci-etcd-robustness-release35-amd64
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: title
+          value: '[robustness tests] 3.5-amd64: <test-name>'
+        - key: body
+          value: <test-url>
+    - name: ci-etcd-robustness-release34-amd64
+      test_group_name: ci-etcd-robustness-release34-amd64
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: title
+          value: '[robustness tests] 3.4-amd64: <test-name>'
+        - key: body
+          value: <test-url>

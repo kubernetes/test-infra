@@ -69,8 +69,7 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-robustness
-    testgrid-tab-name: ci-etcd-robustness-amd64
+    testgrid-create-test-group: 'true'
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
@@ -114,8 +113,7 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-robustness
-    testgrid-tab-name: ci-etcd-robustness-main-amd64
+    testgrid-create-test-group: 'true'
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
@@ -157,8 +155,7 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-robustness
-    testgrid-tab-name: ci-etcd-robustness-release35-amd64
+    testgrid-create-test-group: 'true'
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
@@ -200,8 +197,7 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-robustness
-    testgrid-tab-name: ci-etcd-robustness-release34-amd64
+    testgrid-create-test-group: 'true'
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
