@@ -35,8 +35,9 @@ presets:
     value: containerd
 
 periodics:
+
 # containerd build PERIODICS have been moved to the config/jobs/containerd/containerd folder. Please don't add any in here.
-- name: ci-containerd-e2e-ubuntu-gce
+- name: ci-containerd-cgroupv1-ubuntu-e2e-gce-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -75,6 +76,7 @@ periodics:
       - --image-family=ubuntu-2204-lts
       - --image-project=ubuntu-os-cloud
       - --provider=gce
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
@@ -87,8 +89,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-e2e-ubuntu
-- name: ci-cos-cgroupv1-containerd-node-e2e
+    testgrid-tab-name: ci-containerd-ubuntu-e2e-gce
+
+- name: ci-containerd-cgroupv1-cos-node-e2e-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -138,9 +141,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv1-containerd-node-e2e
+    testgrid-tab-name: ci-containerd-cgroupv1-cos-node-e2e
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-cos-cgroupv1-containerd-node-e2e-features
+
+- name: ci-containerd-cgroupv1-cos-node-feature-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -190,8 +194,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv1-containerd-node-features
-- name: ci-cos-cgroupv1-containerd-node-e2e-serial
+    testgrid-tab-name: ci-containerd-cgroupv1-cos-node-e2e-features
+
+- name: ci-containerd-cgroupv1-cos-serial-release-main
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -241,8 +246,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv1-containerd-node-e2e-serial
-- name: ci-containerd-node-e2e-1-6
+    testgrid-tab-name: ci-containerd-cgroupv1-cos-node-e2e-serial
+
+- name: ci-containerd-cgroupv1-osTODO-node-e2e-release-1-6
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -292,8 +298,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.6
-- name: ci-containerd-node-e2e-1-7
+    testgrid-tab-name: ci-containerd-node-e2e-release-1-6
+
+- name: ci-containerd-cgroupv1-osTODO-node-e2e-release-1-7
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -343,8 +350,9 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.7
-- name: ci-containerd-node-e2e-features-1-6
+    testgrid-tab-name: ci-containerd-node-e2e-release-1-7
+
+- name: ci-containerd-cgroupv1-osTODO-node-e2e-features-release-1-6
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -394,8 +402,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-features-1.6
-- name: ci-containerd-node-e2e-features-1-7
+    testgrid-tab-name: ci-containerd-node-e2e-features-release-1-6
+
+- name: ci-containerd-cgroupv1-osTODO-node-e2e-features-release-1-7
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -445,9 +454,9 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-features-1.7
+    testgrid-tab-name: ci-containerd-node-e2e-features-release-1-7
 
-- name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+- name: ci-containerd-cgroupTODO-cos-e2e-gce-device-plugin-gpu-release-main
   cluster: k8s-infra-prow-build
   cron: "30 1-23/3 * * *"
   labels:
@@ -501,11 +510,11 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-cos-device-plugin-gpu
+    testgrid-tab-name: ci-containerd-e2e-gce-device-plugin-gpu
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
 
-- name: ci-kubernetes-node-kubelet-containerd-eviction
+- name: ci-containerd-cgroupv1-cos-serial-eviction-release-main
   cluster: k8s-infra-prow-build
   interval: 4h30m
   labels:
@@ -551,11 +560,11 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-kubelet-containerd-eviction
+    testgrid-tab-name: ci-containerd-kubernetes-node-kubelet-eviction
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run node-e2e Eviction tests"
 
-- name: ci-cri-containerd-node-e2e-features
+- name: ci-containerd-cgroupv1-osTODO-e2e-features-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -605,8 +614,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-e2e-features
-- name: ci-cri-containerd-node-e2e-unlabelled
+    testgrid-tab-name: ci-containerd-node-e2e-features
+
+- name: ci-containerd-cgroupv1-node-e2e-unlabelled-release-main
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -656,10 +666,11 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-e2e-unlabelled
+    testgrid-tab-name: ci-containerd-node-e2e-unlabelled
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
-- interval: 1h
-  name: ci-cos-containerd-e2e-cos-gce
+
+- name: ci-containerd-cos-image-validation-e2e-gce-release-main
+  interval: 1h
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -695,9 +706,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: image-validation-cos-e2e
-- interval: 1h
-  name: ci-cos-containerd-e2e-ubuntu-gce
+    testgrid-tab-name: ci-containerd-cos-image-validation-e2e-gce
+
+- name: ci-containerd-cgroupTODO-ubuntu-image-validation-e2e-gce-release-main
+  interval: 1h
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -732,8 +744,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: image-validation-ubuntu-e2e
-- name: ci-cos-containerd-node-e2e
+    testgrid-tab-name: ci-containerd-ubuntu-image-validation-e2e-gce
+
+# TODO: which os and cgroup is used here?
+- name: ci-containerd-cgroupTODO-osTODO-image-validation-node-e2e-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -779,8 +793,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: image-validation-node-e2e
-- name: ci-cos-containerd-node-e2e-features
+    testgrid-tab-name: ci-containerd-cos-image-validation-node-e2e
+
+# TODO: what about this job OS, the image-config-systemd.yaml specifies both Ubuntu and COS.
+- name: ci-containerd-cgroupTODO-cos-image-validation-node-feature-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -826,8 +842,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: image-validation-node-features
-- name: ci-cos-cgroupv2-containerd-node-e2e-features
+    testgrid-tab-name: ci-containerd-cos-image-validation-node-e2e-features
+
+- name: ci-containerd-cgroupv2-cos--node-feature-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -877,9 +894,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-containerd-node-features
+    testgrid-tab-name: ci-containerd-cgroupv2-cos--node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-cos-cgroupv2-containerd-node-e2e
+
+- name: ci-containerd-cgroupv2-cos-node-e2e-release-main
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -929,8 +947,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-containerd-node-e2e
-- name: ci-cgroup-systemd-containerd-node-e2e
+    testgrid-tab-name: ci-containerd-cgroupv2-cos-node-e2e
+
+- name: ci-containerd-cgroup-systemd-node-e2e-release-main
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -980,10 +999,11 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cgroup-systemd-containerd-node-e2e
+    testgrid-tab-name: ci-containerd-cgroup-systemd-node-e2e
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- interval: 12h
-  name: ci-cos-cgroupv2-containerd-e2e-gce
+
+- name: ci-containerd-cgroupv2-cos-e2e-gce-release-main
+  interval: 12h
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -1035,12 +1055,12 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
-
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-containerd-e2e
-- interval: 12h
-  name: ci-cos-cgroupv1-containerd-e2e-gce
+    testgrid-tab-name: ci-containerd-cgroupv2-cos-e2e-gce
+
+- name: ci-containerd-cgroupv1-cos-e2e-gce-release-main
+  interval: 12h
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -1094,8 +1114,9 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv1-containerd-e2e
-- name: ci-cos-cgroupv2-containerd-node-e2e-serial
+    testgrid-tab-name: ci-containerd-cgroupv1-cos-e2e-gce
+
+- name: ci-containerd-cgroupv2-cos-serial-release-main
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -1145,9 +1166,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-containerd-node-e2e-serial
-- interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-containerd
+    testgrid-tab-name: ci-containerd-cgroupv2-cos-node-e2e-serial
+
+- name: ci-containerd-cgroupTODO-osTODO-e2e-gci-gce-release-main
+  interval: 30m
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -1184,9 +1206,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: google-gce, sig-storage-kubernetes
-    testgrid-tab-name: gce-containerd
+    testgrid-tab-name: ci-containerd-kubernetes-e2e-gci-gce
     description: node gce e2e tests for master branch using containerd
-- name: ci-kubernetes-node-kubelet-containerd-resource-managers
+
+- name: ci-containerd-cgroupv2-ubuntu-kubelet-resource-managers-release-main
   interval: 4h
   cluster: k8s-infra-prow-build
   labels:
@@ -1232,10 +1255,11 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-kubelet-containerd-resource-managers
+    testgrid-tab-name: ci-containerd-kubernetes-node-kubelet-resource-managers
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes CPU, Memory and Topology manager e2e tests"
-- name: ci-kubernetes-node-kubelet-containerd-hugepages
+
+- name: ci-containerd-cgroupv1-ubuntu-kubelet-hugepages-release-main
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -1281,11 +1305,11 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-kubelet-containerd-hugepages
+    testgrid-tab-name: ci-containerd-kubernetes-node-kubelet-hugepages
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes hugepages e2e tests"
 
-- name: ci-kubernetes-node-swap-ubuntu
+- name: ci-containerd-cgroupv2-ubuntu-kubernetes-node-kubelet-gce-e2e-swap-release-main
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -1333,10 +1357,11 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu
+    testgrid-tab-name: ci-containerd-ubuntu-kubernetes-node-kubelet-gce-e2e-swap
     testgrid-alert-email: ehashman@redhat.com, mkmir@google.com
     description: Executes E2E suite with swap enabled on Ubuntu
-- name: ci-kubernetes-node-kubelet-containerd-performance-test
+
+- name: ci-containerd-ubuntu-cgroupv1-kubelet-performance-test-release-main
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -1386,10 +1411,11 @@ periodics:
             memory: 8Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-kubelet-containerd-performance-test
+    testgrid-tab-name: ci-containerd-kubernetes-node-kubelet-performance-test
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes performance e2e tests"
-- name: ci-kubernetes-node-kubelet-lock-contention
+
+- name: ci-containerd-cgroupv2-ubuntu-kubelet-gce-e2e-lock-contention-release-main
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -1434,9 +1460,10 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: kubelet-gce-e2e-lock-contention
+    testgrid-tab-name: ci-containerd-kubernetes-node-kubelet-lock-contention
     description: "Contains disruptive tests for the Lock Contention feature."
-- name: ci-kubernetes-node-kubelet-credential-provider
+
+- name: ci-containerd-cgroupv2-ubuntu-kubelet-credential-provider-release-main
   cluster: k8s-infra-prow-build
   interval: 6h
   labels:
@@ -1481,9 +1508,10 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: kubelet-credential-provider
+    testgrid-tab-name: ci-containerd-kubernetes-node-kubelet-credential-provider
     description: "tests feature kubelet image credential provider"
-- name: ci-kubernetes-e2e-gcp-credential-provider
+
+- name: ci-containerd-cgroupTODO-osTODO-gcp-credential-provider-release-main
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -1524,9 +1552,10 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: gcp-kubelet-credential-provider
+    testgrid-tab-name: ci-containerd-kubernetes-e2e-gcp-credential-provider
     description: "tests feature gcp kubelet image credential provider"
-- name: ci-cos-cgroupv2-inplace-pod-resize-containerd-main-e2e-gce-serial
+
+- name: ci-containerd-cgroupv2-cos-inplace-pod-resize-containerd-main-e2e-gce-serial-release-main
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -1590,9 +1619,10 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-inplace-pod-resize-containerd-e2e-serial
+    testgrid-tab-name: ci-containerd-cgroupv2-cos-inplace-pod-resize-containerd-main-e2e-gce-serial
     description: Runs cluster e2e pod resize tests in serial with FOCUS=[Feature:InPlacePodVerticalScaling] with cgroup v2
-- name: ci-cos-cgroupv1-inplace-pod-resize-containerd-main-e2e-gce-serial
+
+- name: ci-containerd-cgroupv1-cos-inplace-pod-resize-containerd-main-e2e-gce-serial-release-main
   cluster: k8s-infra-prow-build
   interval: 48h
   labels:
@@ -1650,8 +1680,8 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
-
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv1-inplace-pod-resize-containerd-e2e-serial
+    testgrid-tab-name: ci-containerd-cgroupv1-cos-inplace-pod-resize-containerd-main-e2e-gce-serial
     description: Runs cluster e2e pod resize tests in serial with FOCUS=[Feature:InPlacePodVerticalScaling] with cgroup v1
+
