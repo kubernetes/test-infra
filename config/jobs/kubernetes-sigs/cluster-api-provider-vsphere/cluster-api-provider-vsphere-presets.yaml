@@ -2,6 +2,8 @@ presets:
 - labels:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   env:
+  - name: BOSKOS_HOST
+    value: http://192.168.6.138:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
@@ -68,6 +70,8 @@ presets:
     # For kubernetes/cloud-provider-vsphere
     preset-cloud-provider-vsphere-e2e-config-capv: "true"
   env:
+  - name: BOSKOS_HOST
+    value: http://192.168.6.138:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
@@ -134,6 +138,8 @@ presets:
     # For kubernetes-sigs/image-builder
     preset-image-builder-vsphere-e2e-config: "true"
   env:
+  - name: BOSKOS_HOST
+    value: http://192.168.6.138:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
