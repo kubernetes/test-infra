@@ -1596,6 +1596,7 @@ plugins:
     - label
     - pony
     - retitle
+    - size
     - skip
     - wip
     - yuks
