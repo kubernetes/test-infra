@@ -807,28 +807,10 @@ tide:
   context_options:
     orgs:
       kubernetes:
-        optional-contexts:
-        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
-        # to ensure things get merged in.
-        - "cla/linuxfoundation"
         repos:
           dashboard:
             from-branch-protection: true
-      kubernetes-client:
-        optional-contexts:
-        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
-        # to ensure things get merged in.
-        - "cla/linuxfoundation"
-      kubernetes-csi:
-        optional-contexts:
-        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
-        # to ensure things get merged in.
-        - "cla/linuxfoundation"
       kubernetes-sigs:
-        optional-contexts:
-        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
-        # to ensure things get merged in.
-        - "cla/linuxfoundation"
         repos:
           cluster-api:
             from-branch-protection: true
