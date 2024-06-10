@@ -168,6 +168,7 @@ presubmits:
         - |
           set -euo pipefail
           make gofail-enable
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
           GOOS=linux GOARCH=amd64 CPU=1 make test-integration
         resources:
           requests:
@@ -198,6 +199,7 @@ presubmits:
         - |
           set -euo pipefail
           make gofail-enable
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
           GOOS=linux GOARCH=amd64 CPU=2 make test-integration
         resources:
           requests:
@@ -228,6 +230,7 @@ presubmits:
         - |
           set -euo pipefail
           make gofail-enable
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
           GOOS=linux GOARCH=amd64 CPU=4 make test-integration
         resources:
           requests:
