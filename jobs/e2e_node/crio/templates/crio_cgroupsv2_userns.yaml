@@ -33,10 +33,12 @@ storage:
       contents:
         local: 50-subid.toml
       mode: 0644
+      overwrite: true
     - path: /etc/subgid
       contents:
         local: 50-subid.toml
       mode: 0644
+      overwrite: true
     # Note: This also assumes the crun handler is enabled in the base crio.conf,
     # crun is installed, and the version of crun supports the `crun features` command.
     # All of this is true at the time of writing.
