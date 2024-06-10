@@ -1925,3 +1925,7 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  - name: needs-rebase
+    events:
+      - issue_comment
+      - pull_request
