@@ -180,7 +180,6 @@ presubmits:
 
   - name: pull-etcd-integration-2-cpu-amd64
     cluster: eks-prow-build-cluster
-    optional: true # remove this once the job is green
     always_run: true
     branches:
     - main
@@ -203,15 +202,14 @@ presubmits:
           GOOS=linux GOARCH=amd64 CPU=2 make test-integration
         resources:
           requests:
-            cpu: "2"
-            memory: "8Gi"
+            cpu: "3"
+            memory: "3Gi"
           limits:
-            cpu: "2"
-            memory: "8Gi"
+            cpu: "3"
+            memory: "3Gi"
 
   - name: pull-etcd-integration-4-cpu-amd64
     cluster: eks-prow-build-cluster
-    optional: true # remove this once the job is green
     always_run: true
     branches:
     - main
@@ -234,11 +232,11 @@ presubmits:
           GOOS=linux GOARCH=amd64 CPU=4 make test-integration
         resources:
           requests:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "6"
+            memory: "3Gi"
           limits:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "6"
+            memory: "3Gi"
 
   - name: pull-etcd-robustness-amd64
     cluster: k8s-infra-prow-build
