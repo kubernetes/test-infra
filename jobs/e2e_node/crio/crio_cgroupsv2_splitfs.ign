@@ -70,7 +70,7 @@
         "path": "/etc/containers/storage.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/1SNSwqDQBBE932KZjyAJ8jOnCDLkEUbWx0Yp6VsDd4+GPNzVfDgvbpObpBOb0QFV9rKnJwvO+MKcVFQ8xo+cbBFkWQNRJgzzHyD5SIo75ZdYlZM5bsYqODz2OugkPRNSm74gegqdVJOsiq4NfDPpw4y9od4ivXfwRb+5DY1DtLpRPu4QQ/ejsMzAAD//4r2l3roAAAA"
+          "source": "data:;base64,H4sIAAAAAAAC/3TNQQ6CMBCF4f2cYlIO0BO4wxO4NC4GGaBJ6ZBHwXB7g1WMC1eT/Mn75jpng/R6I6q41k6WmPlSGtcIq4La1+ETO1sVUTZHhCXBLO/RY0n+bilLSIrZv0VHFZ+nQUeFxIOU1PIDIas0UTnKpuDOwN899ZBpOPBV4GNo/jz4sDsRRul1pnKyQX/2JTt6BgAA//8FDtV48QAAAA=="
         },
         "mode": 420
       }
