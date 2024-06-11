@@ -395,7 +395,7 @@ presubmits:
   - name: pull-cluster-api-provider-vsphere-janitor-main
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-janitor-config: "true"
     always_run: false
     optional: true
     decorate: true

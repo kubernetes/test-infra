@@ -179,3 +179,58 @@ presets:
         path: ca.crt
       - key: vmc-vpn-tls.key
         path: tls.key
+- labels:
+    preset-cluster-api-provider-vsphere-janitor-config: "true"
+  env:
+  - name: BOSKOS_HOST
+    value: http://192.168.6.138:32222
+  - name: GOVC_URL
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-url
+  - name: GOVC_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        # TODO: replace this with vmc-vcenter-janitor-user as soon as it is available
+        key: vmc-vcenter-cluster-api-provider-vsphere-user
+  - name: GOVC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        # TODO: replace this with vmc-vcenter-janitor-user as soon as it is available
+        key: vmc-vcenter-cluster-api-provider-vsphere-password
+  - name: VSPHERE_TLS_THUMBPRINT
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-thumbprint
+  volumeMounts:
+  - name: vmc-vpn
+    mountPath: /root/.openvpn
+  - name: vmc-capv-services-kubeconfig
+    mountPath: /root/ipam-conf
+  volumes:
+  - name: vmc-vpn
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      defaultMode: 256
+      items:
+      - key: vmc-vpn-config.ovpn
+        path: prow.ovpn
+      - key: vmc-vpn-client.crt
+        path: client.crt
+      - key: vmc-vpn-client.key
+        path: client.key
+      - key: vmc-vpn-ca.crt
+        path: ca.crt
+      - key: vmc-vpn-tls.key
+        path: tls.key
+  - name: vmc-capv-services-kubeconfig
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      defaultMode: 256
+      items:
+      - key: vmc-capv-services.kubeconfig
+        path: capv-services.conf
