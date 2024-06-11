@@ -70,7 +70,7 @@
         "path": "/etc/containers/storage.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/1SNSwqDQBBE932KZjyAJ8jOnCDLkEUbWx0Yp6VsDd4+GPNzVfDgvbpObpBOb0QFV9rKnJwvO+MKcVFQ8xo+cbBFkWQNRJgzzHyD5SIo75ZdYlZM5bsYqODz2OugkPRNSm74gegqdVJOsiq4NfDPpw4y9od4ivXfwRb+5DY1DtLpRPu4QQ/ejsMzAAD//4r2l3roAAAA"
+          "source": "data:;base64,H4sIAAAAAAAC/3TNQQ6CMBCF4f2cYlIO0BO4wxO4NC4GGaBJ6ZBHwXB7g1WMC1eT/Mn75jpng/R6I6q41k6WmPlSGtcIq4La1+ETO1sVUTZHhCXBLO/RY0n+bilLSIrZv0VHFZ+nQUeFxIOU1PIDIas0UTnKpuDOwN899ZBpOPBV4GNo/jz4sDsRRul1pnKyQX/2JTt6BgAA//8FDtV48QAAAA=="
         },
         "mode": 420
       }
@@ -114,6 +114,11 @@
         "contents": "[Unit]\nDescription=Copy authorized keys\nBefore=crio-install.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '\\\n  /usr/bin/mkdir -m 0700 -p /home/core/.ssh \u0026\u0026 \\\n  /usr/bin/cat /etc/ssh-key-secret/ssh-public \\\n    \u003e\u003e /home/core/.ssh/authorized_keys \u0026\u0026 \\\n  /usr/bin/chown -R core:core /home/core/.ssh \u0026\u0026 \\\n  /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "authorized-key.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Label ImageStore\nAfter=crio-install.service\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  policycoreutils-python-utils\nExecStart=semanage fcontext -a -e /var/lib/containers/storage /var/lib/images\nExecStart=restorecon -R -v /var/lib/images\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "label-imagestore.service"
       }
     ]
   }
