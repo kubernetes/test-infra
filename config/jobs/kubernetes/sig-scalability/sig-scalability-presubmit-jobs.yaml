@@ -916,3 +916,46 @@ presubmits:
           limits:
             cpu: 2
             memory: "2Gi"
+
+  # This corresponds to ci-benchmark-scheduler-perf-master, without the reporting
+  # to the performance dashboard. It can be started manually to verify changes
+  # to test/integration/scheduler_perf.
+  - name: pull-scheduler-perf
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: scheduler-perf
+      testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 2h25m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - ./hack/jenkins/benchmark-dockerized.sh
+        args:
+        - ./test/integration/scheduler_perf
+        env:
+        - name: KUBE_TIMEOUT
+          value: --timeout=2h25m
+        - name: TEST_PREFIX
+          value: BenchmarkPerfScheduling
+        # Set the benchtime to a very low value so every test is ran at most once
+        # even on very powerful machines
+        - name: BENCHTIME
+          value: 1ns
+        # We need to constraint compute resources so all the tests
+        # finish approximately at the same time. More compute power
+        # can increase scheduling throughput and make consequent results
+        # incomparable.
+        resources:
+          requests:
+            cpu: 6
+            memory: "24Gi"
+          limits:
+            cpu: 6
+            memory: "24Gi"

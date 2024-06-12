@@ -727,6 +727,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler-perf
+    testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
   decorate: true
   extra_refs:
   - org: kubernetes
