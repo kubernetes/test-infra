@@ -18,7 +18,7 @@ presubmits:
       description: kubernetes-csi/csi-proxy integration tests
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

@@ -13,7 +13,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         command:
         - runner.sh
         args:
@@ -41,7 +41,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         command:
         - runner.sh
         args:
@@ -72,7 +72,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         resources:
           limits:
             cpu: 2
@@ -104,7 +104,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -142,7 +142,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         command:
         - runner.sh
         args:
@@ -179,7 +179,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         command:
         - runner.sh
         args:
@@ -214,7 +214,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
         command:
         - runner.sh
         args:

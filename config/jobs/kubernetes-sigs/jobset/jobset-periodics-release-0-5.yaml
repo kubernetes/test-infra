@@ -18,7 +18,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -87,7 +87,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
@@ -127,7 +127,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.28.9
@@ -167,7 +167,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.29.0

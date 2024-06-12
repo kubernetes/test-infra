@@ -56,7 +56,7 @@ periodics:
       - --timeout=180m
       # TODO: drop this once it's in the defaults
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
       resources:
         limits:
           cpu: 1
