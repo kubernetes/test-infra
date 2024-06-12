@@ -9,7 +9,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-alibaba-cloud
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-alibaba-cloud
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
         command:
         - runner.sh
         args:
