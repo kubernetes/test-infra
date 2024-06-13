@@ -41,7 +41,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
   - name: pull-cip-e2e-canary
-    cluster: k8s-infra-prow-build-trusted
+    cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
@@ -70,6 +70,13 @@ presubmits:
         - name: k8s-cip-test-prod-service-account-creds
           mountPath: /etc/k8s-cip-test-prod-service-account
           readOnly: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -109,6 +116,54 @@ presubmits:
         - name: k8s-gcr-audit-test-prod-service-account-creds
           mountPath: /etc/k8s-gcr-audit-test-prod-service-account
           readOnly: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+      volumes:
+      - name: k8s-gcr-audit-test-prod-service-account-creds
+        secret:
+          secretName: k8s-gcr-audit-test-prod-service-account
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+  - name: pull-cip-auditor-e2e-canary
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "sigs.k8s.io/promo-tools"
+    skip_report: false
+    always_run: false
+    optional: true
+    # Because we run e2e tests, we cannot run more than 1 instance at a time
+    # (the e2e test resources are not isolated across test runs).
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        command:
+        - runner.sh
+        args:
+        - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
+        env:
+        - name: CIP_E2E_KEY_FILE
+          value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
+        volumeMounts:
+        - name: k8s-gcr-audit-test-prod-service-account-creds
+          mountPath: /etc/k8s-gcr-audit-test-prod-service-account
+          readOnly: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
