@@ -102,7 +102,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20240507-1740' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-11-amd64-20240603-1767' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -236,7 +236,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240426' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20240610' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -303,7 +303,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20240426' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20240610' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -370,7 +370,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240501' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240607' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -437,7 +437,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240501' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240607' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -504,7 +504,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20240423' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20240606' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -571,7 +571,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240423' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240606' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -638,7 +638,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240503.0-x86_64-gp2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20240610.1-x86_64-gp2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -705,7 +705,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/al2023-ami-2023.4.20240429.0-kernel-6.1-x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/al2023-ami-2023.4.20240611.0-kernel-6.1-x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -839,7 +839,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='309956199498/RHEL-9.4.0_HVM-20240423-x86_64-62-Hourly2-GP3' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='309956199498/RHEL-9.4.0_HVM-20240605-x86_64-82-Hourly2-GP3' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -874,8 +874,8 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-rhel9
 
-# {"cloud": "aws", "distro": "rocky8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-rocky8
+# {"cloud": "aws", "distro": "rocky9", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+  - name: pull-kops-aws-distro-rocky9
     cluster: default
     branches:
     - master
@@ -906,7 +906,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='792107900819/Rocky-8-ec2-8.6-20220515.0.x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='792107900819/Rocky-9-EC2-9.0-20220706.0.x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -932,14 +932,14 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: rocky8
+      test.kops.k8s.io/distro: rocky9
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: e2e-rocky8
+      testgrid-tab-name: e2e-rocky9
 
 # {"cloud": "aws", "distro": "flatcar", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-aws-distro-flatcar
@@ -973,7 +973,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='075585003325/Flatcar-beta-3913.1.0-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='075585003325/Flatcar-beta-3941.1.0-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
