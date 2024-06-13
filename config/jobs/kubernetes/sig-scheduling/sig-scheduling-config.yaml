@@ -46,3 +46,49 @@ periodics:
     testgrid-tab-name: sig-scheduling-kind, multizone
     description: Runs tests against a Multizone Kubernetes in Docker cluster
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, acondor@google.com
+
+presubmits:
+  kubernetes/kubernetes:
+  # This corresponds to ci-benchmark-scheduler-perf-master, without the reporting
+  # to the performance dashboard. It can be started manually to verify changes
+  # to test/integration/scheduler_perf. In contrast to pull-scheduler-perf, it
+  # is defined for the k/k repo.
+  #
+  # The job runs the default set of benchmarks. A PR can temporarily override
+  # what those are by changing test/integration/scheduler_perf/config/performance-config.yaml
+  #
+  # ktesting.SetDefaultVerbosity(2) in test/integration/scheduler_perf/main_test.go
+  # can be changed the same way to increase verbosity. Per-test output can be enabled
+  # by changing the default for useTestingLog in scheduler_perf.go.
+  - name: pull-kubernetes-scheduler-perf
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: scheduler-perf
+      testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 2h25m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - -c
+        - ./hack/install-etcd.sh && make test-integration WHAT=./test/integration/scheduler_perf ETCD_LOGLEVEL=warn KUBE_TEST_VMODULE="''" KUBE_TEST_ARGS="-run=^$$ -benchtime=1ns -bench=BenchmarkPerfScheduling"
+        # We need to constraint compute resources so all the tests
+        # finish approximately at the same time. More compute power
+        # can increase scheduling throughput and make consequent results
+        # incomparable.
+        resources:
+          requests:
+            cpu: 6
+            memory: "24Gi"
+          limits:
+            cpu: 6
+            memory: "24Gi"
