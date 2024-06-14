@@ -1,3 +1,29 @@
+presets:
+# Attaches the secrets to a job required to execute the e2e conformance
+# suite against a cluster turned up with the cloud provider.
+- labels:
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  env:
+  - name: CONFIG_ENV
+    value: /root/.cloud-provider-vsphere/config.env
+  - name: GCR_KEY_FILE
+    value: /root/.cloud-provider-vsphere/keyfile.json
+  volumes:
+  - name: cloud-provider-vsphere-e2e-config
+    secret:
+      secretName: cloud-provider-vsphere-ci
+      items:
+      - key: config.env
+        path: config.env
+        mode: 288
+      - key: keyfile.json
+        path: keyfile.json
+        mode: 288
+  volumeMounts:
+  - name: cloud-provider-vsphere-e2e-config
+    mountPath: /root/.cloud-provider-vsphere
+    readOnly: true
+
 presubmits:
   kubernetes/cloud-provider-vsphere:
 
@@ -335,6 +361,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      # Borrows CAPV credentials for cloud provider e2e testing
+      preset-cloud-provider-vsphere-e2e-config-capv: "true"
     branches:
     - ^master$
     - ^release-1.2[7-9]$
@@ -368,6 +396,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      # Borrows CAPV credentials for cloud provider e2e testing
+      preset-cloud-provider-vsphere-e2e-config-capv: "true"
     branches:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
