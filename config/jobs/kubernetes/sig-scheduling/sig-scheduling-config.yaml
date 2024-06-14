@@ -80,7 +80,7 @@ presubmits:
         args:
         - /bin/sh
         - -c
-        - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling"
+        - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf KUBE_TIMEOUT=--timeout=2h10m ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling"
         # We need to constraint compute resources so all the tests
         # finish approximately at the same time. More compute power
         # can increase scheduling throughput and make consequent results
