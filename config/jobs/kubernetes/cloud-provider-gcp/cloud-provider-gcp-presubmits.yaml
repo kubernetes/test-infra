@@ -80,34 +80,6 @@ presubmits:
             requests:
               cpu: 2
               memory: 4Gi
-  - name: cloud-provider-gcp-verify-crds
-    cluster: k8s-infra-prow-build
-    run_if_changed: "^crd/"
-    decorate: true
-    path_alias: k8s.io/cloud-provider-gcp
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: provider-gcp-presubmits
-      description: Run verify scripts on kubernetes/cloud-provider-gcp.
-      testgrid-num-columns-recent: '30'
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
-          command:
-            - runner.sh
-          args:
-          - "/bin/bash"
-          - "-c"
-          - ./crd/hack/verify-codegen.sh
-          resources:
-            limits:
-              cpu: 2
-              memory: 4Gi
-            requests:
-              cpu: 2
-              memory: 4Gi
 
   - name: pull-cloud-provider-gcp-e2e
     cluster: k8s-infra-prow-build
