@@ -289,6 +289,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cloud-provider-vshpere:
+          branches:
+            gh-pages:
+              protect: false
         cluster-bootstrap:
           restrictions:
             users: []
