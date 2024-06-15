@@ -265,7 +265,10 @@ presubmits:
               set -euo pipefail
               go clean -testcache
               GO_TEST_FLAGS="-v --count 12 --timeout '30m' --run TestRobustness"
-              VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness-main || return_code=$?
+              make gofail-enable
+              make build
+              make gofail-disable
+              VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness || return_code=$?
               if [ -d /tmp/results ]; then
                 zip -r ${ARTIFACTS}/results.zip /tmp/results
               fi
