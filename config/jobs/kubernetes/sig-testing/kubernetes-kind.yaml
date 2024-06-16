@@ -307,13 +307,13 @@ presubmits:
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"EventedPLEG":false}'
+          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
-        - name: FOCUS
-          value: "."
+        - name: LABEL_FILTER
+          value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf Alpha"
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+          value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -358,10 +358,10 @@ presubmits:
           value: '{"AllBeta":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
-        - name: FOCUS
-          value: "."
+        - name: LABEL_FILTER
+          value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf Beta"
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+          value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -407,10 +407,10 @@ presubmits:
           value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
-        - name: FOCUS
-          value: "."
+        - name: LABEL_FILTER
+          value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf { Alpha, Beta }"
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+          value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -508,8 +508,8 @@ periodics:
         value: '{"AllAlpha":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
         value: '{"api/alpha":"true", "api/ga":"true"}'
-      - name: FOCUS
-        value: "."
+      - name: LABEL_FILTER
+        value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf Alpha"
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
@@ -560,8 +560,8 @@ periodics:
         value: '{"AllBeta":true}'
       - name: RUNTIME_CONFIG
         value: '{"api/beta":"true", "api/ga":"true"}'
-      - name: FOCUS
-        value: "."
+      - name: LABEL_FILTER
+        value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf { Beta }"
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
@@ -612,10 +612,10 @@ periodics:
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
-      - name: FOCUS
-        value: "."
+      - name: LABEL_FILTER
+        value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf { Alpha, Beta }"
       - name: SKIP
-        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+        value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
