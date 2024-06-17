@@ -34,8 +34,6 @@ presets:
     mountPath: /root/ssh/.private-key
   - name: vmc-vpn
     mountPath: /root/.openvpn
-  - name: vmc-capv-services-kubeconfig
-    mountPath: /root/ipam-conf
   volumes:
   - name: vmc-e2e-vm-ssh-key
     secret:
@@ -59,13 +57,6 @@ presets:
         path: ca.crt
       - key: vmc-vpn-tls.key
         path: tls.key
-  - name: vmc-capv-services-kubeconfig
-    secret:
-      secretName: cluster-api-provider-vsphere-ci
-      defaultMode: 256
-      items:
-      - key: vmc-capv-services.kubeconfig
-        path: capv-services.conf
 - labels:
     # For kubernetes/cloud-provider-vsphere
     preset-cloud-provider-vsphere-e2e-config-capv: "true"
@@ -102,8 +93,6 @@ presets:
     mountPath: /root/ssh/.private-key
   - name: vmc-vpn
     mountPath: /root/.openvpn
-  - name: vmc-capv-services-kubeconfig
-    mountPath: /root/ipam-conf
   volumes:
   - name: vmc-e2e-vm-ssh-key
     secret:
@@ -127,13 +116,6 @@ presets:
         path: ca.crt
       - key: vmc-vpn-tls.key
         path: tls.key
-  - name: vmc-capv-services-kubeconfig
-    secret:
-      secretName: cluster-api-provider-vsphere-ci
-      defaultMode: 256
-      items:
-      - key: vmc-capv-services.kubeconfig
-        path: capv-services.conf
 - labels:
     # For kubernetes-sigs/image-builder
     preset-image-builder-vsphere-e2e-config: "true"
@@ -209,8 +191,6 @@ presets:
   volumeMounts:
   - name: vmc-vpn
     mountPath: /root/.openvpn
-  - name: vmc-capv-services-kubeconfig
-    mountPath: /root/ipam-conf
   volumes:
   - name: vmc-vpn
     secret:
@@ -227,10 +207,3 @@ presets:
         path: ca.crt
       - key: vmc-vpn-tls.key
         path: tls.key
-  - name: vmc-capv-services-kubeconfig
-    secret:
-      secretName: cluster-api-provider-vsphere-ci
-      defaultMode: 256
-      items:
-      - key: vmc-capv-services.kubeconfig
-        path: capv-services.conf
