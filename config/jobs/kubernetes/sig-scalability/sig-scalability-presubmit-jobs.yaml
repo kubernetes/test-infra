@@ -856,7 +856,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - verify/test.sh
         resources:
