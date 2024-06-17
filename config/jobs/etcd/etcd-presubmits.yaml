@@ -280,3 +280,6 @@ presubmits:
             limits:
               cpu: "7"
               memory: "14Gi"
+          # fuse needs privileged mode
+          securityContext:
+            privileged: true
