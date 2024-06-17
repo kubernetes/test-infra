@@ -289,7 +289,7 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
-        cloud-provider-vshpere:
+        cloud-provider-vsphere:
           branches:
             gh-pages:
               protect: false
