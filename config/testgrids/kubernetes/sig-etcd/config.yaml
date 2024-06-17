@@ -5,6 +5,7 @@ dashboard_groups:
   - sig-etcd-periodics
   - sig-etcd-postsubmits
   - sig-etcd-robustness
+  - sig-etcd-etcd-manager
 
 dashboards:
   - name: sig-etcd-presubmits
@@ -48,3 +49,4 @@ dashboards:
           value: '[robustness tests] 3.4-amd64: <test-name>'
         - key: body
           value: <test-url>
+  - name: sig-etcd-etcd-manager
