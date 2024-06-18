@@ -86,6 +86,34 @@ presubmits:
             cpu: "4"
             memory: "4Gi"
 
+  - name: pull-etcd-govulncheck
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true # remove this once the job is green
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-govulncheck
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          export PATH=$GOPATH/bin:$PATH && make run-govulncheck
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+
   - name: pull-etcd-e2e-amd64
     cluster: eks-prow-build-cluster
     optional: true # remove this once the job is green
