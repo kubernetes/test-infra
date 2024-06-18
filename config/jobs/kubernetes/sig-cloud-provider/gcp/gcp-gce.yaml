@@ -124,6 +124,62 @@ presubmits:
         securityContext:
           privileged: true
 
+  - name: pull-kubernetes-e2e-gce-graceful-shutdown
+    always_run: false
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+\.\d+ # per-release image
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-gce-graceful-shutdown
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    spec:
+      containers:
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --extract=local
+        - --gcp-master-image=ubuntu
+        - --gcp-node-image=ubuntu
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-graceful-shutdown
+        - --test_args=--ginkgo.focus=\[NodeFeature:GracefulNodeShutdown\]
+        - --timeout=80m
+        env:
+        - name: SHUTDOWN_GRACE_PERIOD
+          value: "30s"
+        - name: SHUTDOWN_GRACE_PERIOD_CRITICAL_PODS
+          value: "10s"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        resources:
+          requests:
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
+        securityContext:
+          privileged: true
+
   - name: pull-kubernetes-e2e-gce-cos-no-stage
     always_run: false
     cluster: k8s-infra-prow-build
@@ -290,7 +346,7 @@ presubmits:
             # Panic if data inconsistency is detected
             - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
             - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:GracefulNodeShutdown\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
           resources:
