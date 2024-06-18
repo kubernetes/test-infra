@@ -944,6 +944,8 @@ presubmits:
               value: "Standard_D2s_v3"
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.29"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz
