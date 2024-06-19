@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.22.4
         command:
         - make
         args:
@@ -32,7 +32,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.22.4
         command:
         - make
         args:
