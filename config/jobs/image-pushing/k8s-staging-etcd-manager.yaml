@@ -6,7 +6,7 @@ postsubmits:
         testgrid-dashboards: sig-etcd-etcd-manager, sig-k8s-infra-gcb
       decorate: true
       decoration_config:
-        timeout: 20m
+        timeout: 30m
         grace_period: 5m
       branches:
         - ^main$
