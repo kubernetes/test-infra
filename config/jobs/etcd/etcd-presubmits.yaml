@@ -123,6 +123,8 @@ presubmits:
     optional: true # remove this once the job is green
     branches:
     - main
+    - release-3.5
+    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
