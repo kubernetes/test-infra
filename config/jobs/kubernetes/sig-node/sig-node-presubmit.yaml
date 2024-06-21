@@ -574,6 +574,7 @@ presubmits:
               memory: 6Gi
   - name: pull-kubernetes-node-kubelet-containerd-flaky
     always_run: false
+    cluster: k8s-infra-prow-build
     optional: true
     skip_report: false
     skip_branches:
