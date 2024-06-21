@@ -29,14 +29,12 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
-	"sigs.k8s.io/prow/pkg/config/secret"
 	"sigs.k8s.io/prow/pkg/flagutil"
 	"sigs.k8s.io/prow/pkg/github"
 )
@@ -58,9 +56,9 @@ const (
 )
 
 func flagOptions() options {
-	o := options{
-		endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint),
-	}
+	o := options{}
+
+	flag.StringVar(&o.org, "org", "", "GitHub organization (required when using GitHub App credentials)")
 	flag.StringVar(&o.query, "query", "", "See https://help.github.com/articles/searching-issues-and-pull-requests/")
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
 	flag.BoolVar(&o.includeArchived, "include-archived", false, "Match archived issues if set")
@@ -70,10 +68,10 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
-	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
-	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
-	flag.StringVar(&o.token, "token", "", "Path to github token")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
+
+	o.github.AddFlags(flag.CommandLine)
+
 	flag.Parse()
 	return o
 }
@@ -88,17 +86,16 @@ type meta struct {
 type options struct {
 	ceiling         int
 	comment         string
+	org             string
 	includeArchived bool
 	includeClosed   bool
 	includeLocked   bool
 	useTemplate     bool
 	query           string
-	endpoint        flagutil.Strings
-	graphqlEndpoint string
-	token           string
 	updated         time.Duration
 	confirm         bool
 	random          bool
+	github          flagutil.GitHubOptions
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -151,8 +148,8 @@ func makeQuery(query string, includeArchived, includeClosed, includeLocked bool,
 }
 
 type client interface {
-	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	CreateComment(org, repo string, number int, comment string) error
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 }
 
 func main() {
@@ -162,31 +159,22 @@ func main() {
 	if o.query == "" {
 		log.Fatal("empty --query")
 	}
-	if o.token == "" {
-		log.Fatal("empty --token")
+	if o.github.TokenPath == "" && o.github.AppID == "" {
+		log.Fatal("no github authentication options specified")
+	}
+	if o.github.AppID != "" && o.org == "" {
+		log.Fatal("using github appid requires using --org flag")
 	}
 	if o.comment == "" {
 		log.Fatal("empty --comment")
 	}
 
-	if err := secret.Add(o.token); err != nil {
-		log.Fatalf("Error starting secrets agent: %v", err)
+	githubOptsErr := o.github.Validate(true)
+	if githubOptsErr != nil {
+		log.Fatalf("Error validating github options: %v", githubOptsErr)
 	}
 
-	var err error
-	for _, ep := range o.endpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
-		}
-	}
-
-	var c client
-	if o.confirm {
-		c, err = github.NewClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-	} else {
-		c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.token), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
-	}
+	c, err := o.github.GitHubClient(!o.confirm)
 	if err != nil {
 		log.Fatalf("Failed to construct GitHub client: %v", err)
 	}
@@ -202,7 +190,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
+	if err := run(c, o.org, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -221,9 +209,9 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, org, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
 	log.Printf("Searching: %s", query)
-	issues, err := c.FindIssues(query, sort, asc)
+	issues, err := c.FindIssuesWithOrg(org, query, sort, asc)
 	if err != nil {
 		return fmt.Errorf("search failed: %w", err)
 	}
