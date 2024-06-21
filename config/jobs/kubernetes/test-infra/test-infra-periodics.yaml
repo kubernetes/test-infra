@@ -34,20 +34,3 @@ periodics:
     testgrid-tab-name: continuous
     testgrid-broken-column-threshold: '0.5'
     description: Runs `make test verify` on the test-infra repo every hour
-
-- name: job-migration-todo-report
-  decorate: true
-  interval: 24h
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-      command:
-      - hack/cluster-migration/update_todo.sh
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: job-migration-todo-report
-    description: Reports the status of the job migration to Prow
