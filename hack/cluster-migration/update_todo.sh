@@ -23,17 +23,3 @@ go run hack/cluster-migration/main.go --config config/prow/config.yaml --job-con
 
 # Move the report to the docs folder
 mv job-migration-todo.md docs/job-migration-todo.md
-
-# Commit the changes and open a PR
-git config user.name "k8s-infra-ci-robot"
-git config user.email "k8s-infra-ci-robot@email.com"
-
-branch=migration-report-$(date +'%m-%d-%Y')
-git checkout -b $branch
-
-git add docs/job-migration-todo.md
-git commit -m "Update job migration todo report $(date +'%m-%d-%Y')"
-git remote add k8s-infra-ci-robot git@github.com:k8s-infra-ci-robot/test-infra.git
-git push -f k8s-infra-ci-robot ${branch}
-
-gh pr create --fill --base master --head k8s-infra-ci-robot:${branch}
