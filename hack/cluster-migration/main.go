@@ -71,6 +71,17 @@ type jobStatus struct {
 	SourcePath string      `json:"sourcePath"`
 }
 
+var communityClusters = map[string]bool{
+	"k8s-infra-prow-build":         true,
+	"k8s-infra-prow-build-trusted": true,
+	"eks-prow-build-cluster":       true,
+	"k8s-infra-kops-prow-build":    true,
+}
+
+func (j *jobStatus) IsMigrated() bool {
+	return communityClusters[j.JobDetails.Cluster]
+}
+
 var config Config
 
 var allowedSecretNames = []string{
@@ -318,7 +329,7 @@ func getIncompleteJobs(repo string, status status) []jobStatus {
 		for _, repoStatus := range cluster.RepoStatus {
 			if repoStatus.RepoName == repo {
 				for _, job := range repoStatus.Jobs {
-					if !job.Eligible {
+					if !job.IsMigrated() {
 						ret = append(ret, job)
 					}
 				}
@@ -576,7 +587,7 @@ func main() {
 
 		// Write the html header
 		f.WriteString(`
-## JOBS IN DANGER!! ☠
+## JOBS AT RISK
 
 If you own any jobs listed below, PLEASE ensure they are migrated to a community cluster prior to August 1st, 2024. If you need help, please reach out to #sig-testing of #sig-k8s-infra on Slack.
 | File Path | Job | Link |
