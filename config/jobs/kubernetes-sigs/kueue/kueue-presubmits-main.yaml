@@ -345,3 +345,31 @@ presubmits:
           limits:
             cpu: "6"
             memory: "9Gi"
+  - name: pull-kueue-test-kjobctl
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    run_if_changed: "^(cmd/experimental/kjobctl)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue/cmd/experimental/kjobctl
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-kjobctl
+      description: "Run kjobctl tests"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.22
+        command:
+        - make
+        args:
+        - test
+        env:
+        - name: GOMAXPROCS
+          value: "6"
+        resources:
+          requests:
+            cpu: "6"
+            memory: "9Gi"
+          limits:
+            cpu: "6"
+            memory: "9Gi"
