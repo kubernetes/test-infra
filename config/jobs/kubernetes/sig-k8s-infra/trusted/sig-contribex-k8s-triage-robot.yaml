@@ -30,8 +30,8 @@ periodics:
         -project:kubernetes/169
         NOT "complete the pre-review checklist and request an API review"
       - --updated=5m
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=This PR [may require API review](https://git.k8s.io/community/sig-architecture/api-review-process.md#what-apis-need-to-be-reviewed).
 
@@ -71,8 +71,8 @@ periodics:
         label:area/stable-metrics
         NOT "documentation for the requirements and lifecycle of stable metrics"
       - --updated=5m
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=This PR [may require stable metrics review](https://git.k8s.io/community/contributors/devel/sig-instrumentation/metric-stability.md).
 
@@ -111,8 +111,8 @@ periodics:
         is:open
         -label:"cncf-cla: no"
         -label:"cncf-cla: yes"
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=Unknown CLA label state. Rechecking for CLA labels.
 
@@ -161,8 +161,8 @@ periodics:
         -label:priority/critical-urgent,priority/important-soon,priority/important-longterm
         label:lifecycle/rotten
       - --updated=720h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
 
@@ -218,8 +218,8 @@ periodics:
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
 
@@ -286,8 +286,8 @@ periodics:
         repo:kubernetes/kops
         repo:kubernetes/kubernetes
         repo:kubernetes/test-infra
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project has merge-blocking tests that are currently too flaky to consistently pass.
 
@@ -347,8 +347,8 @@ periodics:
         -label:"triage/accepted"
         label:lifecycle/stale
       - --updated=720h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues.
 
@@ -405,8 +405,8 @@ periodics:
         -label:lifecycle/rotten
         label:lifecycle/stale
       - --updated=720h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all PRs.
 
@@ -466,8 +466,8 @@ periodics:
         -label:"good first issue"
         -label:"triage/accepted"
       - --updated=2160h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project currently lacks enough contributors to adequately respond to all issues.
 
@@ -524,8 +524,8 @@ periodics:
         -label:lifecycle/stale
         -label:lifecycle/rotten
       - --updated=2160h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The Kubernetes project currently lacks enough contributors to adequately respond to all PRs.
 
@@ -576,8 +576,8 @@ periodics:
         org:kubernetes-csi
         label:lifecycle/frozen
         is:pr
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=The `lifecycle/frozen` label can not be applied to PRs.
 
@@ -629,8 +629,8 @@ periodics:
         -label:priority/critical-urgent
         is:issue
       - --updated=8760h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=This issue has not been updated in over 1 year, and should be re-triaged.
 
@@ -677,8 +677,8 @@ periodics:
         label:priority/important-soon
         is:issue
       - --updated=2160h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=This issue is labeled with `priority/important-soon` but has not been updated in over 90 days, and should be re-triaged.
         Important-soon issues must be staffed and worked on either currently, or very soon, ideally in time for the next release.
@@ -727,8 +727,8 @@ periodics:
         label:priority/critical-urgent
         is:issue
       - --updated=720h
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-token=/etc/github-token/token
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=This issue is labeled with `priority/critical-urgent` but has not been updated in over 30 days, and should be re-triaged.
         Critical-urgent issues must be actively worked on as someone's top priority right now.
