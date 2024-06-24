@@ -21,3 +21,24 @@ storage:
       device: /dev/disk/by-partlabel/images
       format: ext4
       with_mount_unit: true
+systemd:
+  units:
+    - name: label-imagestore.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Label ImageStore
+        After=crio-install.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=rpm-ostree install \
+          -y \
+          --apply-live \
+          --allow-inactive \
+          policycoreutils-python-utils
+        ExecStart=semanage fcontext -a -e /var/lib/containers/storage /var/lib/images
+        ExecStart=restorecon -R -v /var/lib/images
+
+        [Install]
+        WantedBy=multi-user.target
