@@ -175,14 +175,12 @@ presets:
     valueFrom:
       secretKeyRef:
         name: cluster-api-provider-vsphere-ci
-        # TODO: replace this with vmc-vcenter-janitor-user as soon as it is available
-        key: vmc-vcenter-cluster-api-provider-vsphere-user
+        key: vmc-vcenter-janitor-user
   - name: GOVC_PASSWORD
     valueFrom:
       secretKeyRef:
         name: cluster-api-provider-vsphere-ci
-        # TODO: replace this with vmc-vcenter-janitor-user as soon as it is available
-        key: vmc-vcenter-cluster-api-provider-vsphere-password
+        key: vmc-vcenter-janitor-password
   - name: VSPHERE_TLS_THUMBPRINT
     valueFrom:
       secretKeyRef:
