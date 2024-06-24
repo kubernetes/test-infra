@@ -3590,6 +3590,10 @@ presubmits:
           base_ref: master
           path_alias: k8s.io/kubernetes
           workdir: true
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
       spec:
         serviceAccountName: node-e2e-tests
         containers:
