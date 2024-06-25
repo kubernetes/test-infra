@@ -52,7 +52,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
-        - --gcp-project=cadvisor-e2e
         - --gcp-zone=us-central1-f
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-cadvisor.yaml --test-suite=cadvisor
         - --node-tests=true
@@ -67,6 +66,7 @@ presubmits:
 periodics:
 - name: ci-cadvisor-e2e
   interval: 8h
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -102,7 +102,6 @@ periodics:
         - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --deployment=node
-      - --gcp-project=ci-cadvisor-e2e
       - --gcp-zone=us-central1-f
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-cadvisor.yaml --test-suite=cadvisor
       - --node-tests=true
