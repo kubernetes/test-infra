@@ -18,25 +18,33 @@ presubmits:
       timeout: 5h
     path_alias: k8s.io/autoscaler
     extra_refs:
-    - org: jackfrancis # change to kubernetes-sigs when fully baked
+    - org: nojnhuh # change to kubernetes-sigs when fully baked
       repo: cluster-api-provider-azure
-      base_ref: cluster-autoscaler-e2e # change to latest release branch when fully baked
+      base_ref: cas # change to latest release branch when fully baked
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
         command:
           - runner.sh
+          - ./scripts/ci-entrypoint.sh
         args:
-          - ./scripts/ci-e2e.sh
+          - bash
+          - -c
+          - >-
+            export REGISTRY=capzci.azurecr.io
+            hack/ensure-acr-login.sh
+            cd ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test
+            make test-e2e TAG=$(git rev-parse --short HEAD)
         env:
-          - name: GINKGO_FOCUS
-            value: \[SIG AUTOSCALING\]
-          - name: GINKGO_SKIP
-            value: ""
-          - name: TEST_CLUSTER_AUTOSCALER
-            value: "true"
+          # CAPZ config
+          - name: ADDITIONAL_ASO_CRDS
+            value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
+          - name: KUBERNETES_VERSION
+            value: v1.29.4
+          - name: CLUSTER_TEMPLATE
+            value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
