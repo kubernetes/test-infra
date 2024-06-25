@@ -76,7 +76,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -135,7 +134,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -196,7 +194,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -255,7 +252,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
