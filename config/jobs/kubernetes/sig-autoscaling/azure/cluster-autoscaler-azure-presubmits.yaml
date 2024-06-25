@@ -45,6 +45,8 @@ presubmits:
             value: v1.29.4
           - name: CLUSTER_TEMPLATE
             value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
+          - name: CLUSTER_CREATE_ATTEMPTS
+            value: "1"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
