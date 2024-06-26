@@ -53,7 +53,7 @@ periodics:
         - >-
           cd ${GOPATH}/src/k8s.io/perf-tests/ &&
           ./run-e2e.sh cluster-loader2
-          --testconfig=testing/windows-tests/config.yaml
+          --testconfig=testing/load/config.yaml
           --provider=aks
           --report-dir=${ARTIFACTS}
           --v=2
