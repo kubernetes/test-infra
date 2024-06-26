@@ -351,7 +351,7 @@ presubmits:
     - ^main
     run_if_changed: "^(cmd/experimental/kjobctl)/"
     decorate: true
-    path_alias: sigs.k8s.io/kueue/cmd/experimental/kjobctl
+    path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kueue-kjobctl
@@ -362,6 +362,8 @@ presubmits:
         command:
         - make
         args:
+        - -C
+        - cmd/experimental/kjobctl
         - test
         env:
         - name: GOMAXPROCS
