@@ -1,6 +1,7 @@
 dashboard_groups:
 - name: sig-scalability
   dashboard_names:
+    - sig-scalability-aks # TODO: name this aks or azure?
     - sig-scalability-aws
     - sig-scalability-gce
     - sig-scalability-node
@@ -12,6 +13,7 @@ dashboard_groups:
     - sig-scalability-network
 
 dashboards:
+- name: sig-scalability-aks
 - name: sig-scalability-aws
 - name: sig-scalability-gce
 - name: sig-scalability-kubemark
