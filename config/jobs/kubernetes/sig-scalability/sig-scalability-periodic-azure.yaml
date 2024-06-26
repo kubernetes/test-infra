@@ -34,8 +34,6 @@ periodics:
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "--extract=ci/fast/latest-fast -> --extract=ci/latest-{{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
-    # TODO: azure or azure for the testgrid-dashboards?
-    # TODO: create new dashboard
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-azure
     testgrid-tab-name: azure-master-scalability-100
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
