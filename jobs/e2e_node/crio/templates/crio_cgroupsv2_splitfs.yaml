@@ -119,6 +119,7 @@ systemd:
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crio.conf
         ExecStart=systemctl enable --now crio.service
+        Restart=on-failure
 
         [Install]
         WantedBy=multi-user.target
