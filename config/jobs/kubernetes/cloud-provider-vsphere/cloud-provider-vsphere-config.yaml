@@ -365,7 +365,7 @@ presubmits:
       preset-cloud-provider-vsphere-e2e-config-capv: "true"
     branches:
     - ^master$
-    - ^release-1.2[7-9]$
+    - ^release-1.2[6-9]$
     - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
