@@ -8,18 +8,12 @@ aliases:
   - mpherman2
   - timwangmusic
 
-  # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
-  build-admins:
-    - BenjaminKazemi
-    - MushuEE
-    - spiffxp
 
   sig-k8s-infra-oncall:
   - BenTheElder
   # kubernetes.io org admins
   - ameukam
   - dims
-  - spiffxp
   - thockin
   - upodroid
 
@@ -128,8 +122,6 @@ aliases:
     - cjwagner
     - michelle192837
     - pohly
-    - spiffxp
-    - stevekuznetsov
   sig-ui-leads:
     - floreks
     - maciaszczykm
