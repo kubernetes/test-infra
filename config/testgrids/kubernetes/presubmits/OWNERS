@@ -3,13 +3,14 @@
 reviewers:
 - test-infra-oncall # oncall
 - BenTheElder # lead
-- spiffxp # lead
-- stevekuznetsov # lead
+- aojea # lead
 approvers:
 - test-infra-oncall # oncall
 - BenTheElder # lead
-- spiffxp # lead
-- stevekuznetsov # lead
+- aojea # lead
+emeritus_approvers:
+- spiffxp
+- stevekuznetsov
 
 labels:
 - sig/testing

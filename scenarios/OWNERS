@@ -1,16 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviewers:
-- MushuEE
-- spiffxp
+# these are deprecated and largely should not be touched
+# repo owners can in an emergency
 approvers:
-- spiffxp
+- BenTheElder
 emeritus_approvers:
 - amwat
 - BenTheElder
 - cjwagner
 - fejta
 - krzyzacy
+- spiffxp
 
 labels:
 - area/scenarios

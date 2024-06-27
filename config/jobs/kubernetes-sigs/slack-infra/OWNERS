@@ -5,11 +5,11 @@ reviewers:
 - cpanato
 - jeefy
 - nikhita
-- spiffxp
 approvers:
 - Katharine
 - jeefy
 - nikhita
+emeritus_approvers:
 - spiffxp
 labels:
 - sig/contributor-experience

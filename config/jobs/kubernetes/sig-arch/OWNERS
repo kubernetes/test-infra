@@ -8,9 +8,10 @@ reviewers:
   - bobymcbobs
 approvers:
   - cheftako
-  - spiffxp
   - johnbelamaric
   - hh
+emeritus_approvers:
+  - spiffxp
 labels:
   - area/conformance
   - sig/architecture
