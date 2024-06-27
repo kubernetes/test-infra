@@ -3,7 +3,6 @@
 #
 dashboards:
 - name: google-gce
-- name: google-kops-gce
 - name: google-gci
 - name: google-osconfig
   dashboard_tab:
@@ -62,6 +61,5 @@ dashboard_groups:
   - google-cel
   - google-gce
   - google-gci
-  - google-kops-gce
   - google-osconfig
   - google-soak
