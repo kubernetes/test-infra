@@ -1029,44 +1029,6 @@ periodics:
     description: Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 
 - interval: 12h
-  name: ci-kubernetes-soak-gce-gci
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 1420m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --down=false
-      - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
-      - --extract=ci/latest
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --soak
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
-      - --timeout=1400m
-      - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
-      resources:
-        limits:
-          cpu: 2
-          memory: 6Gi
-        requests:
-          cpu: 2
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: google-soak
-    testgrid-tab-name: gce-gci
-
-- interval: 12h
   name: ci-kubernetes-soak-gci-gce-beta
   cluster: k8s-infra-prow-build
   labels:
