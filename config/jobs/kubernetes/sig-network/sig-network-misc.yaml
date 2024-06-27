@@ -707,8 +707,9 @@ periodics:
           cpu: 2
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: google-gce, google-gci
+    testgrid-dashboards: sig-network-gce
     testgrid-tab-name: ip-alias
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ipvs
   cluster: k8s-infra-prow-build
