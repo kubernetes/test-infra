@@ -50,7 +50,6 @@ dashboards:
         value: 'osconfig-head-images issue: <test-name>'
       - key: body
         value: <test-url>
-- name: google-soak
 
 #
 # Start dashboard groups
@@ -62,4 +61,3 @@ dashboard_groups:
   - google-gce
   - google-gci
   - google-osconfig
-  - google-soak
