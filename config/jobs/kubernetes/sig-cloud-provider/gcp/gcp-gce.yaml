@@ -706,7 +706,7 @@ periodics:
           cpu: 2
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: gce-cos-master-default
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-email: release-team@kubernetes.io
@@ -757,7 +757,7 @@ periodics:
             cpu: 2
             memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: gce-ubuntu-master-containerd
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-team@kubernetes.io
@@ -983,7 +983,7 @@ periodics:
           cpu: 1
           memory: 3Gi
   annotations:
-    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: gce-cos-master-serial
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-email: release-team@kubernetes.io
@@ -1022,7 +1022,7 @@ periodics:
           cpu: 1
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: gce-cos-master-slow
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-email: release-team@kubernetes.io

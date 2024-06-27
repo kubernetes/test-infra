@@ -182,7 +182,7 @@ periodics:
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "--extract=ci/fast/latest-fast -> --extract=ci/latest-{{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
-    testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce
     testgrid-tab-name: gce-cos-master-scalability-100
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"

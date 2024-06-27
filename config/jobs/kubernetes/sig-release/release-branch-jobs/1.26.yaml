@@ -174,7 +174,7 @@ periodics:
 - annotations:
     fork-per-release-cron: ""
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
-    testgrid-dashboards: sig-release-1.26-blocking, sig-scalability-gce, google-gce, google-gci
+    testgrid-dashboards: sig-release-1.26-blocking, sig-scalability-gce
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.26-scalability-100
   cluster: k8s-infra-prow-build
