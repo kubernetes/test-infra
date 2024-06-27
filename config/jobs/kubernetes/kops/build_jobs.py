@@ -215,8 +215,6 @@ def build_test(cloud='aws',
         f"kops-k8s-{k8s_version}",
         f"kops-{kops_version or 'latest'}",
     ]
-    if cloud == 'aws':
-        dashboards.extend(['google-aws'])
     if cloud == 'gce':
         dashboards.extend(['kops-gce'])
 
