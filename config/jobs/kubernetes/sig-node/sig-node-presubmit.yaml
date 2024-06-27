@@ -767,6 +767,58 @@ presubmits:
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
         - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
+  - name: pull-kubernetes-node-kubelet-serial-podresize
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-podresize
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --deployment=node
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
+            - --node-test-args=--service-feature-gates="InPlacePodVerticalScaling=true" --feature-gates="InPlacePodVerticalScaling=true" --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
+            - --node-tests=true
+            - --provider=gce
+            - --runtime-config=api/all=true
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:InPlacePodVerticalScaling\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
   - name: pull-kubernetes-node-kubelet-serial-cpu-manager
     cluster: k8s-infra-prow-build
     always_run: false
