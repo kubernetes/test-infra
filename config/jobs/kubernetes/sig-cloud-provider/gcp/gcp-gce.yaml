@@ -880,7 +880,7 @@ periodics:
           cpu: 2
           memory: 6Gi
   annotations:
-    testgrid-dashboards: google-gce, google-gci
+    testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: gce-cos-master-flaky-repro
     description: Same config as ci-kubernetes-e2e-gci-gce but with Flaky tests included, intended to reproduce conditions that cause flakes to appear
 
