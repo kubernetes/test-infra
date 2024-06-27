@@ -2,7 +2,6 @@
 # Start dashboards
 #
 dashboards:
-- name: google-aws
 - name: google-gce
 - name: google-kops-gce
 - name: google-gci
@@ -60,7 +59,6 @@ dashboards:
 dashboard_groups:
 - name: google
   dashboard_names:
-  - google-aws
   - google-cel
   - google-gce
   - google-gci

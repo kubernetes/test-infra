@@ -86,7 +86,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-gossip
 - name: e2e-kops-do-calico-dns-none
@@ -142,7 +142,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-dns-none
 - name: e2e-kops-do-calico-fqdn
@@ -199,6 +199,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-fqdn

@@ -62,7 +62,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.29, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-1.29, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-scenario-gcr-mirror
 
@@ -134,7 +134,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-artifacts-sandbox
 
@@ -200,7 +200,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium-k8s-ci
 
@@ -330,7 +330,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-deb11, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-deb11, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-deb11
 
@@ -395,7 +395,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-flatcar, kops-distros, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-flatcar
 
@@ -459,7 +459,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-ipv6
 
@@ -523,7 +523,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium-ipv6
 
@@ -588,7 +588,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-ipv6, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-flatcar, kops-distros, kops-ipv6, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ipv6-flatcar
 
@@ -653,7 +653,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-ipv6, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-flatcar, kops-distros, kops-ipv6, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico-ipv6-flatcar
 
@@ -717,7 +717,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-scenario-no-irsa
 
@@ -781,7 +781,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-warm-pool
 
@@ -845,7 +845,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-private
 
@@ -910,7 +910,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-scenario-terraform
 
@@ -975,7 +975,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-scenario-ipv6-terraform
 
@@ -1039,7 +1039,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ha-euwest1
 
@@ -1103,7 +1103,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-arm64-release
 
@@ -1169,7 +1169,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-arm64-ci
 
@@ -1237,7 +1237,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-arm64-conformance
 
@@ -1305,7 +1305,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-amd64-conformance
 
@@ -1371,7 +1371,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-aws-updown
 
@@ -1433,7 +1433,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-load-balancer-controller
 
@@ -1497,7 +1497,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-keypair-rotation-ha
 
@@ -1559,7 +1559,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-metrics-server
 
@@ -1621,7 +1621,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-pod-identity-webhook
 
@@ -1683,7 +1683,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-addon-resource-tracking
 
@@ -1747,7 +1747,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-external-dns
 
@@ -1811,7 +1811,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ipv6-external-dns
 
@@ -1878,7 +1878,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-apiserver-nodes
 
@@ -1944,7 +1944,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-karpenter
 
@@ -2010,7 +2010,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2204, kops-ipv6, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ipv6-karpenter
 
@@ -2075,7 +2075,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-al2023, kops-k8s-1.28, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-al2023, kops-k8s-1.28, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-k28-hostname-bug123255
 
@@ -2145,7 +2145,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-rhel8, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-rhel8, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-selinux
 
@@ -2216,7 +2216,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-rhel8, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-rhel8, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-selinux-alpha
 
@@ -2350,7 +2350,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-canary
 
@@ -2417,7 +2417,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: ci-kubernetes-e2e-ubuntu-aws-canary
 
@@ -2553,7 +2553,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-slow-canary
 
@@ -2689,7 +2689,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-canary
 
@@ -2756,7 +2756,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: amazonvpc
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-aws-cni
 
@@ -2825,7 +2825,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: amazonvpc
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary
 
@@ -2894,7 +2894,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary
 
@@ -3098,7 +3098,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-disruptive-canary
 
@@ -3235,7 +3235,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '71'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-serial-canary
 
@@ -3304,7 +3304,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: amazon-ec2-al2023, google-aws, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
+    testgrid-dashboards: amazon-ec2-al2023, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-alpha-features
 
