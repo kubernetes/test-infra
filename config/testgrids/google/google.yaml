@@ -3,7 +3,6 @@
 #
 dashboards:
 - name: google-gce
-- name: google-gci
 - name: google-osconfig
   dashboard_tab:
   - name: osconfig-unstable
@@ -59,5 +58,4 @@ dashboard_groups:
   dashboard_names:
   - google-cel
   - google-gce
-  - google-gci
   - google-osconfig
