@@ -192,7 +192,7 @@ if __name__ == '__main__':
         '--config', action='append', help='YAML file describing a metric.')
     PARSER.add_argument(
         '--project',
-        default='k8s-gubernator',
+        default='kubernetes-public',
         help='Charge the specified account for bigquery usage.')
     PARSER.add_argument(
         '--bucket',
