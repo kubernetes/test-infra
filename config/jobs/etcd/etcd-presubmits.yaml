@@ -120,7 +120,6 @@ presubmits:
   - name: pull-etcd-govulncheck
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: true # remove this once the job is green
     branches:
     - main
     decorate: true
@@ -140,10 +139,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "4Gi"
+            memory: "1Gi"
           limits:
             cpu: "4"
-            memory: "4Gi"
+            memory: "1Gi"
 
   - name: pull-etcd-e2e-amd64
     cluster: eks-prow-build-cluster
