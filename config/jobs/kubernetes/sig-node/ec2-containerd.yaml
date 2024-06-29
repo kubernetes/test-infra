@@ -99,7 +99,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=true"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           resources:
             limits:
               cpu: 8
@@ -155,7 +155,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=true"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -472,7 +472,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=true"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           resources:
             limits:
               cpu: 8
@@ -527,7 +527,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=true"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
