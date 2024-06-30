@@ -91,7 +91,7 @@ periodics:
             - name: FOCUS
               value: \[NodeConformance\]
             - name: SKIP
-              value: "Summary API"
+              value: Summary API|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
@@ -141,7 +141,7 @@ periodics:
             - name: FOCUS
               value: \[NodeConformance\]
             - name: SKIP
-              value: "Summary API"
+              value: Summary API|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_ARCH
@@ -464,7 +464,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
@@ -513,7 +513,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_ARCH
