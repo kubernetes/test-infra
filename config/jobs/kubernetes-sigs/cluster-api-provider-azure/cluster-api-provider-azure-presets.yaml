@@ -23,6 +23,8 @@ presets:
     value: "097f89a0-9286-43d2-9a1a-08f1d49b1af8"
   - name: AZURE_FEDERATED_TOKEN_FILE
     value: "/var/run/secrets/azure-token/serviceaccount/token"
+  - name: PROW_SERVICE_ACCOUNT
+    value: "prowjob-default-sa"
   volumes:
   - name: azure-token
     projected:
