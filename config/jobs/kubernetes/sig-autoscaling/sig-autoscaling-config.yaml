@@ -229,7 +229,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-updater
-- interval: 30m
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   cluster: k8s-infra-prow-build
   labels:
@@ -309,7 +309,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gci-gce-autoscaling-hpa-cm
-- interval: 30m
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   cluster: k8s-infra-prow-build
   labels:
