@@ -117,6 +117,7 @@ presubmits:
     branches:
       - ^main$
     spec:
+      serviceAccountName: $(PROW_SERVICE_ACCOUNT)
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-1.29
           command:
