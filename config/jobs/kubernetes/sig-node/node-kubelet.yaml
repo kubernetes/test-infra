@@ -1,5 +1,5 @@
 periodics:
-- name: ci-kubernetes-node-e2e-containerd
+- name: ci-containerd-node-e2e-release-main
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -44,12 +44,12 @@ periodics:
             cpu: 4
             memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking, sig-node-containerd
-    testgrid-tab-name: ci-node-e2e
+    testgrid-dashboards: sig-release-master-blocking, sig-node-default, sig-node-containerd
+    testgrid-tab-name: ci-containerd-node-e2e-release-main
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run node-e2e tests (+NodeConformance, -Flaky|Slow|Serial)"
 
-- name: ci-kubernetes-node-kubelet-serial-containerd
+- name: ci-containerd-node-kubelet-serial-release-main
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -96,12 +96,12 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-release-blocking
+    testgrid-dashboards: sig-node-default
     testgrid-tab-name: node-kubelet-serial-containerd
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
-- name: ci-kubernetes-node-kubelet-containerd-flaky
+- name: ci-containerd-node-kubelet-flaky-release-main
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -151,7 +151,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run serial node-e2e tests (+Serial|+Flaky, (Benchmark|Node*Feature)"
 
-- name: ci-kubernetes-node-kubelet-cgroupv1-serial-cri-o
+- name: ci-crio-cgroupv1-node-kubelet-serial-release-main
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -206,7 +206,7 @@ periodics:
     testgrid-alert-email: skclark@redhat.com
     description: "Uses kubetest to run serial node-e2e tests with cgroupv1 (+Serial, -Flaky|Benchmark|Node*Feature)"
 
-- name: ci-kubernetes-node-kubelet-cgroupv2-serial-cri-o
+- name: ci-crio-cgroupv2-node-kubelet-serial
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -259,7 +259,7 @@ periodics:
     testgrid-alert-email: skclark@redhat.com
     description: "Uses kubetest to run serial node-e2e tests with cgroupv2 (+Serial, -Flaky|Benchmark|Node*Feature)"
 
-- name: ci-kubernetes-node-arm64-ubuntu-serial
+- name: ci-containerd-cgroupv1-ubuntu-serial-arm64-release-main
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
@@ -315,7 +315,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-swap-fedora
+- name: ci-crio-cgroupv1-fedora-node-swap-release-main
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -368,7 +368,7 @@ periodics:
     testgrid-alert-email: ehashman@redhat.com, ikema@google.com
     description: Executes E2E suite with swap enabled on Fedora
 
-- name: ci-kubernetes-node-swap-ubuntu-serial
+- name: ci-containerd-cgroupv2-ubuntu-serial-node-swap-release-main
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
@@ -419,7 +419,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-swap-fedora-serial
+- name: ci-crio-cgroupv1-fedora-serial-node-swap-release-main
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
@@ -471,7 +471,7 @@ periodics:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
 
-- name: ci-kubernetes-node-swap-conformance-ubuntu-serial
+- name: ci-containerd-cgroupv2-ubuntu-serial-node-swap-conformance-release-main
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
@@ -522,7 +522,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-swap-conformance-fedora-serial
+- name: ci-crio-cgroupv2-fedora-serial-node-swap-conformance-release-main
   interval: 4h
   cluster: k8s-infra-prow-build
   annotations:
@@ -574,7 +574,7 @@ periodics:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
 
-- name: ci-kubernetes-fsquota-ubuntu
+- name: ci-containerd-cgroupv1-ubuntu-fsquota-release-main
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
@@ -624,7 +624,7 @@ periodics:
             memory: 6Gi
 
 
-- name: ci-kubernetes-node-e2e-containerd-standalone-mode-all-alpha
+- name: ci-containerd-cgroupv1-node-e2e-standalone-mode-all-alpha-release-main
   interval: 24h
   cluster: k8s-infra-prow-build
   labels:
@@ -673,11 +673,11 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-release-blocking
+    testgrid-dashboards: sig-node-default
     testgrid-tab-name: node-kubelet-containerd-standalone-mode-all-alpha
     description: "Runs kubelet in standalone mode with all alpha features enabled"
 
-- name: ci-kubernetes-node-e2e-containerd-standalone-mode
+- name: ci-containerd-cgroupv1-node-e2e-standalone-mode-release-main
   interval: 24h
   cluster: k8s-infra-prow-build
   labels:
@@ -726,11 +726,11 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-release-blocking
+    testgrid-dashboards: sig-node-default
     testgrid-tab-name: node-kubelet-containerd-standalone-mode
     description: "Runs kubelet in standalone mode"
 
-- name: ci-kubernetes-node-kubelet-serial-topology-manager
+- name: ci-containerd-cgroupv2-serial-kubelet-topology-manager-release-main
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
@@ -778,7 +778,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-kubelet-serial-cpu-manager
+- name: ci-containerd-cgroupv2-serial-node-kubelet-cpu-manager-release-main
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
@@ -826,7 +826,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-kubelet-serial-memory-manager
+- name: ci-containerd-cgroupv2-serial-node-kubelet-memory-manager-release-main
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
