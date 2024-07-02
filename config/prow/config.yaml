@@ -999,25 +999,27 @@ presets:
   # krte (normal) path
   - name: docker-root
     emptyDir: {}
+  # we need to modprobe ipv6 iptables
+  # TODO: move this out of being done in the jobs
+  - name: modules
+    hostPath:
+      path: /lib/modules
+      type: Directory
   volumeMounts:
   - name: docker-graph
     mountPath: /docker-graph
   - name: docker-root
     mountPath: /var/lib/docker
+  - mountPath: /lib/modules
+    name: modules
+    readOnly: true
 # volume mounts for kind
 - labels:
     preset-kind-volume-mounts: "true"
   volumeMounts:
-    - mountPath: /lib/modules
-      name: modules
-      readOnly: true
     - mountPath: /sys/fs/cgroup
       name: cgroup
   volumes:
-    - name: modules
-      hostPath:
-        path: /lib/modules
-        type: Directory
     - name: cgroup
       hostPath:
         path: /sys/fs/cgroup
