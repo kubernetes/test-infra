@@ -17,7 +17,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240702-590eff485f-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-1.29
       command:
         - runner.sh
       args:
@@ -52,7 +52,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240702-590eff485f-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-1.29
       command:
         - runner.sh
       args:
@@ -87,7 +87,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240702-590eff485f-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-1.29
       command:
         - runner.sh
       args:
