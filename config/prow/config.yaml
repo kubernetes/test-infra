@@ -992,6 +992,9 @@ presets:
   env:
   - name: DOCKER_IN_DOCKER_ENABLED
     value: "true"
+  # TODO: handle minimial ipv6 enablement by default in image instead of fully configuring ipv6 always?
+  - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+    value: "true"
   volumes:
   # kubekins-e2e legacy path
   - name: docker-graph
