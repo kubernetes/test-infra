@@ -67,34 +67,15 @@ early_exit_handler() {
 
 trap early_exit_handler TERM INT
 
-# optionally enable ipv6 docker
-export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
-if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
-  >&2 echo "wrapper.sh] [SETUP] Enabling IPv6 in Docker config ..."
+# Check if the job has opted-in to docker-in-docker
+export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
+if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
+  >&2 echo "wrapper.sh] [SETUP] Docker in Docker enabled, initializing ..."
   # enable ipv6
   sysctl net.ipv6.conf.all.disable_ipv6=0
   sysctl net.ipv6.conf.all.forwarding=1
   # enable ipv6 iptables
   modprobe -v ip6table_nat
-  >&2 echo "wrapper.sh] [SETUP] Done enabling IPv6 in Docker config."
-fi
-
-# optionally enable iptables-nft
-export DOCKER_IN_DOCKER_NFT_ENABLED=${DOCKER_IN_DOCKER_NFT_ENABLED:-false}
-if [[ "${DOCKER_IN_DOCKER_NFT_ENABLED}" == "true" ]]; then
-  >&2 echo "wrapper.sh] [SETUP] Enabling iptables-nft ..."
-  # enable iptables-nft
-  update-alternatives --set iptables /usr/sbin/iptables-nft
-  update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
-  # enable nft iptables module
-  modprobe -v nf_tables
-  >&2 echo "wrapper.sh] [SETUP] Done enabling iptables-nft by default."
-fi
-
-# Check if the job has opted-in to docker-in-docker
-export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
-if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
-  >&2 echo "wrapper.sh] [SETUP] Docker in Docker enabled, initializing ..."
   # Fix ulimit issue
   sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
   # If we have opted in to docker in docker, start the docker daemon,
