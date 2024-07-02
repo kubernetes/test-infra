@@ -17,7 +17,6 @@ presubmits:
         - runner.sh
         args:
         - "test/run-e2e.sh"
-        - "--service-account=prow-build@k8s-infra-prow-build.iam.gserviceaccount.com"
         env:
         - name: ZONE
           value: us-central1-c
