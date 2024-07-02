@@ -1591,9 +1591,11 @@ plugins:
 
   etcd-io:
     plugins:
+    - approve
     - assign
     - trigger
     - label
+    - lgtm
     - pony
     - retitle
     - size
