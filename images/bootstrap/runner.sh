@@ -43,33 +43,24 @@ early_exit_handler() {
     cleanup_dind
 }
 
-# optionally enable ipv6 docker
-export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
-if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
-    echo "Enabling IPV6 for Docker."
-    # configure the daemon with ipv6
-    mkdir -p /etc/docker/
-    cat <<EOF >/etc/docker/daemon.json
-{
-  "ipv6": true,
-  "fixed-cidr-v6": "fc00:db8:1::/64"
-}
-EOF
-    # enable ipv6
-    sysctl net.ipv6.conf.all.disable_ipv6=0
-    sysctl net.ipv6.conf.all.forwarding=1
-    # enable ipv6 iptables
-    modprobe -v ip6table_nat
-fi
-
 # Check if the job has opted-in to docker-in-docker availability.
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     echo "Docker in Docker enabled, initializing..."
     printf '=%.0s' {1..80}; echo
+
+    # docker v27+ has ipv6 by default, but not all e2e hosts have everything
+    # we need enabled by default
+    # enable ipv6
+    sysctl net.ipv6.conf.all.disable_ipv6=0
+    sysctl net.ipv6.conf.all.forwarding=1
+    # enable ipv6 iptables
+    modprobe -v ip6table_nat
+
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
-    # If we have opted in to docker in docker, start the docker daemon,
+
+    # start the docker daemon
     service docker start
     # the service can be started but the docker socket not ready, wait for ready
     WAIT_N=0
