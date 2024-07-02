@@ -18,9 +18,9 @@ presubmits:
       timeout: 5h
     path_alias: k8s.io/autoscaler
     extra_refs:
-    - org: nojnhuh # change to kubernetes-sigs when fully baked
+    - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: cas # change to latest release branch when fully baked
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
