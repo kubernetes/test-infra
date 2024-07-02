@@ -4,12 +4,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '6 10-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -22,6 +21,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -36,14 +36,18 @@ periodics:
         value: "1.27"
       - name: K8S_VERSION_B
         value: "v1.27.8"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-9ba274829e-feea8.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -70,12 +74,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '5 13-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -88,6 +91,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -108,14 +112,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-ebe0e4cc67-046aa.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -288,12 +296,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '11 19-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -306,6 +313,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -320,14 +328,18 @@ periodics:
         value: "1.28"
       - name: K8S_VERSION_B
         value: "v1.27.8"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-13b41b15e5-ff6f5.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -354,12 +366,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '52 8-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -372,6 +383,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -392,14 +404,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-6734e67200-e477d.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -718,12 +734,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '32 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -736,6 +751,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -750,14 +766,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.27.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-a107ec63ea-42cbe.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -784,12 +804,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '10 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -802,6 +821,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -822,14 +842,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-cb261a338c-88b03.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -856,12 +880,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '43 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -874,6 +897,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -888,14 +912,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.25.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-47fcbdd84b-0374e.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -922,12 +950,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '1 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -940,6 +967,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -960,14 +988,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-f377e4ced7-0f515.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -994,12 +1026,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '19 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1012,6 +1043,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1026,14 +1058,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.26.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-c46fe1ee39-eabd1.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1060,12 +1096,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '8 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1078,6 +1113,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1098,14 +1134,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-0c89ac61ed-69907.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1132,12 +1172,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '37 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1150,6 +1189,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1164,14 +1204,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.27.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-96cbebf7ac-5a314.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1198,12 +1242,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '6 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1216,6 +1259,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1236,14 +1280,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-5b97447976-b7284.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1416,12 +1464,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '51 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1434,6 +1481,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1448,14 +1496,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.25.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-91780086ad-c0835.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1482,12 +1534,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '40 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1500,6 +1551,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1520,14 +1572,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-6d3bfe8337-84e86.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1554,12 +1610,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '47 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1572,6 +1627,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1586,14 +1642,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.26.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-1e995c134b-6d07a.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1620,12 +1680,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '37 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1638,6 +1697,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1658,14 +1718,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-78a1b4a809-b1e59.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1692,12 +1756,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '5 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1710,6 +1773,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1724,14 +1788,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.27.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-cbcff57532-10a01.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -1758,12 +1826,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '23 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -1776,6 +1843,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -1796,14 +1864,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-e9a54c1e99-7ace6.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -2268,12 +2340,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-k127-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '15 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2286,6 +2357,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2300,14 +2372,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.27.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-7e266adbcb-d6122.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -2334,12 +2410,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-k127-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '19 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2352,6 +2427,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2372,14 +2448,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-7e676cb7b6-b3cbf.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -2406,12 +2486,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '38 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2424,6 +2503,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2438,14 +2518,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.26.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-867a23fec4-ae36a.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -2472,12 +2556,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '52 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2490,6 +2573,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2510,14 +2594,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-777e381679-439d4.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -2544,12 +2632,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '40 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2562,6 +2649,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2576,14 +2664,18 @@ periodics:
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.25.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-b6570541df-e1aa5.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
@@ -2610,12 +2702,11 @@ periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
-  cluster: default
+  cluster: k8s-infra-kops-prow-build
   cron: '29 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
@@ -2628,6 +2719,7 @@ periodics:
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - command:
       - runner.sh
@@ -2648,14 +2740,18 @@ periodics:
         value: "tests/e2e/templates/many-addons.yaml.tmpl"
       - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
         value: "e2e-34130155e9-15435.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-prow"
       - name: KOPS_IRSA
         value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240625-1dde27f6a9-master
