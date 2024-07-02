@@ -972,7 +972,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--set=spec.nodeProblemDetector.enabled=true",
                        "--gce-service-account=default",
                    ],
@@ -1023,7 +1023,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--set=spec.networking.networkID=default",
                        "--gce-service-account=default",
                    ],
@@ -1059,7 +1059,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
@@ -1182,7 +1182,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--node-count=3",
                        "--gce-service-account=default",
                    ],
@@ -1202,7 +1202,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--node-count=3",
                        "--gce-service-account=default",
                    ],
@@ -1237,7 +1237,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--node-volume-size=100",
                        "--gce-service-account=default",
                    ],
@@ -1300,7 +1300,7 @@ def generate_misc():
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
-                       "--image=cos-cloud/cos-105-17412-156-49",
+                       "--image=cos-cloud/cos-105-17412-370-67",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
@@ -1523,11 +1523,6 @@ def generate_upgrades():
             'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
             'KOPS_CONTROL_PLANE_SIZE': '3',
         }
-        build_cluster = 'k8s-infra-kops-prow-build'
-        # Older k/k builds dont have new enough aws-sdk-go versions to support
-        # running their e2e.test binary from community-owned EKS clusters.
-        if re.match(r'v1\.2[4-6]', k8s_a):
-            build_cluster = 'default'
 
         results.append(
             build_test(name_override=job_name,
@@ -1540,7 +1535,7 @@ def generate_upgrades():
                        test_timeout_minutes=120,
                        scenario='upgrade-ab',
                        env=env,
-                       build_cluster=build_cluster,
+                       build_cluster='k8s-infra-kops-prow-build',
                        )
         )
         results.append(
@@ -1554,7 +1549,7 @@ def generate_upgrades():
                        runs_per_day=runs_per_day,
                        scenario='upgrade-ab',
                        env=addonsenv,
-                       build_cluster=build_cluster,
+                       build_cluster='k8s-infra-kops-prow-build',
                        )
         )
 
@@ -2313,7 +2308,7 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             kops_channel="alpha",
             extra_flags=[
-                "--image=cos-cloud/cos-105-17412-156-49",
+                "--image=cos-cloud/cos-105-17412-370-67",
                 "--node-volume-size=100",
                 "--gce-service-account=default",
             ],
@@ -2334,7 +2329,7 @@ def generate_presubmits_e2e():
             kops_channel="alpha",
             build_cluster="k8s-infra-prow-build",
             extra_flags=[
-                "--image=cos-cloud/cos-105-17412-156-49",
+                "--image=cos-cloud/cos-105-17412-370-67",
                 "--node-volume-size=100",
                 "--gce-service-account=default",
             ],
@@ -2352,7 +2347,7 @@ def generate_presubmits_e2e():
             kops_channel="alpha",
             build_cluster="k8s-infra-prow-build",
             extra_flags=[
-                "--image=cos-cloud/cos-105-17412-156-49",
+                "--image=cos-cloud/cos-105-17412-370-67",
                 "--set=spec.networking.networkID=default",
                 "--gce-service-account=default",
             ],
