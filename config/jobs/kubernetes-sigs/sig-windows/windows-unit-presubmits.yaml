@@ -35,3 +35,42 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-windows-unit-master
       testgrid-num-columns-recent: '20'
+
+  - name: pull-ci-kubernetes-unit-windows-presubmit
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-azure-cred-only: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: windows-testing
+      base_ref: master
+      path_alias: sigs.k8s.io/windows-testing
+      workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+          env:
+          - name: "TEST_PACKAGES"
+            value: "./cmd/..., ./pkg/controller/..., ./pkg/kubectl/..., ./pkg/kubelet/..., ./pkg/probe/..., ./pkg/proxy/..., ./pkg/routes/..., ./pkg/util/..., ./pkg/volume/..., ./pkg/windows/..."
+          command:
+            - "runner.sh"
+            - "./scripts/ci-k8s-unit-test.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-windows-unit-master-presubmit
+      testgrid-num-columns-recent: '20'
