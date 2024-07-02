@@ -751,7 +751,7 @@ def generate_misc():
                    distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
                    runs_per_day=24,
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
@@ -968,7 +968,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -986,7 +986,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=spec.nodeProblemDetector.enabled=true",
@@ -1002,7 +1002,7 @@ def generate_misc():
                    distro="u2204",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=spec.nodeProblemDetector.enabled=true",
@@ -1019,7 +1019,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1038,7 +1038,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1055,7 +1055,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1078,7 +1078,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="eks-prow-build-cluster",
                    extra_flags=[
@@ -1178,7 +1178,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1198,7 +1198,7 @@ def generate_misc():
                    distro="cos105",
                    networking="gce",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1218,7 +1218,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    focus_regex=r'\[Disruptive\]',
@@ -1233,7 +1233,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1254,7 +1254,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1273,7 +1273,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1296,7 +1296,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
