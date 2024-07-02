@@ -47,6 +47,45 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-misc
       description: Runs conformance tests using kind and the conformance image
+  - name: pull-kubernetes-conformance-yaml
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    decorate: true
+    run_if_changed: '^test/e2e|conformance'
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        # the script must run from kubernetes
+        - "bash"
+        - "--"
+        - "-c"
+        - |
+          cd ./../../k8s.io/kubernetes && ./hack/update-conformance-yaml.sh && if git diff --name-only --diff-filter=ACMRT | grep -E '^test/conformance/testdata/conformance.yaml$'; then echo "error: uncommitted changes found in 'test/conformance/testdata/conformance.yaml'. Please run './hack/update-conformance-yaml.sh' and commit your changes." fi
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Runs hack/update-conformance-yaml.sh in kubernetes/kubernetes and expects no repo changes
 
   - name: pull-kubernetes-conformance-kind-ipv6-parallel
     cluster: k8s-infra-prow-build
