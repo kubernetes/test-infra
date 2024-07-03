@@ -29,7 +29,7 @@
         "mode": 420
       },
       {
-        "path": "/etc/crio/crio.conf.d/crio.conf",
+        "path": "/etc/crio/crio.conf.d/20-crio.conf",
         "contents": {
           "compression": "gzip",
           "source": "data:;base64,H4sIAAAAAAAC/7SPQWrEMAxF9z5FyH7iE8xJSjAaR8moyFKQ5UJvXzxJKbRQuuisjMX/ek8v2UgnKrDhHCptAt4M065M+X24DmNEz7GH4jGbXqvKGMJRtCZOBefAuiXGN+TeWfDWtjEspnsiWQ1SdhuuwwpcMSy4QmNPZ7cXrEn+vvPzrVO2JnM4v2kHvz/EWrXImoHjjeSheOnJMRQVcrXfkyrl5x1fzG70N+bh/h9Mx+qXO8jCaM9ifwQAAP//eNRpfPABAAA="
