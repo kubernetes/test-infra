@@ -1,0 +1,11 @@
+---
+storage:
+  files:
+    - path: /etc/crio/crio.conf.d/99-crun.conf
+      # Note: This also assumes the crun handler is enabled in the base crio.conf,
+      # crun is installed, and the version of crun supports the `crun features` command.
+      # All of this is true at the time of writing.
+      # TODO(haircommander): This can be removed when runc 1.2.0 is released
+      contents:
+        local: 99-crun.conf
+      mode: 0644
