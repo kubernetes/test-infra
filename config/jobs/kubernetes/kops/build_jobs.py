@@ -1415,6 +1415,7 @@ def generate_presubmits_distros():
             ]
         results.append(
             presubmit_test(
+                build_cluster='k8s-infra-kops-prow-build',
                 distro=distro_short,
                 networking='calico',
                 k8s_version='stable',
