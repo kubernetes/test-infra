@@ -30,31 +30,6 @@ presubmits:
           requests:
             cpu: 2
             memory: "4Gi"
-  # Check that images to be promoted are free of fixable vulnerabilities
-  - name: pull-k8sio-cip-vuln
-    annotations:
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-k8s-infra-k8sio
-    decorate: true
-    optional: true
-    skip_report: false
-    run_if_changed: 'registry.k8s.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
-    max_concurrency: 10
-    branches:
-    - ^vuln-check-test$
-    spec:
-      serviceAccountName: k8s-infra-gcr-vuln-scanning
-      containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.5-0
-        command:
-        - /kpromo
-        args:
-        - cip
-        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
-        - --use-prow-manifest-diff
-        - --vuln-severity-threshold=1
-        - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
-        - --certificate-oidc-issuer=https://accounts.google.com
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
     annotations:
