@@ -89,6 +89,8 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
         command:
+        - runner.sh
+        args:
         - scripts/test-infra/test-e2e-presubmit.sh
         resources:
           limits:
