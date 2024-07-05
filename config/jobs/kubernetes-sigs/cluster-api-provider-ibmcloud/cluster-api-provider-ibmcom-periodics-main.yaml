@@ -14,7 +14,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240702-590eff485f-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
       command:
         - runner.sh
       args:
