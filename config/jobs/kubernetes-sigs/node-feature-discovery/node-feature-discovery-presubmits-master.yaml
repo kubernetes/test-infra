@@ -88,6 +88,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        # Need privileged mode for dind
+        securityContext:
+          privileged: true
         command:
         - runner.sh
         args:
