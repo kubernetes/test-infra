@@ -80,7 +80,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     decorate: true
-    always_run: false
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
       testgrid-tab-name: e2e-test-master
