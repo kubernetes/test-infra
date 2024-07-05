@@ -48,10 +48,10 @@ periodics:
       resources:
         requests:
           cpu: 300m
-          memory: 200Mi
+          memory: 2Gi
         limits:
           cpu: 2
-          memory: 1639Mi
+          memory: 2Gi
       volumeMounts:
       - mountPath: /etc/secret-volume
         name: secret-volume
