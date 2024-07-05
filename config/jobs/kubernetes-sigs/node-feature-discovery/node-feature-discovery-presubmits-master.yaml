@@ -77,6 +77,8 @@ presubmits:
     skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^master
+    labels:
+      preset-dind-enabled: "true"
     decorate: true
     always_run: false
     annotations:
