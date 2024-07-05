@@ -3,32 +3,30 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   annotations:
     testgrid-dashboards: sig-release-publishing-bot
-    testgrid-tab-name: periodic
+    testgrid-tab-name: publish
   spec:
     initContainers:
     - name: initialize-repos
       command:
       - /init-repo
       - --alsologtostderr
-      - --config=/etc/munge-config/config
-      - --rules-file=/etc/publisher-rules/config
+      - --source-repo=kubernetes
+      - --source-org=kubernetes
+      - --target-org=kubernetes
+      - --rules-file=https://raw.githubusercontent.com/kubernetes/kubernetes/master/staging/publishing/rules.yaml
       - 2>&1
-      image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot
+      image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot:latest
       imagePullPolicy: Always
       resources:
         requests:
           cpu: 300m
-          memory: 200Mi
+          memory: 2Gi
         limits:
           cpu: 2
-          memory: 1639Mi
+          memory: 2Gi
       volumeMounts:
-      - mountPath: /etc/munge-config
-        name: munge-config
       - mountPath: /go-workspace
         name: publisher-gopath
-      - mountPath: /etc/publisher-rules
-        name: publisher-rules
       - mountPath: /.cache
         name: cache
     containers:
@@ -36,10 +34,14 @@ periodics:
       command:
       - /publishing-bot
       - --alsologtostderr
-      - --config=/etc/munge-config/config
+      - --source-repo=kubernetes
+      - --source-org=kubernetes
+      - --target-org=kubernetes
       - --token-file=/etc/secret-volume/token
       - --interval=0
       - --server-port=8080
+      - --dry-run=false
+      - --github-issue=56876
       - 2>&1
       image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot
       imagePullPolicy: Always
@@ -51,10 +53,6 @@ periodics:
           cpu: 2
           memory: 1639Mi
       volumeMounts:
-      - mountPath: /etc/munge-config
-        name: munge-config
-      - mountPath: /etc/publisher-rules
-        name: publisher-rules
       - mountPath: /etc/secret-volume
         name: secret-volume
       - mountPath: /netrc
@@ -66,12 +64,6 @@ periodics:
       - mountPath: /.cache
         name: cache
     volumes:
-    - name: munge-config
-      configMap:
-        name: publisher-config
-    - name: publisher-rules
-      configMap:
-        name: publisher-rules
     - name: secret-volume
       secret:
         secretName: publishing-bot-github-token
