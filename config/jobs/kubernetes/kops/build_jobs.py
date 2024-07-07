@@ -1914,7 +1914,6 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
-            distro='channels',
             build_cluster='k8s-infra-kops-prow-build',
             k8s_version='stable',
             kops_channel='alpha',
@@ -2168,7 +2167,6 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             build_cluster='k8s-infra-kops-prow-build',
-            distro='channels',
             branch='release-1.29',
             k8s_version='1.29',
             kops_channel='alpha',
@@ -2179,7 +2177,6 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             build_cluster='k8s-infra-kops-prow-build',
-            distro='channels',
             branch='release-1.28',
             k8s_version='1.28',
             kops_channel='alpha',
@@ -2189,7 +2186,6 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            distro='channels',
             branch='release-1.27',
             build_cluster='k8s-infra-kops-prow-build',
             k8s_version='1.27',
@@ -2200,7 +2196,6 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            distro='channels',
             branch='release-1.26',
             build_cluster='k8s-infra-kops-prow-build',
             k8s_version='1.26',
