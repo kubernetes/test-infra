@@ -1844,6 +1844,7 @@ def generate_presubmits_network_plugins():
         results.append(
             presubmit_test(
                 distro='u2204arm64',
+                build_cluster='k8s-infra-kops-prow-build',
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
@@ -1861,6 +1862,7 @@ def generate_presubmits_network_plugins():
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
+                    build_cluster='k8s-infra-kops-prow-build',
                     distro='u2204arm64',
                     tab_name=f"e2e-{plugin}-ipv6",
                     networking=networking_arg,
@@ -1884,6 +1886,7 @@ def generate_presubmits_e2e():
     jobs = [
         presubmit_test(
             distro='u2204arm64',
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci',
@@ -1894,6 +1897,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             distro='u2204arm64',
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci-ha',
@@ -1908,6 +1912,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             distro='channels',
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-calico',
@@ -1916,17 +1921,8 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            distro='u2404',
-            build_cluster='k8s-infra-kops-prow-build',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-k8s-infra',
-            networking='calico',
-            tab_name='e2e-aws-calico-k8s-infra',
-            always_run=True,
-        ),
-        presubmit_test(
             distro='al2023',
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-amazonvpc',
@@ -2016,6 +2012,7 @@ def generate_presubmits_e2e():
         # A special test for AWS Cloud-Controller-Manager
         presubmit_test(
             name="pull-kops-e2e-aws-cloud-controller-manager",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204",
             k8s_version="ci",
@@ -2025,6 +2022,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-aws-load-balancer-controller",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -2034,6 +2032,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-addon-resource-tracking",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204",
             networking="calico",
@@ -2043,6 +2042,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-metrics-server",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204",
             networking="calico",
@@ -2052,6 +2052,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-pod-identity-webhook",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204",
             networking="calico",
@@ -2061,6 +2062,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-aws-external-dns",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             networking="calico",
             extra_flags=[
@@ -2070,6 +2072,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-ipv6-external-dns",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             networking="calico",
             extra_flags=[
@@ -2081,6 +2084,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-node-local-dns",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro='u2204arm64',
             extra_flags=[
@@ -2090,6 +2094,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-aws-apiserver-nodes",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
             feature_flags=['APIServerNodes']
@@ -2097,6 +2102,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-arm64",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204arm64",
             networking="calico",
@@ -2107,6 +2113,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-aws-dns-none",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204arm64",
             networking="calico",
@@ -2123,6 +2130,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-aws-nlb",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204arm64",
             networking="calico",
@@ -2134,6 +2142,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             name="pull-kops-e2e-aws-terraform",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204arm64",
             terraform_version="1.5.5",
@@ -2143,6 +2152,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-ipv6-terraform",
+            build_cluster="k8s-infra-kops-prow-build",
             cloud="aws",
             distro="u2204arm64",
             terraform_version="1.5.5",
@@ -2154,6 +2164,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            build_cluster='k8s-infra-kops-prow-build',
             distro='channels',
             branch='release-1.29',
             k8s_version='1.29',
@@ -2164,6 +2175,7 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            build_cluster='k8s-infra-kops-prow-build',
             distro='channels',
             branch='release-1.28',
             k8s_version='1.28',
@@ -2176,6 +2188,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             distro='channels',
             branch='release-1.27',
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='1.27',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-calico-1-27',
@@ -2186,6 +2199,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             distro='channels',
             branch='release-1.26',
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='1.26',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-calico-1-26',
@@ -2196,6 +2210,7 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             distro='u2204arm64',
+            build_cluster='k8s-infra-kops-prow-build',
             name="pull-kops-e2e-aws-karpenter",
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
@@ -2209,6 +2224,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             distro='u2204arm64',
+            build_cluster='k8s-infra-kops-prow-build',
             name="pull-kops-e2e-aws-ipv6-karpenter",
             #run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
@@ -2225,6 +2241,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest",
+            build_cluster='k8s-infra-kops-prow-build',
             optional=True,
             distro='u2204',
             networking='cilium',
@@ -2240,6 +2257,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest",
+            build_cluster='k8s-infra-kops-prow-build',
             optional=True,
             distro='u2204',
             networking='cilium',
@@ -2258,6 +2276,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k127-ko127-to-klatest-kolatest-many-addons",
+            build_cluster='k8s-infra-kops-prow-build',
             optional=True,
             distro='u2204',
             networking='cilium',
@@ -2278,6 +2297,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-k127-ko127-to-k128-kolatest-karpenter",
+            build_cluster='k8s-infra-kops-prow-build',
             optional=True,
             distro='u2204arm64',
             networking='cilium',
@@ -2301,12 +2321,14 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name='presubmit-kops-aws-boskos',
+            build_cluster='k8s-infra-kops-prow-build',
             scenario='aws-boskos',
             always_run=False,
             use_boskos=True,
         ),
         presubmit_test(
             name='presubmit-kops-aws-boskos-kubetest2',
+            build_cluster='k8s-infra-kops-prow-build',
             always_run=False,
             use_boskos=True,
         ),
