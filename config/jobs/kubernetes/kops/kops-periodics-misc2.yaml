@@ -3171,7 +3171,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: ci-kubernetes-e2e-cos-gce-serial-canary
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-volume-size=100 --set=spec.packages=nfs-utils,git --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-al2023-aws-serial-canary
   cron: '6 0-23/6 * * *'
   labels:
@@ -3201,7 +3201,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.5.20240701.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet --node-volume-size=100 --set=spec.packages=nfs-utils,git --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.5.20240701.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet --node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3230,7 +3230,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
-    test.kops.k8s.io/extra_flags: --node-volume-size=100 --set=spec.packages=nfs-utils,git --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
