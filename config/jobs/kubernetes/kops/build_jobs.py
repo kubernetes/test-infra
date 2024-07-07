@@ -1259,7 +1259,8 @@ def generate_misc():
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--node-volume-size=100",
-                       "--set=spec.packages=nfs-utils,git",
+                       "--set=spec.packages=nfs-utils",
+                       "--set=spec.packages=git",
                    ],
                    focus_regex=r'\[Serial\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
