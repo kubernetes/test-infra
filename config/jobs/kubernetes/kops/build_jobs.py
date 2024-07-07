@@ -1921,16 +1921,6 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            distro='u2404',
-            build_cluster='k8s-infra-kops-prow-build',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-k8s-infra',
-            networking='calico',
-            tab_name='e2e-aws-calico-k8s-infra',
-            always_run=True,
-        ),
-        presubmit_test(
             distro='al2023',
             build_cluster='k8s-infra-kops-prow-build',
             k8s_version='stable',
