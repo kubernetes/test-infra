@@ -8,7 +8,8 @@ postsubmits:
     run_if_changed: '^communication/slack-config'
     annotations:
       testgrid-num-failures-to-alert: "1"
-      testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
+      # TODO: slack admins email group instead?
+      testgrid-alert-email: sig-contribex-leads@kubernetes.io
       testgrid-dashboards: sig-contribex-slack-infra
     spec:
       containers:
