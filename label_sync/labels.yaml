@@ -1054,6 +1054,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
+        description: Issues or PRs related to Kubernetes Azure infrastructure
+        name: area/infra/azure
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to Kubernetes GCP infrastructure
         name: area/infra/gcp
         target: both
