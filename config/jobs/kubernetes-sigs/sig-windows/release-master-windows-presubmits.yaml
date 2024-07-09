@@ -427,16 +427,12 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
-    run_if_changed: 'capz/.*'
     decoration_config:
       timeout: 3h
     path_alias: k8s.io/windows-testing
     branches:
       - master
     labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-2022: "true"
