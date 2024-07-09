@@ -746,7 +746,7 @@ def generate_misc():
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-updown",
-                   build_cluster="default",
+                   build_cluster="k8s-infra-kops-prow-build",
                    k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
@@ -982,6 +982,7 @@ def generate_misc():
                    runs_per_day=8),
 
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-canary",
+                   build_cluster="k8s-infra-kops-prow-build",
                    cloud="aws",
                    distro="al2023",
                    networking="kubenet",
@@ -998,6 +999,7 @@ def generate_misc():
                    runs_per_day=8),
 
         build_test(name_override="ci-kubernetes-e2e-ubuntu-aws-canary",
+                   build_cluster="k8s-infra-kops-prow-build",
                    cloud="aws",
                    distro="u2204",
                    networking="kubenet",
@@ -1801,7 +1803,7 @@ def generate_pipeline():
         results.append(
             build_test(
                 cloud="aws",
-                build_cluster="default",
+                build_cluster="k8s-infra-kops-prow-build",
                 k8s_version=version.replace('master', 'latest'),
                 kops_version=kops_version,
                 kops_channel='alpha',
