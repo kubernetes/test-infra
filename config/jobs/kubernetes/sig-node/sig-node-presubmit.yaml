@@ -854,7 +854,7 @@ presubmits:
               kubetest2 ec2 \
                --stage https://dl.k8s.io/ci/fast/ \
                --version $VERSION \
-               --feature-gates="AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
+               --feature-gates="AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false,StorageVersionAPI=true,APIServerIdentity=true" \
                --runtime-config="api/all=true" \
                --up \
                --down \
