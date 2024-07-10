@@ -480,47 +480,6 @@ periodics:
     testgrid-tab-name: branchprotector
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
-- cron: "17 * * * *"  # Every hour at 17 minutes past the hour
-  name: ci-test-infra-label-sync
-  cluster: test-infra-trusted
-  labels:
-    app: label-sync
-  decorate: true
-  spec:
-    containers:
-    - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20240513-a9bd71bf01
-      command:
-      - label_sync
-      args:
-      - --config=/etc/config/labels.yaml
-      - --confirm=true
-      - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-sigs
-      - --token=/etc/github/oauth
-      - --endpoint=http://ghproxy.default.svc.cluster.local
-      - --endpoint=https://api.github.com
-      - --debug
-      volumeMounts:
-      - name: oauth
-        mountPath: /etc/github
-        readOnly: true
-      - name: config
-        mountPath: /etc/config
-        readOnly: true
-    volumes:
-    - name: oauth
-      secret:
-        secretName: oauth-token
-    - name: config
-      configMap:
-        name: label-config
-  annotations:
-    testgrid-num-failures-to-alert: '6'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: label_sync
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 - cron: "17 */6 * * *"  # Every 6 hours at 17 minutes past the hour
   name: ci-test-infra-gencred-refresh-kubeconfig
   cluster: test-infra-trusted
