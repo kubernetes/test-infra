@@ -12,19 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:461.0.0 as builder
+FROM google/cloud-sdk:483.0.0 as builder
 # https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 
 ARG AWS_IAM_AUTHENTICATOR_VERSION
+ARG AZURE_KUBELOGIN_VERSION
+
 RUN curl -fsSL \
     https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTHENTICATOR_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTHENTICATOR_VERSION}_linux_amd64 -o /aws-iam-authenticator && \
     chmod +x /aws-iam-authenticator
 
+RUN apt update && apt install -y unzip && curl -fsSLO https://github.com/Azure/kubelogin/releases/download/v${AZURE_KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip \
+ && unzip -j kubelogin-linux-amd64.zip -d / \
+ && rm kubelogin-linux-amd64.zip
 
 # Update the date below (check https://hub.docker.com/_/alpine/tags) to get the
 # alpine edge base image, which has a faster release cadence than alpine:latest
 # (which tracks alpine stable), to pick up security patches more quickly.
-FROM alpine:20231219
+# TODO: switch to Distroless https://github.com/GoogleContainerTools/distroless (help-wanted)
+FROM alpine:20240606
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
@@ -32,6 +38,7 @@ ENV IMAGE=${IMAGE_ARG}
 RUN apk add --no-cache ca-certificates git git-daemon openssh && update-ca-certificates
 COPY --from=builder /aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 COPY --from=builder /usr/bin/gke-gcloud-auth-plugin /usr/local/bin/gke-gcloud-auth-plugin
+COPY --from=builder /kubelogin /usr/local/bin/kubelogin
 COPY github-known-hosts /github_known_hosts
 COPY ssh-config /etc/ssh/ssh_config
-RUN aws-iam-authenticator version && gke-gcloud-auth-plugin --version
+RUN aws-iam-authenticator version && gke-gcloud-auth-plugin --version && kubelogin --version
