@@ -156,10 +156,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-28
@@ -202,10 +202,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-29
@@ -248,10 +248,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-30
@@ -294,10 +294,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-multikueue-e2e-main
