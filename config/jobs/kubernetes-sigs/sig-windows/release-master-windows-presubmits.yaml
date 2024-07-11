@@ -433,6 +433,7 @@ presubmits:
     branches:
       - master
     labels:
+      preset-dind-enabled: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-2022: "true"
