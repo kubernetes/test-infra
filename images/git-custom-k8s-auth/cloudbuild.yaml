@@ -2,23 +2,25 @@ steps:
   - name: gcr.io/k8s-testimages/gcb-docker-gcloud
     entrypoint: /buildx-entrypoint
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
-    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
-    - --build-arg=AWS_IAM_AUTHENTICATOR_VERSION=$_AWS_IAM_AUTHENTICATOR_VERSION
-    - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
-    - --push
-    - .
+      - build
+      - --tag=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
+      - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
+      - --build-arg=AWS_IAM_AUTHENTICATOR_VERSION=$_AWS_IAM_AUTHENTICATOR_VERSION
+      - --build-arg=AZURE_KUBELOGIN_VERSION=$_AZURE_KUBELOGIN_VERSION
+      - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
+      - --push
+      - .
     dir: .
   - name: gcr.io/k8s-testimages/gcb-docker-gcloud
     entrypoint: gcloud
     args:
-    - container
-    - images
-    - add-tag
-    - gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
-    - gcr.io/$PROJECT_ID/git-custom-k8s-auth:latest
+      - container
+      - images
+      - add-tag
+      - gcr.io/$PROJECT_ID/git-custom-k8s-auth:$_GIT_TAG
+      - gcr.io/$PROJECT_ID/git-custom-k8s-auth:latest
 substitutions:
-  _GIT_TAG: '12345'
+  _GIT_TAG: "12345"
   # Prefer 0.5.x series (not 0.6.x) for now.
-  _AWS_IAM_AUTHENTICATOR_VERSION: '0.5.21'
+  _AWS_IAM_AUTHENTICATOR_VERSION: "0.5.21"
+  _AZURE_KUBELOGIN_VERSION: "0.1.4"
