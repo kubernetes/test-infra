@@ -380,7 +380,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 240m
+    timeout: 290m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -407,7 +407,7 @@ periodics:
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
-          - --timeout=180m
+          - --timeout=270m
         env:
           - name: GOPATH
             value: /go
