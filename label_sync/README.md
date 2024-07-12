@@ -70,9 +70,7 @@ go run ./label_sync \
 
 ## Our Deployment
 
-We run this as a [`Periodic
-job`](https://prow.k8s.io?job=ci-test-infra-label-sync) as configured at
-[test-infra-trusted.yaml](https://github.com/kubernetes/test-infra/blob/0aa0d7b9cee8832e9eca748952131baaa809351c/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L702).
+We run this as a [`Periodic job`](https://prow.k8s.io?job=ci-test-infra-label-sync) `ci-test-infra-label-sync` configured under `config/jobs`.
 
 This job read [`labels.yaml`](./labels.yaml) from a ConfigMap that is updated by
 the [prow updateconfig plugin](/prow/plugins/updateconfig).
