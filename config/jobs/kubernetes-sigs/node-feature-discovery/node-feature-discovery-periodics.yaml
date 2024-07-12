@@ -1,16 +1,18 @@
-postsubmits:
-  kubernetes-sigs/node-feature-discovery:
-  - name: postsubmit-node-feature-discovery-verify-master
+periodics:
+  - name: periodic-node-feature-discovery-verify-master
     cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    - ^master
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: node-feature-discovery
+      path_alias: sigs.k8s.io/node-feature-discovery
+      base_ref: master
+    cron: '0 4 * * *'
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: post-verify-master
-      description: "Run linters and unit tests"
-      testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
+      testgrid-tab-name: periodic-verify-master
+      description: "Run periodic linters and unit tests"
+      testgrid-alert-email: markus.lehtonen@intel.com,eduardoa@nvidia.com
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.22
@@ -29,19 +31,22 @@ postsubmits:
           requests:
             cpu: 4
             memory: 8Gi
-  - name: postsubmit-node-feature-discovery-e2e-test
+  - name: periodic-node-feature-discovery-e2e-test-master
     cluster: eks-prow-build-cluster
-    branches:
-    - ^main$
-    - ^master$
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: node-feature-discovery
+      path_alias: sigs.k8s.io/node-feature-discovery
+      base_ref: master
+    cron: '0 4 * * *'
     labels:
       preset-dind-enabled: "true"
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: e2e-test-image
-      description: "Run end-to-end tests for node-feature-discovery after merging a pull request"
-      testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
+      testgrid-tab-name: periodic-e2e-test-master
+      description: "Run periodic end-to-end tests for node-feature-discovery"
+      testgrid-alert-email: markus.lehtonen@intel.com,eduardoa@nvidia.com
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
