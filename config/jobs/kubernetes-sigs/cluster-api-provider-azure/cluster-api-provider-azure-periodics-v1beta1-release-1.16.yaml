@@ -1,5 +1,6 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-release-1-15
+- name: periodic-cluster-api-provider-azure-conformance-v1beta1-release-1-16
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -7,12 +8,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -25,15 +25,19 @@ periodics:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 2
+            memory: "9Gi"
           requests:
             cpu: 2
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-15
+    testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-16
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.15 (v1beta1)
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-15
+    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.16 (v1beta1)
+- name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-16
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -41,13 +45,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -69,15 +71,19 @@ periodics:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 2
+            memory: "9Gi"
           requests:
             cpu: 2
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1-release-1-15
+    testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1-release-1-16
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.15 (v1beta1)
-- name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-15
+    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.16 (v1beta1)
+- name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-16
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -85,13 +91,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -105,14 +109,22 @@ periodics:
           value: "Cluster API E2E tests"
         - name: GINKGO_SKIP
           value: "\\[K8s-Upgrade\\]|API Version Upgrade"
+      resources:
+        limits:
+          cpu: 2
+          memory: "9Gi"
+        requests:
+          cpu: 2
+          memory: "9Gi"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-15
+    testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-16
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-15
+- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-16
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -120,13 +132,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -140,14 +150,22 @@ periodics:
           value: "Workload cluster creation"
         - name: GINKGO_SKIP
           value: \[Managed Kubernetes\]
+      resources:
+        limits:
+          cpu: 2
+          memory: "9Gi"
+        requests:
+          cpu: 2
+          memory: "9Gi"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-15
+    testgrid-tab-name: capz-periodic-e2e-v1beta1-release-1-16
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-15
+- name: periodic-cluster-api-provider-azure-e2e-aks-v1beta1-release-1-16
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -155,13 +173,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -175,10 +191,17 @@ periodics:
           value: \[Managed Kubernetes\]
         - name: GINKGO_SKIP
           value: ""
+      resources:
+        limits:
+          cpu: 2
+          memory: "9Gi"
+        requests:
+          cpu: 2
+          memory: "9Gi"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-15
+    testgrid-tab-name: capz-periodic-e2e-aks-v1beta1-release-1-16
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
