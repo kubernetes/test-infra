@@ -183,12 +183,12 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
@@ -206,41 +206,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-capi-e2e-main
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-capi-e2e-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-e2e.sh
-          env:
-            - name: GINKGO_FOCUS
-              value: "Cluster API E2E tests"
-            - name: GINKGO_SKIP
-              value: "\\[K8s-Upgrade\\]|API Version Upgrade"
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-capi-e2e-main-wi
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-verify
     cluster: eks-prow-build-cluster
@@ -285,11 +250,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
@@ -307,39 +272,6 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-conformance-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-conformance-main-wi
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -352,9 +284,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -363,6 +294,7 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -381,46 +313,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-k8s-ci-main
-  - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-conformance-k8s-ci-main-wi
   - name: pull-cluster-api-provider-azure-conformance-ipv6-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -433,9 +325,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -444,6 +335,7 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -464,48 +356,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-ipv6-k8s-ci-main
-  - name: pull-cluster-api-provider-azure-conformance-ipv6-with-ci-artifacts-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-            - name: IP_FAMILY
-              value: "IPv6"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-conformance-ipv6-k8s-ci-main-wi
   - name: pull-cluster-api-provider-azure-conformance-dual-stack-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -518,9 +368,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -529,6 +378,7 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -549,48 +399,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-dual-stack-k8s-ci-main
-  - name: pull-cluster-api-provider-azure-conformance-dual-stack-with-ci-artifacts-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-            - name: IP_FAMILY
-              value: "dual"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-conformance-dual-stack-k8s-ci-main-wi
   - name: pull-cluster-api-provider-azure-windows-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -603,9 +411,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -614,6 +421,7 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -641,7 +449,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-main
-  - name: pull-cluster-api-provider-azure-windows-with-ci-artifacts-wi
+  - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts-serial-slow
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -655,56 +463,6 @@ presubmits:
       preset-azure-anonymous-pull: "true"
       preset-azure-cred-wi: "true"
     branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-            - name: WINDOWS
-              value: "true"
-            - name: WINDOWS_FLAVOR
-              value: "containerd"
-            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
-            - name: CONFORMANCE_NODES
-              value: "4"
-            - name: WINDOWS_SERVER_VERSION
-              value: "windows-2019"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-main-wi
-  - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts-serial-slow
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
-    branches:
     - ^main$
     extra_refs:
     - org: kubernetes-sigs
@@ -712,6 +470,7 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -742,58 +501,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
-  - name: pull-wi-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts-serial-slow
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-            - name: WINDOWS
-              value: "true"
-            - name: WINDOWS_FLAVOR
-              value: "containerd"
-            - name: CONFORMANCE_NODES
-              value: "1"
-            - name: KUBETEST_WINDOWS_CONFIG
-              value: "upstream-windows-serial-slow.yaml"
-            - name: K8S_FEATURE_GATE
-              value: "HPAContainerMetrics=true"
-            - name: WINDOWS_SERVER_VERSION
-              value: "windows-2019"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-wi-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
     cluster: k8s-infra-prow-build
     decorate: true
@@ -861,9 +568,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     decorate: true
     run_if_changed: '^test\/e2e\/(config\/azure-dev\.yaml)|(data\/shared\/v1beta1_provider\/metadata\.yaml)$'
     optional: false
@@ -877,6 +583,7 @@ presubmits:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           args:
@@ -897,45 +604,6 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apiversion-upgrade-main
       description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
-  - name: pull-cluster-api-provider-azure-apiversion-upgrade-wi
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    decorate: true
-    optional: true
-    always_run: false
-    branches:
-      - ^main$
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          args:
-            - runner.sh
-            - "./scripts/ci-e2e.sh"
-          env:
-            - name: GINKGO_FOCUS
-              value: "API Version Upgrade"
-            - name: KUBERNETES_VERSION
-              value: "v1.26.15"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 7300m
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-apiversion-upgrade-main-wi
-      description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
   - name: pull-cluster-api-provider-azure-ci-entrypoint
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
@@ -945,12 +613,12 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
@@ -970,40 +638,6 @@ presubmits:
       testgrid-tab-name: capz-pr-ci-entrypoint-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: Creates a CAPZ cluster and exports KUBECONFIG. This job validates ci-entrypoint.sh used by other repositories for running tests on CAPZ clusters.
-  - name: pull-cluster-api-provider-azure-ci-entrypoint-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    optional: true
-    decorate: true
-    max_concurrency: 5
-    always_run: false
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-entrypoint.sh
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          env:
-            - name: TEST_WINDOWS
-              value: "true"
-            - name: WINDOWS_SERVER_VERSION
-              value: "windows-2022"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-ci-entrypoint-main-wi
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-      description: Creates a CAPZ cluster and exports KUBECONFIG. This job validates ci-entrypoint.sh used by other repositories for running tests on CAPZ clusters.
   - name: pull-cluster-api-provider-azure-conformance-custom-builds
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -1016,9 +650,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -1031,6 +664,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -1049,50 +683,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-custom-k8s-main
-  - name: pull-cluster-api-provider-azure-conformance-custom-builds-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: TEST_K8S
-              value: "true"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-conformance-custom-k8s-main-wi
   - name: pull-cluster-api-provider-azure-windows-custom-builds
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -1105,9 +695,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -1120,6 +709,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
@@ -1145,54 +735,3 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-windows-containerd-upstream-custom-k8s-main
-  - name: pull-cluster-api-provider-azure-windows-custom-builds-wi
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
-    branches:
-      - ^main$
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cloud-provider-azure
-        base_ref: master
-        path_alias: sigs.k8s.io/cloud-provider-azure
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-          command:
-            - runner.sh
-          args:
-            - ./scripts/ci-conformance.sh
-          env:
-            - name: TEST_K8S
-              value: "true"
-            - name: WINDOWS
-              value: "true"
-            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
-            - name: CONFORMANCE_NODES
-              value: "4"
-            - name: WINDOWS_SERVER_VERSION
-              value: "windows-2019"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-windows-containerd-upstream-custom-k8s-main-wi
