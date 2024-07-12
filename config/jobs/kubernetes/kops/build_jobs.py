@@ -1766,6 +1766,7 @@ def generate_presubmits_scale():
 def generate_versions():
     results = [
         build_test(
+            build_cluster='k8s-infra-kops-prow-build',
             k8s_version='ci',
             kops_channel='alpha',
             name_override='kops-aws-k8s-latest',
