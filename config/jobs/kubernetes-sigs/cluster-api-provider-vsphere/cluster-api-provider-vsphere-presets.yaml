@@ -3,7 +3,7 @@ presets:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   env:
   - name: BOSKOS_HOST
-    value: http://192.168.6.161:32222
+    value: http://192.168.6.162:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
@@ -62,7 +62,7 @@ presets:
     preset-cloud-provider-vsphere-e2e-config-capv: "true"
   env:
   - name: BOSKOS_HOST
-    value: http://192.168.6.161:32222
+    value: http://192.168.6.162:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
@@ -121,7 +121,7 @@ presets:
     preset-image-builder-vsphere-e2e-config: "true"
   env:
   - name: BOSKOS_HOST
-    value: http://192.168.6.161:32222
+    value: http://192.168.6.162:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
@@ -165,7 +165,7 @@ presets:
     preset-cluster-api-provider-vsphere-janitor-config: "true"
   env:
   - name: BOSKOS_HOST
-    value: http://192.168.6.161:32222
+    value: http://192.168.6.162:32222
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
