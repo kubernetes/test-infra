@@ -230,6 +230,67 @@ presubmits:
           privileged: true
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-e2e-aws-storage-selinux
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-aws-storage-selinux
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run tests with [Feature:SELinux] on a cluster with SELinux enabled.
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+    decorate: true
+    decoration_config:
+      timeout: 150m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: k8s.io/kops
+    spec:
+      serviceAccountName: k8s-kops-test
+      containers:
+        - command:
+            - runner.sh
+          args:
+            - bash
+            - -xc
+            - |
+              make -C $GOPATH/src/k8s.io/kops test-e2e-install
+              kubetest2 kops -v=6 --cloud-provider=aws --up --down --build \
+                --build-kubernetes=true --target-build-arch=linux/amd64 \
+                --admin-access=0.0.0.0/0 \
+                --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
+                --create-args "--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
+                --env=KOPS_FEATURE_FLAGS=SELinuxMount \
+                --test=kops \
+                -- \
+                --ginkgo-args="--debug" \
+                --timeout=120m" \
+                --focus-regex="\[Feature:SELinux\]" \
+                --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]" \
+                --use-built-binaries=true \
+                --parallel=1
+          env:
+          - name: KUBE_SSH_KEY_PATH
+            value: /etc/aws-ssh/aws-ssh-private
+          - name: KUBE_SSH_USER
+            value: ec2-user
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+          resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
+            requests:
+              cpu: 4
+              memory: "14Gi"
 periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-gce-iscsi-serial
