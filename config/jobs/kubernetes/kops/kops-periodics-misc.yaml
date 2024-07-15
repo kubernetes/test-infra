@@ -78,6 +78,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -135,6 +136,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -193,6 +195,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
