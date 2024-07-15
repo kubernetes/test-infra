@@ -15,6 +15,7 @@ dashboard_groups:
   - sig-testing-canaries
   - sig-testing-e2e-framework
   - sig-testing-images
+  - sig-testing-image-pushes
   - sig-testing-kind
   - sig-testing-kubetest2
   - sig-testing-maintenance
@@ -33,6 +34,7 @@ dashboards:
     base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
 - name: sig-testing-e2e-framework
 - name: sig-testing-images
+- name: sig-testing-image-pushes
 - name: sig-testing-kind
 - name: sig-testing-kubetest2
 - name: sig-testing-maintenance

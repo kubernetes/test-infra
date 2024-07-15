@@ -249,6 +249,70 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/kubekins-e2e-v2/
+
+    # TODO: Remove '-canary' from these and other migrated job names once old jobs are deleted.
+    # These are duplicates of the image-pushing jobs in test-infra-trusted.yaml.
+    - name: post-test-infra-push-alpine-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/alpine/'
+      annotations:
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: alpine
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - images/alpine/
+    - name: post-test-infra-push-git-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/git/'
+      annotations:
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: git
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - images/git/
+    - name: post-test-infra-push-git-custom-k8s-auth-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/git-custom-k8s-auth/'
+      annotations:
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: git-custom-k8s-auth
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - images/git-custom-k8s-auth/
+
     #
     # components, e.g. kettle/, triage/
     #
