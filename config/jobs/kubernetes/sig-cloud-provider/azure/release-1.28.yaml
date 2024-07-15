@@ -12,8 +12,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-cred-only: "true"
       preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
@@ -62,8 +62,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-cred-only: "true"
       preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
@@ -114,8 +114,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-cred-only: "true"
       preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
@@ -165,8 +165,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-cred-only: "true"
       preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
@@ -218,8 +218,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-cred-only: "true"
       preset-azure-capz-sa-cred: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -258,8 +258,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -305,8 +305,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -354,8 +354,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -403,8 +403,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -462,8 +462,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -523,8 +523,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -581,8 +581,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-cred-only: "true"
     preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs

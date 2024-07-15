@@ -37,6 +37,30 @@ generate_presubmit_annotations() {
 EOF
 }
 
+generate_preset_labels() {
+  indent=${1}
+  capz_ref="${2}"
+  if [[ "${capz_ref}" == "main" ]]; then
+    creds=$(cat <<EOF
+  preset-azure-capz-cred-wi: "true"
+EOF
+  )
+  else
+    creds=$(cat <<EOF
+  preset-azure-cred-only: "true"
+  preset-azure-capz-sa-cred: "true"
+EOF
+  )
+  fi
+  cat << EOF | pr -to $indent
+labels:
+  preset-dind-enabled: "true"
+  preset-kind-volume-mounts: "true"
+  preset-azure-anonymous-pull: "true"
+${creds}
+EOF
+}
+
 # we need to define the full image URL so it can be autobumped
 tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master"
 kubekins_e2e_image="${tmp/\-master/}"
@@ -73,12 +97,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     branches:
       - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 4 ${capz_release})
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -123,12 +142,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
     path_alias: k8s.io/kubernetes
     branches:
       - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 4 ${capz_release})
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -175,12 +189,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
     path_alias: k8s.io/kubernetes
     branches:
       - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 4 ${capz_release})
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -226,12 +235,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
     path_alias: k8s.io/kubernetes
     branches:
       - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 4 ${capz_release})
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -279,12 +283,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
     path_alias: k8s.io/kubernetes
     branches:
       - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 4 ${capz_release})
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -319,12 +318,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -366,12 +360,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -415,12 +404,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -464,12 +448,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -523,12 +502,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -584,12 +558,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -642,12 +611,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_periodic_branch_name})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -705,12 +669,7 @@ EOF
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_release})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -752,12 +711,7 @@ EOF
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_release})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -811,12 +765,7 @@ EOF
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_release})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -872,12 +821,7 @@ EOF
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_release})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -930,12 +874,7 @@ EOF
   decorate: true
   decoration_config:
     timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+$(generate_preset_labels 2 ${capz_release})
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
