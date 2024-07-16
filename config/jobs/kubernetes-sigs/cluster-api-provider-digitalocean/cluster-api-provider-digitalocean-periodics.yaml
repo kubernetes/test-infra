@@ -1,6 +1,7 @@
 periodics:
 - name: periodic-cluster-api-provider-digitalocean-conformance
   decorate: true
+  cluster: k8s-infra-prow-build
   decoration_config:
     timeout: 4h
   interval: 24h
@@ -22,9 +23,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: "7Gi"
         requests:
-          cpu: 2
-          memory: "9Gi"
+          cpu: 4
+          memory: "7Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
     testgrid-tab-name: capdo-periodic-conformance
@@ -33,6 +37,7 @@ periodics:
 
 - name: periodic-cluster-api-provider-digitalocean-conformance-ci-artifacts
   decorate: true
+  cluster: k8s-infra-prow-build
   decoration_config:
     timeout: 4h
   interval: 24h
@@ -57,9 +62,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: "7Gi"
         requests:
-          cpu: 2
-          memory: "9Gi"
+          cpu: 4
+          memory: "7Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
     testgrid-tab-name: capdo-periodic-conformance-ci-artifacts
