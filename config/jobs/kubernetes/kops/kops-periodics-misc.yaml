@@ -66,7 +66,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=digitalocean \
-          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=private" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -124,7 +124,7 @@ periodics:
         -v 2 \
         --up --down \
         --cloud-provider=digitalocean \
-        --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+        --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
         --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
         --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
         --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -182,7 +182,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=digitalocean \
-          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --node-count=3 --master-count=3" \
           --cluster-name=e2e-b284d3e83b-4c997.test-cncf-do.k8s.io \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \

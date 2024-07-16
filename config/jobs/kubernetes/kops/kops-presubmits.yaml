@@ -87,7 +87,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=digitalocean \
             --cluster-name=e2e-test-do.k8s.local \
-            --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+            --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
             --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=private" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -140,7 +140,7 @@ presubmits:
           --up --build --down \
           --cloud-provider=digitalocean \
           --cluster-name=e2e-test-do.k8s.local \
-          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
           --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -193,7 +193,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=digitalocean \
             --cluster-name=e2e-b284d3e83b-4c77c.test-cncf-do.k8s.io \
-            --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+            --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-fqdn \
             --create-args "--networking=calico --node-count=2" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
