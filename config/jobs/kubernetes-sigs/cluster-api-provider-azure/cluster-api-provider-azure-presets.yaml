@@ -38,3 +38,33 @@ presets:
   - mountPath: /var/run/secrets/azure-token/serviceaccount
     name: azure-token
     readOnly: true
+- labels:
+    preset-azure-community: "true"
+  env: # below env values are not secrets
+  - name: AZURE_CLIENT_IDs
+    value: "34d8e06d-d198-477e-b166-6936e58d90ae"
+  - name: AZURE_SUBSCRIPTION_ID
+    value: "46678f10-4bbb-447e-98e8-d2829589f2d8"
+  - name: AZURE_TENANT_ID
+    value: "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
+  - name: AZURE_FEDERATED_TOKEN_FILE
+    value: "/var/run/secrets/azure-token/serviceaccount/token"
+  - name: AZURE_STORAGE_ACCOUNT
+    value: "k8sprowstoragecomm"
+  - name: REGISTRY
+    value: "capzcicommunity.azurecr.io"
+  - name: USE_LOCAL_KIND_REGISTRY
+    value: "false"
+  volumes:
+  - name: azure-token
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 86400
+          path: token
+          audience: api://AzureADTokenExchange
+  volumeMounts:
+  - mountPath: /var/run/secrets/azure-token/serviceaccount
+    name: azure-token
+    readOnly: true
