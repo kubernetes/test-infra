@@ -228,7 +228,6 @@ lgtm:
   - kubernetes-sigs/cri-tools
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
-  - kubernetes-sigs/etcdadm
   - kubernetes-sigs/external-dns
   - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
@@ -1526,10 +1525,6 @@ plugins:
   kubernetes-sigs/image-builder:
     plugins:
     - mergecommitblocker
-
-  kubernetes-sigs/etcdadm:
-    plugins:
-    - milestone
 
   kubernetes-sigs/contributor-playground:
     plugins:
