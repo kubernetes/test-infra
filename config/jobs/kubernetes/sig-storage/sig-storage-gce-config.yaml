@@ -273,7 +273,7 @@ presubmits:
                 --test=kops \
                 -- \
                 --ginkgo-args="--debug" \
-                --timeout=120m" \
+                --timeout=120m \
                 --focus-regex="\[Feature:SELinux\]" \
                 --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]" \
                 --use-built-binaries=true \
