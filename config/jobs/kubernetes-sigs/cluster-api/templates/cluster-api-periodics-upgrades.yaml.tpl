@@ -4,6 +4,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: {{ $.config.UpgradesInterval }}
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
