@@ -4,6 +4,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -22,7 +24,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -59,6 +61,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -77,7 +81,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -114,6 +118,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -132,7 +138,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -169,6 +175,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -187,7 +195,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -224,6 +232,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -242,7 +252,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -279,6 +289,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -297,7 +309,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"

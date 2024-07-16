@@ -1,16 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviewers:
-- MushuEE
-- spiffxp
-- stevekuznetsov
-approvers:
-- spiffxp
-- stevekuznetsov
+# this will fall up to repo owners now, no active developers
 emeritus_approvers:
 - ibzib
 - Katharine
 - rmmh
+- spiffxp
+- stevekuznetsov
 
 labels:
 - area/gubernator

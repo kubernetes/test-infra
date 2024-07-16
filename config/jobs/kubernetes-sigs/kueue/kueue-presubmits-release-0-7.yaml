@@ -73,7 +73,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.13
@@ -91,10 +91,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "10"
+            cpu: "7"
             memory: "10Gi"
           limits:
-            cpu: "10"
+            cpu: "7"
             memory: "10Gi"
   - name: pull-kueue-test-e2e-release-0-7-1-28
     cluster: eks-prow-build-cluster
@@ -111,7 +111,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.28.9
@@ -129,10 +129,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-release-0-7-1-29
     cluster: eks-prow-build-cluster
@@ -149,7 +149,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.29.4
@@ -167,10 +167,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-release-0-7-1-30
     cluster: eks-prow-build-cluster
@@ -187,7 +187,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.30.0
@@ -205,10 +205,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - name: pull-kueue-test-multikueue-e2e-release-0-7
     cluster: eks-prow-build-cluster
@@ -225,7 +225,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.30.0
@@ -263,7 +263,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         securityContext:
           privileged: true
         command:
@@ -296,7 +296,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         securityContext:
           privileged: true
         command:

@@ -37,7 +37,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -82,7 +82,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -91,7 +91,7 @@ periodics:
             - name: FOCUS
               value: \[NodeConformance\]
             - name: SKIP
-              value: "Summary API"
+              value: Summary API|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
@@ -99,7 +99,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           resources:
             limits:
               cpu: 8
@@ -132,7 +132,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -141,7 +141,7 @@ periodics:
             - name: FOCUS
               value: \[NodeConformance\]
             - name: SKIP
-              value: "Summary API"
+              value: Summary API|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_ARCH
@@ -155,7 +155,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -190,7 +190,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -242,7 +242,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -303,7 +303,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -355,7 +355,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -408,7 +408,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -455,7 +455,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -464,7 +464,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
@@ -472,7 +472,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           resources:
             limits:
               cpu: 8
@@ -504,7 +504,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -513,7 +513,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_ARCH
@@ -527,7 +527,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd"'
+              value: '--kubelet-flags="--cgroup-driver=systemd" --feature-gates="NodeSwap=false"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -561,7 +561,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -612,7 +612,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:

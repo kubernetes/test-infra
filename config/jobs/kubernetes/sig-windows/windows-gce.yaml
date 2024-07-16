@@ -50,6 +50,7 @@ presets:
 
 periodics:
 - name: ci-kubernetes-e2e-windows-containerd-gce-master
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 4h
@@ -91,7 +92,14 @@ periodics:
         value: "win2019"
       - name: NODE_SIZE
         value: "n1-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
       securityContext:
         privileged: true
   annotations:
@@ -99,6 +107,7 @@ periodics:
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 - name: ci-kubernetes-e2e-windows-win2022-containerd-gce-master
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 4h
@@ -140,7 +149,14 @@ periodics:
         value: "win2022"
       - name: NODE_SIZE
         value: "n1-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 3Gi
+        limits:
+          cpu: 1000m
+          memory: 3Gi
       securityContext:
         privileged: true
   annotations:

@@ -19,12 +19,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.13
+        base_ref: release-1.15
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -102,7 +102,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -160,7 +160,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -205,7 +205,7 @@ periodics:
         path_alias: "sigs.k8s.io/cloud-provider-azure"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -270,12 +270,12 @@ periodics:
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.13
+        base_ref: release-1.15
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh

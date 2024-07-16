@@ -3,6 +3,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 1h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -42,6 +44,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   interval: 1h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -202,6 +206,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -253,6 +259,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -294,6 +302,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: {{ $.config.Interval }}
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -349,6 +359,8 @@ periodics:
     preset-cluster-api-provider-vsphere-janitor-config: "true"
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs

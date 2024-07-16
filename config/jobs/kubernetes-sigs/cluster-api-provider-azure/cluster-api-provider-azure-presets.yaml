@@ -12,3 +12,29 @@ presets:
       secretKeyRef:
         name: azure-capz-sa-cred
         key: serviceAccountSigningKey
+- labels:
+    preset-azure-cred-wi: "true"
+  env: # below env values are not secrets
+  - name: AZURE_CLIENT_ID # AZURE_CLIENT_ID is being overloaded with Azure Workload ID
+    value: "cabf5f22-ec7e-4e84-9e35-c02e57ca555d"
+  - name: AZURE_SUBSCRIPTION_ID
+    value: "0e46bd28-a80f-4d3a-8200-d9eb8d80cb2e"
+  - name: AZURE_TENANT_ID
+    value: "097f89a0-9286-43d2-9a1a-08f1d49b1af8"
+  - name: AZURE_FEDERATED_TOKEN_FILE
+    value: "/var/run/secrets/azure-token/serviceaccount/token"
+  - name: AZURE_STORAGE_ACCOUNT
+    value: "k8sprowstorage"
+  volumes:
+  - name: azure-token
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 86400
+          path: token
+          audience: api://AzureADTokenExchange
+  volumeMounts:
+  - mountPath: /var/run/secrets/azure-token/serviceaccount
+    name: azure-token
+    readOnly: true

@@ -19,7 +19,7 @@ periodics:
     path_alias: k8s.io/release
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240611-597c402033-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -41,6 +41,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -52,7 +53,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240611-597c402033-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -65,7 +66,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=digitalocean \
-          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=private" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -77,6 +78,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -86,7 +88,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-gossip
 - name: e2e-kops-do-calico-dns-none
@@ -97,6 +99,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -108,7 +111,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240611-597c402033-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -121,7 +124,7 @@ periodics:
         -v 2 \
         --up --down \
         --cloud-provider=digitalocean \
-        --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+        --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
         --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
         --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
         --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -133,6 +136,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -142,7 +146,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-dns-none
 - name: e2e-kops-do-calico-fqdn
@@ -153,6 +157,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -164,7 +169,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240611-597c402033-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -177,7 +182,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=digitalocean \
-          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --node-count=3 --master-count=3" \
           --cluster-name=e2e-b284d3e83b-4c997.test-cncf-do.k8s.io \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
@@ -190,6 +195,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -199,6 +205,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-fqdn

@@ -16,7 +16,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -71,11 +71,11 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: FOCUS
-          value: "."
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty"
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -110,7 +110,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -170,11 +170,11 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: FOCUS
-          value: "."
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty"
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -214,7 +214,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -254,7 +254,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -298,7 +298,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -347,7 +347,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -395,7 +395,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -443,7 +443,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
         command:
         - wrapper.sh
         - bash
@@ -497,7 +497,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
       command:
       - wrapper.sh
       - bash
@@ -549,7 +549,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
       command:
       - wrapper.sh
       - bash
@@ -601,7 +601,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240611-597c402033-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
       command:
       - wrapper.sh
       - bash
@@ -653,7 +653,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:

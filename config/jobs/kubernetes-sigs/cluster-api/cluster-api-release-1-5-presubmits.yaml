@@ -4,6 +4,8 @@ presubmits:
   - name: pull-cluster-api-build-release-1-5
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     branches:
@@ -11,7 +13,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -28,6 +30,8 @@ presubmits:
   - name: pull-cluster-api-apidiff-release-1-5
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api
     optional: true
     branches:
@@ -39,7 +43,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         resources:
           requests:
             cpu: 6000m
@@ -53,6 +57,8 @@ presubmits:
   - name: pull-cluster-api-verify-release-1-5
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -62,7 +68,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -81,6 +87,8 @@ presubmits:
   - name: pull-cluster-api-test-release-1-5
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api
     branches:
     # The script this job runs is not in all branches.
@@ -88,7 +96,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -105,6 +113,8 @@ presubmits:
   - name: pull-cluster-api-test-mink8s-release-1-5
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
     branches:
@@ -112,7 +122,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -147,6 +157,8 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
     branches:
@@ -154,7 +166,7 @@ presubmits:
     - ^release-1.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -196,6 +208,8 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     decorate: true
+    decoration_config:
+      timeout: 120m
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.5$
@@ -203,7 +217,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -234,6 +248,8 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     decorate: true
+    decoration_config:
+      timeout: 120m
     optional: true
     branches:
       # The script this job runs is not in all branches.
@@ -242,7 +258,7 @@ presubmits:
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -273,6 +289,8 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     decorate: true
+    decoration_config:
+      timeout: 120m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -280,7 +298,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -309,6 +327,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      timeout: 120m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -321,7 +341,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

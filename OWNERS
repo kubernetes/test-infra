@@ -3,15 +3,13 @@
 reviewers:
 - aojea # lead
 - BenTheElder # lead
-- spiffxp # chair
-- stevekuznetsov # chair
+- stevekuznetsov
 - cjwagner # oncall, lead
 - mpherman2 # oncall
 approvers:
 - aojea # lead
 - BenTheElder # lead
-- spiffxp # chair
-- stevekuznetsov # chair
+- stevekuznetsov
 - test-infra-oncall # oncall
 - sig-k8s-infra-oncall # oncall
 emeritus_approvers:
@@ -19,6 +17,7 @@ emeritus_approvers:
 - fejta
 - ixdy
 - krzyzacy
+- spiffxp
 
 labels:
 - sig/testing

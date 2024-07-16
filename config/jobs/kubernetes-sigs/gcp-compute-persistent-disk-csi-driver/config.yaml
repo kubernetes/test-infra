@@ -12,7 +12,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -23,10 +23,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: "6Gi"
+            memory: "8Gi"
           requests:
             cpu: 2
-            memory: "6Gi"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
@@ -41,7 +41,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -67,7 +67,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -88,12 +88,13 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 30m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -125,7 +126,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:

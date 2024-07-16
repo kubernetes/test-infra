@@ -101,7 +101,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20240619-cfb8754e0
+      - image: gcr.io/k8s-prow/hmac:v20240711-e49eac682
         command:
         - hmac
         args:
@@ -150,7 +150,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-test-infra
         command:
         - runner.sh
         args:
@@ -333,36 +333,6 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
       description: Update boskos configmap on test-infra pushes
 
-  kubernetes/community:
-  - name: post-community-tempelis-apply
-    cluster: test-infra-trusted
-    decorate: true
-    branches:
-    - ^master$
-    run_if_changed: '^communication/slack-config'
-    annotations:
-      testgrid-num-failures-to-alert: "1"
-      testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-contribex-slack-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20200909-1eb97f5
-        command:
-        - /tempelis
-        args:
-        - --config=communication/slack-config/
-        - --restrictions=communication/slack-config/restrictions.yaml
-        - --auth=/etc/slack-auth/auth.json
-        - --dry-run=false
-        volumeMounts:
-        - name: tempelis-creds
-          mountPath: /etc/slack-auth
-          readOnly: true
-      volumes:
-      - name: tempelis-creds
-        secret:
-          secretName: slack-tempelis-auth
-
 
 periodics:
   # Save for standard time:
@@ -378,7 +348,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240619-cfb8754e0
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240711-e49eac682
       command:
       - generic-autobumper
       args:
@@ -415,7 +385,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240619-cfb8754e0
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240711-e49eac682
       command:
       - generic-autobumper
       args:
@@ -485,7 +455,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20240619-cfb8754e0
+      image: gcr.io/k8s-prow/branchprotector:v20240711-e49eac682
       command:
       - branchprotector
       args:
@@ -510,47 +480,6 @@ periodics:
     testgrid-tab-name: branchprotector
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
-- cron: "17 * * * *"  # Every hour at 17 minutes past the hour
-  name: ci-test-infra-label-sync
-  cluster: test-infra-trusted
-  labels:
-    app: label-sync
-  decorate: true
-  spec:
-    containers:
-    - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20240513-a9bd71bf01
-      command:
-      - label_sync
-      args:
-      - --config=/etc/config/labels.yaml
-      - --confirm=true
-      - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-sigs
-      - --token=/etc/github/oauth
-      - --endpoint=http://ghproxy.default.svc.cluster.local
-      - --endpoint=https://api.github.com
-      - --debug
-      volumeMounts:
-      - name: oauth
-        mountPath: /etc/github
-        readOnly: true
-      - name: config
-        mountPath: /etc/config
-        readOnly: true
-    volumes:
-    - name: oauth
-      secret:
-        secretName: oauth-token
-    - name: config
-      configMap:
-        name: label-config
-  annotations:
-    testgrid-num-failures-to-alert: '6'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: label_sync
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 - cron: "17 */6 * * *"  # Every 6 hours at 17 minutes past the hour
   name: ci-test-infra-gencred-refresh-kubeconfig
   cluster: test-infra-trusted
@@ -621,7 +550,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20240619-cfb8754e0
+    - image: gcr.io/k8s-prow/checkconfig:v20240711-e49eac682
       command:
       - checkconfig
       args:

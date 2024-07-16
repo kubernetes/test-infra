@@ -35,7 +35,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-tab-name: pull-k8sio-terraform-kubernetes-io
-      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-alert-email: ameukam@gmail.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1
@@ -64,7 +64,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-tab-name: pull-k8sio-terraform-kubernetes-public
-      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-alert-email: ameukam@gmail.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1
@@ -93,7 +93,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-tab-name: pull-k8sio-terraform-monitoring
-      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-alert-email: ameukam@gmail.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1
@@ -122,7 +122,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-prow-build
-      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-alert-email: ameukam@gmail.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1
@@ -151,7 +151,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-prow-build-trusted
-      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-alert-email: ameukam@gmail.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1
@@ -180,7 +180,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-public-pii
-      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-alert-email: ameukam@gmail.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1

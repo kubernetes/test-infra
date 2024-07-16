@@ -11,7 +11,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-build
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-unit-test-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -64,7 +64,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-unit-test-386
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -92,7 +92,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-verify
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - /bin/bash
         args:
@@ -120,7 +120,6 @@ presubmits:
   - name: pull-etcd-govulncheck
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: true # remove this once the job is green
     branches:
     - main
     decorate: true
@@ -129,7 +128,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-govulncheck
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -140,10 +139,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "4Gi"
+            memory: "1Gi"
           limits:
             cpu: "4"
-            memory: "4Gi"
+            memory: "1Gi"
 
   - name: pull-etcd-e2e-amd64
     cluster: eks-prow-build-cluster
@@ -157,7 +156,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-e2e-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -186,7 +185,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-integration-1-cpu-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -216,7 +215,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-integration-2-cpu-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -246,7 +245,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-integration-4-cpu-amd64
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -279,7 +278,7 @@ presubmits:
       testgrid-tab-name: pull-etcd-robustness-amd64
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:

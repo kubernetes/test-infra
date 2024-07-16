@@ -2,9 +2,9 @@
 
 reviewers:
 - cjwagner
-- spiffxp
 approvers:
 - cjwagner
+emeritus_approvers:
 - spiffxp
 
 labels:

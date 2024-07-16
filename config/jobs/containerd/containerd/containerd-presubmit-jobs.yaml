@@ -2,6 +2,7 @@ presubmits:
   containerd/containerd:
   - name: pull-containerd-build
     always_run: true
+    cluster: k8s-infra-prow-build
     branches:
     - main
     - release/1.6
@@ -16,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -24,9 +25,17 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
 
   - name: pull-containerd-node-e2e
     always_run: true
+    cluster: k8s-infra-prow-build
     max_concurrency: 8
     decorate: true
     branches:
@@ -52,7 +61,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -67,7 +76,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -75,9 +83,17 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
 
   - name: pull-containerd-node-e2e-1-7
     always_run: true
+    cluster: k8s-infra-prow-build
     max_concurrency: 8
     decorate: true
     branches:
@@ -103,7 +119,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -118,7 +134,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -126,9 +141,17 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.7-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
 
   - name: pull-containerd-node-e2e-1-7-sandboxed
     always_run: false
+    cluster: k8s-infra-prow-build
     max_concurrency: 8
     decorate: true
     branches:
@@ -154,7 +177,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -171,7 +194,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -179,9 +201,17 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.7-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
 
   - name: pull-containerd-node-e2e-1-6
     always_run: true
+    cluster: k8s-infra-prow-build
     max_concurrency: 8
     decorate: true
     branches:
@@ -207,7 +237,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e-1-6
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -222,7 +252,6 @@ presubmits:
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
-          --gcp-project=cri-c8d-pr-node-e2e
           --gcp-zone=us-central1-f
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
@@ -230,6 +259,13 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.6-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
 
   - name: pull-containerd-k8s-e2e-ec2
     branches:
@@ -268,7 +304,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:

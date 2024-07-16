@@ -31,7 +31,6 @@ readonly APPS=(
     k8s-io
     kubernetes-external-secrets
     perfdash
-    prow
     publishing-bot
     slack-infra
 )

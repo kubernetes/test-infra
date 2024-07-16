@@ -1,6 +1,6 @@
 # alpine image
 
-Use this image when you want to use `alpine` as base
+Use this image when you want to use `alpine` as a base.
 
 ## contents
 

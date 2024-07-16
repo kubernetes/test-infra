@@ -1,5 +1,27 @@
 presubmits:
   kubernetes-sigs/image-builder:
+  - name: pull-azure-vhds-wi
+    labels:
+      preset-azure-cred-wi: "true"
+    decorate: true
+    always_run: false
+    decoration_config:
+      timeout: 1h
+    max_concurrency: 5
+    path_alias: sigs.k8s.io/image-builder
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+        args:
+          - runner.sh
+          - "./images/capi/scripts/ci-azure-e2e.sh"
+        resources:
+          requests:
+            cpu: 1000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-builder
+      testgrid-tab-name: pr-azure-vhds-wi
   - name: pull-azure-vhds
     labels:
       preset-azure-cred: "true"
@@ -11,7 +33,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
@@ -33,7 +55,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
@@ -56,7 +78,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-json-sort.sh"
@@ -80,7 +102,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           args:
           - runner.sh
           - "./images/capi/scripts/ci-packer-validate.sh"
@@ -104,7 +126,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           args:
           - runner.sh
           - "./images/capi/scripts/ci-lint.sh"
@@ -131,7 +153,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-gce.sh"
@@ -160,7 +182,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-goss-populate.sh"
@@ -186,7 +208,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-container-image.sh"

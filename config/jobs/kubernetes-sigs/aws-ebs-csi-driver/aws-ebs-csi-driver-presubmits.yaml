@@ -12,7 +12,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -43,9 +43,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
-      serviceAccountName: aws-shared-testing-role
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -75,7 +74,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -103,7 +102,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -133,7 +132,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -165,7 +164,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
         - runner.sh
         args:
@@ -197,7 +196,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -229,7 +228,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -261,7 +260,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:
@@ -294,7 +293,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
             - runner.sh
           args:

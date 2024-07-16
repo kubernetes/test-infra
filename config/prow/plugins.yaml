@@ -228,7 +228,6 @@ lgtm:
   - kubernetes-sigs/cri-tools
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
-  - kubernetes-sigs/etcdadm
   - kubernetes-sigs/external-dns
   - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
@@ -625,6 +624,8 @@ config_updater:
     label_sync/labels.yaml:
       name: label-config
       clusters:
+        k8s-infra-prow-build-trusted:
+          - test-pods
         test-infra-trusted:
           - test-pods
     config/prow/config.yaml:
@@ -1525,10 +1526,6 @@ plugins:
     plugins:
     - mergecommitblocker
 
-  kubernetes-sigs/etcdadm:
-    plugins:
-    - milestone
-
   kubernetes-sigs/contributor-playground:
     plugins:
     - require-matching-label
@@ -1591,9 +1588,11 @@ plugins:
 
   etcd-io:
     plugins:
+    - approve
     - assign
     - trigger
     - label
+    - lgtm
     - pony
     - retitle
     - size
@@ -1610,6 +1609,7 @@ plugins:
     - label   # Allow people to label issues and PRs
     - mergecommitblocker # Mark PRs with merge commits
     - size    # Mark size of PRs
+    - skip    # Skip non-essential prow CI jobs
     - wip     # Mark draft PRs
 
   kubernetes-sigs/secrets-store-csi-driver:

@@ -4,6 +4,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 1h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -15,7 +17,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       resources:
         limits:
           cpu: 2
@@ -55,7 +57,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -99,7 +101,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -133,6 +135,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   cron: '0 0 * * *'
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -144,7 +148,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -175,6 +179,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   cron: '0 0 * * *'
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -186,7 +192,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -230,7 +236,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -276,7 +282,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -310,6 +316,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   cron: '0 3 * * *'
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -321,7 +329,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -352,6 +360,8 @@ periodics:
     preset-kind-volume-mounts: "true"
   cron: '0 3 * * *'
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -363,7 +373,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:
@@ -391,6 +401,8 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -406,7 +418,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       - bash
@@ -446,6 +458,8 @@ periodics:
     preset-cluster-api-provider-vsphere-janitor-config: "true"
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -457,7 +471,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
       command:
       - runner.sh
       args:

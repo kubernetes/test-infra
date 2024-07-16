@@ -2,15 +2,14 @@
 
 reviewers:
 - michelle192837
-- spiffxp
 - wojtek-t
 - chases2
 approvers:
 - michelle192837
-- spiffxp
 - wojtek-t
 - chases2
 emeritus_approvers:
 - shyamjvs
+- spiffxp
 labels:
 - area/testgrid

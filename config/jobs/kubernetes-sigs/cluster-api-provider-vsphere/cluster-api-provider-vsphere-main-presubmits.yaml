@@ -10,10 +10,12 @@ presubmits:
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -38,10 +40,12 @@ presubmits:
       preset-dind-enabled: "true"
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -69,10 +73,12 @@ presubmits:
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         resources:
           limits:
             cpu: 2
@@ -101,11 +107,13 @@ presubmits:
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -142,7 +150,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -179,7 +187,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -210,6 +218,8 @@ presubmits:
       preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      timeout: 120m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -217,7 +227,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -251,11 +261,13 @@ presubmits:
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -286,11 +298,13 @@ presubmits:
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -323,11 +337,13 @@ presubmits:
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -364,7 +380,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -403,7 +419,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -434,6 +450,8 @@ presubmits:
       preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      timeout: 120m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -441,7 +459,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -475,11 +493,13 @@ presubmits:
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -510,11 +530,13 @@ presubmits:
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:
@@ -543,11 +565,13 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.30
         command:
         - runner.sh
         args:

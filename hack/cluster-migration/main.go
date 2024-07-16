@@ -590,23 +590,27 @@ func main() {
 ## JOBS AT RISK
 
 If you own any jobs listed below, PLEASE ensure they are migrated to a community cluster prior to August 1st, 2024. If you need help, please reach out to #sig-testing of #sig-k8s-infra on Slack.
+
+For more context, see the announcement thread at https://groups.google.com/a/kubernetes.io/g/dev/c/p6PAML90ZOU
+
 | File Path | Job | Link |
 | --- | --- | --- |
 `)
+		var results []string
 		repos := getAllRepos(status)
-		sort.Strings(repos)
 		for _, repo := range repos {
 			jobs := getIncompleteJobs(repo, status)
-			sort.Slice(jobs, func(i, j int) bool {
-				return jobs[i].SourcePath < jobs[j].SourcePath
-			})
 			for _, job := range jobs {
 				link := "https://cs.k8s.io/?q=name%3A%20" + job.JobName + "%24&i=nope&files=&excludeFiles=&repos="
-				// Write the lines in the table
-				_, err = f.WriteString(fmt.Sprintf("|%v|%v|[Search Results](%s)|\n", job.SourcePath, job.JobName, link))
-				if err != nil {
-					log.Fatal(err)
-				}
+				results = append(results, fmt.Sprintf("%s\t%s\t%s", job.SourcePath, job.JobName, link))
+			}
+		}
+		sort.Strings(results)
+		for _, line := range results {
+			parts := strings.Split(line, "\t")
+			_, err = f.WriteString(fmt.Sprintf("|%v|%v|[Search Results](%s)|\n", parts[0], parts[1], parts[2]))
+			if err != nil {
+				log.Fatal(err)
 			}
 		}
 		return

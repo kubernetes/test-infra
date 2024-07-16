@@ -21,7 +21,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.13
+      base_ref: release-1.15
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: false
     - org: kubernetes-sigs
@@ -36,7 +36,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.27
         command:
         - "runner.sh"
         - "env"

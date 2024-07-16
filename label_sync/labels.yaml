@@ -1,3 +1,4 @@
+# Format is as follows.
 # default: global configuration to be applied to all repos
 # repos: list of repos with specific configuration to be applied in addition to default
 #   labels: list of labels - keys for each item: color, description, name, target, deleteAfter, previously
@@ -1050,6 +1051,12 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to Kubernetes AWS infrastructure
         name: area/infra/aws
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Kubernetes Azure infrastructure
+        name: area/infra/azure
         target: both
         prowPlugin: label
         addedBy: anyone

@@ -15,7 +15,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
         - runner.sh
         args:
@@ -54,7 +54,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -77,14 +77,14 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -112,14 +112,14 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -147,14 +147,14 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -183,14 +183,14 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -220,7 +220,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
         - "runner.sh"
         - "make"
@@ -250,13 +250,13 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -284,9 +284,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -295,8 +294,9 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:
@@ -325,9 +325,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -336,8 +335,9 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:
@@ -368,9 +368,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -379,8 +378,9 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:
@@ -411,9 +411,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -422,8 +421,9 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:
@@ -460,9 +460,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -471,8 +470,9 @@ presubmits:
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:
@@ -511,7 +511,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -530,9 +530,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     decorate: true
     optional: true
     always_run: false
@@ -547,8 +546,9 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -568,9 +568,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     decorate: true
     run_if_changed: '^test\/e2e\/(config\/azure-dev\.yaml)|(data\/shared\/v1beta1_provider\/metadata\.yaml)$'
     optional: false
@@ -584,8 +583,9 @@ presubmits:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -613,14 +613,14 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
           - runner.sh
         args:
@@ -650,9 +650,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -665,8 +664,9 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:
@@ -695,9 +695,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-wi: "true"
     branches:
     - ^main$
     extra_refs:
@@ -710,8 +709,9 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
           command:
             - runner.sh
           args:

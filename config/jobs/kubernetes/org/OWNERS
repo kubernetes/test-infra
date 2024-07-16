@@ -5,14 +5,13 @@ reviewers:
 - idvoretskyi
 - mrbobbytables
 - nikhita
-- spiffxp
 approvers:
 - cblecker
 - idvoretskyi
 - mrbobbytables
 - nikhita
-- spiffxp
 emeritus_approvers:
 - fejta
+- spiffxp
 labels:
 - sig/contributor-experience

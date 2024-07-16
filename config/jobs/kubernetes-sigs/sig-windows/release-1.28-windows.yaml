@@ -22,7 +22,7 @@ periodics:
   decoration_config:
     timeout: 4h0m0s
   extra_refs:
-  - base_ref: release-1.13
+  - base_ref: release-1.15
     org: kubernetes-sigs
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     repo: cluster-api-provider-azure
@@ -53,7 +53,7 @@ periodics:
       - env
       - KUBERNETES_VERSION=latest-1.28
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.28
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.28
       name: ""
       resources:
         requests:
@@ -84,7 +84,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.13
+    base_ref: release-1.15
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: false
   - org: kubernetes-sigs
@@ -99,7 +99,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.28
         command:
           - "runner.sh"
           - "env"

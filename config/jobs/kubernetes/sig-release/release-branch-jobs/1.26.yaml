@@ -174,7 +174,7 @@ periodics:
 - annotations:
     fork-per-release-cron: ""
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
-    testgrid-dashboards: sig-release-1.26-blocking, sig-scalability-gce, google-gce, google-gci
+    testgrid-dashboards: sig-release-1.26-blocking, sig-scalability-gce
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.26-scalability-100
   cluster: k8s-infra-prow-build
@@ -1032,7 +1032,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240611-597c402033-experimental
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-experimental
         name: ""
         resources:
           limits:
