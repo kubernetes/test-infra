@@ -41,6 +41,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -77,6 +78,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -97,6 +99,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -133,6 +136,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
@@ -153,6 +157,7 @@ periodics:
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
     preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 90m
@@ -190,6 +195,7 @@ periodics:
       resources:
         limits:
           memory: "3Gi"
+          cpu: "2"
         requests:
           cpu: "2"
           memory: "3Gi"
