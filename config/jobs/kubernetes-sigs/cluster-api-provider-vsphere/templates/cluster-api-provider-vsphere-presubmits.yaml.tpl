@@ -9,6 +9,8 @@ presubmits:
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -37,6 +39,8 @@ presubmits:
       preset-dind-enabled: "true"
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -68,6 +72,8 @@ presubmits:
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -101,6 +107,8 @@ presubmits:
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -146,6 +154,8 @@ presubmits:
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
@@ -275,6 +285,8 @@ presubmits:
       preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      timeout: 120m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -320,6 +332,8 @@ presubmits:
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
@@ -364,6 +378,8 @@ presubmits:
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
@@ -399,6 +415,8 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 1
     spec:

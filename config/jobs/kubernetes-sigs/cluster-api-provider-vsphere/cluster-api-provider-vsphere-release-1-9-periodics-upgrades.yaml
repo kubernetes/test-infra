@@ -4,6 +4,8 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-28-1-29-release-1-9
   cron: '0 0 * * *'
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -49,6 +51,8 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-29-1-30-release-1-9
   cron: '0 0 * * *'
   decorate: true
+  decoration_config:
+    timeout: 120m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
