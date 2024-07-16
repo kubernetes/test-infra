@@ -1614,6 +1614,7 @@ plugins:
     - label   # Allow people to label issues and PRs
     - mergecommitblocker # Mark PRs with merge commits
     - size    # Mark size of PRs
+    - skip    # Skip non-essential prow CI jobs
     - wip     # Mark draft PRs
 
   kubernetes-sigs/secrets-store-csi-driver:
