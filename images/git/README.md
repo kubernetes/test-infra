@@ -1,6 +1,6 @@
 # git image
 
-Use this image when you want to use `git` and `alpine` as base in a job.
+Use this image when you want to use `git` and `alpine` as a base in a job.
 
 ## contents
 
