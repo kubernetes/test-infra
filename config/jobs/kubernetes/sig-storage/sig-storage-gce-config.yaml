@@ -245,6 +245,7 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      preset-dind-enabled: "true"
     decorate: true
     decoration_config:
       timeout: 150m
