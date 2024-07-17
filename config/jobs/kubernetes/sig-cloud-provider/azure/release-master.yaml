@@ -284,7 +284,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -330,7 +330,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -378,7 +378,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -426,7 +426,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -484,7 +484,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -544,7 +544,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -601,7 +601,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-anonymous-pull: "true"
-    preset-azure-capz-cred-wi: "true"
+    preset-azure-cred-wi: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
