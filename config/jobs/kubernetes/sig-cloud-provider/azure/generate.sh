@@ -42,7 +42,7 @@ generate_preset_labels() {
   capz_ref="${2}"
   if [[ "${capz_ref}" == "main" ]]; then
     creds=$(cat <<EOF
-  preset-azure-capz-cred-wi: "true"
+  preset-azure-cred-wi: "true"
 EOF
   )
   else
