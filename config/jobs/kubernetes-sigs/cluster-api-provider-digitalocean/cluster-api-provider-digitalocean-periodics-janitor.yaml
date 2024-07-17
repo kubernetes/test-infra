@@ -1,6 +1,7 @@
 periodics:
   - name: periodic-cluster-api-provider-digitalocean-janitor
     decorate: true
+    cluster: k8s-infra-prow-build
     decoration_config:
       timeout: 1h
     interval: 12h

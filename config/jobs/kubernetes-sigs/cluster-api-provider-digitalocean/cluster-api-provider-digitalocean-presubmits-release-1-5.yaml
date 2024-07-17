@@ -100,6 +100,7 @@ presubmits:
       always_run: true
       optional: false
       decorate: true
+      cluster: k8s-infra-prow-build
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       decoration_config:
         timeout: 5h
@@ -119,9 +120,12 @@ presubmits:
             securityContext:
               privileged: true
             resources:
+              limits:
+                cpu: 4
+                memory: "7Gi"
               requests:
-                cpu: 1
-                memory: "4Gi"
+                cpu: 4
+                memory: "7Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
         testgrid-tab-name: capdo-pr-e2e-release-1-5
@@ -129,6 +133,7 @@ presubmits:
       always_run: false
       optional: true
       decorate: true
+      cluster: k8s-infra-prow-build
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       decoration_config:
         timeout: 5h
@@ -153,9 +158,12 @@ presubmits:
             securityContext:
               privileged: true
             resources:
+              limits:
+                cpu: 4
+                memory: "7Gi"
               requests:
-                cpu: 1
-                memory: "4Gi"
+                cpu: 4
+                memory: "7Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
         testgrid-tab-name: capdo-pr-capi-e2e-release-1-5
@@ -170,6 +178,7 @@ presubmits:
       always_run: false
       optional: true
       decorate: true
+      cluster: k8s-infra-prow-build
       decoration_config:
         timeout: 5h
       spec:
@@ -185,9 +194,12 @@ presubmits:
             securityContext:
               privileged: true
             resources:
+              limits:
+                cpu: 4
+                memory: "7Gi"
               requests:
-                memory: "9000Mi"
-                cpu: 2000m
+                cpu: 4
+                memory: "7Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
         testgrid-tab-name: capdo-pr-e2e-upgrade-release-1-5
@@ -195,6 +207,7 @@ presubmits:
       always_run: false
       optional: true
       decorate: true
+      cluster: k8s-infra-prow-build
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       decoration_config:
         timeout: 5h
@@ -214,9 +227,12 @@ presubmits:
             securityContext:
               privileged: true
             resources:
+              limits:
+                cpu: 4
+                memory: "7Gi"
               requests:
-                cpu: 2
-                memory: "9Gi"
+                cpu: 4
+                memory: "7Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
         testgrid-tab-name: capdo-pr-conformance-release-1-5
@@ -224,6 +240,7 @@ presubmits:
       always_run: false
       optional: true
       decorate: true
+      cluster: k8s-infra-prow-build
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
       decoration_config:
         timeout: 5h
@@ -246,9 +263,12 @@ presubmits:
             securityContext:
               privileged: true
             resources:
+              limits:
+                cpu: 4
+                memory: "7Gi"
               requests:
-                cpu: 2
-                memory: "9Gi"
+                cpu: 4
+                memory: "7Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
         testgrid-tab-name: capdo-pr-conformance-ci-artifacts-release-1-5
