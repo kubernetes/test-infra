@@ -54,8 +54,8 @@ presubmits:
             cpu: "2"
             memory: "6Gi"
 
-  # This jobs runs e2e.test with a focus on tests for all alpha storage features on a kind cluster
-  - name: pull-kubernetes-e2e-storage-kind-alpha-features
+  # This jobs runs e2e.test with a focus on tests for all alpha/beta storage features on a kind cluster
+  - name: pull-kubernetes-e2e-storage-kind-alpha-beta-features
     always_run: false
     optional: true
     decorate: true
@@ -65,9 +65,9 @@ presubmits:
     - release-\d+\.\d+
     annotations:
       testgrid-dashboards: presubmits-kubernetes-nonblocking
-      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-alpha-features
+      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-alpha-beta-features
       testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-      description: Run storage tests for alpha features in a KIND cluster.
+      description: Run storage tests for alpha/beta features in a KIND cluster.
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -84,7 +84,7 @@ presubmits:
         - name: FEATURE_GATES
           value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true, "CSIVolumeHealth": true}'
         - name: RUNTIME_CONFIG
-          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true"}'
+          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
         - name: FOCUS
           value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]|\[Feature:CSIVolumeHealth\]
         - name: PARALLEL
@@ -147,12 +147,12 @@ periodics:
             cpu: "2"
             memory: "6Gi"
 
-  # This jobs runs e2e.test with a focus on tests for all alpha storage features on a kind cluster
-  - name: ci-kubernetes-e2e-storage-kind-alpha-features
+  # This jobs runs e2e.test with a focus on tests for all alpha/beta storage features on a kind cluster
+  - name: ci-kubernetes-e2e-storage-kind-alpha-beta-features
     interval: 12h
     annotations:
       testgrid-dashboards: sig-storage-kubernetes
-      testgrid-tab-name: kind-alpha-features
+      testgrid-tab-name: kind-storage-alpha-beta-features
       testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
       description: Run storage tests for alpha features in a KIND cluster.
     decorate: true
@@ -178,7 +178,7 @@ periodics:
         - name: FEATURE_GATES
           value: '{"VolumeAttributesClass":true, "HonorPVReclaimPolicy": true, "CSIVolumeHealth": true}'
         - name: RUNTIME_CONFIG
-          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true"}'
+          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
         - name: FOCUS
           value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]|\[Feature:CSIVolumeHealth\]
         - name: PARALLEL
