@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-azure-conformance-main
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 4h
@@ -7,14 +8,13 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
       base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
@@ -28,12 +28,16 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-main
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 4h
@@ -41,8 +45,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-cred-wi: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -55,7 +58,6 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
@@ -70,6 +72,9 @@ periodics:
           privileged: true
         resources:
           requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
             cpu: 2
             memory: "9Gi"
   annotations:
@@ -227,6 +232,7 @@ periodics:
     testgrid-tab-name: capz-periodic-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-e2e-aks-main
+  cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
     timeout: 4h
@@ -234,15 +240,13 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-cred-wi: "true"
+    preset-azure-community: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
       base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       command:
@@ -254,6 +258,13 @@ periodics:
           value: \[Managed Kubernetes\]
         - name: GINKGO_SKIP
           value: ""
+      resources:
+        limits:
+          cpu: 2
+          memory: "9Gi"
+        requests:
+          cpu: 2
+          memory: "9Gi"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
