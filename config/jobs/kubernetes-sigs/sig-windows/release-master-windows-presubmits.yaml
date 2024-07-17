@@ -424,6 +424,7 @@ presubmits:
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-2022: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -455,19 +456,6 @@ presubmits:
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
-          volumeMounts:
-          - mountPath: /var/run/secrets/azure-token/serviceaccount
-            name: azure-token
-            readOnly: true
-      volumes:
-        - name: azure-token
-          projected:
-            defaultMode: 420
-            sources:
-              - serviceAccountToken:
-                  expirationSeconds: 86400
-                  path: token
-                  audience: api://AzureADTokenExchange
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension-community
