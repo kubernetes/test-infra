@@ -61,6 +61,19 @@ ${creds}
 EOF
 }
 
+generate_serviceaccount_name() {
+  indent=${1}
+  capz_ref="${2}"
+  if [[ "${capz_ref}" == "main" ]]; then
+    serviceaccount="prowjob-default-sa"
+  else
+    serviceaccount="default"
+  fi
+  cat << EOF | pr -to $indent
+serviceAccountName: ${serviceaccount}
+EOF
+}
+
 # we need to define the full image URL so it can be autobumped
 tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master"
 kubekins_e2e_image="${tmp/\-master/}"
@@ -113,6 +126,7 @@ $(generate_preset_labels 4 ${capz_release})
         base_ref: ${ccm_branch}
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+$(generate_serviceaccount_name 6 ${capz_release})
       containers:
         - image: ${kubekins_e2e_image}-master
           command:
@@ -158,6 +172,7 @@ $(generate_preset_labels 4 ${capz_release})
         base_ref: ${ccm_branch}
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+$(generate_serviceaccount_name 6 ${capz_release})
       containers:
         - image: ${kubekins_e2e_image}-master
           command:
@@ -205,6 +220,7 @@ $(generate_preset_labels 4 ${capz_release})
         base_ref: ${ccm_branch}
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+$(generate_serviceaccount_name 6 ${capz_release})
       containers:
         - image: ${kubekins_e2e_image}-master
           command:
@@ -251,6 +267,7 @@ $(generate_preset_labels 4 ${capz_release})
         base_ref: ${ccm_branch}
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+$(generate_serviceaccount_name 6 ${capz_release})
       containers:
         - image: ${kubekins_e2e_image}-master
           command:
@@ -295,6 +312,7 @@ $(generate_preset_labels 4 ${capz_release})
       base_ref: ${ccm_branch}
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
+$(generate_serviceaccount_name 6 ${capz_release})
       containers:
       - image: ${kubekins_e2e_image}-master
         command:
@@ -331,6 +349,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -373,6 +392,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -417,6 +437,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -468,6 +489,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -522,6 +544,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -578,6 +601,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -631,6 +655,7 @@ $(generate_preset_labels 2 ${capz_periodic_branch_name})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_periodic_branch_name})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -682,6 +707,7 @@ $(generate_preset_labels 2 ${capz_release})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_release})
     containers:
     - image: ${kubekins_e2e_image}-master
       command:
@@ -731,6 +757,7 @@ $(generate_preset_labels 2 ${capz_release})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_release})
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -785,6 +812,7 @@ $(generate_preset_labels 2 ${capz_release})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_release})
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -841,6 +869,7 @@ $(generate_preset_labels 2 ${capz_release})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_release})
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -894,6 +923,7 @@ $(generate_preset_labels 2 ${capz_release})
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+$(generate_serviceaccount_name 4 ${capz_release})
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
