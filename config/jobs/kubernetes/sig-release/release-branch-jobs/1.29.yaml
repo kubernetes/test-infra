@@ -1087,11 +1087,11 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "2"
-            memory: 6Gi
+            cpu: "4"
+            memory: 14Gi
           requests:
-            cpu: "2"
-            memory: 6Gi
+            cpu: "4"
+            memory: 14Gi
         securityContext:
           privileged: true
   - always_run: false
