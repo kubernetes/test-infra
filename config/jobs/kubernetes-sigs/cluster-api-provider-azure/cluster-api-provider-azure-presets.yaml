@@ -41,7 +41,7 @@ presets:
 - labels:
     preset-azure-community: "true"
   env: # below env values are not secrets
-  - name: AZURE_CLIENT_IDs
+  - name: AZURE_CLIENT_ID
     value: "34d8e06d-d198-477e-b166-6936e58d90ae"
   - name: AZURE_SUBSCRIPTION_ID
     value: "46678f10-4bbb-447e-98e8-d2829589f2d8"
