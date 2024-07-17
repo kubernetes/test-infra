@@ -59,10 +59,10 @@ presubmits:
         - --timeout=60m
         resources:
           limits:
-            cpu: 2
-            memory: "6Gi"
+            cpu: 4
+            memory: "14Gi"
           requests:
-            cpu: 2
-            memory: "6Gi"
+            cpu: 4
+            memory: "14Gi"
         securityContext:
           privileged: true
