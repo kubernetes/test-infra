@@ -65,13 +65,10 @@ generate_serviceaccount_name() {
   indent=${1}
   capz_ref="${2}"
   if [[ "${capz_ref}" == "main" ]]; then
-    serviceaccount="prowjob-default-sa"
-  else
-    serviceaccount="default"
-  fi
-  cat << EOF | pr -to $indent
-serviceAccountName: ${serviceaccount}
+    cat << EOF | pr -to $indent
+serviceAccountName: prowjob-default-sa
 EOF
+  fi
 }
 
 # we need to define the full image URL so it can be autobumped

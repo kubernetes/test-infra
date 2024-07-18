@@ -30,7 +30,7 @@ presubmits:
         base_ref: release-1.27
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
-      serviceAccountName: default
+
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -81,7 +81,7 @@ presubmits:
         base_ref: release-1.27
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
-      serviceAccountName: default
+
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -134,7 +134,7 @@ presubmits:
         base_ref: release-1.27
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
-      serviceAccountName: default
+
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -186,7 +186,7 @@ presubmits:
         base_ref: release-1.27
         path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
-      serviceAccountName: default
+
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -236,7 +236,7 @@ presubmits:
       base_ref: release-1.27
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
-      serviceAccountName: default
+
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -278,7 +278,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -326,7 +326,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -376,7 +376,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -433,7 +433,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -493,7 +493,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -555,7 +555,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
@@ -614,7 +614,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: default
+
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
       command:
