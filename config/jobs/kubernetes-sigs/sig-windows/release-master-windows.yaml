@@ -117,6 +117,9 @@ periodics:
         env:
           - name: IMAGE_VERSION
             value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
+          # skip Procmount security context test until https://github.com/kubernetes/kubernetes/issues/126180 is resolved (then remove GINKGO_SKIP env var entirely)
+          - name: GINKGO_SKIP
+            value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost|\[sig-autoscaling\].\[Feature:HPA\]|ignore.ProcMount.Specific.SecurityContext
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
@@ -274,6 +277,11 @@ periodics:
           limits:
             cpu: 2
             memory: "9Gi"
+        env:
+          # skip '...Procmount security context...'' test until https://github.com/kubernetes/kubernetes/issues/126180 is resolved
+          # skip .Container Runtime blackbox test when running a container with a new image should be able to pull from private registry with secret' in community clusters until https://github.com/kubernetes-sigs/windows-testing/issues/446 is resolved
+          - name: GINKGO_SKIP
+            value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost|\[sig-autoscaling\].\[Feature:HPA\]|ignore.ProcMount.Specific.SecurityContext|pull.from.private.registry.with.secret
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
