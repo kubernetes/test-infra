@@ -431,8 +431,9 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.28",
+    "1.28", # TODO: Remove around kOps 1.30.0 release
     "1.29",
+    "1.30",
 ]
 
 
