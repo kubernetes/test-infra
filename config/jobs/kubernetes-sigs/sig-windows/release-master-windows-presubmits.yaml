@@ -60,6 +60,9 @@ presubmits:
           requests:
             cpu: 2
             memory: "9Gi"
+        env:
+          - name: API_SERVER_FEATURE_GATES
+            value: "UserNamespacesSupport=true"
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
