@@ -272,8 +272,8 @@ presubmits:
           args:
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -461,8 +461,8 @@ presubmits:
           args:
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -728,8 +728,8 @@ periodics:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.16
-          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.12
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -779,8 +779,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v1.7.16
-      - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.1.12
+      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v1.7.20
+      - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.1.13
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
