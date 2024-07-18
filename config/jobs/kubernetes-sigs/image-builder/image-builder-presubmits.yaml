@@ -1,8 +1,9 @@
 presubmits:
   kubernetes-sigs/image-builder:
   - name: pull-azure-vhds
+    cluster: eks-prow-build-cluster
     labels:
-      preset-azure-cred-wi: "true"
+      preset-azure-community: "true"
     decorate: true
     run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/(config|goss|azure)/.*|images/capi/hack/ensure-(ansible|packer|jq|azure-cli|goss).*'
     decoration_config:
@@ -10,7 +11,6 @@ presubmits:
     max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         args:
@@ -19,12 +19,17 @@ presubmits:
         resources:
           requests:
             cpu: 1000m
+            memory: 4Gi
+          limits:
+            cpu: 1000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-vhds
   - name: pull-azure-sigs
+    cluster: eks-prow-build-cluster
     labels:
-      preset-azure-cred-wi: "true"
+      preset-azure-community: "true"
     decorate: true
     run_if_changed: 'images/capi/Makefile|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/azure/.*'
     optional: true
@@ -33,7 +38,6 @@ presubmits:
     max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         args:
@@ -45,6 +49,10 @@ presubmits:
         resources:
           requests:
             cpu: 1000m
+            memory: 4Gi
+          limits:
+            cpu: 1000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-sigs
