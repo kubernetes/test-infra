@@ -546,57 +546,6 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
-- annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-release-1.29-informing, sig-windows-master-release, sig-windows-signal
-    testgrid-tab-name: capz-windows-1.29
-  decorate: true
-  decoration_config:
-    timeout: 4h0m0s
-  extra_refs:
-  - base_ref: release-1.15
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    repo: cluster-api-provider-azure
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/windows-testing
-    repo: windows-testing
-    workdir: true
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    repo: cloud-provider-azure
-  interval: 3h
-  labels:
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
-    preset-azure-cred-only: "true"
-    preset-capz-containerd-1-7-latest: "true"
-    preset-capz-windows-2019: "true"
-    preset-capz-windows-common: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-windows-private-registry-cred: "true"
-  name: ci-kubernetes-e2e-capz-master-windows-1-29
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - env
-      - KUBERNETES_VERSION=latest-1.29
-      - ./capz/run-capz-e2e.sh
-      env:
-      - name: IMAGE_VERSION
-        value: 127.1.20230417
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
-      name: ""
-      resources:
-        requests:
-          cpu: "2"
-          memory: 9Gi
-      securityContext:
-        privileged: true
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
