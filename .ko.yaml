@@ -1,13 +1,13 @@
 # Distroless images:
 # defaultBaseImage: gcr.io/distroless/static:nonroot
 baseImageOverrides:
-  k8s.io/test-infra/robots/issue-creator: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
-  k8s.io/test-infra/testgrid/cmd/configurator: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
-  k8s.io/test-infra/label_sync: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
-  k8s.io/test-infra/robots/commenter: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
-  k8s.io/test-infra/robots/pr-creator: gcr.io/k8s-prow/git:v20240129-a0a4e743bf
-  k8s.io/test-infra/gcsweb/cmd/gcsweb: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
-  k8s.io/test-infra/gencred: gcr.io/k8s-prow/alpine:v20240129-a0a4e743bf
+  k8s.io/test-infra/robots/issue-creator: gcr.io/k8s-staging-test-infra/alpine:v20240716-28236d8b05
+  k8s.io/test-infra/testgrid/cmd/configurator: gcr.io/k8s-staging-test-infra/alpine:v20240716-28236d8b05
+  k8s.io/test-infra/label_sync: gcr.io/k8s-staging-test-infra/alpine:v20240716-28236d8b05
+  k8s.io/test-infra/robots/commenter: gcr.io/k8s-staging-test-infra/alpine:v20240716-28236d8b05
+  k8s.io/test-infra/robots/pr-creator: gcr.io/k8s-staging-test-infra/git:v20240716-28236d8b05
+  k8s.io/test-infra/gcsweb/cmd/gcsweb: gcr.io/k8s-staging-test-infra/alpine:v20240716-28236d8b05
+  k8s.io/test-infra/gencred: gcr.io/k8s-staging-test-infra/alpine:v20240716-28236d8b05
 
 # https://pkg.go.dev/cmd/link
 # -s: omit symbol/debug info

@@ -78,7 +78,7 @@ images:
 ### Makefile build example
 
 If your build process is driven by a Makefile or similar, you can use GCB to
-invoke that. We provide the [`gcr.io/k8s-testimages/gcb-docker-gcloud` image][gcb-docker-gcloud],
+invoke that. We provide the [`gcr.io/k8s-staging-test-infra/gcb-docker-gcloud` image][gcb-docker-gcloud],
 which contains components that are likely to be useful for your builds. A sample
 `cloudbuild.yaml` using `make` to build and push might look like this:
 
@@ -92,7 +92,7 @@ timeout: 1200s
 options:
   substitution_option: ALLOW_LOOSE
 steps:
-  - name: 'gcr.io/k8s-testimages/gcb-docker-gcloud:v20190906-745fed4'
+  - name: 'gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20190906-745fed4'
     entrypoint: make
     env:
     - DOCKER_CLI_EXPERIMENTAL=enabled
