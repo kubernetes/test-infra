@@ -97,13 +97,13 @@ periodics:
     testgrid-tab-name: capi-periodic-upgrade-main-1-27-1-28
 
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-28-1-29-main
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
