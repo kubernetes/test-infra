@@ -239,7 +239,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20240513-a9bd71bf01
+        image: gcr.io/k8s-prow/gencred:v20240719-47a381b1df
         command:
         - gencred
         args:
@@ -286,7 +286,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20240513-a9bd71bf01
+      - image: gcr.io/k8s-prow/configurator:v20240719-47a381b1df
         command:
         - configurator
         args:
@@ -492,7 +492,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20240513-a9bd71bf01
+      image: gcr.io/k8s-prow/gencred:v20240719-47a381b1df
       command:
       - gencred
       args:
