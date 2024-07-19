@@ -16,7 +16,7 @@ include ../Makefile.base.mk
 # Makefile.base.mk requires REPO_ROOT to be set
 REPO_ROOT:=${CURDIR}/..
 
-IMG = gcr.io/k8s-testimages/kettle
+IMG = gcr.io/k8s-staging-test-infra/kettle
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # These are the usual GKE variables.

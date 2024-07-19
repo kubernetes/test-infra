@@ -1,5 +1,5 @@
 steps:
-  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
     entrypoint: /buildx-entrypoint
     args:
     - build
@@ -9,7 +9,7 @@ steps:
     - --push
     - .
     dir: .
-  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+  - name: gcr.io/k8s-staging-test-infra/gcb-docker-gcloud
     entrypoint: gcloud
     args:
     - container
