@@ -77,6 +77,8 @@ def build_test(cloud='aws',
         kops_version = None
     else:
         kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
+        if kops_version == '1.30':
+            kops_deploy_url = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
