@@ -1,13 +1,13 @@
 periodics:
 
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-26-1-27-main
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-cred-wi: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -18,7 +18,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
@@ -39,20 +38,24 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
         requests:
-          cpu: 7300m
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capi-periodic-upgrade-main-1-26-1-27
 
 - name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-27-1-28-main
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -63,7 +66,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
@@ -84,8 +86,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
         requests:
-          cpu: 7300m
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capi-periodic-upgrade-main-1-27-1-28
@@ -129,8 +135,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
         requests:
-          cpu: 7300m
+          cpu: 2
+          memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capi-periodic-upgrade-main-1-28-1-29
