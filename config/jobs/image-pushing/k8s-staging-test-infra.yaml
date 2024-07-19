@@ -312,6 +312,29 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/git-custom-k8s-auth/
+    - name: post-test-infra-push-misc-images-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+      annotations:
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: push-misc-images
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes misc test-infra images on each commit by running make push-misc-images
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - /
 
     #
     # components, e.g. kettle/, triage/
