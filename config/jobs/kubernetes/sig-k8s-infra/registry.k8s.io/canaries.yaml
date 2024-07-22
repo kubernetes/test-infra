@@ -76,7 +76,7 @@ periodics:
         requests:
           cpu: 4
           memory: 8Gi
-- name: e2e-kops-grid-gcr-mirror-canary
+- name: e2e-kops-staging-registry
   cluster: k8s-infra-prow-build
   cron: '11 0-23/1 * * *'
   labels:
@@ -141,4 +141,4 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
-    testgrid-tab-name: kops-grid-gcr-mirror-canary
+    testgrid-tab-name: e2e-kops-staging-registry
