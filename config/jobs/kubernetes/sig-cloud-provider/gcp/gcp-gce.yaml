@@ -886,6 +886,7 @@ periodics:
 
 - interval: 12h
   name: ci-kubernetes-e2e-gci-gce-flaky
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -906,6 +907,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-flaky
