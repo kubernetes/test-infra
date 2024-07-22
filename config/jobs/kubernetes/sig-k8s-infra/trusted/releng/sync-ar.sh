@@ -24,13 +24,7 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 readonly OUTPUT="${SCRIPT_DIR}/sync-ar-repos.yaml"
 
 readonly AR_REGIONS=(
-	asia-east2
-	europe-west3
-	europe-west10
-	europe-west12
-	us-west3
-	us-west4
-	southamerica-east1
+	""
 )
 
 cat >"${OUTPUT}" <<EOF
