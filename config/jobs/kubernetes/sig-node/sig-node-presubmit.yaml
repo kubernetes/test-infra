@@ -3359,6 +3359,51 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
+  - name: pull-kubernetes-node-e2e-resource-health-status
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    optional: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-node-kubelet-resource-health-status
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --deployment=node
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates="ResourceHealthStatus=true" --service-feature-gates="ResourceHealthStatus=true" --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --node-tests=true
+        - --provider=gce
+        - '--test_args=--timeout=1h --label-filter="FeatureGate: containsAny ResourceHealthStatus && FeatureGate: isSubsetOf ResourceHealthStatus && !Flaky && !Slow"'
+        - --timeout=65m
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
+        resources:
+          requests:
+            cpu: 4
+            memory: 6Gi
+          limits:
+            cpu: 4
+            memory: 6Gi
+
   - name: pull-kubernetes-node-e2e-containerd-serial-ec2
     skip_branches:
       - release-\d+\.\d+  # per-release image
