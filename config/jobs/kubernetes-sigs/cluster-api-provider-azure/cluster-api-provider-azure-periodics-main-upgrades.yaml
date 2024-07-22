@@ -114,7 +114,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
       args:
