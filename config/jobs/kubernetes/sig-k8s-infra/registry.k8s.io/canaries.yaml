@@ -126,10 +126,10 @@ periodics:
       resources:
         limits:
           cpu: "2"
-          memory: 3Gi
+          memory: 6Gi
         requests:
           cpu: "2"
-          memory: 3Gi
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
