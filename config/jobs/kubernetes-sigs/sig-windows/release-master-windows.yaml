@@ -26,6 +26,8 @@ presets:
   env:
   - name: WINDOWS_SERVER_VERSION
     value: "windows-2022"
+  - name: IMAGE_VERSION
+    value: "130.2.20240612" # windows july 2024 patches break networking
 - labels:
     preset-capz-serial-slow: "true"
   env:
