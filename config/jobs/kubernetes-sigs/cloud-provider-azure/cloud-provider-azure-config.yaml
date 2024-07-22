@@ -124,7 +124,7 @@ presubmits:
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
