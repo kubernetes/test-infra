@@ -5,6 +5,7 @@ presubmits:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
         preset-image-builder-vsphere-e2e-config: "true"
+      optional: true
       decorate: true
       decoration_config:
         timeout: 1h
