@@ -30,6 +30,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+          cpu: 4
+        limits:
+          memory: "6Gi"
+          cpu: 4
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
     testgrid-tab-name: kops-build
