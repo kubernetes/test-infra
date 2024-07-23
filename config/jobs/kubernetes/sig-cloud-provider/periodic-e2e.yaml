@@ -108,6 +108,7 @@ periodics:
              --version $VERSION \
              --feature-gates="AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
+             --external-cloud-provider true \
              --up \
              --down \
              --test=ginkgo \
@@ -116,7 +117,7 @@ periodics:
              --test-package-url=https://dl.k8s.io/ \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
-             --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0" \
+             --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0|Services should preserve source pod IP for traffic thru service cluster IP" \
              --parallel=25
         env:
           - name: USE_DOCKERIZED_BUILD
