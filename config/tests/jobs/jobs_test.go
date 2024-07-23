@@ -665,7 +665,6 @@ func TestCommunityJobs(t *testing.T) {
 		"post-test-infra-push-misc-images",
 		"post-test-infra-reconcile-hmacs",
 		"post-test-infra-upload-boskos-config",
-		"post-test-infra-upload-oncall",
 		"post-test-infra-upload-testgrid-config",
 	)
 

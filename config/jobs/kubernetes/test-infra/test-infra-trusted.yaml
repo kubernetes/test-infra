@@ -250,32 +250,6 @@ postsubmits:
       testgrid-tab-name: postsubmit-gencred-refresh-kubeconfig
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       description: Runs gencred to refresh generated kubeconfigs.
-  - name: post-test-infra-upload-oncall
-    cluster: test-infra-trusted
-    branches:
-    - ^master$
-    run_if_changed: '^maintenance/oncall.html$'
-    decorate: true
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20210913-fc7c4e8
-        command:
-        - gsutil
-        args:
-        - cp
-        - -Z
-        - ./maintenance/oncall.html
-        - gs://test-infra-oncall/
-        resources:
-          requests:
-            memory: "1Gi"
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: oncall-update
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Updates the html contents for go.k8s.io/oncall.
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
