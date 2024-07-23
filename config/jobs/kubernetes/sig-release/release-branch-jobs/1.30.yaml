@@ -850,7 +850,7 @@ presubmits:
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
             --admin-access=0.0.0.0/0 \
-            --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
+            --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
             --create-args "$ARGS --networking=kubenet --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true" \
             --test=kops \
             -- \
@@ -964,7 +964,7 @@ presubmits:
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
             --admin-access=0.0.0.0/0 \
-            --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
+            --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
             --create-args "$ARGS --node-count=3 --networking=kubenet --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true" \
             --test=kops \
             -- \
@@ -1019,7 +1019,7 @@ presubmits:
           kubetest2 kops -v=6 --cloud-provider=gce --up --down --build \
             --build-kubernetes=true --target-build-arch=linux/amd64 \
             --admin-access=0.0.0.0/0 \
-            --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
+            --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
             --create-args "$ARGS --node-count=3 --networking=kubenet --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true" \
             --test=kops \
             -- \

@@ -70,15 +70,12 @@ def build_test(cloud='aws',
                storage_e2e_cred=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if kops_version is None:
-        # TODO: Move to kops-ci/markers/master/ once validated
-        kops_deploy_url = "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
+        kops_deploy_url = "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt"
     elif kops_version.startswith("https://"):
         kops_deploy_url = kops_version
         kops_version = None
     else:
-        kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
-        if kops_version == '1.30':
-            kops_deploy_url = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
+        kops_deploy_url = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-{kops_version}/latest-ci.txt" # pylint: disable=line-too-long
 
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -739,7 +736,7 @@ def generate_misc():
                    networking="calico",
                    kops_channel="alpha",
                    kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
-                   publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
+                   publish_version_marker="gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    runs_per_day=24,
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                    extra_dashboards=["kops-misc"]),
@@ -1728,7 +1725,7 @@ def generate_versions():
             extra_dashboards=['kops-versions'],
             runs_per_day=8,
             # This version marker is only used by the k/k presubmit job
-            publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
+            publish_version_marker='gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt',
         )
     ]
     for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
@@ -1752,7 +1749,7 @@ def generate_pipeline():
     results = []
     for version in ['master', '1.30', '1.29', '1.28', '1.27']:
         branch = version if version == 'master' else f"release-{version}"
-        publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
+        publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
         if version == '1.30':
             publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
