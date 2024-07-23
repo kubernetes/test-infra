@@ -76,7 +76,7 @@ periodics:
         requests:
           cpu: 4
           memory: 8Gi
-- name: e2e-kops-grid-gcr-mirror-canary
+- name: e2e-kops-staging-registry
   cluster: k8s-infra-prow-build
   cron: '11 0-23/1 * * *'
   labels:
@@ -106,7 +106,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enabled=false --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enabled=false --set=cluster.spec.cloudConfig.awsEBSCSIDriver.enabled=false --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.29/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -141,4 +141,4 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
-    testgrid-tab-name: kops-grid-gcr-mirror-canary
+    testgrid-tab-name: e2e-kops-staging-registry
