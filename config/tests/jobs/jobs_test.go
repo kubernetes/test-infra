@@ -655,7 +655,6 @@ func TestCommunityJobs(t *testing.T) {
 		"ci-test-infra-branchprotector",
 		"ci-test-infra-gencred-refresh-kubeconfig",
 		"ci-test-infra-rotate-legacy-default-build-sa-json-key",
-		"ci-test-infra-update-slack-oncall",
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
 		"post-test-infra-push-alpine",

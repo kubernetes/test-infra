@@ -410,36 +410,6 @@ periodics:
     description: runs autobumper to create/update a PR that bumps prow to the latest RC without label 'skip-review'
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '3'
-- cron: "30 * * * *"  # Run at half past the hour, every hour, every day
-  name: ci-test-infra-update-slack-oncall
-  cluster: test-infra-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
-      command:
-      - ./hack/make-rules/go-run/arbitrary.sh
-      args:
-      - run
-      - ./experiment/slack-oncall-updater
-      - --token-path=/etc/slack-token/token
-      volumeMounts:
-      - name: slack
-        mountPath: /etc/slack-token
-        readOnly: true
-    volumes:
-    - name: slack
-      secret:
-        secretName: slack-usergroup-token
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: slack-oncall-updater
-    testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
-    description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
 - cron: "54 * * * *"  # Every hour at 54 minutes past the hour
   name: ci-test-infra-branchprotector
   cluster: test-infra-trusted
