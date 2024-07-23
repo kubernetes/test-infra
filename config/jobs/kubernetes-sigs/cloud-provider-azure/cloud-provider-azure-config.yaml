@@ -129,6 +129,8 @@ presubmits:
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
+        - name: FAIL_FAST
+          value: "true"
         resources:
           limits:
             cpu: 4
