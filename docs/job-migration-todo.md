@@ -374,5 +374,4 @@ For more context, see the announcement thread at https://groups.google.com/a/kub
 |config/jobs/kubernetes/test-infra/test-infra-trusted.yaml|post-test-infra-push-misc-images|[Search Results](https://cs.k8s.io/?q=name%3A%20post-test-infra-push-misc-images%24&i=nope&files=&excludeFiles=&repos=)|
 |config/jobs/kubernetes/test-infra/test-infra-trusted.yaml|post-test-infra-reconcile-hmacs|[Search Results](https://cs.k8s.io/?q=name%3A%20post-test-infra-reconcile-hmacs%24&i=nope&files=&excludeFiles=&repos=)|
 |config/jobs/kubernetes/test-infra/test-infra-trusted.yaml|post-test-infra-upload-boskos-config|[Search Results](https://cs.k8s.io/?q=name%3A%20post-test-infra-upload-boskos-config%24&i=nope&files=&excludeFiles=&repos=)|
-|config/jobs/kubernetes/test-infra/test-infra-trusted.yaml|post-test-infra-upload-oncall|[Search Results](https://cs.k8s.io/?q=name%3A%20post-test-infra-upload-oncall%24&i=nope&files=&excludeFiles=&repos=)|
 |config/jobs/kubernetes/test-infra/test-infra-trusted.yaml|post-test-infra-upload-testgrid-config|[Search Results](https://cs.k8s.io/?q=name%3A%20post-test-infra-upload-testgrid-config%24&i=nope&files=&excludeFiles=&repos=)|
