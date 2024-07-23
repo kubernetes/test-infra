@@ -1,0 +1,17 @@
+# these tests ensure that jobs are configured safely
+# these tests need to be as tightly approved as config/jobs/image-pushing
+no_parent_owners: true
+approvers:
+# SIG K8s Infra / Testing leads with context
+- ameukam
+- aojea
+- bentheelder
+- dims
+- upodroid
+# explicitly matching approvers
+reviewers:
+- ameukam
+- aojea
+- bentheelder
+- dims
+- upodroid
