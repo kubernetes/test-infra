@@ -38,7 +38,7 @@ postsubmits:
       serviceAccountName: k8s-testgrid-config-updater
       containers:
       # TODO: Switch this to use the k8s-staging-infra-tools/k8s-infra image instead.
-      - image: gcr.io/k8s-prow/configurator:v20240513-a9bd71bf01
+      - image: gcr.io/k8s-prow/configurator:v20240719-47a381b1df
         command:
         - configurator
         args:
