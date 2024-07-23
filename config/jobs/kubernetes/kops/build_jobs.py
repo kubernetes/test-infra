@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pylint: disable=line-too-long
 import hashlib
 import math
 import json
@@ -75,7 +76,7 @@ def build_test(cloud='aws',
         kops_deploy_url = kops_version
         kops_version = None
     else:
-        kops_deploy_url = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-{kops_version}/latest-ci.txt" # pylint: disable=line-too-long
+        kops_deploy_url = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-{kops_version}/latest-ci.txt"
 
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -100,7 +101,7 @@ def build_test(cloud='aws',
             build_cluster = 'k8s-infra-prow-build'
 
     validation_wait = None
-    if distro in ('flatcar', 'flatcararm64') or (distro in ('amzn2', 'rhel8') and kops_version in ('1.26', '1.27')): # pylint: disable=line-too-long
+    if distro in ('flatcar', 'flatcararm64') or (distro in ('amzn2', 'rhel8') and kops_version in ('1.26', '1.27')):
         validation_wait = '20m'
 
     suffix = ""
@@ -481,7 +482,7 @@ def generate_grid():
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
                                    networking=networking,
-                                   extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747 # pylint: disable=line-too-long
+                                   extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
                                    )
                     )
 
@@ -508,7 +509,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc'],
                    scenario='smoketest',
                    env={
-                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.4/", # pylint: disable=line-too-long
+                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.28.4/",
                        'KOPS_VERSION': "v1.28.4",
                        'K8S_VERSION': "v1.28.6",
                        'KOPS_SKIP_E2E': '1',
@@ -735,7 +736,7 @@ def generate_misc():
                    distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    publish_version_marker="gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    runs_per_day=24,
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
@@ -820,7 +821,7 @@ def generate_misc():
                    distro="u2204arm64",
                    k8s_version="stable",
                    runs_per_day=3,
-                   template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl", # pylint: disable=line-too-long
+                   template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
@@ -837,7 +838,7 @@ def generate_misc():
                    ],
                    extra_dashboards=["kops-misc"],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'), # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'),
 
         build_test(name_override="kops-aws-ipv6-karpenter",
                    cloud="aws",
@@ -855,7 +856,7 @@ def generate_misc():
                    ],
                    extra_dashboards=["kops-misc", "kops-ipv6"],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'), # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'),
 
         # A job to isolate a test failure reported in
         # https://github.com/kubernetes/kubernetes/issues/123255
@@ -864,7 +865,7 @@ def generate_misc():
                    distro="al2023",
                    k8s_version="1.28",
                    networking="cilium",
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits', # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits',
                    runs_per_day=3,
                    extra_dashboards=['kops-misc']),
 
@@ -892,7 +893,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
                    #   in v1.30.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]", # pylint: disable=line-too-long
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
@@ -924,7 +925,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - Feature:SELinuxMountReadWriteOncePodOnly: these tests require SELinuxMount
                    #   feature gate off.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]", # pylint: disable=line-too-long
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
@@ -939,14 +940,14 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
                        "--set=spec.nodeProblemDetector.enabled=true",
                        "--gce-service-account=default",
                    ],
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=60,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
@@ -956,13 +957,13 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=spec.nodeProblemDetector.enabled=true",
                        "--set=spec.packages=nfs-utils",
                    ],
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=60,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=8),
@@ -972,13 +973,13 @@ def generate_misc():
                    distro="u2204",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=spec.nodeProblemDetector.enabled=true",
                        "--set=spec.packages=nfs-common",
                    ],
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=60,
                    test_args="--master-os-distro=ubuntu --node-os-distro=ubuntu",
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -989,7 +990,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -997,7 +998,7 @@ def generate_misc():
                        "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Slow\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=150,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
@@ -1007,14 +1008,14 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
                        "--set=spec.packages=nfs-utils",
                    ],
                    focus_regex=r'\[Slow\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=150,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
                    runs_per_day=6),
@@ -1024,7 +1025,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1046,7 +1047,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    build_cluster="eks-prow-build-cluster",
                    extra_flags=[
@@ -1067,7 +1068,7 @@ def generate_misc():
                    distro="al2023",
                    networking="amazonvpc",
                    k8s_version="stable",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
                    build_cluster="eks-prow-build-cluster",
@@ -1094,7 +1095,7 @@ def generate_misc():
                    distro="al2023",
                    networking="amazonvpc",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
@@ -1121,7 +1122,7 @@ def generate_misc():
                    distro="al2023",
                    networking="cilium",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
@@ -1134,7 +1135,7 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                    ],
                    focus_regex=r'\[Conformance\]',
-                   skip_regex=r'should.serve.endpoints.on.same.port.and.different.protocols|same.hostPort.but.different.hostIP.and.protocol', # pylint: disable=line-too-long
+                   skip_regex=r'should.serve.endpoints.on.same.port.and.different.protocols|same.hostPort.but.different.hostIP.and.protocol',
                    # https://github.com/cilium/cilium/pull/29524
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
@@ -1146,7 +1147,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1154,7 +1155,7 @@ def generate_misc():
                        "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Disruptive\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -1165,7 +1166,7 @@ def generate_misc():
                    distro="cos105",
                    networking="gce",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1184,11 +1185,11 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    focus_regex=r'\[Disruptive\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=500,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
@@ -1199,7 +1200,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1208,7 +1209,7 @@ def generate_misc():
                    ],
                    storage_e2e_cred=True,
                    focus_regex=r'\[Serial\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -1219,7 +1220,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1228,7 +1229,7 @@ def generate_misc():
                        "--set=spec.packages=git",
                    ],
                    focus_regex=r'\[Serial\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
@@ -1239,7 +1240,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1249,9 +1250,9 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log",
                        "--set=spec.kubeAPIServer.runtimeConfig=api/all=true"
                    ],
-                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders,-EventedPLEG", # pylint: disable=line-too-long
-                   focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
-                   skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
+                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders,-EventedPLEG",
+                   focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking',
+                   skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0',
                    test_timeout_minutes=240,
                    test_parallelism=4,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
@@ -1262,7 +1263,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt", # pylint: disable=line-too-long
+                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1273,9 +1274,9 @@ def generate_misc():
                        "--set=spec.kubeAPIServer.runtimeConfig=api/all=true",
                        "--gce-service-account=default",
                    ],
-                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders,-EventedPLEG", # pylint: disable=line-too-long
-                   focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking', # pylint: disable=line-too-long
-                   skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0', # pylint: disable=line-too-long
+                   kubernetes_feature_gates="AllAlpha,-InTreePluginGCEUnregister,DisableCloudProviders,DisableKubeletCloudCredentialProviders,-EventedPLEG",
+                   focus_regex=r'\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking',
+                   skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0',
                    test_timeout_minutes=240,
                    test_parallelism=4,
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
@@ -1340,7 +1341,7 @@ distros = ['debian10', 'debian11', 'debian12',
 def generate_distros():
     results = []
     for distro in distros:
-        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn')
         extra_flags = []
         if 'arm64' in distro:
             extra_flags = [
@@ -1367,7 +1368,7 @@ def generate_distros():
 def generate_presubmits_distros():
     results = []
     for distro in distros:
-        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn')
         extra_flags = []
         if 'arm64' in distro:
             extra_flags = [
@@ -1394,10 +1395,10 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kopeio', 'kuberouter'] # pylint: disable=line-too-long
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kopeio', 'kuberouter']
     results = []
     for plugin in plugins:
-        networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
+        networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
         k8s_version = 'stable'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
@@ -1467,7 +1468,7 @@ def generate_upgrades():
         k8s_a = versions[0][1]
         kops_b = versions[1][0]
         k8s_b = versions[1][1]
-        job_name = f"kops-aws-upgrade-k{shorten(k8s_a)}-ko{shorten(kops_a)}-to-k{shorten(k8s_b)}-ko{shorten(kops_b)}" # pylint: disable=line-too-long
+        job_name = f"kops-aws-upgrade-k{shorten(k8s_a)}-ko{shorten(kops_a)}-to-k{shorten(k8s_b)}-ko{shorten(kops_b)}"
         runs_per_day = 3 if kops_b == 'latest' else 1
         env = {
             'KOPS_VERSION_A': kops_a,
@@ -1751,8 +1752,8 @@ def generate_pipeline():
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
         if version == '1.30':
-            publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
-        kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
+            publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
+        kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
         results.append(
             build_test(
                 cloud="aws",
@@ -1775,14 +1776,14 @@ def generate_pipeline():
 ########################################
 def generate_presubmits_network_plugins():
     plugins = {
-        'amazonvpc': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)', # pylint: disable=line-too-long
-        'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)', # pylint: disable=line-too-long
-        'canal': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/)', # pylint: disable=line-too-long
-        'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)', # pylint: disable=line-too-long
-        'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)', # pylint: disable=line-too-long
-        'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)', # pylint: disable=line-too-long
-        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)', # pylint: disable=line-too-long
-        'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)', # pylint: disable=line-too-long
+        'amazonvpc': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)',
+        'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)',
+        'canal': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/)',
+        'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
+        'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
+        'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
+        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)',
+        'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
     }
     supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
     results = []
@@ -2197,7 +2198,7 @@ def generate_presubmits_e2e():
             k8s_version='stable',
             kops_channel='alpha',
             test_timeout_minutes=150,
-            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
+            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.28",
@@ -2257,7 +2258,7 @@ def generate_presubmits_e2e():
                 "--gce-service-account=default",
             ],
             focus_regex=r'\[Serial\]',
-            skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
             test_timeout_minutes=500,
             optional=True,
             test_parallelism=1, # serial tests
@@ -2275,7 +2276,7 @@ def generate_presubmits_e2e():
                 "--node-volume-size=100",
                 "--gce-service-account=default",
             ],
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
             test_timeout_minutes=40,
             optional=True,
         ),
@@ -2293,7 +2294,7 @@ def generate_presubmits_e2e():
                 "--gce-service-account=default",
             ],
             focus_regex=r'\[Slow\]',
-            skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]', # pylint: disable=line-too-long
+            skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
             test_timeout_minutes=70,
             optional=True,
         ),
