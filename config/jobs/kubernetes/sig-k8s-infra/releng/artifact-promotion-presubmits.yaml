@@ -31,27 +31,27 @@ presubmits:
             cpu: 2
             memory: "4Gi"
   # Check that changes to backup scripts are valid.
-  - name: pull-k8sio-backup
-    annotations:
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-k8s-infra-k8sio
-    decorate: true
-    run_if_changed: '^infra/gcp/backup_tools/'
-    max_concurrency: 1
-    branches:
-    - ^main$
-    spec:
-      serviceAccountName: k8s-infra-gcr-promoter-test
-      containers:
-      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-        command:
-        - infra/gcp/bash/backup_tools/backup_test.sh
-        env:
-        # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
-        # here anyway in case the underlying image changes (the backup_test.sh
-        # script needs it to be defined).
-        - name: GOPATH
-          value: /go
+  # - name: pull-k8sio-backup
+  #   annotations:
+  #     testgrid-create-test-group: 'true'
+  #     testgrid-dashboards: sig-k8s-infra-k8sio
+  #   decorate: true
+  #   run_if_changed: '^infra/gcp/backup_tools/'
+  #   max_concurrency: 1
+  #   branches:
+  #   - ^main$
+  #   spec:
+  #     serviceAccountName: k8s-infra-gcr-promoter-test
+  #     containers:
+  #     - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+  #       command:
+  #       - infra/gcp/bash/backup_tools/backup_test.sh
+  #       env:
+  #       # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+  #       # here anyway in case the underlying image changes (the backup_test.sh
+  #       # script needs it to be defined).
+  #       - name: GOPATH
+  #         value: /go
   - name: pull-k8sio-file-promo
     cluster: k8s-infra-prow-build
     annotations:
