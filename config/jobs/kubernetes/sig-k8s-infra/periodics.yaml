@@ -83,7 +83,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='136693071363/debian-12-amd64-20231013-1532' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-ci-prow-sandbox/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \

@@ -267,7 +267,7 @@ presubmits:
               kubetest2 kops -v=6 --cloud-provider=aws --up --down --build \
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
                 --admin-access=0.0.0.0/0 \
-                --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
+                --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
                 --create-args "--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
                 --env=KOPS_FEATURE_FLAGS=SELinuxMount \
                 --test=kops \

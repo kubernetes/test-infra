@@ -1,38 +1,4 @@
 periodics:
-- interval: 30m
-  name: ci-kops-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 30m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    path_alias: k8s.io/kops
-    workdir: true
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: k8s.io/release
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - make
-      - gcs-publish-ci
-      - GCS_LOCATION=gs://kops-ci/bin
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
-    testgrid-tab-name: kops-build
-    testgrid-alert-email: release-team@kubernetes.io
 - name: e2e-kops-do-calico-gossip
   cron: '54 4-23/8 * * *'
   labels:
@@ -68,7 +34,7 @@ periodics:
           --cloud-provider=digitalocean \
           --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=private" \
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
@@ -126,7 +92,7 @@ periodics:
         --cloud-provider=digitalocean \
         --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
         --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
-        --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+        --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
         --kubernetes-version=https://dl.k8s.io/release/stable.txt \
         --test=kops \
         -- \
@@ -185,7 +151,7 @@ periodics:
           --env S3_ENDPOINT=https://sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --node-count=3 --master-count=3" \
           --cluster-name=e2e-b284d3e83b-4c997.test-cncf-do.k8s.io \
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \

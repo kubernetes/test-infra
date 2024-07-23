@@ -29,7 +29,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --create-args="--channel=alpha --gce-service-account=default" \
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
@@ -94,7 +94,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --create-args="--channel=alpha --gce-service-account=default" \
-          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
