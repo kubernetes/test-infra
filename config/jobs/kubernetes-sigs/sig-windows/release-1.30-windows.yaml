@@ -42,7 +42,7 @@ periodics:
     preset-azure-cred-only: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-windows-130: "true"
+    preset-capz-windows-common-130: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-windows-private-registry-cred: "true"
