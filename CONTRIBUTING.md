@@ -16,7 +16,7 @@ involved are listed in [/OWNERS]. We are most responsive on our slack channel
 
 We also have three other slack channels:
 
-- [#testing-ops]: for [prow.k8s.io] and other test-infra ops. Ping `@test-infra-oncall` or check [go.k8s.io/oncall]
+- [#testing-ops]: for [prow.k8s.io] and other test-infra ops.
 - [#prow]: for discussions related to the use or development of [`prow`](/prow)
 - [#testgrid]: for discussions related to the use of development of [`testgrid`](https://github.com/GoogleCloudPlatform/testgrid)
 
