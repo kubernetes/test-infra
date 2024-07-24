@@ -2,6 +2,7 @@
 presubmits:
   kubernetes/perf-tests:
   - name: soak-tests-capz-windows-2019
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -9,17 +10,14 @@ presubmits:
       timeout: 8h
     path_alias: k8s.io/perf-tests
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-containerd-1-7-latest: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.15
+        base_ref: release-1.16
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
@@ -40,6 +38,13 @@ presubmits:
               --v=2
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: "2"
+              memory: "9Gi"
+            limits:
+              cpu: "2"
+              memory: "9Gi"
           env:
             # CAPZ variables
             - name: NODE_MACHINE_TYPE
@@ -81,6 +86,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
 periodics:
   - name: hourly-soak-tests-capz-windows-2019
+    cluster: eks-prow-build-cluster
     cron: "0 * * * MON-SAT"
     decorate: true
     path_alias: k8s.io/perf-tests
@@ -89,7 +95,6 @@ periodics:
       - "perfDashJobType: windows"
     labels:
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     extra_refs:
       - org: kubernetes
         repo: perf-tests
@@ -109,7 +114,6 @@ periodics:
             - bash
             - -c
             - >-
-              source ./hack/parse-prow-creds.sh &&
               ./hack/ensure-azcli.sh &&
               az keyvault secret show
               --vault-name win-soak-test
@@ -139,19 +143,26 @@ periodics:
               value: "true"
             - name: CL2_POD_COUNT
               value: "10"
+          resources:
+            requests:
+              cpu: "2"
+              memory: "9Gi"
+            limits:
+              cpu: "2"
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: hourly-soak-tests-capz-windows-2019
       description: "Run clusterloader2 tests every hour on a capz Windows 2019 cluster"
       testgrid-num-columns-recent: '30'
   - name: delete-win-soak-test-cluster
+    cluster: eks-prow-build-cluster
     cron: "0 0 * * SUN"
     decorate: true
     decoration_config:
       timeout: 8h
     labels:
-      preset-service-account: "true"
-      preset-azure-cred-only: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -167,7 +178,6 @@ periodics:
             - bash
             - -c
             - >-
-              source ./hack/parse-prow-creds.sh &&
               ./hack/ensure-azcli.sh &&
               az
               group
@@ -175,6 +185,13 @@ periodics:
               --resource-group
               win-soak-test
               -y
+          resources:
+            requests:
+              cpu: "2"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: delete-win-soak-test-cluster
@@ -182,17 +199,16 @@ periodics:
       testgrid-num-columns-recent: '30'
 
   - name: build-win-soak-test-cluster
+    cluster: eks-prow-build-cluster
     cron: "0 1 * * SUN"
     decorate: true
     decoration_config:
       timeout: 8h
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-containerd-1-7-latest: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -240,14 +256,21 @@ periodics:
               value: "0" # Don't create linux worker nodes
             - name: SKIP_CLEANUP # Do not delete workload cluster
               value: "true"
+          resources:
+            requests:
+              cpu: "2"
+              memory: "9Gi"
+            limits:
+              cpu: "2"
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: build-win-soak-test-cluster
       description: "Build win-soak-test cluster"
       testgrid-num-columns-recent: '30'
-
   - interval: 24h
     name: periodic-soak-tests-capz-windows-2019
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 8h
@@ -256,13 +279,10 @@ periodics:
       - "perfDashPrefix: soak-tests-capz-windows-2019"
       - "perfDashJobType: windows"
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-containerd-1-7-latest: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes
         repo: perf-tests
@@ -270,7 +290,7 @@ periodics:
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.15
+        base_ref: release-1.16
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
@@ -325,6 +345,13 @@ periodics:
               value: "kubernetes.io/azure-disk"
             - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
               value: "StandardSSD_LRS"
+          resources:
+            requests:
+              cpu: "2"
+              memory: "9Gi"
+            limits:
+              cpu: "2"
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: periodics-soak-tests-capz-windows-2019

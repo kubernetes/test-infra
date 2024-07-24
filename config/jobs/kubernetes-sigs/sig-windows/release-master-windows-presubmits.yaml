@@ -186,6 +186,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-serial-slow-hpa
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-alpha-features
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -195,17 +196,13 @@ presubmits:
       - main
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-azure-community: "true"
       preset-capz-windows-2022: "true"
       preset-capz-windows-common-pull: "true"
-      preset-windows-private-registry-cred: "true"
-      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.15
+        base_ref: release-1.16
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: false
       - org: kubernetes-sigs
@@ -231,7 +228,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
             - name: NODE_FEATURE_GATES
               value: "PodAndContainerStatsFromCRI=true"
@@ -242,6 +242,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-alpha-features
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-alpha-feature-vpa
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -251,18 +252,14 @@ presubmits:
       - main
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-azure-community: "true"
       preset-capz-windows-2022: "true"
       preset-capz-windows-common-pull: "true"
-      preset-windows-private-registry-cred: "true"
       preset-capz-containerd-1-7-latest: "true"
-      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.15
+        base_ref: release-1.16
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: false
       - org: kubernetes-sigs
@@ -288,7 +285,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
             - name: API_SERVER_FEATURE_GATES
               value: "InPlacePodVerticalScaling=true"
@@ -654,7 +654,7 @@ presubmits:
       workdir: false
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: false
     - org: kubernetes-sigs
