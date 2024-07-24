@@ -38,5 +38,5 @@ periodics:
     testgrid-alert-stale-results-hours: '12'
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: label_sync
-    testgrid-alert-email: sig-contribex-leads@kubernetes.io, kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-alert-email: sig-contribex-leads@kubernetes.io, kubernetes-sig-testing-alerts@googlegroups.com
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.

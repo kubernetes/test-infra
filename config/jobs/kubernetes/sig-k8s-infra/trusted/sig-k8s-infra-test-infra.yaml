@@ -176,5 +176,5 @@ periodics:
     testgrid-dashboards: sig-testing-prow
     testgrid-tab-name: autobump-prowjobs
     description: runs experiment/autobumper to create/update a PR that bumps prowjob images to latest published version
-    testgrid-alert-email: k8s-infra-oncall@google.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
     testgrid-num-failures-to-alert: '3'

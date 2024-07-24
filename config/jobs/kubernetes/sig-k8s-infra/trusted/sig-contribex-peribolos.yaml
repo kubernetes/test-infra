@@ -6,7 +6,7 @@ postsubmits:
       testgrid-tab-name: post-peribolos
       # TODO: remove kubernetes-github-managment-alerts@googlegroups.com,
       # when new kubernetes.io mailing list is stable.
-      testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com, github-managment-alerts@kubernetes.io
+      testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, github-managment-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
@@ -44,7 +44,7 @@ periodics:
     testgrid-tab-name: ci-peribolos
     # TODO: remove kubernetes-github-managment-alerts@googlegroups.com,
     # when new kubernetes.io mailing list is stable.
-    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com, github-managment-alerts@kubernetes.io
+    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, github-managment-alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
     github_team_slugs:

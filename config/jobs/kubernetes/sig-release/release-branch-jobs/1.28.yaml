@@ -410,7 +410,7 @@ periodics:
       runAsUser: 2001
 - annotations:
     fork-per-release-periodic-interval: 6h 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.28-blocking
     testgrid-tab-name: verify-1.28
   cluster: eks-prow-build-cluster
