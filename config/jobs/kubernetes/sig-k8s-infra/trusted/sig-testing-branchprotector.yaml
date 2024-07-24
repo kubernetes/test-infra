@@ -1,0 +1,41 @@
+periodics:
+- cron: "54 * * * *"  # Every hour at 54 minutes past the hour
+  name: ci-test-infra-branchprotector
+  cluster: k8s-infra-prow-build-trusted
+  labels:
+    app: branchprotector
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - name: branchprotector
+      image: gcr.io/k8s-prow/branchprotector:v20240723-dbbd2d86b
+      command:
+      - branchprotector
+      args:
+      - --config-path=config/prow/config.yaml
+      - --job-config-path=config/jobs
+      - --github-token-path=/etc/github/token
+      - --confirm
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-endpoint=https://api.github.com
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-github-robot-github-token
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: branchprotector
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.

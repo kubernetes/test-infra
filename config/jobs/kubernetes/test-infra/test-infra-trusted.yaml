@@ -384,46 +384,6 @@ periodics:
     description: runs autobumper to create/update a PR that bumps prow to the latest RC without label 'skip-review'
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '3'
-- cron: "54 * * * *"  # Every hour at 54 minutes past the hour
-  name: ci-test-infra-branchprotector
-  cluster: test-infra-trusted
-  labels:
-    app: branchprotector
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20240723-dbbd2d86b
-      command:
-      - branchprotector
-      args:
-      - --config-path=config/prow/config.yaml
-      - --job-config-path=config/jobs
-      - --github-token-path=/etc/github/oauth
-      - --confirm
-      - --github-endpoint=http://ghproxy.default.svc.cluster.local
-      - --github-endpoint=https://api.github.com
-      volumeMounts:
-      - name: oauth
-        mountPath: /etc/github
-        readOnly: true
-    volumes:
-    - name: oauth
-      secret:
-        secretName: oauth-token
-  annotations:
-    testgrid-num-failures-to-alert: '6'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: branchprotector
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
 - cron: "17 */6 * * *"  # Every 6 hours at 17 minutes past the hour
   name: ci-test-infra-gencred-refresh-kubeconfig
   cluster: test-infra-trusted
