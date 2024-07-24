@@ -16,7 +16,7 @@ storage:
       mode: 0644
     - path: /etc/crio/crio.conf.d/20-crio.conf
       contents:
-        local: 20-crio-v2.conf
+        local: 20-crio.conf
       mode: 0644
     - path: /etc/sysctl.d/99-e2e-sysctl.conf
       contents:
