@@ -42,7 +42,7 @@ periodics:
           cpu: "4"
           memory: 9000Mi
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-network-policy-api
     testgrid-tab-name: kube-network-policies conformance, master (dev) [non-serial]
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
 # conformance test against kubernetes master branch with `kind` ipv6
@@ -95,6 +95,6 @@ periodics:
           cpu: "4"
           memory: 9000Mi
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-network-policy-api
     testgrid-tab-name: kube-network-policies (IPv6), master (dev) [non-serial]
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
