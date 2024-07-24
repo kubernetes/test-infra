@@ -24,7 +24,7 @@
               slo: componentName,
             },
             annotations: {
-              message: '@test-infra-oncall The heartbeat job `%s` has not had a successful run in the past %s (should run every %s).' % [job.name, job.alertInterval, job.interval],
+              message: 'The heartbeat job `%s` has not had a successful run in the past %s (should run every %s).' % [job.name, job.alertInterval, job.interval],
             },
           }
           for job in $._config.heartbeatJobs

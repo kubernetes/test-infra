@@ -15,7 +15,7 @@
               slo: name,
             },
             annotations: {
-              message: '@test-infra-oncall The service %s has been down for 10 minutes.' % name,
+              message: 'The service %s has been down for 10 minutes.' % name,
             },
           }
           for name in $._config.ciAbsents.components
