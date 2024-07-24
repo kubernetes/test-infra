@@ -1,0 +1,28 @@
+postsubmits:
+  kubernetes-sigs/kube-network-policies:
+    - name: post-kube-network-policies-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-policy-api, sig-k8s-infra-gcb
+        testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240523-29e3962433
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-networking
+              - --scratch-bucket=gs://k8s-staging-networking-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2921947 # kind-maintainers
