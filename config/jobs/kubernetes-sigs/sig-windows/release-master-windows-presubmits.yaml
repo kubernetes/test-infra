@@ -12,6 +12,7 @@ presets:
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-capz-windows-master
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -23,12 +24,10 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2022: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
-      preset-azure-cred-wi: "true"
-      preset-windows-private-registry-cred: "true" # Needed for WS 2022 images
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -46,7 +45,6 @@ presubmits:
       path_alias: k8s.io/windows-testing
       workdir: true
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -59,7 +57,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
@@ -67,6 +68,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-serial-slow
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 4h
@@ -79,12 +81,10 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2022: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
-      preset-windows-private-registry-cred: "true"
-      preset-azure-cred-wi: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -102,7 +102,6 @@ presubmits:
       path_alias: k8s.io/windows-testing
       workdir: true
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -115,7 +114,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -126,6 +128,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-serial-slow
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-serial-slow-hpa
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -136,12 +139,10 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2022: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
-      preset-windows-private-registry-cred: "true"
-      preset-azure-cred-wi: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -159,7 +160,6 @@ presubmits:
       path_alias: k8s.io/windows-testing
       workdir: true
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -172,7 +172,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -300,6 +303,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-alpha-feature-vertical-pod-autoscaler
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-master-windows-nodelogquery
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -310,11 +314,9 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-wi: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-azure-community: "true"
       preset-capz-windows-common: "true"
       preset-capz-windows-2022: "true"
-      preset-windows-private-registry-cred: "true"
       preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -332,7 +334,6 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -345,7 +346,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
             - name: GINKGO_FOCUS
               value: \[Feature:NodeLogQuery\] # run the NodeLogQuery tests
@@ -359,6 +363,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubernetes-sigs/windows-testing:
   - name: pull-e2e-capz-windows-2022-extension
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     optional: true
@@ -371,11 +376,9 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-      preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
-      preset-azure-cred-wi: "true"
+      preset-azure-community: "true"
       preset-capz-windows-2022: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -389,7 +392,6 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -402,7 +404,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
@@ -499,10 +504,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
             limits:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
@@ -510,6 +515,7 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension-community-eks
   - name: pull-e2e-run-capz-sh-windows-2022-hyperv
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -522,9 +528,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-wi: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-      preset-windows-private-registry-cred: "true"
+      preset-azure-community: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-2022: "true"
@@ -540,7 +544,6 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -553,7 +556,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
           - name: HYPERV
             value: "true"
@@ -565,6 +571,7 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-run-capz-sh-windows-2022-hyperv
   - name: pull-e2e-capz-windows-2022-extension-gmsa
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -577,9 +584,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-wi: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-      preset-windows-private-registry-cred: "true"
+      preset-azure-community: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-2022: "true"
@@ -595,7 +600,6 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -608,7 +612,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
           - name: GINKGO_NODES
             value: "1"
@@ -622,6 +629,7 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension-gmsa
   - name: pull-e2e-capz-validate-pr-templates
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -634,12 +642,10 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-wi: "true"
-      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-azure-community: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common: "true"
       preset-capz-windows-2022: "true"
-      preset-windows-private-registry-cred: "true"
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -657,7 +663,6 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
           command:
@@ -670,7 +675,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "9Gi"
+              memory: "2Gi"
+            limits:
+              cpu: 2
+              memory: "2Gi"
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
