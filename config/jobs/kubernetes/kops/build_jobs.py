@@ -965,7 +965,7 @@ def generate_misc():
                    ],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=60,
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=8),
 
         build_test(name_override="ci-kubernetes-e2e-ubuntu-aws-canary",
@@ -1017,7 +1017,7 @@ def generate_misc():
                    focus_regex=r'\[Slow\]',
                    skip_regex=r'\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=150,
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-conformance-canary",
@@ -1060,7 +1060,7 @@ def generate_misc():
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-aws-cni",
@@ -1087,7 +1087,7 @@ def generate_misc():
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary",
@@ -1114,7 +1114,7 @@ def generate_misc():
                    skip_regex=r'\[FOOBAR\]', # leaving it empty will allow kops to add extra skips
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary",
@@ -1139,7 +1139,7 @@ def generate_misc():
                    # https://github.com/cilium/cilium/pull/29524
                    test_timeout_minutes=200,
                    test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-disruptive-canary",
@@ -1192,7 +1192,7 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=500,
                    test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=3),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-serial-canary",
@@ -1232,7 +1232,7 @@ def generate_misc():
                    skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=4),
 
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-alpha-features",
@@ -1255,7 +1255,7 @@ def generate_misc():
                    skip_regex=r'\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0',
                    test_timeout_minutes=240,
                    test_parallelism=4,
-                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-al2023"],
+                   extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-alpha-features",
