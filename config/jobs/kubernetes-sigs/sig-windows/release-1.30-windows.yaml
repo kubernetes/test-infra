@@ -14,6 +14,7 @@ presets:
     value: "Standard_D4s_v3"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows-1-30
+  cluster: eks-prow-build-cluster
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-1.30-informing, sig-windows-1.30-release, sig-windows-signal
@@ -22,7 +23,7 @@ periodics:
   decoration_config:
     timeout: 8h0m0s
   extra_refs:
-  - base_ref: release-1.15
+  - base_ref: release-1.16
     org: kubernetes-sigs
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     repo: cluster-api-provider-azure
@@ -37,15 +38,11 @@ periodics:
     repo: cloud-provider-azure
   interval: 3h
   labels:
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
-    preset-azure-cred-only: "true"
+    preset-azure-community: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-windows-2022: "true"
     preset-capz-windows-130: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
@@ -57,30 +54,30 @@ periodics:
       resources:
         requests:
           cpu: "2"
-          memory: 9Gi
+          memory: 2Gi
+        limits:
+          cpu: "2"
+          memory: 2Gi
       securityContext:
         privileged: true
 - name: ci-kubernetes-e2e-capz-1-30-windows-serial-slow
+  cluster: eks-prow-build-cluster
   interval: 48h
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
     preset-capz-windows-common-130: "true"
     preset-capz-windows-2022: "true"
-    preset-windows-private-registry-cred: "true"
-    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: false
   - org: kubernetes-sigs
@@ -105,7 +102,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
