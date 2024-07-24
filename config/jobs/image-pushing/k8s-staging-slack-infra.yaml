@@ -5,7 +5,7 @@ postsubmits:
       run_if_changed: '^(slack|tempelis)'
       annotations:
         testgrid-num-failures-to-alert: "1"
-        testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com, k8s-infra-staging-slack-infra@kubernetes.io
+        testgrid-alert-email: k8s-infra-staging-slack-infra@kubernetes.io
         testgrid-dashboards: sig-contribex-slack-infra, sig-k8s-infra-gcb
       decorate: true
       branches:
