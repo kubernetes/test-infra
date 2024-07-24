@@ -11,7 +11,7 @@ presubmits:
     path_alias: sigs.k8s.io/apiserver-network-proxy
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22.3
+      - image: public.ecr.aws/docker/library/golang:1.22.5
         command:
         - make
         args:
