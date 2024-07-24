@@ -72,6 +72,7 @@ presets:
       value: "true"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows
+  cluster: eks-prow-build-cluster
   interval: 3h
   decorate: true
   decoration_config:
@@ -79,12 +80,10 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-7-latest: "true"
-    preset-windows-private-registry-cred: "true"
-    preset-azure-cred-wi: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -113,9 +112,13 @@ periodics:
         securityContext:
           privileged: true
         resources:
+          # current recommendations are at least 1Gi /core
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: IMAGE_VERSION
             value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
@@ -126,6 +129,7 @@ periodics:
     testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -133,13 +137,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
-    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -156,7 +158,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -169,7 +170,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -180,6 +184,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow-hpa
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -187,13 +192,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
-    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -210,7 +213,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -221,7 +223,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -272,15 +277,16 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
           limits:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master
 - name: ci-kubernetes-e2e-capz-master-windows-2022-serial-slow
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -288,13 +294,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
-    preset-windows-private-registry-cred: "true"
     preset-capz-windows-2022: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -312,7 +316,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -325,7 +328,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -336,6 +342,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-windows-2022-serial-slow-hpa
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -343,9 +350,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-    preset-windows-private-registry-cred: "true"
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
@@ -366,7 +371,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -379,7 +383,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -390,6 +397,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-2022-master-serial-slow-hpa
 - name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -397,9 +405,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
-    preset-windows-private-registry-cred: "true"
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
   extra_refs:
@@ -418,7 +424,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -434,12 +439,16 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
 - name: ci-kubernetes-e2e-capz-master-windows-alpha
+  cluster: eks-prow-build-cluster
   interval: 3h
   decorate: true
   decoration_config:
@@ -447,11 +456,9 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -468,7 +475,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -481,7 +487,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: API_SERVER_FEATURE_GATES
             value: "InPlacePodVerticalScaling=true"
@@ -498,6 +507,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-master-alpha-features
 - name: ci-kubernetes-e2e-capz-master-windows-nodelogquery
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -505,11 +515,9 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-windows-private-registry-cred: "true"
     preset-capz-containerd-1-7-latest: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -527,7 +535,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -540,7 +547,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: GINKGO_FOCUS
             value: \[Feature:NodeLogQuery\] # run the NodeLogQuery tests
@@ -553,6 +563,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-master-windows-nodelogquery
 - name: ci-kubernetes-e2e-capz-master-windows-annual-channel
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   decoration_config:
@@ -560,11 +571,9 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-wi: "true"
-    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
-    preset-windows-private-registry-cred: "true"
     preset-capz-windows-2022: "true" # although it is not WS 2022, the tooling and container images treat it like WS2022
   extra_refs:
   - org: kubernetes-sigs
@@ -583,7 +592,6 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
         command:
@@ -596,7 +604,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "9Gi"
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
         env:
           - name: TEMPLATE
             value: "shared-image-gallery-ci.yaml" #contains latest Annual Channel image
