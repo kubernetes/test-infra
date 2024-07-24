@@ -163,7 +163,7 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: unit-test
-  # The following test builds the images specified in .k8s-prow-images.yaml
+  # The following test builds the images specified in .test-infra-misc-images.yaml
   - name: pull-test-infra-misc-image-build-test
     cluster: eks-prow-build-cluster
     branches:

@@ -63,22 +63,22 @@ verify-go-deps:
 # Build and publish miscellaneous images that get pushed to "gcr.io/k8s-prow/".
 # These are not prow images, but published there for legacy reasons.
 # The full set of images covered by these targets is configured in
-# .k8s-prow-images.yaml.
+# .test-infra-misc-images.yaml.
 .PHONY: push-misc-images
 push-misc-images:
-	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="${REGISTRY}" --push=true
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.test-infra-misc-images.yaml --ko-docker-repo="${REGISTRY}" --push=true
 
 .PHONY: build-misc-images
 build-misc-images:
-	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="ko.local" --push=false
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.test-infra-misc-images.yaml --ko-docker-repo="ko.local" --push=false
 
 .PHONY: push-single-image
 push-single-image:
-	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="${REGISTRY}" --push=true --image=${PROW_IMAGE}
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.test-infra-misc-images.yaml --ko-docker-repo="${REGISTRY}" --push=true --image=${PROW_IMAGE}
 
 .PHONY: build-single-image
 build-single-image:
-	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.k8s-prow-images.yaml --ko-docker-repo="ko.local" --push=false --image=${PROW_IMAGE}
+	./hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --prow-images-file=./.test-infra-misc-images.yaml --ko-docker-repo="ko.local" --push=false --image=${PROW_IMAGE}
 
 ################################################################################
 # ================================== Linting ===================================

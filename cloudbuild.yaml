@@ -1,0 +1,10 @@
+steps:
+- name: golang:1.21
+  entrypoint: /bin/bash
+  args:
+  - -c
+  - |
+    go install github.com/google/ko@latest
+    make push-misc-images REGISTRY=gcr.io/$PROJECT_ID
+options:
+  machineType: E2_HIGHCPU_32
