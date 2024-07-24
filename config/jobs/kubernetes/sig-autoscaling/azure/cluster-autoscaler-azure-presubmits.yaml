@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/autoscaler:
   - name: pull-cluster-autoscaler-e2e-azure
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
       testgrid-tab-name: cloudprovider-azure
@@ -10,8 +11,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-cred-wi: "true"
+      preset-azure-community: "true"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -19,11 +19,10 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: main
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
         command:
@@ -48,3 +47,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
