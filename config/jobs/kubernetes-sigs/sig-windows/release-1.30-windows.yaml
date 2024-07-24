@@ -41,7 +41,7 @@ periodics:
     preset-azure-community: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-windows-130: "true"
+    preset-capz-windows-common-130: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
