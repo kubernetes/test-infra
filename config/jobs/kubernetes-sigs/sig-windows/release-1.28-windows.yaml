@@ -55,10 +55,10 @@ periodics:
       resources:
         requests:
           cpu: "2"
-          memory: 2Gi
+          memory: 9Gi
         limits:
           cpu: "2"
-          memory: 2Gi
+          memory: 9Gi
       securityContext:
         privileged: true
       env:
@@ -107,10 +107,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector

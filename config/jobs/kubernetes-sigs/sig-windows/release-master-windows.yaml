@@ -114,10 +114,10 @@ periodics:
           # current recommendations are at least 1Gi /core
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: IMAGE_VERSION
             value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
@@ -169,10 +169,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -222,10 +222,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -276,10 +276,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
@@ -327,10 +327,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -382,10 +382,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -438,10 +438,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
@@ -486,10 +486,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: API_SERVER_FEATURE_GATES
             value: "InPlacePodVerticalScaling=true"
@@ -546,10 +546,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: \[Feature:NodeLogQuery\] # run the NodeLogQuery tests
@@ -603,10 +603,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: TEMPLATE
             value: "shared-image-gallery-ci.yaml" #contains latest Annual Channel image
