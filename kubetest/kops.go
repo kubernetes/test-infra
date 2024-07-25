@@ -36,9 +36,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	cryptorand "crypto/rand"
 
@@ -804,13 +803,14 @@ func getRandomAWSZones(masterCount int, multipleZones bool) ([]string, error) {
 
 	// TODO(chrislovecnm): get the number of ec2 instances in the region and ensure that there are not too many running
 	for _, i := range rand.Perm(len(awsRegions)) {
-		ec2Session, err := getAWSEC2Session(awsRegions[i])
+		ec2Client, err := getAWSEC2Client(awsRegions[i])
 		if err != nil {
 			return nil, err
 		}
 
 		// az for a region. AWS Go API does not allow us to make a single call
-		zoneResults, err := ec2Session.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
+		zoneResults, err := ec2Client.DescribeAvailabilityZones(context.TODO(),
+			&ec2.DescribeAvailabilityZonesInput{})
 		if err != nil {
 			return nil, fmt.Errorf("unable to call aws api DescribeAvailabilityZones for %q: %w", awsRegions[i], err)
 		}
@@ -834,19 +834,15 @@ func getRandomAWSZones(masterCount int, multipleZones bool) ([]string, error) {
 	return nil, fmt.Errorf("unable to find region with %d zones", masterCount)
 }
 
-// getAWSEC2Session creates an returns a EC2 API session.
-func getAWSEC2Session(region string) (*ec2.EC2, error) {
-	config := aws.NewConfig().WithRegion(region)
-
-	// This avoids a confusing error message when we fail to get credentials
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
+// getAWSEC2Client creates and returns a EC2 Client
+func getAWSEC2Client(region string) (*ec2.Client, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
-		return nil, fmt.Errorf("unable to build aws API session with region: %q: %w", region, err)
+		return nil, fmt.Errorf("unable to load default config with region: %q: %w", region, err)
 	}
 
-	return ec2.New(s, config), nil
+	ec2Client := ec2.NewFromConfig(cfg)
+	return ec2Client, nil
 }
 
 // kubeconfig is a simplified version of the kubernetes Config type
