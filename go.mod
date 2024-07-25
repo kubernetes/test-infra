@@ -17,7 +17,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.22
 	github.com/GoogleCloudPlatform/testgrid v0.0.123
 	github.com/andygrunwald/go-jira v1.14.0 // indirect
-	github.com/aws/aws-sdk-go v1.38.49
+	github.com/aws/aws-sdk-go v1.38.49 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.18.8
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.173.0
 	github.com/blang/semver/v4 v4.0.0
