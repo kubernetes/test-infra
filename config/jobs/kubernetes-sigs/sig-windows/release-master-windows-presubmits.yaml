@@ -57,10 +57,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
@@ -114,10 +114,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
@@ -172,10 +172,10 @@ presubmits:
         resources:
           requests:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
           limits:
             cpu: 2
-            memory: "2Gi"
+            memory: "9Gi"
         env:
           - name: GINKGO_FOCUS
             value: (\[sig-autoscaling\].\[Feature:HPA\]).*(\[Serial\]|\[Slow\])
@@ -228,10 +228,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
             - name: NODE_FEATURE_GATES
               value: "PodAndContainerStatsFromCRI=true"
@@ -285,10 +285,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
             - name: API_SERVER_FEATURE_GATES
               value: "InPlacePodVerticalScaling=true"
@@ -346,10 +346,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
             - name: GINKGO_FOCUS
               value: \[Feature:NodeLogQuery\] # run the NodeLogQuery tests
@@ -404,10 +404,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
@@ -504,10 +504,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
@@ -556,10 +556,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
           - name: HYPERV
             value: "true"
@@ -612,10 +612,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
           - name: GINKGO_NODES
             value: "1"
@@ -675,10 +675,10 @@ presubmits:
           resources:
             requests:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
             limits:
               cpu: 2
-              memory: "2Gi"
+              memory: "9Gi"
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time

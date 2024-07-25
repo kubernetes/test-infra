@@ -41,10 +41,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: 2Gi
+            memory: 9Gi
           limits:
             cpu: "2"
-            memory: 2Gi
+            memory: 9Gi
         securityContext:
           privileged: true
     annotations:
