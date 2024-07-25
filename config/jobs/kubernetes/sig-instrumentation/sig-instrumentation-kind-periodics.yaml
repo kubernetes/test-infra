@@ -1,10 +1,10 @@
 periodics:
-- interval: 12h
+- interval: 24h
   cluster: k8s-infra-prow-build
-  # This combines tests from ci-kubernetes-kind-conformance and sig-storage
+  # This picks tests from ci-kubernetes-kind-conformance and
+  # (to get more coverage) dynamic resource allocation
   # and runs them with JSON output in all components which support that.
-  # Also enables contextual logging and (to get more coverage) dynamic
-  # resource allocation.
+  # Also enables contextual logging.
   name: ci-kubernetes-kind-e2e-json-logging
   annotations:
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind
@@ -33,17 +33,12 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      # The modified e2e-k8s.sh with support for FEATURE_GATES and RUNTIME_CONFIG comes from
-      # https://github.com/kubernetes-sigs/kind/pull/3023. Once that PR is merged and a
-      # kind release is done, pulling it separately via curl can be removed.
       - >
         curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
-        curl -sSL https://github.com/pohly/kind/raw/e2e-feature-gates/hack/ci/e2e-k8s.sh >$(which e2e-k8s.sh) &&
-        chmod u+x $(which e2e-k8s.sh) &&
         e2e-k8s.sh
 
       env:
-      # Options from https://github.com/kubernetes-sigs/kind/blob/d1eecc46e30cac9d35cd32dc52677ef75ec22e18/hack/ci/e2e-k8s.sh#L79-L83
+      # Options from https://github.com/kubernetes-sigs/kind/blob/3533ccce0f26d7227ec2671394a41a42f2a8a7b7/hack/ci/e2e-k8s.sh#L22-L40
       - name: CLUSTER_LOG_FORMAT
         value: json
       - name: KIND_CLUSTER_LOG_LEVEL
@@ -52,17 +47,14 @@ periodics:
       - name: FEATURE_GATES
         value: '{"DynamicResourceAllocation":true,"ContextualLogging":true}'
       - name: RUNTIME_CONFIG
-        value: '{"resource.k8s.io/v1alpha2":"true"}'
+        value: '{"api/alpha":"true", "api/beta":"true"}'
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[Conformance\]|\[Driver:.csi-hostpath\]|DynamicResourceAllocation
-      # TODO(bentheelder): reduce the skip list further
-      # NOTE: this skip list is from the standard periodic kind job, just to ensure
-      # we don't accidentally select any of these
-      - name: SKIP
-        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+      - name: LABEL_FILTER
+      - value: >-
+          (Conformance || Feature: containsAny DynamicResourceAllocation) &&
+          Feature: isSubsetOf DynamicResourceAllocation && !Slow && !Disruptive && !Flaky
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
