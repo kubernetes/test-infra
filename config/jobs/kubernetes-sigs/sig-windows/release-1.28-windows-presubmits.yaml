@@ -12,7 +12,7 @@ presubmits:
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       repo: cluster-api-provider-azure
       workdir: false
-    - base_ref: release-1.28
+    - base_ref: master
       org: kubernetes-sigs
       path_alias: sigs.k8s.io/cloud-provider-azure
       repo: cloud-provider-azure
