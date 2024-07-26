@@ -283,29 +283,6 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Compiles and uploads testgrid config on test-infra pushes
-  - name: post-test-infra-upload-boskos-config
-    cluster: test-infra-trusted
-    branches:
-    - ^master$
-    max_concurrency: 1
-    run_if_changed: '^config/prow/cluster/build/boskos-resources/boskos-resources.yaml$'
-    decorate: true
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
-        command:
-        - make
-        args:
-        - -C
-        - config/prow
-        - update-boskos-resources
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: boskos-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Update boskos configmap on test-infra pushes
 
 
 periodics:
@@ -440,47 +417,3 @@ periodics:
     testgrid-tab-name: rotate-legacy-default-build-sa-json-key
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Rotate legacy build cluster service account json key.
-
-# This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
-# Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
-# Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
-- name: ci-test-infra-prow-checkconfig
-  interval: 5m
-  cluster: eks-prow-build-cluster
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20240723-dbbd2d86b
-      command:
-      - checkconfig
-      args:
-      - --config-path=config/prow/config.yaml
-      - --job-config-path=config/jobs
-      - --plugin-config=config/prow/plugins.yaml
-      - --strict
-      - --warnings=mismatched-tide-lenient
-      - --warnings=tide-strict-branch
-      - --warnings=needs-ok-to-test
-      - --warnings=validate-owners
-      - --warnings=missing-trigger
-      - --warnings=validate-urls
-      - --warnings=unknown-fields
-      - --warnings=duplicate-job-refs
-      - --warnings=unknown-fields-all
-      - --warnings=non-decorated-jobs
-      - --warnings=valid-decoration-config
-      resources:
-        requests:
-          cpu: "1"
-          memory: "2Gi"
-        limits:
-          cpu: "1"
-          memory: "2Gi"
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-prow-oncall@kubernetes.io
-    testgrid-num-failures-to-alert: '10'
