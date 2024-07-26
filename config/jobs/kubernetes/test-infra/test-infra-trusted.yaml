@@ -283,29 +283,6 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Compiles and uploads testgrid config on test-infra pushes
-  - name: post-test-infra-upload-boskos-config
-    cluster: test-infra-trusted
-    branches:
-    - ^master$
-    max_concurrency: 1
-    run_if_changed: '^config/prow/cluster/build/boskos-resources/boskos-resources.yaml$'
-    decorate: true
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
-        command:
-        - make
-        args:
-        - -C
-        - config/prow
-        - update-boskos-resources
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: boskos-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Update boskos configmap on test-infra pushes
 
 
 periodics:
@@ -440,4 +417,3 @@ periodics:
     testgrid-tab-name: rotate-legacy-default-build-sa-json-key
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Rotate legacy build cluster service account json key.
-
