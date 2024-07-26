@@ -32,7 +32,7 @@ periodics:
     path_alias: sigs.k8s.io/windows-testing
     repo: windows-testing
     workdir: true
-  - base_ref: release-1.29
+  - base_ref: master
     org: kubernetes-sigs
     path_alias: sigs.k8s.io/cloud-provider-azure
     repo: cloud-provider-azure
@@ -87,7 +87,7 @@ periodics:
     workdir: true
   - org: kubernetes-sigs
     repo: cloud-provider-azure
-    base_ref: release-1.29
+    base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
