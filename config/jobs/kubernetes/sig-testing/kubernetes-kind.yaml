@@ -1,7 +1,5 @@
 presubmits:
   kubernetes/kubernetes:
-  # Please update the pull-kubernetes-e2e-kind-canary job first when making potentially intrusive changes.
-  # After the canary job is green and merged, update this job.
   - name: pull-kubernetes-e2e-kind
     cluster: k8s-infra-prow-build
     optional: false
@@ -25,11 +23,11 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty"
+        - name: FOCUS
+          value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]||PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
@@ -48,10 +46,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       fork-per-release: "true"
 
-  # The "canary" job for iterating on changes before promoting them to the pull-kubernetes-e2e-kind job.
-  # It should keep the same configuration as the pull-kubernetes-e2e-kind job except for the SKIP list.
-  # We can keep the canary running more tests, it is optional and can be used to get signal on PRs.
-  # The problem is the other way around, if the normal job runs more tests than the canary.
+
   - name: pull-kubernetes-e2e-kind-canary
     cluster: k8s-infra-prow-build
     optional: true
@@ -98,8 +93,6 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
 
-  # Please update the pull-kubernetes-e2e-kind-ipv6-canary job first when making potentially intrusive changes.
-  # After the canary job is green and merged, update this job.
   - name: pull-kubernetes-e2e-kind-ipv6
     cluster: k8s-infra-prow-build
     optional: false
@@ -124,11 +117,11 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty"
+        - name: FOCUS
+          value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -153,10 +146,6 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
 
-  # The "canary" job for iterating on changes before promoting them to the pull-kubernetes-e2e-kind-ipv6 job.
-  # It should keep the same configuration as the pull-kubernetes-e2e-kind-ipv6 job except for the SKIP list.
-  # We can keep the canary running more tests, it is optional and can be used to get signal on PRs.
-  # The problem is the other way around, if the normal job runs more tests than the canary.
   - name: pull-kubernetes-e2e-kind-ipv6-canary
     cluster: k8s-infra-prow-build
     optional: true
@@ -465,10 +454,10 @@ presubmits:
           value: '{"EventedPLEG":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
-        - name: LABEL_FILTER
-          value: "Feature: isEmpty"
+        - name: FOCUS
+          value: "."
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
           value: "true"
         # we need privileged mode in order to do docker in docker
