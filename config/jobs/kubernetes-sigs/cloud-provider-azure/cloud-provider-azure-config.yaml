@@ -12,7 +12,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -53,7 +53,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -104,7 +104,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -163,7 +163,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -216,7 +216,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -269,7 +269,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -343,7 +343,7 @@ presubmits:
       workdir: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -399,7 +399,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -450,7 +450,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -503,7 +503,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -557,7 +557,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -625,7 +625,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -678,7 +678,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -719,7 +719,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
         - runner.sh
         args:
@@ -791,7 +791,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -846,7 +846,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -901,7 +901,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -956,7 +956,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1011,7 +1011,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1064,7 +1064,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1116,7 +1116,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1178,7 +1178,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1240,7 +1240,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1309,7 +1309,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1367,7 +1367,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1427,7 +1427,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1492,7 +1492,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1560,7 +1560,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:
@@ -1630,7 +1630,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
       command:
       - runner.sh
       args:

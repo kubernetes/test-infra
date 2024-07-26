@@ -16,7 +16,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
         command:
           - runner.sh
         args:
@@ -59,7 +59,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
         command:
           - runner.sh
         args:
@@ -99,7 +99,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
       command:
         - runner.sh
       args:
@@ -140,7 +140,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
         command:
           - runner.sh
         args:
@@ -180,7 +180,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
       command:
         - runner.sh
       args:
@@ -222,7 +222,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
       command:
         - runner.sh
       args:
@@ -263,7 +263,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240705-131cd74733-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
       command:
         - runner.sh
       args:
