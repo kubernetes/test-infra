@@ -541,6 +541,15 @@ func containsDisallowedVolume(volumes []v1.Volume) (bool, string) {
 	return false, ""
 }
 
+func volumeSecrets(volumes []v1.Volume) (s []string) {
+	for _, vol := range volumes {
+		if vol.Secret != nil {
+			s = append(s, vol.Secret.SecretName)
+		}
+	}
+	return s
+}
+
 func main() {
 	flag.StringVar(&config.configPath, "config", "../../config/prow/config.yaml", "Path to prow config")
 	flag.StringVar(&config.jobConfigPath, "job-config", "../../config/jobs", "Path to prow job config")
@@ -593,22 +602,23 @@ If you own any jobs listed below, PLEASE ensure they are migrated to a community
 
 For more context, see the announcement thread at https://groups.google.com/a/kubernetes.io/g/dev/c/p6PAML90ZOU
 
-| File Path | Job | Link |
-| --- | --- | --- |
+| Secrets | File Path | Job | Link |
+| --- | --- | --- | --- |
 `)
 		var results []string
 		repos := getAllRepos(status)
 		for _, repo := range repos {
 			jobs := getIncompleteJobs(repo, status)
 			for _, job := range jobs {
+				secrets := volumeSecrets(job.JobDetails.Spec.Volumes)
 				link := "https://cs.k8s.io/?q=name%3A%20" + job.JobName + "%24&i=nope&files=&excludeFiles=&repos="
-				results = append(results, fmt.Sprintf("%s\t%s\t%s", job.SourcePath, job.JobName, link))
+				results = append(results, fmt.Sprintf("%s\t%s\t%v\t%s", secrets, job.SourcePath, job.JobName, link))
 			}
 		}
 		sort.Strings(results)
 		for _, line := range results {
 			parts := strings.Split(line, "\t")
-			_, err = f.WriteString(fmt.Sprintf("|%v|%v|[Search Results](%s)|\n", parts[0], parts[1], parts[2]))
+			_, err = f.WriteString(fmt.Sprintf("|%v|%v|%v|[Search Results](%s)|\n", parts[0], parts[1], parts[2], parts[3]))
 			if err != nil {
 				log.Fatal(err)
 			}
