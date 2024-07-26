@@ -1,4 +1,4 @@
-![Prow Logo](./docs/logos/logo-horizontal.svg)
+![Prow Logo](https://github.com/kubernetes-sigs/prow/blob/main/site/static/images/logo-horizontal.svg)
 
 # Prow source code has moved
 
