@@ -1550,10 +1550,6 @@ periodics:
     repo: test-infra
     base_ref: master
     path_alias: k8s.io/test-infra
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
   spec:
     containers:
     - command:
