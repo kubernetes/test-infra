@@ -1,7 +1,7 @@
 target: "gs://k8s-testgrid-canary/config"
 sources:
 - name: "" # Kubernetes configs can't be renamed
-  location: "gs://k8s-testgrid-canary/configs/k8s/config"
+  location: "gs://k8s-testgrid-config/k8s/config"
 - name: "google-oss"
   location: "gs://oss-prow-own-testgrid/config"
 - name: "istio"
