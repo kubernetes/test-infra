@@ -33,7 +33,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240720' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.29/latest-ci.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.29/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
           -- \
@@ -99,7 +99,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240720' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.29/latest-ci.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.29/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
           -- \
@@ -165,7 +165,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240720' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.28/latest-ci.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
@@ -231,7 +231,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240720' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.28/latest-ci.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
           -- \
@@ -297,7 +297,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240720' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \
@@ -363,7 +363,7 @@ periodics:
           --up --down \
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240720' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci.txt \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
           -- \

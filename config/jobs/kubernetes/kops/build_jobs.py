@@ -38,6 +38,14 @@ image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
+# A helper function to construct the URLs to our marker files
+def marker_updown_green(kops_version):
+    base_url = "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers"
+    marker_file = "latest-ci-updown-green.txt"
+    if kops_version is None:
+        return f"{base_url}/master/{marker_file}"
+    return f"{base_url}/release-{kops_version}/{marker_file}"
+
 ##############
 # Build Test #
 ##############
@@ -71,12 +79,12 @@ def build_test(cloud='aws',
                storage_e2e_cred=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if kops_version is None:
-        kops_deploy_url = "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt"
+        kops_deploy_url = marker_updown_green(None)
     elif kops_version.startswith("https://"):
         kops_deploy_url = kops_version
         kops_version = None
     else:
-        kops_deploy_url = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-{kops_version}/latest-ci.txt"
+        kops_deploy_url = marker_updown_green(kops_version)
 
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -736,7 +744,7 @@ def generate_misc():
                    distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    publish_version_marker="gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
                    runs_per_day=24,
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
@@ -940,7 +948,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -957,7 +965,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=spec.nodeProblemDetector.enabled=true",
@@ -973,7 +981,7 @@ def generate_misc():
                    distro="u2204",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=spec.nodeProblemDetector.enabled=true",
@@ -990,7 +998,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1008,7 +1016,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1025,7 +1033,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1047,7 +1055,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    build_cluster="eks-prow-build-cluster",
                    extra_flags=[
@@ -1068,7 +1076,7 @@ def generate_misc():
                    distro="al2023",
                    networking="amazonvpc",
                    k8s_version="stable",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
                    build_cluster="eks-prow-build-cluster",
@@ -1095,7 +1103,7 @@ def generate_misc():
                    distro="al2023",
                    networking="amazonvpc",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
@@ -1122,7 +1130,7 @@ def generate_misc():
                    distro="al2023",
                    networking="cilium",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local",
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
@@ -1147,7 +1155,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1166,7 +1174,7 @@ def generate_misc():
                    distro="cos105",
                    networking="gce",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1185,7 +1193,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    focus_regex=r'\[Disruptive\]',
@@ -1200,7 +1208,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
@@ -1220,7 +1228,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1240,7 +1248,7 @@ def generate_misc():
                    distro="al2023",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    build_cluster="k8s-infra-prow-build",
                    extra_flags=[
@@ -1263,7 +1271,7 @@ def generate_misc():
                    distro="cos105",
                    networking="kubenet",
                    k8s_version="ci",
-                   kops_version="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
+                   kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
                        "--image=cos-cloud/cos-105-17412-370-67",
