@@ -21,8 +21,21 @@ periodics:
     testgrid-base-options: 'exclude-filter-by-regex=^(kubetest\.Test|ci-kubernetes-e2e-gce-scale-correctness\.Overall)$'
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
+    volumes:
+    - name: cache-secret
+      secret:
+        secretName: scale-pull-cache-token
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
+      volumeMounts:
+      - name: cache-secret
+        readOnly: true
+        mountPath: /etc/registry-auth
+      env:
+      - name: KUBERNETES_REGISTRY_PULL_THROUGH_HOST
+        value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
+      - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
+        value: /etc/registry-auth/token
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -89,13 +102,27 @@ periodics:
     testgrid-tab-name: gce-master-scale-performance
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
+    volumes:
+    - name: cache-secret
+      secret:
+        secretName: scale-pull-cache-token
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
+      volumeMounts:
+      - name: cache-secret
+        readOnly: true
+        mountPath: /etc/registry-auth
+      env:
+      - name: KUBERNETES_REGISTRY_PULL_THROUGH_HOST
+        value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
+      - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
+        value: /etc/registry-auth/token
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=gce-scale-cluster
+      # TODO: revert this after we get a green run with the pull-through-cache
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-96
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
