@@ -622,7 +622,6 @@ func TestCommunityJobs(t *testing.T) {
 		"post-test-infra-push-git",
 		"post-test-infra-push-misc-images",
 		"post-test-infra-reconcile-hmacs",
-		"post-test-infra-upload-testgrid-config",
 	)
 
 	// error if any unknown job tries to use one of these clusters
