@@ -44,7 +44,7 @@ spec:
             done
             sleep 100000000
           done
-        image: alpine:20231219
+        image: alpine:20240606
         imagePullPolicy: IfNotPresent
         resources: {}
         securityContext:
