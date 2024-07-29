@@ -1,12 +1,13 @@
 periodics:
 - name: ci-kubernetes-unit-windows-master
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   decoration_config:
     timeout: 4h
   labels:
     preset-dind-enabled: "true"
-    preset-azure-cred-only: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: windows-testing
@@ -23,7 +24,10 @@ periodics:
         resources:
           requests:
             cpu: 2
-            memory: "4Gi"
+            memory: "5Gi"
+          limits:
+            cpu: 2
+            memory: "5Gi"
   annotations:
 #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-signal
