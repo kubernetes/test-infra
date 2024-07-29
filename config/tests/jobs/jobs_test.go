@@ -619,7 +619,6 @@ func TestCommunityJobs(t *testing.T) {
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
 		"post-test-infra-push-alpine",
-		"post-test-infra-push-gcb-docker-gcloud",
 		"post-test-infra-push-git",
 		"post-test-infra-push-git-custom-k8s-auth",
 		"post-test-infra-push-misc-images",
