@@ -87,8 +87,6 @@ presubmits:
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
         - name: FOCUS
           value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]|\[Feature:CSIVolumeHealth\]
-        - name: PARALLEL
-          value: "true"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -181,8 +179,6 @@ periodics:
           value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
         - name: FOCUS
           value: \[Feature:VolumeAttributesClass\]|\[Feature:HonorPVReclaimPolicy\]|\[Feature:CSIVolumeHealth\]
-        - name: PARALLEL
-          value: "true"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
