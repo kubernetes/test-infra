@@ -178,33 +178,6 @@ postsubmits:
     rerun_auth_config:
       github_users:
       - alvaroaleman
-  - name: post-test-infra-push-kettle
-    cluster: test-infra-trusted
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "kettle"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the kettle image
-    run_if_changed: '^kettle/'
-    decorate: true
-    decoration_config:
-      timeout: 50m
-      grace_period: 10m
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - kettle/
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'

@@ -622,7 +622,6 @@ func TestCommunityJobs(t *testing.T) {
 		"post-test-infra-push-gcb-docker-gcloud",
 		"post-test-infra-push-git",
 		"post-test-infra-push-git-custom-k8s-auth",
-		"post-test-infra-push-kettle",
 		"post-test-infra-push-misc-images",
 		"post-test-infra-reconcile-hmacs",
 		"post-test-infra-upload-testgrid-config",
