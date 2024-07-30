@@ -381,10 +381,10 @@ presubmits:
           # TODO: increase CPU for the pull-kubernetes-e2e-gce, we spend a LONG time building kubernetes and it slows iteration
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: "14Gi"
             requests:
-              cpu: 8
+              cpu: 7
               memory: "14Gi"
           securityContext:
             privileged: true
