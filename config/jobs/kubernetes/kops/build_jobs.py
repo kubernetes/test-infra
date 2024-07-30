@@ -1978,15 +1978,6 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-kops-e2e-addon-resource-tracking",
-            cloud="aws",
-            distro="u2204",
-            networking="calico",
-            scenario="addon-resource-tracking",
-            tab_name="pull-kops-e2e-aws-addon-resource-tracking",
-        ),
-
-        presubmit_test(
             name="pull-kops-e2e-metrics-server",
             cloud="aws",
             distro="u2204",
