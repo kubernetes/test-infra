@@ -177,3 +177,28 @@ presubmits:
             requests:
               cpu: 3
               memory: 10Gi
+  - name: pull-lws-verify-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/lws
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-lws-verify-main
+      description: "Run lws verify checks"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.22
+        command:
+        - make
+        args:
+        - verify
+        resources:
+          limits:
+            cpu: 3
+            memory: 10Gi
+          requests:
+            cpu: 3
+            memory: 10Gi

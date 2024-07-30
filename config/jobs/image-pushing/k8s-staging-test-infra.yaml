@@ -334,7 +334,8 @@ postsubmits:
           args:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
-          - /
+          - --build-dir=.
+          - .
 
     #
     # components, e.g. kettle/, triage/

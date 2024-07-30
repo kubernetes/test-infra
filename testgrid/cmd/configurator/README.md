@@ -7,7 +7,7 @@ This utility is important for the [inner workings](/testgrid/build_test_update.m
 you're looking to just add to or modify an existing configuration, read [`config.md`]
 instead.
 
-## Basic Usage
+## Basic Use
 
 `configurator --yaml=config.yaml --print-text --oneshot` will read the configuration from the YAML
 file and print it to standard output for humans to read.
@@ -24,7 +24,7 @@ Instead of `--print-text`, you can just `--validate-config-file`, or specify an 
 
 `--default` specifies default settings to use whenever a setting isn't specified in the YAML configuration.
 
-## Usage with Prow
+## Use with Prow
 
 If TestGrid is running in parallel with [Prow], configuration can be annotated to a Prow job instead
 of separately configured in a YAML file. Details for how to write these annotations are in [`config.md`].

@@ -40,26 +40,6 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/git/
-  - name: post-test-infra-push-git-custom-k8s-auth
-    cluster: test-infra-trusted
-    run_if_changed: '^images/git-custom-k8s-auth/'
-    annotations:
-      testgrid-dashboards: sig-testing-images
-      testgrid-tab-name: git-custom-k8s-auth
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-prow
-        - images/git-custom-k8s-auth/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
@@ -101,7 +81,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20240723-dbbd2d86b
+      - image: gcr.io/k8s-prow/hmac:v20240727-0ce76b65a
         command:
         - hmac
         args:
@@ -178,57 +158,6 @@ postsubmits:
     rerun_auth_config:
       github_users:
       - alvaroaleman
-  - name: post-test-infra-push-kettle
-    cluster: test-infra-trusted
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "kettle"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the kettle image
-    run_if_changed: '^kettle/'
-    decorate: true
-    decoration_config:
-      timeout: 50m
-      grace_period: 10m
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - kettle/
-  - name: post-test-infra-push-gcb-docker-gcloud
-    cluster: test-infra-trusted
-    run_if_changed: '^images/gcb-docker-gcloud/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "gcb-docker-gcloud"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the gcb-docker-gcloud image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/gcb-docker-gcloud/
   - name: post-test-infra-gencred-refresh-kubeconfig
     cluster: test-infra-trusted
     run_if_changed: '^config/prow/gencred-config/'
@@ -239,7 +168,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20240719-47a381b1df
+        image: gcr.io/k8s-prow/gencred:v20240729-5ecc23f8fa
         command:
         - gencred
         args:
@@ -260,7 +189,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20240719-47a381b1df
+      - image: gcr.io/k8s-prow/configurator:v20240729-5ecc23f8fa
         command:
         - configurator
         args:
@@ -299,7 +228,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240723-dbbd2d86b
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240727-0ce76b65a
       command:
       - generic-autobumper
       args:
@@ -336,7 +265,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240723-dbbd2d86b
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240727-0ce76b65a
       command:
       - generic-autobumper
       args:
@@ -373,7 +302,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20240719-47a381b1df
+      image: gcr.io/k8s-prow/gencred:v20240729-5ecc23f8fa
       command:
       - gencred
       args:
