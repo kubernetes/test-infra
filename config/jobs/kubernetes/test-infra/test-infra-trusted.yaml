@@ -81,7 +81,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20240727-0ce76b65a
+      - image: gcr.io/k8s-prow/hmac:v20240730-12bb925b4
         command:
         - hmac
         args:
@@ -228,7 +228,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240727-0ce76b65a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240730-12bb925b4
       command:
       - generic-autobumper
       args:
@@ -265,7 +265,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20240727-0ce76b65a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20240730-12bb925b4
       command:
       - generic-autobumper
       args:
