@@ -179,40 +179,6 @@ postsubmits:
       testgrid-tab-name: postsubmit-gencred-refresh-kubeconfig
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       description: Runs gencred to refresh generated kubeconfigs.
-  - name: post-test-infra-upload-testgrid-config
-    cluster: test-infra-trusted
-    branches:
-    - ^master$
-    max_concurrency: 1
-    run_if_changed: '^config/(jobs|testgrids)/.*$'
-    decorate: true
-    spec:
-      serviceAccountName: testgrid-config-updater
-      containers:
-      - image: gcr.io/k8s-prow/configurator:v20240729-5ecc23f8fa
-        command:
-        - configurator
-        args:
-        - --yaml=config/testgrids
-        - --default=config/testgrids/default.yaml
-        - --prow-config=config/prow/config.yaml
-        - --prow-job-config=config/jobs/
-        - --output=gs://k8s-testgrid-canary/configs/k8s/config
-        - --output=gs://k8s-testgrid/configs/k8s/config
-        - --prowjob-url-prefix=https://git.k8s.io/test-infra/config/jobs/
-        - --update-description
-        - --oneshot
-        - --world-readable
-        resources:
-          requests:
-            memory: "1Gi"
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: testgrid-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Compiles and uploads testgrid config on test-infra pushes
-
 
 periodics:
   # Save for standard time:
