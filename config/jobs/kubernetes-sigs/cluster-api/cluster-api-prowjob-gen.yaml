@@ -50,6 +50,25 @@ prow_ignored:
         to: "1.30"
       - from: "1.30"
         to: "1.31"
+    release-1.8:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30"
+      interval: "4h"
+      upgradesInterval: "24h"
+      kubernetesVersionManagement: "v1.27.13"
+      kubebuilderEnvtestKubernetesVersion: "1.27.1"
+      upgrades:
+      - from: "1.25"
+        to: "1.26"
+      - from: "1.26"
+        to: "1.27"
+      - from: "1.27"
+        to: "1.28"
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
+      - from: "1.30"
+        to: "1.31"
     release-1.7:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29"
       interval: "4h"
@@ -88,25 +107,6 @@ prow_ignored:
         to: "1.28"
       - from: "1.28"
         to: "1.29"
-    release-1.5:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.27"
-      interval: "4h"
-      upgradesInterval: "24h"
-      kubernetesVersionManagement: "v1.24.15"
-      kubebuilderEnvtestKubernetesVersion: "1.24.2"
-      upgrades:
-      - from: "1.22"
-        to: "1.23"
-      - from: "1.23"
-        to: "1.24"
-      - from: "1.24"
-        to: "1.25"
-      - from: "1.25"
-        to: "1.26"
-      - from: "1.26"
-        to: "1.27"
-      - from: "1.27"
-        to: "1.28"
 
   # The generator will run each template per branch and use a filename friendly
   # branch variable to format the target filename.
