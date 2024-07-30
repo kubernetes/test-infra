@@ -307,6 +307,88 @@ presubmits:
           securityContext:
             privileged: true
 
+  # manual test for pull-through cache registry used with 5k node tests
+  - name: pull-kubernetes-e2e-gce-pull-through-cache
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      fork-per-release: "false"
+      testgrid-dashboards: sig-k8s-infra-canaries
+      testgrid-tab-name: pull-kubernetes-e2e-gce-pull-through-cache
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    spec:
+      volumes:
+      - name: cache-secret
+        secret:
+          secretName: scale-pull-cache-token
+      containers:
+        - volumeMounts:
+          - name: cache-secret
+            readOnly: true
+            mountPath: /etc/registry-auth
+          env:
+          - name: KUBERNETES_REGISTRY_PULL_THROUGH_HOST
+            value: https://us-central1-docker.pkg.dev/v2/k8s-infra-e2e-scale-5k-project/k8s-5k-scale-cache/
+          - name: KUBERNETES_REGISTRY_PULL_THROUGH_BASIC_AUTH_TOKEN_PATH
+            value: /etc/registry-auth/token
+          command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --build=quick
+            - --cluster=
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
+            - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+            - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+            - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+            - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
+            - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+            - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+            - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
+            - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --extract=local
+            - --gcp-master-image=ubuntu
+            - --gcp-node-image=ubuntu
+            - --gcp-zone=us-west1-b
+            - --ginkgo-parallel=30
+            - --provider=gce
+            # Panic if anything mutates a shared informer cache
+            - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+            # Panic if data inconsistency is detected
+            - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
+            - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-pull-through-cache
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
+          # TODO: increase CPU for the pull-kubernetes-e2e-gce, we spend a LONG time building kubernetes and it slows iteration
+          resources:
+            limits:
+              cpu: 8
+              memory: "14Gi"
+            requests:
+              cpu: 8
+              memory: "14Gi"
+          securityContext:
+            privileged: true
+
   - name: pull-kubernetes-e2e-gce-canary
     cluster: k8s-infra-prow-build
     optional: true
