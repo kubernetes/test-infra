@@ -1589,6 +1589,7 @@ def generate_presubmits_scale():
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
+            optional=True,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
