@@ -32,6 +32,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-capz runs Azure specific e2e tests on vmss.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -45,57 +46,6 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
       preset-azure-capz-sa-cred: "true"
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.15
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
-        command:
-        - runner.sh
-        args:
-        - ./scripts/ci-entrypoint.sh
-        - bash
-        - -c
-        - >-
-          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
-          make test-ccm-e2e
-        securityContext:
-          privileged: true
-        env:
-        - name: TEST_CCM  # CAPZ config
-          value: "true"
-        - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
-          value: "1"
-        - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest"
-        - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
-        - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
-          value: "Standard"
-        - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
-          value: "capz"
-    annotations:
-      testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz
-      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
-      testgrid-num-columns-recent: '30'
-  - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-eks-test
-    cluster: eks-prow-build-cluster
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 5h
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    branches:
-    - master
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -138,10 +88,11 @@ presubmits:
             memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-eks-test
-      description: "Runs Azure specific tests with cloud-provider-azure on community cluster (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz
+      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -158,7 +109,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -189,12 +140,20 @@ presubmits:
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on IPv6 vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -211,7 +170,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -241,6 +200,13 @@ presubmits:
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz
@@ -248,6 +214,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific e2e tests on vmssflex.
   - name: pull-cloud-provider-azure-e2e-ccm-vmssflex-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -264,7 +231,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -310,6 +277,13 @@ presubmits:
           value: ""
         - name: HEALTH_PROBE_MODE
           value: "servicenodeport"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmssflex-capz
@@ -317,6 +291,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-capz runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -333,7 +308,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes
@@ -371,6 +346,13 @@ presubmits:
           value: "capz"
         - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
           value: "30"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz
@@ -378,6 +360,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-capz runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -394,7 +377,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -423,12 +406,20 @@ presubmits:
           value: "latest"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -445,7 +436,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -475,13 +466,21 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.13/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-capz
       description: "Runs Azure specific tests with cloud-provider-azure IPv6 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-capz
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -498,7 +497,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -528,7 +527,14 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.13/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-dualstack-capz
@@ -536,6 +542,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz runs Azure specific e2e tests with cloud controller manager and IP-based load balancer backend pools.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -552,7 +559,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -598,6 +605,13 @@ presubmits:
           value: "false"
         - name: HEALTH_PROBE_MODE
           value: "servicenodeport"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
@@ -605,6 +619,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz runs Azure specific e2e tests with cloud controller manager and multiple standard load balancers.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -620,7 +635,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -662,6 +677,13 @@ presubmits:
           value: "true"
         - name: WINDOWS_WORKER_MACHINE_COUNT
           value: "2"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz
@@ -698,6 +720,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz runs Azure specific e2e tests with cloud controller manager and shared health probe.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -714,7 +737,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -760,6 +783,13 @@ presubmits:
           value: "false"
         - name: HEALTH_PROBE_MODE
           value: "shared"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-shared-probe-capz
@@ -769,6 +799,7 @@ periodics:
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-ipv6-capz runs Azure specific tests periodically using a stable capz release in an IPv6 single stack cluster.
   name: cloud-provider-azure-master-ipv6-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -781,7 +812,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -815,7 +846,14 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz
@@ -824,6 +862,7 @@ periodics:
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-ipv6--vmss-capz runs Azure specific tests periodically using a stable capz release in an IPv6 single stack cluster with VMSS.
   name: cloud-provider-azure-master-ipv6-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -836,7 +875,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -871,6 +910,13 @@ periodics:
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-vmss-capz
@@ -879,6 +925,7 @@ periodics:
 - cron: '0 20 * * *'  # Run at 20:00 UTC everyday
   # cloud-provider-azure-master-dualstack-capz runs Azure specific tests periodically using a stable capz release in a dualstack cluster.
   name: cloud-provider-azure-master-dualstack-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -891,7 +938,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -925,7 +972,14 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-dualstack-capz
@@ -934,6 +988,7 @@ periodics:
 - cron: '0 20 * * *'  # Run at 20:00 UTC everyday
   # cloud-provider-azure-master-dualstack-vmss-capz runs Azure specific tests periodically using a stable capz release in a dualstack cluster with VMSS.
   name: cloud-provider-azure-master-dualstack-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -946,7 +1001,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -981,6 +1036,13 @@ periodics:
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-dualstack-vmss-capz
@@ -989,6 +1051,7 @@ periodics:
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-capz runs Azure specific tests periodically using a stable capz release.
   name: cloud-provider-azure-master-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1001,7 +1064,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1034,6 +1097,13 @@ periodics:
         value: "latest"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz
@@ -1042,6 +1112,7 @@ periodics:
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-capz runs Azure specific tests periodically using capz:main.
   name: cloud-provider-azure-master-capz-main
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1087,6 +1158,13 @@ periodics:
         value: "latest"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz-main
@@ -1094,6 +1172,7 @@ periodics:
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using capz:main."
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   name: cloud-provider-azure-ccm-windows-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1106,7 +1185,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1143,6 +1222,13 @@ periodics:
         value: "0"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-ccm-windows-capz
@@ -1151,6 +1237,7 @@ periodics:
 - cron: '0 17 * * *'  # Run at 17:00 UTC everyday
   # cloud-provider-azure-conformance-capz runs Kubernetes conformance tests periodically.
   name: cloud-provider-azure-conformance-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1163,7 +1250,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1206,6 +1293,13 @@ periodics:
         value: "capz"
       - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
         value: "30"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-capz
@@ -1213,6 +1307,7 @@ periodics:
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - cron: '0 17 * * *'  # Run at 17:00 UTC everyday
   name: cloud-provider-azure-conformance-windows-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1225,7 +1320,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1274,6 +1369,13 @@ periodics:
         value: "3"
       - name: GINKGO_TOLERATE_FLAKES  # cloud-provider-azure config
         value: "y"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
@@ -1282,6 +1384,7 @@ periodics:
 - cron: '0 17 * * *'  # Run at 17:00 UTC everyday
   # cloud-provider-azure-slow-capz runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1294,7 +1397,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1337,6 +1440,13 @@ periodics:
         value: "capz"
       - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
         value: "4"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow-capz
@@ -1345,6 +1455,7 @@ periodics:
 - cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-master-vmss-capz runs Azure specific tests periodically using a stable capz release on vmss.
   name: cloud-provider-azure-master-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1357,7 +1468,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1387,11 +1498,18 @@ periodics:
       - name: KUBERNETES_VERSION  # CAPZ config
         value: "latest"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-vmss-capz
@@ -1400,6 +1518,7 @@ periodics:
 - cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-conformance-vmss-capz runs Kubernetes conformance tests periodically on vmss.
   name: cloud-provider-azure-conformance-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1412,7 +1531,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1450,13 +1569,20 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
         value: "30"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-vmss-capz
@@ -1465,6 +1591,7 @@ periodics:
 - cron: '0 19 * * *'  # Run at 19:00 UTC everyday
   # cloud-provider-azure-conformance-serial-vmss-capz runs Kubernetes conformance serial tests periodically on vmss.
   name: cloud-provider-azure-conformance-serial-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1477,7 +1604,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1516,7 +1643,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -1525,6 +1652,13 @@ periodics:
         value: "1"
       - name: GINKGO_TOLERATE_FLAKES  # cloud-provider-azure config
         value: "y"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-serial-vmss-capz
@@ -1533,6 +1667,7 @@ periodics:
 - cron: '0 19 * * *'  # Run at 19:00 UTC everyday
   # cloud-provider-azure-conformance-multiple-zones-vmss-capz runs Kubernetes conformance tests periodically on vmss multiple zones.
   name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1545,7 +1680,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1595,6 +1730,13 @@ periodics:
         value: "30"
       - name: K8S_FEATURE_GATES  # CAPZ config
         value: "ServiceTrafficDistribution=true"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
@@ -1603,6 +1745,7 @@ periodics:
 - cron: '0 19 * * *'  # Run at 19:00 UTC everyday
   # cloud-provider-azure-slow-vmss-capz runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow-vmss-capz
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1615,7 +1758,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1653,13 +1796,20 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
         value: "30"
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow-vmss-capz
