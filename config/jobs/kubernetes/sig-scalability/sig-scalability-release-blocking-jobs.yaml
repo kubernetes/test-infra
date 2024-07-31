@@ -122,8 +122,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=gce-scale-cluster
-      # TODO: revert this after we get a green run with the pull-through-cache
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-96
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
