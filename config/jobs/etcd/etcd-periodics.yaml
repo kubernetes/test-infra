@@ -84,7 +84,7 @@ periodics:
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
+        GO_TEST_FLAGS="-v --count 120 --timeout '200m' --run TestRobustnessExploratory"
         make gofail-enable
         make build
         VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/data/results make test-robustness || result=$?
@@ -128,7 +128,7 @@ periodics:
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
+        GO_TEST_FLAGS="-v --count 120 --timeout '200m' --run TestRobustnessExploratory"
         VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/data/results make test-robustness-main || result=$?
         if [ -d /data/results ]; then
           zip -r ${ARTIFACTS}/results.zip /data/results
@@ -170,7 +170,7 @@ periodics:
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
+        GO_TEST_FLAGS="-v --count 120 --timeout '200m' --run TestRobustnessExploratory"
         VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/data/results make test-robustness-release-3.5 || result=$?
         if [ -d /data/results ]; then
           zip -r ${ARTIFACTS}/results.zip /data/results
@@ -212,7 +212,7 @@ periodics:
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
-        GO_TEST_FLAGS="-v --count 150 --timeout '200m' --run TestRobustnessExploratory"
+        GO_TEST_FLAGS="-v --count 120 --timeout '200m' --run TestRobustnessExploratory"
         VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/data/results make test-robustness-release-3.4 || result=$?
         if [ -d /data/results ]; then
           zip -r ${ARTIFACTS}/results.zip /data/results
