@@ -42,7 +42,7 @@ loader = jinja2.FileSystemLoader(searchpath="./templates")
 def marker_updown_green(kops_version):
     base_url = "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers"
     marker_file = "latest-ci-updown-green.txt"
-    if kops_version is None:
+    if kops_version is None or kops_version == "master":
         return f"{base_url}/master/{marker_file}"
     return f"{base_url}/release-{kops_version}/{marker_file}"
 
