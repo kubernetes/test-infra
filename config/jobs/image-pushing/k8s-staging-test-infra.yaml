@@ -335,6 +335,7 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - --build-dir=.
+          - --with-git-dir
           - .
 
     #
