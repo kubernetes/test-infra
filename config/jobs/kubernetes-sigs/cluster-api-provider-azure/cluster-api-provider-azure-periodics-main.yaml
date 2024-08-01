@@ -165,7 +165,7 @@ periodics:
     testgrid-tab-name: capz-periodic-apiversion-upgrade-main
     description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
 - name: periodic-cluster-api-provider-azure-coverage
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   path_alias: "sigs.k8s.io/cluster-api-provider-azure"
