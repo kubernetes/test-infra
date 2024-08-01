@@ -524,6 +524,21 @@ def generate_misc():
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),
 
+        # A one-off scenario testing AWS EKS Pod Identity
+        build_test(name_override="kops-aws-eks-pod-identity",
+                   runs_per_day=3,
+                   cloud="aws",
+                   k8s_version='stable',
+                   extra_dashboards=['sig-k8s-infra-canaries'],
+                   scenario='smoketest',
+                   env={
+                       'KOPS_BASE_URL': "https://artifacts.k8s.io/binaries/kops/1.28.4/",
+                       'KOPS_VERSION': "v1.28.4",
+                       'K8S_VERSION': "v1.28.6",
+                       'KOPS_SKIP_E2E': '1',
+                       'KOPS_CONTROL_PLANE_SIZE': '3',
+                   }),
+
         # Test Cilium against ci k8s test suite
         build_test(name_override="kops-aws-cni-cilium-k8s-ci",
                    cloud="aws",
