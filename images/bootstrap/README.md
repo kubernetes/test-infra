@@ -31,7 +31,6 @@ It comes with a laundry list of things:
 - scripts:
   - `/usr/local/bin/entrypoint.sh` TODO
   - `/usr/local/bin/runner.sh` TODO
-  - `/usr/local/bin/create_bazel_cache_rcs.sh` TODO
 - tools:
   - `curl` and `wget`
   - `docker` via docker's apt repo

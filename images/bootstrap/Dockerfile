@@ -126,7 +126,7 @@ RUN mkdir /docker-graph
 # note the runner is also responsible for making docker in docker function if
 # env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
 # .bazelrc files if bazel remote caching is enabled 
-COPY ["entrypoint.sh", "runner.sh", "create_bazel_cache_rcs.sh", \
+COPY ["entrypoint.sh", "runner.sh", \
         "/usr/local/bin/"]
 
 # TODO(krzyzacy): Move the scenario scripts to kubekins v2

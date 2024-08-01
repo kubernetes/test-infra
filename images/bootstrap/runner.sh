@@ -13,16 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# generic runner script, handles DIND, bazelrc for caching, etc.
-
-# Check if the job has opted-in to bazel remote caching and if so generate 
-# .bazelrc entries pointing to the remote cache
-export BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
-if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
-    echo "Bazel remote cache is enabled, generating .bazelrcs ..."
-    /usr/local/bin/create_bazel_cache_rcs.sh
-fi
-
+# generic runner script, handles DIND, etc.
 
 # runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {
