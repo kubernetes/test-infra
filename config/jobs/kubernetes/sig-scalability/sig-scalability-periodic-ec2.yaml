@@ -119,7 +119,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "scale-1000.periodic.test-cncf-aws.k8s.io"
+        value: "scale-5000.periodic.test-cncf-aws.k8s.io"
       - name: KOPS_IRSA
         value: "true"
       resources:
