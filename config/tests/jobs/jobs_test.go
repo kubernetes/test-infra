@@ -618,7 +618,6 @@ func TestCommunityJobs(t *testing.T) {
 		"ci-test-infra-rotate-legacy-default-build-sa-json-key",
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
-		"post-test-infra-push-alpine",
 		"post-test-infra-push-git",
 		"post-test-infra-push-misc-images",
 		"post-test-infra-reconcile-hmacs",
