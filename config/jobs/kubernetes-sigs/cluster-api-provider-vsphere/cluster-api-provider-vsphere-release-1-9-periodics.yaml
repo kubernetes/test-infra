@@ -100,6 +100,10 @@ periodics:
     repo: cluster-api-provider-vsphere
     base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.28
@@ -144,6 +148,10 @@ periodics:
     repo: cluster-api-provider-vsphere
     base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.28
@@ -188,6 +196,10 @@ periodics:
     repo: cluster-api-provider-vsphere
     base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.28

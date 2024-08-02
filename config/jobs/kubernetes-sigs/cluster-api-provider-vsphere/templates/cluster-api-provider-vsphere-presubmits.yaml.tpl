@@ -158,6 +158,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -199,6 +204,11 @@ presubmits:
       timeout: 180m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -243,6 +253,11 @@ presubmits:
       timeout: 180m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -292,6 +307,11 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -336,6 +356,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
@@ -382,6 +407,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: {{ $.config.TestImage }}
