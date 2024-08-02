@@ -1,25 +1,5 @@
 postsubmits:
   kubernetes/test-infra:
-  - name: post-test-infra-push-git
-    cluster: test-infra-trusted
-    run_if_changed: '^images/git/'
-    annotations:
-      testgrid-dashboards: sig-testing-images
-      testgrid-tab-name: git
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-        command:
-        - /run.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-prow
-        - images/git/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
