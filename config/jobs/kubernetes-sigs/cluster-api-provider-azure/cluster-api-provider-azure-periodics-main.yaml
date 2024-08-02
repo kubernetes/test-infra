@@ -26,10 +26,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -72,10 +72,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -114,10 +114,10 @@ periodics:
         privileged: true
       resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -155,10 +155,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -275,10 +275,10 @@ periodics:
           value: ""
       resources:
         limits:
-          cpu: 2
+          cpu: 6
           memory: "9Gi"
         requests:
-          cpu: 2
+          cpu: 6
           memory: "9Gi"
       # docker-in-docker needs privileged mode
       securityContext:

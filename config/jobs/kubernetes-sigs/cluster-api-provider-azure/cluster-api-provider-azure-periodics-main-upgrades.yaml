@@ -39,10 +39,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -87,10 +87,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -135,10 +135,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure

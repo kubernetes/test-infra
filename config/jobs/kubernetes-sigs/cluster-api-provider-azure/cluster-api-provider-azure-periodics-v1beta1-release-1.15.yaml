@@ -28,10 +28,10 @@ periodics:
           value: "\\[K8s-Upgrade\\]|API Version Upgrade"
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
       # docker-in-docker needs privileged mode
       securityContext:
@@ -69,10 +69,10 @@ periodics:
           value: \[Managed Kubernetes\]
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
       # docker-in-docker needs privileged mode
       securityContext:
@@ -110,10 +110,10 @@ periodics:
           value: ""
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
       # docker-in-docker needs privileged mode
       securityContext:
