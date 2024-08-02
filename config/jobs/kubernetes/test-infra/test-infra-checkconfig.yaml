@@ -12,7 +12,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20240730-12bb925b4
+    - image: gcr.io/k8s-prow/checkconfig:v20240802-66b115076
       command:
       - checkconfig
       args:
