@@ -1,6 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-azure-conformance-main
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -26,10 +26,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -37,7 +37,7 @@ periodics:
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-main
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -72,10 +72,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -114,10 +114,10 @@ periodics:
         privileged: true
       resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -155,10 +155,10 @@ periodics:
           privileged: true
         resources:
           requests:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
           limits:
-            cpu: 2
+            cpu: 6
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -247,7 +247,7 @@ periodics:
     testgrid-tab-name: capz-periodic-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-e2e-aks-main
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
@@ -275,10 +275,10 @@ periodics:
           value: ""
       resources:
         limits:
-          cpu: 2
+          cpu: 6
           memory: "9Gi"
         requests:
-          cpu: 2
+          cpu: 6
           memory: "9Gi"
       # docker-in-docker needs privileged mode
       securityContext:
