@@ -32,6 +32,10 @@ periodics:
     repo: cluster-api-provider-vsphere
     base_ref: {{ $.branch }}
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: {{ $.config.TestImage }}

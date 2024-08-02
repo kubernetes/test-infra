@@ -111,6 +111,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -148,6 +153,11 @@ presubmits:
       timeout: 180m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -185,6 +195,11 @@ presubmits:
       timeout: 180m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -225,6 +240,11 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^release-1.11$
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -265,6 +285,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -302,6 +327,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -341,6 +371,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -378,6 +413,11 @@ presubmits:
       timeout: 180m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -417,6 +457,11 @@ presubmits:
       timeout: 180m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -457,6 +502,11 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^release-1.11$
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -497,6 +547,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
@@ -534,6 +589,11 @@ presubmits:
       timeout: 120m
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
