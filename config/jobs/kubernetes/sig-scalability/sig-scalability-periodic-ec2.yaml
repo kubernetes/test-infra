@@ -57,6 +57,7 @@ periodics:
     path_alias: k8s.io/kops
     workdir: true
   annotations:
+    karpenter.sh/do-not-disrupt: "true"
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
     test.kops.k8s.io/k8s_version: stable
