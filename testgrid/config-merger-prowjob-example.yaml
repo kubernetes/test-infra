@@ -9,7 +9,7 @@ presubmits:
       testgrid-create-test-group: "false"
     spec:
       containers:
-      - image: gcr.io/k8s-prow/configurator
+      - image: gcr.io/k8s-staging-test-infra/configurator
         command:
         - /app/testgrid/cmd/configurator/app.binary
         args: # TODO: Replace These (See Configurator Readme)
@@ -43,7 +43,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater # TODO: Add a service account that can write to your cloud storage
       containers:
-      - image: gcr.io/k8s-prow/configurator
+      - image: gcr.io/k8s-staging-test-infra/configurator
         command:
         - /app/testgrid/cmd/configurator/app.binary
         args: # TODO: Replace These (See Configurator Readme)
