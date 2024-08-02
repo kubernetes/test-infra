@@ -35,8 +35,8 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
-  # TODO(1.30): Comment this out when moving 1.30 to stable1
-  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  # TODO(1.31): Comment this out when moving 1.31 to stable1
+  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -76,13 +76,6 @@ jobs:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable1-default:
-    args:
-    - --env=ENABLE_POD_SECURITY_POLICY=true
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
@@ -168,8 +161,8 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
-  # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
-  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  # TODO(1.27): Comment this when removing jobs for release-1.27 branch.
+  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   # stable4
   ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
     interval: 24h
@@ -258,35 +251,35 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
-  # TODO(1.30): Comment this out when moving 1.30 to stable1.
-  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  # TODO(1.31): Comment this out when moving 1.31 to stable1.
+  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   beta:
+    args:
+    - --extract=ci/latest-1.31
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.31'
+  stable1:
     args:
     - --extract=ci/latest-1.30
     - --extract-ci-bucket=k8s-release-dev
     version: '1.30'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.29
     - --extract-ci-bucket=k8s-release-dev
     version: '1.29'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.28
     - --extract-ci-bucket=k8s-release-dev
     version: '1.28'
-  stable3:
+  # TODO(1.27): Comment this when removing jobs for release-1.27 branch.
+  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
+  stable4:
     args:
     - --extract=ci/latest-1.27
     - --extract-ci-bucket=k8s-release-dev
     version: '1.27'
-  # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
-  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
-  stable4:
-    args:
-    - --extract=ci/latest-1.26
-    - --extract-ci-bucket=k8s-release-dev
-    version: '1.26'
 
 testSuites:
   alphafeatures:
@@ -457,30 +450,30 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
-  # TODO(1.30): Comment this out when moving 1.30 to stable1.
-  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
+  # TODO(1.31): Comment this out when moving 1.31 to stable1.
+  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   beta:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.31
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.31
+  stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.30
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.29
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.29
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.28
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.28
-  stable3:
+  # TODO(1.27): Comment this when removing jobs for release-1.26 branch.
+  # TODO(1.32): Uncomment this when adding jobs for release-1.31 branch.
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.27
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.27
-  # TODO(1.26): Comment this when removing jobs for release-1.26 branch.
-  # TODO(1.31): Uncomment this when adding jobs for release-1.31 branch.
-  stable4:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.26
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240405-68dde9badf-1.26
 
 nodeTestSuites:
   default:
