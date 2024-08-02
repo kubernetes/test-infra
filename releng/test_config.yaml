@@ -76,6 +76,11 @@ jobs:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable1-default:
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
