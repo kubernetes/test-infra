@@ -30,7 +30,6 @@ jobs:
   - pull-kubernetes-e2e-ec2-conformance
   - pull-kubernetes-e2e-gce
   - pull-kubernetes-e2e-gce-canary
-  - pull-kubernetes-e2e-gce-ubuntu-containerd
   - pull-kubernetes-e2e-kind
   - pull-kubernetes-e2e-kind-ipv6
   - pull-kubernetes-integration
@@ -41,6 +40,5 @@ jobs:
   - pull-kubernetes-unit
   - pull-kubernetes-unit-go-compatibility
   - pull-kubernetes-verify
-  - pull-kubernetes-verify-govet-levee
   - pull-kubernetes-verify-lint
 recursive_artifacts: false

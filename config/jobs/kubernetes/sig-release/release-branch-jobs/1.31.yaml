@@ -2289,55 +2289,6 @@ presubmits:
           requests:
             cpu: "5"
             memory: 12Gi
-  - always_run: false
-    branches:
-    - release-1.31
-    cluster: eks-prow-build-cluster
-    context: pull-kubernetes-e2e-capz-windows-1.31
-    decorate: true
-    extra_refs:
-    - base_ref: main
-      org: kubernetes-sigs
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      repo: cluster-api-provider-azure
-    - base_ref: master
-      org: kubernetes-sigs
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      repo: cloud-provider-azure
-    - base_ref: master
-      org: kubernetes-sigs
-      path_alias: k8s.io/windows-testing
-      repo: windows-testing
-      workdir: true
-    labels:
-      preset-azure-community: "true"
-      preset-capz-containerd-1-7-latest: "true"
-      preset-capz-windows-2022: "true"
-      preset-capz-windows-common-pull: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-e2e-capz-windows-master
-    optional: true
-    path_alias: k8s.io/kubernetes
-    run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - env
-        - KUBERNETES_VERSION=latest-1.31
-        - ./capz/run-capz-e2e.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.31
-        name: ""
-        resources:
-          limits:
-            cpu: "2"
-            memory: 9Gi
-          requests:
-            cpu: "2"
-            memory: 9Gi
-        securityContext:
-          privileged: true
   kubernetes/perf-tests:
   - always_run: false
     branches:
