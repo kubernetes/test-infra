@@ -33,7 +33,7 @@ periodics:
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
   cluster: eks-prow-build-cluster
-  interval: 24h
+  cron: '1 7 * * *' # Run every day at 3:01 AM EDT/12:01 AM PDT (07:01 UTC)
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -120,6 +120,111 @@ periodics:
         value: "aws"
       - name: CLUSTER_NAME
         value: "scale-5000.periodic.test-cncf-aws.k8s.io"
+      - name: KOPS_IRSA
+        value: "true"
+      resources:
+        requests:
+          cpu: "10"
+          memory: "48Gi"
+        limits:
+          cpu: "10"
+          memory: "48Gi"
+
+# This job is the same as above, but using 100 nodes instead of 5000
+- name: ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2
+  tags:
+  - "perfDashPrefix: aws-100Nodes"
+  - "perfDashBuildsCount: 270"
+  - "perfDashJobType: performance"
+  cluster: eks-prow-build-cluster
+  cron: '1 19 * * *' # Run every day at 3:01 PM EDT/12:01 PM PDT (19:01 UTC)
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    karpenter.sh/do-not-disrupt: "true"
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, amazon-ec2-release
+    testgrid-tab-name: ec2-master-small-scale-performance
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      - name: GOPATH
+        value: /home/prow/go
+      - name: ARTIFACTS
+        value: $(ARTIFACTS)
+      - name: CNI_PLUGIN
+        value: "amazonvpc"
+      - name: KUBE_NODE_COUNT
+        value: "100"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_DELETE_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
+      - name: NODE_MODE
+        value: "master"
+      - name: CONTROL_PLANE_COUNT
+        value: "3"
+      - name: CONTROL_PLANE_SIZE
+        value: "c5.18xlarge"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-infra-kops-scale-tests"
+      - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+        value: "true"
+      - name: CL2_ENABLE_DNS_PROGRAMMING
+        value: "true"
+      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+        value: "true"
+      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+        value: "99.5"
+      - name: CL2_ALLOWED_SLOW_API_CALLS
+        value: "1"
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: PROMETHEUS_PVC_STORAGE_CLASS
+        value: "gp2"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "scale-100.periodic.test-cncf-aws.k8s.io"
       - name: KOPS_IRSA
         value: "true"
       resources:
