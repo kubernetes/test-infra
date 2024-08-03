@@ -1910,8 +1910,7 @@ def generate_presubmits_e2e():
             ],
             networking='amazonvpc',
             tab_name='e2e-aws-amazonvpc',
-            always_run=False,
-            optional=True,
+            always_run=True,
         ),
         presubmit_test(
             cloud='gce',

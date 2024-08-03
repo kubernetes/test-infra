@@ -215,8 +215,8 @@ presubmits:
     cluster: k8s-infra-kops-prow-build
     branches:
     - master
-    always_run: false
-    optional: true
+    always_run: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
