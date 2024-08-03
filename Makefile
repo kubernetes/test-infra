@@ -18,7 +18,7 @@
 REPO_ROOT:=${CURDIR}
 OUT_DIR=$(REPO_ROOT)/_output
 # image building and publishing config
-REGISTRY ?= gcr.io/k8s-prow
+REGISTRY ?= gcr.io/k8s-staging-test-infra
 PROW_IMAGE ?=
 ################################################################################
 # ================================= Testing ====================================
@@ -60,8 +60,7 @@ update-go-deps:
 verify-go-deps:
 	hack/make-rules/verify/go-deps.sh
 # ======================== Image Building/Publishing ===========================
-# Build and publish miscellaneous images that get pushed to "gcr.io/k8s-prow/".
-# These are not prow images, but published there for legacy reasons.
+# Build and publish miscellaneous images that get pushed to the specified REGISTRY.
 # The full set of images covered by these targets is configured in
 # .test-infra-misc-images.yaml.
 .PHONY: push-misc-images
