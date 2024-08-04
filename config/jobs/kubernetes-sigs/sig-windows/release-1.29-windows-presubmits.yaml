@@ -31,6 +31,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
     spec:
+      serviceAccountName: azure
       containers:
       - command:
         - "runner.sh"

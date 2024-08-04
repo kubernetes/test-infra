@@ -14,6 +14,7 @@ periodics:
     base_ref: master
     path_alias: sigs.k8s.io/windows-testing
   spec:
+    serviceAccountName: azure
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
         command:
