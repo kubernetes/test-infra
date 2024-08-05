@@ -3106,7 +3106,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-cos-gce-reboot-canary
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
 - name: e2e-ci-kubernetes-e2e-al2023-aws-disruptive-canary
   cron: '57 6-23/8 * * *'
   labels:
@@ -3136,7 +3136,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.5.20240730.0-kernel-6.1-x86_64' --channel=alpha --networking=kubenet --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.5.20240730.0-kernel-6.1-x86_64' --channel=alpha --networking=amazonvpc --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3169,7 +3169,7 @@ periodics:
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: kubenet
+    test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-disruptive-canary
