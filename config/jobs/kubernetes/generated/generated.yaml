@@ -25,7 +25,7 @@ periodics:
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
       - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
