@@ -2,10 +2,10 @@
 periodics:
 - name: periodic-cluster-api-test-main
   cluster: eks-prow-build-cluster
-  interval: 2h
+  interval: 3h
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -35,10 +35,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-test-mink8s-main
   cluster: eks-prow-build-cluster
-  interval: 2h
+  interval: 3h
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -78,10 +78,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-main
   cluster: eks-prow-build-cluster
-  interval: 2h
+  interval: 3h
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -127,10 +127,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
   cluster: eks-prow-build-cluster
-  interval: 2h
+  interval: 3h
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -185,10 +185,10 @@ periodics:
 
 - name: periodic-cluster-api-e2e-conformance-main
   cluster: eks-prow-build-cluster
-  interval: 2h
+  interval: 3h
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -231,10 +231,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-conformance-ci-latest-main
   cluster: eks-prow-build-cluster
-  interval: 2h
+  interval: 3h
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs

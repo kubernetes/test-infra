@@ -4,7 +4,7 @@ periodics:
   interval: {{ $.config.Interval }}
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -37,7 +37,7 @@ periodics:
   interval: {{ $.config.Interval }}
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -80,7 +80,7 @@ periodics:
   interval: {{ $.config.Interval }}
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -129,7 +129,7 @@ periodics:
   interval: {{ $.config.Interval }}
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -187,7 +187,7 @@ periodics:
   interval: {{ $.config.Interval }}
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -233,7 +233,7 @@ periodics:
   interval: {{ $.config.Interval }}
   decorate: true
   decoration_config:
-    timeout: 120m
+    timeout: 180m
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs

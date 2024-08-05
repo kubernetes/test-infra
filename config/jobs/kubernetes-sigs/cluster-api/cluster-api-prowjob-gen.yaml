@@ -33,7 +33,7 @@ prow_ignored:
   branches:
     main:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-1.30"
-      interval: "2h"
+      interval: "3h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.27.13"
       kubebuilderEnvtestKubernetesVersion: "1.27.1"
