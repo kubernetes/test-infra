@@ -298,7 +298,6 @@ func TestCommunityJobs(t *testing.T) {
 	// we are not overcomplicating this as all of them will be removed in august anyhow
 	// tail -n +10 docs/job-migration-todo.md | cut -d \| -f 4 | awk '{ print "\""$0"\","}'
 	knownBadJobs := sets.NewString(
-		"pull-secrets-store-csi-driver-e2e-akeyless",
 		"capz-azure-disk-master",
 		"capz-azure-disk-vmss-master",
 		"capz-azure-file-master",

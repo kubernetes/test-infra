@@ -7,7 +7,6 @@ For more context, see the announcement thread at https://groups.google.com/a/kub
 
 | Secrets | File Path | Job | Link |
 | --- | --- | --- | --- |
-|[]|config/jobs/kubernetes-sigs/secrets-store-csi-driver/secrets-store-csi-driver-config.yaml|pull-secrets-store-csi-driver-e2e-akeyless|[Search Results](https://cs.k8s.io/?q=name%3A%20pull-secrets-store-csi-driver-e2e-akeyless%24&i=nope&files=&excludeFiles=&repos=)|
 |[]|config/jobs/kubernetes/sig-cloud-provider/azure/release-master.yaml|capz-azure-disk-master|[Search Results](https://cs.k8s.io/?q=name%3A%20capz-azure-disk-master%24&i=nope&files=&excludeFiles=&repos=)|
 |[]|config/jobs/kubernetes/sig-cloud-provider/azure/release-master.yaml|capz-azure-disk-vmss-master|[Search Results](https://cs.k8s.io/?q=name%3A%20capz-azure-disk-vmss-master%24&i=nope&files=&excludeFiles=&repos=)|
 |[]|config/jobs/kubernetes/sig-cloud-provider/azure/release-master.yaml|capz-azure-file-master|[Search Results](https://cs.k8s.io/?q=name%3A%20capz-azure-file-master%24&i=nope&files=&excludeFiles=&repos=)|
