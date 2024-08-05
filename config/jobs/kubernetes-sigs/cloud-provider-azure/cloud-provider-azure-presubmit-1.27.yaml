@@ -42,13 +42,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -73,11 +71,18 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/release-1.30/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
@@ -95,13 +100,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes
@@ -139,6 +142,13 @@ presubmits:
           value: "capz"
         - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
           value: "30"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-27
@@ -156,13 +166,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -188,6 +196,13 @@ presubmits:
           value: "latest-1.27"
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-27
@@ -233,12 +248,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -267,7 +281,14 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/release-1.30/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz-1-27-presubmit
@@ -284,12 +305,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -318,7 +338,14 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/release-1.30/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz-1-27-presubmit
@@ -335,12 +362,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -370,7 +396,14 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-ipv6-capz-1-27-presubmit
@@ -387,12 +420,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -422,7 +454,14 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-dualstack-capz-1-27-presubmit
@@ -440,13 +479,11 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.15
+      base_ref: release-1.16
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -471,7 +508,7 @@ presubmits:
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest-1.27"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/release-1.30/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: ENABLE_MULTI_SLB  # cloud-provider-azure config
@@ -490,6 +527,13 @@ presubmits:
           value: "capz"
         - name: ENABLE_VMSS_FLEX  # cloud-provider-azure config
           value: "false"
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-27
@@ -504,13 +548,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -544,7 +586,14 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz-1-27
@@ -558,13 +607,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -598,7 +645,14 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/release-1.30/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
     testgrid-tab-name: cloud-provider-azure-master-ipv6-vmss-capz-1-27
@@ -612,13 +666,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -652,7 +704,14 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.15/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.16/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
     testgrid-tab-name: cloud-provider-azure-master-dualstack-capz-1-27
@@ -666,13 +725,11 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.15
+    base_ref: release-1.16
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -706,7 +763,14 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/release-1.30/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-dual-stack-mp.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure-1-27
     testgrid-tab-name: cloud-provider-azure-master-dualstack-vmss-capz-1-27
