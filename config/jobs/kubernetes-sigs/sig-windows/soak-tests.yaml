@@ -21,6 +21,7 @@ presubmits:
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
           command:
@@ -170,6 +171,7 @@ periodics:
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
           command:
@@ -220,6 +222,7 @@ periodics:
         base_ref: master
         path_alias: "sigs.k8s.io/cloud-provider-azure"
     spec:
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
           command:
@@ -294,6 +297,7 @@ periodics:
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240725-1d8ea3e909-master
           command:
