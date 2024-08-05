@@ -296,7 +296,7 @@ func TestCommunityJobs(t *testing.T) {
 	// TODO: cut this list down to none
 	// this is a snapshot of docs/job-migration-todo.dm
 	// we are not overcomplicating this as all of them will be removed in august anyhow
-	// tail -n +10 docs/job-migration-todo.md | cut -d \| -f 3 | awk '{ print "\""$0"\","}'
+	// tail -n +10 docs/job-migration-todo.md | cut -d \| -f 4 | awk '{ print "\""$0"\","}'
 	knownBadJobs := sets.NewString(
 		"pull-csi-driver-nfs-e2e",
 		"pull-csi-driver-nfs-e2e-capz",
