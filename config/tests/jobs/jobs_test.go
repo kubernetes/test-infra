@@ -578,8 +578,6 @@ func TestCommunityJobs(t *testing.T) {
 		"pull-azuredisk-csi-driver-e2e-windows-mainv2",
 		"pull-azurefile-csi-driver-e2e-windows",
 		"pull-azurefile-csi-driver-e2e-windows-containerd",
-		"maintenance-ci-janitor",
-		"maintenance-pull-janitor",
 	)
 
 	// error if any unknown job tries to use one of these clusters
