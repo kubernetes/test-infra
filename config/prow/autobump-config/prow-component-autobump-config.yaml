@@ -3,7 +3,7 @@ gitHubLogin: "k8s-ci-robot"
 gitHubToken: "/etc/github-token/oauth"
 gitName: "Kubernetes Prow Robot"
 gitEmail: "20407524+k8s-ci-robot@users.noreply.github.com"
-onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
+onCallAddress: "" # No oncall assigned to this at the moment.
 selfAssign: true # Commenting `/cc`, so that autobump PR is not assigned to anyone
 skipPullRequest: false
 gitHubOrg: "kubernetes"
@@ -13,26 +13,15 @@ upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master
 includedConfigPaths:
   - "."
 excludedConfigPaths:
-  - ".ko.yaml" # Contains gcr.io/k8s-prow/git, which is not pushed by prow
+  - ".ko.yaml" # Contains gcr.io/k8s-staging-test-infra/git, which is not pushed by prow
 targetVersion: "latest"
 prefixes:
   - name: "Prow"
-    prefix: "gcr.io/k8s-prow/"
+    prefix: "us-docker.pkg.dev/k8s-infra-prow/images/"
     refConfigFile: "config/prow/cluster/deck_deployment.yaml"
     repo: "https://github.com/kubernetes/test-infra"
     summarise: true
     consistentImages: true
-    consistentImageExceptions:
-      - "gcr.io/k8s-prow/alpine"
-      - "gcr.io/k8s-prow/analyze"
-      - "gcr.io/k8s-prow/commenter"
-      - "gcr.io/k8s-prow/configurator"
-      - "gcr.io/k8s-prow/gcsweb"
-      - "gcr.io/k8s-prow/gencred"
-      - "gcr.io/k8s-prow/git"
-      - "gcr.io/k8s-prow/issue-creator"
-      - "gcr.io/k8s-prow/label_sync"
-      - "gcr.io/k8s-prow/pr-creator"
   - name: "Boskos"
     prefix: "gcr.io/k8s-staging-boskos/"
     refConfigFile: "config/prow/cluster/build/boskos.yaml"

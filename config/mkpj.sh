@@ -32,11 +32,11 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 config="${root}/config/prow/config.yaml"
 job_config_path="${root}/config/jobs"
 
-docker pull gcr.io/k8s-prow/mkpj 1>&2 || true
+docker pull us-docker.pkg.dev/k8s-infra-prow/images/mkpj 1>&2 || true
 docker run \
        -i --rm \
        --user "$(id -u):$(id -g)" \
        -v "${root}:${root}" \
        --security-opt="label=disable" \
-       gcr.io/k8s-prow/mkpj \
+       us-docker.pkg.dev/k8s-infra-prow/images/mkpj \
        "--config-path=${config}" "--job-config-path=${job_config_path}" "$@"
