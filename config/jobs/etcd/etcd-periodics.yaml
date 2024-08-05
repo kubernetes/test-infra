@@ -1,4 +1,38 @@
 periodics:
+- name: ci-etcd-e2e-arm64
+  interval: 4h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-arm64
+    testgrid-tab-name: ci-etcd-e2e-armd64
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        VERBOSE=1 GOOS=linux GOARCH=arm64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"
+    nodeSelector:
+      kubernetes.io/arch: arm64
+
 - name: ci-etcd-e2e-amd64
   interval: 4h
   cluster: eks-prow-build-cluster
@@ -10,11 +44,11 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-periodics
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-amd64
     testgrid-tab-name: ci-etcd-e2e-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -30,6 +64,9 @@ periodics:
         limits:
           cpu: "4"
           memory: "8Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-unit-test-amd64
   interval: 4h
   cluster: eks-prow-build-cluster
@@ -45,7 +82,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -58,6 +95,9 @@ periodics:
         limits:
           cpu: "4"
           memory: "4Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-robustness-amd64
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -72,7 +112,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -102,6 +142,9 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-robustness-main-amd64
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -116,7 +159,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -144,6 +187,9 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-robustness-release35-amd64
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -158,7 +204,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -186,6 +232,9 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-robustness-release34-amd64
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -200,7 +249,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -228,6 +277,8 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+    nodeSelector:
+      kubernetes.io/arch: amd64
 - name: ci-etcd-performance-ratio-1-128-amd64
   interval: 24h
   cluster: eks-prow-build-cluster
@@ -243,7 +294,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-128-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -261,6 +312,9 @@ periodics:
         limits:
           cpu: "7"
           memory: "4Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-performance-ratio-1-8-amd64
   interval: 24h
   cluster: eks-prow-build-cluster
@@ -276,7 +330,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-8-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -294,6 +348,9 @@ periodics:
         limits:
           cpu: "7"
           memory: "8Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-performance-ratio-1-4-amd64
   interval: 24h
   cluster: eks-prow-build-cluster
@@ -309,7 +366,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-4-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -327,6 +384,9 @@ periodics:
         limits:
           cpu: "7"
           memory: "8Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-performance-ratio-1-2-amd64
   interval: 24h
   cluster: eks-prow-build-cluster
@@ -342,7 +402,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-1-2-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -360,6 +420,9 @@ periodics:
         limits:
           cpu: "7"
           memory: "10Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
 - name: ci-etcd-performance-ratio-2-1-amd64
   interval: 24h
   cluster: eks-prow-build-cluster
@@ -375,7 +438,7 @@ periodics:
     testgrid-tab-name: ci-etcd-performance-ratio-2-1-amd64
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
       - runner.sh
       args:
@@ -393,3 +456,5 @@ periodics:
         limits:
           cpu: "7"
           memory: "10Gi"
+    nodeSelector:
+      kubernetes.io/arch: amd64

@@ -1,6 +1,8 @@
 dashboard_groups:
 - name: sig-etcd
   dashboard_names:
+  - sig-etcd-amd64
+  - sig-etcd-arm64
   - sig-etcd-presubmits
   - sig-etcd-periodics
   - sig-etcd-postsubmits
@@ -8,6 +10,8 @@ dashboard_groups:
   - sig-etcd-etcd-manager
 
 dashboards:
+  - name: sig-etcd-amd64
+  - name: sig-etcd-arm64
   - name: sig-etcd-presubmits
   - name: sig-etcd-periodics
   - name: sig-etcd-postsubmits
