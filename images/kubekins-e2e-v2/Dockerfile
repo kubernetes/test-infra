@@ -74,6 +74,13 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     gcloud components install alpha beta && \
     gcloud info | tee /workspace/gcloud-info.txt
 
+# Install aws cli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "/tmp/awscliv2.zip" && \
+    cd /tmp && unzip awscliv2.zip && \
+    /tmp/aws/install
+
+# Install az cli
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
