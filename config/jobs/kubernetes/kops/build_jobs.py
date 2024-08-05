@@ -1206,7 +1206,7 @@ def generate_misc():
         build_test(name_override="ci-kubernetes-e2e-al2023-aws-disruptive-canary",
                    cloud="aws",
                    distro="al2023",
-                   networking="kubenet",
+                   networking="amazonvpc",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
