@@ -52,6 +52,8 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
+    args:
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]\[sig-cloud-provider-gcp\] --minStartupPods=8  
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
