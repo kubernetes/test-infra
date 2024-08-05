@@ -4,7 +4,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     branches:
@@ -30,7 +30,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     path_alias: sigs.k8s.io/cluster-api
     optional: true
     branches:
@@ -57,7 +57,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -87,7 +87,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     path_alias: sigs.k8s.io/cluster-api
     branches:
     # The script this job runs is not in all branches.
@@ -113,7 +113,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
     branches:
@@ -157,7 +157,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
     branches:
@@ -208,7 +208,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     branches:
     # The script this job runs is not in all branches.
     - ^{{ $.branch }}$
@@ -249,7 +249,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     optional: true
     branches:
       # The script this job runs is not in all branches.
@@ -291,7 +291,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -329,7 +329,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -385,7 +385,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
@@ -425,7 +425,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 180m
     always_run: false
     branches:
     # The script this job runs is not in all branches.
