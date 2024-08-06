@@ -356,12 +356,17 @@ presubmits:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kueue-kjobctl
       description: "Run kjobctl tests"
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        securityContext:
+          privileged: true
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - -C
         - cmd/experimental/kjobctl
         - test
