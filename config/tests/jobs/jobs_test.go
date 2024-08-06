@@ -392,7 +392,6 @@ func TestCommunityJobs(t *testing.T) {
 		"pull-kubernetes-e2e-capz-azure-file",
 		"pull-kubernetes-e2e-capz-azure-file-vmss",
 		"pull-kubernetes-e2e-capz-conformance",
-		"pull-ova-all",
 		"post-test-infra-reconcile-hmacs",
 		"ci-test-infra-autobump-prow",
 		"ci-test-infra-autobump-prow-for-auto-deploy",
