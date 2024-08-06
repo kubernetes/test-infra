@@ -184,7 +184,7 @@ periodics:
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --ginkgo-parallel=1
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]\[sig-cloud-provider-gcp\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       resources:
