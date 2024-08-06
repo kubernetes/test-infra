@@ -307,7 +307,6 @@ func TestCommunityJobs(t *testing.T) {
 		"capz-conformance-master",
 		"ci-test-infra-gencred-refresh-kubeconfig",
 		"ci-test-infra-rotate-legacy-default-build-sa-json-key",
-		"periodic-cluster-api-provider-vsphere-janitor",
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
 		"pull-csi-driver-nfs-e2e-capz",
