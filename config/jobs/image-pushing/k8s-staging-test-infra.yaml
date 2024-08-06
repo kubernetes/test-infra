@@ -7,7 +7,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/bazelbuild/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: bazelbuild
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -31,7 +31,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^pkg/benchmarkjunit/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: benchmarkjunit
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -55,7 +55,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bigquery|scenarios)/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: bigquery
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -79,7 +79,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bootstrap|scenarios)/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: bootstrap
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -99,12 +99,12 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/bootstrap/
-    - name: post-test-infra-push-gcb-docker-gcloud-canary
+    - name: post-test-infra-push-gcb-docker-gcloud
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/gcb-docker-gcloud/'
       annotations:
-        testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
-        testgrid-tab-name: gcb-docker-gcloud-canary
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: gcb-docker-gcloud
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
         description: builds and pushes the image builder's own image
@@ -127,7 +127,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/gcloud-in-go/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: gcloud-in-go
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -151,7 +151,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/builder/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: image-builder
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -175,7 +175,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/(krte/|kubekins-e2e-v2/variants.yaml)'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: krte
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -198,7 +198,7 @@ postsubmits:
     - name: post-test-infra-push-kubekins-e2e
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: kubekins-e2e
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -226,7 +226,7 @@ postsubmits:
     - name: post-test-infra-push-kubekins-e2e-v2
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: kubekins-e2e-v2
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -250,9 +250,7 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - images/kubekins-e2e-v2/
 
-    # TODO: Remove '-canary' from these and other migrated job names once old jobs are deleted.
-    # These are duplicates of the image-pushing jobs in test-infra-trusted.yaml.
-    - name: post-test-infra-push-alpine-canary
+    - name: post-test-infra-push-alpine
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/alpine/'
       annotations:
@@ -272,7 +270,7 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/alpine/
-    - name: post-test-infra-push-git-canary
+    - name: post-test-infra-push-git
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/git/'
       annotations:
@@ -292,7 +290,7 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/git/
-    - name: post-test-infra-push-git-custom-k8s-auth-canary
+    - name: post-test-infra-push-git-custom-k8s-auth
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/git-custom-k8s-auth/'
       annotations:
@@ -312,7 +310,7 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - images/git-custom-k8s-auth/
-    - name: post-test-infra-push-misc-images-canary
+    - name: post-test-infra-push-misc-images
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
       annotations:
@@ -341,11 +339,11 @@ postsubmits:
     #
     # components, e.g. kettle/, triage/
     #
-    - name: post-test-infra-push-kettle-canary
+    - name: post-test-infra-push-kettle
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
-        testgrid-tab-name: kettle-canary
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: kettle
         testgrid-alert-email: k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
         description: builds and pushes the kettle image
@@ -372,7 +370,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^triage/'
       annotations:
-        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
         testgrid-tab-name: "triage"
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
