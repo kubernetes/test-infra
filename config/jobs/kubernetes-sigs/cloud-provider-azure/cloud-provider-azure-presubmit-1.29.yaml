@@ -32,6 +32,7 @@ presubmits:
       testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-29
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-29
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
     decorate: true
     decoration_config:
@@ -91,6 +92,7 @@ presubmits:
       testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-capz-1-29 runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz-1-29
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
     decorate: true
     decoration_config:
@@ -158,6 +160,7 @@ presubmits:
       testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-1-29
   - name: pull-cloud-provider-azure-e2e-ccm-capz-1-29
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
     decorate: true
     decoration_config:
@@ -213,6 +216,7 @@ presubmits:
       testgrid-num-columns-recent: "30"
     # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-29 runs Azure specific e2e tests with cloud controller manager v1.29 and IP-based load balancer backend pools.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-29
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -286,6 +290,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-29 runs Azure specific e2e tests with cloud controller manager v1.29 and multiple standard load balancers.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-29
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
@@ -386,6 +391,7 @@ presubmits:
       description: "Run unit tests for cloud-provider-azure release-1.29."
       testgrid-num-columns-recent: "30"
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz-1-29
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -444,6 +450,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on IPv6 vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz-1-29
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -502,6 +509,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on DualStack vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz-1-29
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -561,6 +569,7 @@ presubmits:
       description: "Runs Azure specific tests with cloud-provider-azure IPv6 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-capz-1-29
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -622,6 +631,7 @@ presubmits:
 periodics:
 - cron: '0 23 * * *'  # Run at 23:00 UTC everyday
   name: cloud-provider-azure-master-ipv6-capz-1-29
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -682,6 +692,7 @@ periodics:
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster."
 - cron: '0 23 * * *'  # Run at 23:00 UTC everyday
   name: cloud-provider-azure-master-ipv6-vmss-capz-1-29
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -742,6 +753,7 @@ periodics:
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster with vmss."
 - cron: '0 23 * * *'  # Run at 23:00 UTC everyday
   name: cloud-provider-azure-master-dualstack-capz-1-29
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -802,6 +814,7 @@ periodics:
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in a dualstack cluster."
 - cron: '0 23 * * *'  # Run at 23:00 UTC everyday
   name: cloud-provider-azure-master-dualstack-vmss-capz-1-29
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
