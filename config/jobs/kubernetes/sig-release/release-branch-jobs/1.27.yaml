@@ -319,7 +319,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -1138,7 +1138,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1218,7 +1218,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1776,7 +1776,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1847,7 +1847,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

@@ -259,7 +259,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
