@@ -752,6 +752,65 @@ presubmits:
           securityContext:
             privileged: true
 
+  - name: pull-e2e-gci-gce-alpha-enabled-default
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      fork-per-release: "false"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    spec:
+      containers:
+        - command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --check-leaked-resources
+            - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v1.7.20
+            - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.1.13
+            - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+            - --env=KUBE_PROXY_DAEMONSET=true
+            - --env=ENABLE_POD_PRIORITY=true
+            - --extract=ci/fast/latest-fast
+            - --extract-ci-bucket=k8s-release-dev
+            - --gcp-node-image=gci
+            - --gcp-zone=us-west1-b
+            - --ginkgo-parallel=30
+            - --provider=gce
+            - --runtime-config=api/all=true
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
+            - --timeout=70m
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+          resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
+            requests:
+              cpu: 4
+              memory: "14Gi"
+          securityContext:
+            privileged: true
+
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce
