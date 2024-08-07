@@ -43,9 +43,6 @@ deploy-prow: get-cluster-credentials
 deploy-build: get-build-cluster-credentials
 	kubectl apply -f ./cluster/build/
 
-update-boskos-resources: get-build-cluster-credentials
-	kubectl create configmap resources --from-file=config=./cluster/build/boskos-resources/boskos-resources.yaml --dry-run=client -o yaml | kubectl --namespace=test-pods replace configmap resources -f -
-
 deploy-monitoring: get-cluster-credentials
 	$(MAKE) -C ./cluster/monitoring apply
 
