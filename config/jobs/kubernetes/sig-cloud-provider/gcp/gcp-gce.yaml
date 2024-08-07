@@ -796,6 +796,7 @@ presubmits:
             - --ginkgo-parallel=30
             - --provider=gce
             - --runtime-config=api/all=true
+            - --stage=gs://kubernetes-release-pull/ci/pull-e2e-gci-gce-alpha-enabled-default
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
             - --timeout=70m
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
