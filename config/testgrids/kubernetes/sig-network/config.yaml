@@ -11,6 +11,7 @@ dashboard_groups:
     - sig-network-policy-api
     - sig-network-ingress-controller-conformance
     - sig-network-kind
+    - sig-network-node-ipam-controller
 
 dashboards:
 - name: sig-network-dns
@@ -98,3 +99,4 @@ dashboards:
 - name: sig-network-policy-api
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind
+- name: sig-network-node-ipam-controller
