@@ -51,7 +51,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
@@ -112,7 +112,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
@@ -190,7 +190,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -996,7 +996,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=45m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 2
