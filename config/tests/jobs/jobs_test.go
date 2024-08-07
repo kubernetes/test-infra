@@ -394,7 +394,6 @@ func TestCommunityJobs(t *testing.T) {
 		"post-test-infra-reconcile-hmacs",
 		"ci-test-infra-autobump-prow",
 		"ci-test-infra-autobump-prow-for-auto-deploy",
-		"maintenance-ci-aws-janitor",
 		"pull-csi-driver-nfs-e2e",
 		"pull-csi-driver-nfs-external-e2e",
 		"pull-csi-driver-nfs-sanity",
