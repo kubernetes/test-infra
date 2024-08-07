@@ -30,6 +30,7 @@ periodics:
 
 - interval: 1h
   name: maintenance-ci-aws-janitor
+  cluster: k8s-infra-kops-prow-build
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
