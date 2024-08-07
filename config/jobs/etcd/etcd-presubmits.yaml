@@ -1,3 +1,4 @@
+---
 presubmits:
   etcd-io/etcd:
   - name: pull-etcd-build
@@ -340,3 +341,52 @@ presubmits:
           # fuse needs privileged mode
           securityContext:
             privileged: true
+
+  - name: pull-etcd-robustness-arm64
+    cluster: k8s-infra-prow-build
+    optional: true # remove this once the job is green
+    always_run: true
+    branches:
+      - main
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits, sig-etcd-robustness
+      testgrid-tab-name: pull-etcd-robustness-arm64
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              return_code=0
+              apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+              sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
+              make install-lazyfs
+              set -euo pipefail
+              go clean -testcache
+              GO_TEST_FLAGS="-v --count 12 --timeout '30m' --run TestRobustness"
+              make gofail-enable
+              make build
+              make gofail-disable
+              VERBOSE=1 GOOS=linux GOARCH=arm64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/tmp/results make test-robustness || return_code=$?
+              if [ -d /tmp/results ]; then
+                zip -r ${ARTIFACTS}/results.zip /tmp/results
+              fi
+              exit $return_code
+          resources:
+            requests:
+              cpu: "7"
+              memory: "14Gi"
+            limits:
+              cpu: "7"
+              memory: "14Gi"
+          # fuse needs privileged mode
+          securityContext:
+            privileged: true
+      nodeSelector:
+        kubernetes.io/arch: arm64
