@@ -1017,7 +1017,6 @@ presubmits:
       - args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --env=KUBE_NODE_OS_DISTRIBUTION=gci
         - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
         - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
@@ -1028,7 +1027,6 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --stage=gs://k8s-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --timeout=60m
         command:
         - runner.sh
