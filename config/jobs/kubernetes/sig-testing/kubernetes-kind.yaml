@@ -718,7 +718,8 @@ periodics:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
       command:
-      - wrapper.sh
+      - runner.sh
+      args:
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-arm64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
