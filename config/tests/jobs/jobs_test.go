@@ -298,7 +298,6 @@ func TestCommunityJobs(t *testing.T) {
 	// DO NOT ADD ANY MORE JOBS HERE
 	knownBadJobs := sets.NewString(
 		"ci-test-infra-gencred-refresh-kubeconfig",
-		"ci-test-infra-rotate-legacy-default-build-sa-json-key",
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
 		"post-test-infra-reconcile-hmacs",
