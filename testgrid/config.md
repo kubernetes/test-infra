@@ -39,6 +39,9 @@ annotations:
   testgrid-in-cell-metric: coverage        # optionally, text property metric value to be evaluated, with the resulting
                                            # numeric value placed visually inside the test result cells.
   testgrid-base-options: base-options      # optionally, sets 'base_options' tab option.
+  testgrid-create-test-group: "true"       # optionally, force a test group to be created even if it's not immediately
+                                           # part of a dashboard (because it's configured somewhere else). Currently
+                                           # defaults to "false".
 ```
 
 This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a new
