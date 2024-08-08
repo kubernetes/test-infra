@@ -1115,7 +1115,6 @@ presubmits:
       - args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
         - --gcp-node-image=gci
         - --gcp-nodes=2
@@ -1123,7 +1122,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         command:
