@@ -205,6 +205,66 @@ presubmits:
             cpu: "4"
             memory: "8Gi"
 
+  - name: pull-etcd-e2e-386
+    cluster: eks-prow-build-cluster
+    optional: true # remove this once the job is green
+    always_run: true
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-e2e-386
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          VERBOSE=1 GOOS=linux GOARCH=386 CPU=4 EXPECT_DEBUG=true make test-e2e
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+
+  - name: pull-etcd-e2e-arm64
+    cluster: k8s-infra-prow-build
+    optional: true # remove this once the job is green
+    always_run: true
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-e2e-arm64
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          VERBOSE=1 GOOS=linux GOARCH=arm64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+      nodeSelector:
+        kubernetes.io/arch: arm64
+
   - name: pull-etcd-integration-1-cpu-amd64
     cluster: eks-prow-build-cluster
     always_run: true
