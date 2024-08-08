@@ -36,7 +36,6 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
@@ -56,7 +55,6 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ingress
         - --timeout=320m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
         resources:
@@ -106,7 +104,6 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=kube-network-policies
         - --ginkgo-parallel=30
@@ -116,7 +113,6 @@ presubmits:
         # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
         - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|ServiceCIDRs|SCTPConnectivity)\]|DualStack|GCE|Disruptive|Serial|SNAT|LoadBalancer|ESIPP
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-policies
         - --timeout=100m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
         resources:
