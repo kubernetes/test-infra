@@ -293,160 +293,34 @@ func TestCommunityJobs(t *testing.T) {
 	const legacyDefault = "default"
 	const legacyTrusted = "test-infra-trusted"
 
-	// TODO: cut this list down to none
-	// this is a snapshot of docs/job-migration-todo.dm
-	// we are not overcomplicating this as all of them will be removed in august anyhow
-	// tail -n +10 docs/job-migration-todo.md | cut -d \| -f 4 | awk '{ print "\""$0"\","}'
+	// These jobs are used to automate prow itself and will not be migrating
+	// They run in prow's own cluster and will be removed right before we migrate the control plane
+	// DO NOT ADD ANY MORE JOBS HERE
 	knownBadJobs := sets.NewString(
-		"capz-azure-disk-master",
-		"capz-azure-disk-vmss-master",
-		"capz-azure-file-master",
-		"capz-azure-file-vmss-master",
-		"capz-conformance-dual-stack-master",
-		"capz-conformance-ipv6-master",
-		"capz-conformance-master",
 		"ci-test-infra-gencred-refresh-kubeconfig",
 		"ci-test-infra-rotate-legacy-default-build-sa-json-key",
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
-		"pull-csi-driver-nfs-e2e-capz",
-		"pull-csi-driver-smb-e2e-capz",
-		"pull-csi-driver-smb-e2e-capz-windows-2019",
-		"pull-csi-driver-smb-e2e-capz-windows-2022-hostprocess",
-		"pull-azuredisk-csi-driver-e2e-capz",
-		"pull-azuredisk-csi-driver-e2e-capz-multi-az",
-		"pull-azuredisk-csi-driver-e2e-capz-vmssflex",
-		"pull-azuredisk-csi-driver-e2e-capz-windows-2019",
-		"pull-azuredisk-csi-driver-e2e-capz-windows-2019-hostprocess",
-		"pull-azuredisk-csi-driver-e2e-capz-windows-2022",
-		"pull-azuredisk-csi-driver-e2e-capz-windows-2022-hostprocess",
-		"pull-azuredisk-csi-driver-e2e-migration",
-		"pull-azuredisk-csi-driver-e2e-migration-windows",
-		"pull-azuredisk-csi-driver-external-e2e-single-az",
-		"pull-azuredisk-csi-driver-external-e2e-windows",
-		"pull-azuredisk-csi-driver-e2e-capz-mainv2",
-		"pull-azuredisk-csi-driver-e2e-capz-windows-2019-mainv2",
-		"pull-azuredisk-csi-driver-e2e-capz-windows-2022-mainv2",
-		"pull-azuredisk-csi-driver-external-e2e-windows-mainv2",
-		"pull-azurefile-csi-driver-e2e-capz",
-		"pull-azurefile-csi-driver-e2e-capz-windows-2019",
-		"pull-azurefile-csi-driver-e2e-capz-windows-2019-hostprocess",
-		"pull-azurefile-csi-driver-e2e-capz-windows-2022",
-		"pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess",
-		"pull-azurefile-csi-driver-e2e-migration",
-		"pull-azurefile-csi-driver-e2e-migration-windows",
-		"pull-azurefile-csi-driver-external-e2e-nfs",
-		"pull-azurefile-csi-driver-external-e2e-smb",
-		"pull-azurefile-csi-driver-external-e2e-smb-windows",
-		"pull-blob-csi-driver-e2e",
-		"pull-blob-csi-driver-e2e-proxy",
-		"pull-blob-csi-driver-e2e-proxy-managed-identity",
-		"pull-blob-csi-driver-external-e2e-blobfuse",
-		"pull-blob-csi-driver-external-e2e-blobfuse-v2",
-		"pull-blob-csi-driver-external-e2e-nfs",
-		"pull-ci-kubernetes-unit-windows",
-		"capz-azure-disk-1-26",
-		"capz-azure-disk-vmss-1-26",
-		"capz-azure-file-1-26",
-		"capz-azure-file-vmss-1-26",
-		"capz-conformance-1-26",
-		"capz-conformance-dual-stack-1-26",
-		"capz-conformance-ipv6-1-26",
-		"pull-kubernetes-e2e-capz-azure-disk",
-		"pull-kubernetes-e2e-capz-azure-disk-vmss",
-		"pull-kubernetes-e2e-capz-azure-file",
-		"pull-kubernetes-e2e-capz-azure-file-vmss",
-		"pull-kubernetes-e2e-capz-conformance",
-		"capz-azure-disk-1-27",
-		"capz-azure-disk-vmss-1-27",
-		"capz-azure-file-1-27",
-		"capz-azure-file-vmss-1-27",
-		"capz-conformance-1-27",
-		"capz-conformance-dual-stack-1-27",
-		"capz-conformance-ipv6-1-27",
-		"pull-kubernetes-e2e-capz-azure-disk",
-		"pull-kubernetes-e2e-capz-azure-disk-vmss",
-		"pull-kubernetes-e2e-capz-azure-file",
-		"pull-kubernetes-e2e-capz-azure-file-vmss",
-		"pull-kubernetes-e2e-capz-conformance",
-		"capz-azure-disk-1-28",
-		"capz-azure-disk-vmss-1-28",
-		"capz-azure-file-1-28",
-		"capz-azure-file-vmss-1-28",
-		"capz-conformance-1-28",
-		"capz-conformance-dual-stack-1-28",
-		"capz-conformance-ipv6-1-28",
-		"pull-kubernetes-e2e-capz-azure-disk",
-		"pull-kubernetes-e2e-capz-azure-disk-vmss",
-		"pull-kubernetes-e2e-capz-azure-file",
-		"pull-kubernetes-e2e-capz-azure-file-vmss",
-		"pull-kubernetes-e2e-capz-conformance",
-		"capz-release-azure-disk-master",
-		"capz-release-azure-disk-vmss-master",
-		"capz-release-azure-file-master",
-		"capz-release-azure-file-vmss-master",
-		"capz-release-conformance-master",
-		"pull-kubernetes-e2e-capz-azure-disk",
-		"pull-kubernetes-e2e-capz-azure-disk-vmss",
-		"pull-kubernetes-e2e-capz-azure-file",
-		"pull-kubernetes-e2e-capz-azure-file-vmss",
-		"pull-kubernetes-e2e-capz-conformance",
 		"post-test-infra-reconcile-hmacs",
 		"ci-test-infra-autobump-prow",
 		"ci-test-infra-autobump-prow-for-auto-deploy",
-		"pull-csi-driver-nfs-e2e",
-		"pull-csi-driver-nfs-external-e2e",
-		"pull-csi-driver-nfs-sanity",
-		"pull-csi-driver-smb-e2e",
-		"pull-csi-driver-smb-e2e-vmss",
-		"pull-csi-driver-smb-external-e2e",
-		"pull-csi-driver-smb-integration",
-		"pull-csi-driver-smb-sanity",
-		"pull-azuredisk-csi-driver-e2e-multi-az",
-		"pull-azuredisk-csi-driver-e2e-single-az",
-		"pull-azuredisk-csi-driver-integration",
-		"pull-azuredisk-csi-driver-sanity",
-		"pull-in-tree-azure-disk-e2e",
-		"pull-in-tree-azure-disk-e2e-vmss",
-		"pull-in-tree-azure-disk-e2e-windows",
-		"pull-azuredisk-csi-driver-e2e-migration-mainv2",
-		"pull-azuredisk-csi-driver-e2e-multi-az-mainv2",
-		"pull-azuredisk-csi-driver-e2e-single-az-mainv2",
-		"pull-azuredisk-csi-driver-external-e2e-single-az-mainv2",
-		"pull-azuredisk-csi-driver-integration-mainv2",
-		"pull-azuredisk-csi-driver-sanity-mainv2",
-		"pull-azurefile-csi-driver-e2e",
-		"pull-azurefile-csi-driver-e2e-vmss",
-		"pull-azurefile-csi-driver-integration",
-		"pull-azurefile-csi-driver-sanity",
-		"pull-blob-csi-driver-e2e-vmss",
-		"pull-blob-csi-driver-integration",
-		"pull-blob-csi-driver-sanity",
-		"pull-csi-driver-smb-e2e-windows",
-		"pull-csi-driver-smb-e2e-windows-containerd",
-		"pull-azuredisk-csi-driver-e2e-windows",
-		"pull-azuredisk-csi-driver-e2e-windows-containerd",
-		"pull-azuredisk-csi-driver-e2e-migration-windows-mainv2",
-		"pull-azuredisk-csi-driver-e2e-windows-containerd-mainv2",
-		"pull-azuredisk-csi-driver-e2e-windows-mainv2",
-		"pull-azurefile-csi-driver-e2e-windows",
-		"pull-azurefile-csi-driver-e2e-windows-containerd",
 	)
 
-	// error if any unknown job tries to use one of these clusters
+	// error if any job tries to run in the legacy default cluster
+	// error if any unknown job tries to run in the legacy trusted cluster
 	const errFmt = "job %q uses deprecated cluster: %q which may not be used for new jobs, see: https://groups.google.com/a/kubernetes.io/g/dev/c/p6PAML90ZOU"
 	for _, job := range c.AllStaticPresubmits(nil) {
-		if (job.Cluster == legacyDefault || job.Cluster == legacyTrusted) && !knownBadJobs.Has(job.Name) {
+		if job.Cluster == legacyDefault || (job.Cluster == legacyTrusted && !knownBadJobs.Has(job.Name)) {
 			t.Errorf(errFmt, job.Name, job.Cluster)
 		}
 	}
 	for _, job := range c.AllStaticPostsubmits(nil) {
-		if (job.Cluster == legacyDefault || job.Cluster == legacyTrusted) && !knownBadJobs.Has(job.Name) {
+		if job.Cluster == legacyDefault || (job.Cluster == legacyTrusted && !knownBadJobs.Has(job.Name)) {
 			t.Errorf(errFmt, job.Name, job.Cluster)
 		}
 	}
 	for _, job := range c.AllPeriodics() {
-		if (job.Cluster == legacyDefault || job.Cluster == legacyTrusted) && !knownBadJobs.Has(job.Name) {
+		if job.Cluster == legacyDefault || (job.Cluster == legacyTrusted && !knownBadJobs.Has(job.Name)) {
 			t.Errorf(errFmt, job.Name, job.Cluster)
 		}
 	}
