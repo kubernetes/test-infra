@@ -752,7 +752,6 @@ presubmits:
           privileged: true
   - always_run: false
     annotations:
-      fork-per-release: "true"
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-dashboards: google-gce
