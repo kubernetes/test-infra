@@ -794,14 +794,12 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-        - --extract=local
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-providerless
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
