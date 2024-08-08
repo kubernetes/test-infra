@@ -107,7 +107,6 @@ presubmits:
     - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
       preset-azure-community: "true"
     extra_refs:
@@ -208,7 +207,6 @@ presubmits:
     - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
       preset-azure-community: "true"
     extra_refs:
