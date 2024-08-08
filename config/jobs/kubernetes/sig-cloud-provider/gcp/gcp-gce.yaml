@@ -45,7 +45,6 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -55,7 +54,6 @@ presubmits:
         # Panic if data inconsistency is detected
         - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
@@ -208,7 +206,6 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -218,7 +215,6 @@ presubmits:
         # Panic if data inconsistency is detected
         - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-cos-canary
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         env:
@@ -483,12 +479,10 @@ presubmits:
         - --env=ENABLE_APISERVER_TRACING=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=api/all=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-cos-alpha-features
         - --test_args=--ginkgo.focus=\[Feature:(WatchList|InPlacePodVerticalScaling|APIServerTracing|SidecarContainers|StorageVersionAPI|PodPreset|ClusterTrustBundle|ClusterTrustBundleProjection|PodLifecycleSleepAction)\] --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0|\[KubeUp\] --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
@@ -549,13 +543,11 @@ presubmits:
             - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-            - --extract=local
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
             - --gcp-zone=us-west1-b
             - --ginkgo-parallel=1
             - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-serial
             - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=500m
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
@@ -727,14 +719,12 @@ presubmits:
             - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
             - --env=CLOUD_PROVIDER_FLAG=external
             - --env=ENABLE_AUTH_PROVIDER_GCP=true
-            - --extract=local
             - --gcp-master-image=gci
             - --gcp-node-image=gci
             - --gcp-nodes=4
             - --gcp-zone=us-west1-b
             - --ginkgo-parallel=30
             - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-e2e-gce-cloud-provider-disabled
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
