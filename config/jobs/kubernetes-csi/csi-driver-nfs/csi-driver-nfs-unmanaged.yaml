@@ -153,8 +153,9 @@ presubmits:
       description: "Run E2E tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-e2e-capz
+    cluster: eks-prow-build-cluster
     decorate: true
-    always_run: false
+    always_run: true
     optional: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
@@ -166,15 +167,16 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.15
+        base_ref: release-1.16
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.26
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
           command:
@@ -192,7 +194,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.26"
+              value: "latest-1.30"
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-nfs-e2e-capz
