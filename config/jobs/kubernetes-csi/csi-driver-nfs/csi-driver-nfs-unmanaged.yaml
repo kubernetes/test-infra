@@ -3,7 +3,7 @@
 presubmits:
   kubernetes-csi/csi-driver-nfs:
   - name: pull-csi-driver-nfs-sanity
-    cluster: default #This job uses azure-creds
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
@@ -211,7 +211,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    path_alias: sigs.k8s.io/csi-driver-nfs
+    path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
     - (master)|(^release-.+$)
     labels:
