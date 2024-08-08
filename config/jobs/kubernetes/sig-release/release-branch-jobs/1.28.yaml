@@ -575,13 +575,11 @@ presubmits:
       - args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
@@ -625,13 +623,11 @@ presubmits:
       - args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-cos-canary
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
@@ -745,13 +741,11 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-        - --extract=local
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
@@ -805,13 +799,11 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-        - --extract=local
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=1
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-serial
         - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=500m
         command:
@@ -858,14 +850,12 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
         - --env=CLOUD_PROVIDER_FLAG=external
         - --env=ENABLE_AUTH_PROVIDER_GCP=true
-        - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-e2e-gce-cloud-provider-disabled
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         command:
