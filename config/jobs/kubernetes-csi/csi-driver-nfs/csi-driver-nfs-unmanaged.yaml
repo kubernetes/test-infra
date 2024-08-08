@@ -190,6 +190,13 @@ presubmits:
               make e2e-test
           securityContext:
             privileged: true
+          resources:
+            requests:
+              memory: "9Gi"
+              cpu: 4
+            limits:
+              memory: "9Gi"
+              cpu: 4
           env:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
@@ -236,7 +243,14 @@ presubmits:
               cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs &&
               make e2e-test
           securityContext:
-            privileged: true
+              privileged: true
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: 4
+              limits:
+                memory: "9Gi"
+                cpu: 4
           env:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
