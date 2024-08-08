@@ -107,8 +107,8 @@ presubmits:
     - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -162,9 +162,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -209,8 +207,8 @@ presubmits:
     - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-azure-community: "true"
     extra_refs:
     - org: kubernetes
       repo: kubernetes
