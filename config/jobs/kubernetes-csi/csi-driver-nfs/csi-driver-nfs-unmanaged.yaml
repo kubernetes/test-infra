@@ -101,7 +101,7 @@ presubmits:
   - name: pull-csi-driver-nfs-e2e
     cluster: eks-prow-build-cluster
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/csi-driver-nfs
     branches:
     - (master)|(^release-.+$)
@@ -153,8 +153,9 @@ presubmits:
       description: "Run E2E tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-e2e-capz
+    cluster: eks-prow-build-cluster
     decorate: true
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     optional: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
     branches:
@@ -166,15 +167,16 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.15
+        base_ref: release-1.16
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.26
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
           command:
@@ -188,11 +190,18 @@ presubmits:
               make e2e-test
           securityContext:
             privileged: true
+          resources:
+            requests:
+              memory: "9Gi"
+              cpu: 4
+            limits:
+              memory: "9Gi"
+              cpu: 4
           env:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.26"
+              value: "latest-1.30"
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-nfs-e2e-capz
@@ -206,50 +215,49 @@ presubmits:
     branches:
     - (master)|(^release-.+$)
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.16
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.30
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
     spec:
+      serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.24
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-        # Specific test args
-        - --test-csi-driver-nfs
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "9Gi"
-            cpu: 4
-          limits:
-            memory: "9Gi"
-            cpu: 4
-        env:
-          - name: EXTERNAL_E2E_TEST
-            value: "true"
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-nfs &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "9Gi"
+              cpu: 4
+            limits:
+              memory: "9Gi"
+              cpu: 4
+          env:
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.30"
+            - name: EXTERNAL_E2E_TEST
+              value: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-nfs-external-e2e
