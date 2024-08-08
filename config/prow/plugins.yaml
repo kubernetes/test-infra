@@ -583,7 +583,7 @@ repo_milestone:
     maintainers_friendly_name: Kops Maintainers
   kubernetes/ingress-nginx:
     maintainers_team: ingress-nginx-maintainers
-    maintainers_friendly_name: Ingress Nginx Maintainers
+    maintainers_friendly_name: Ingress NGINX Maintainers
   kubernetes/org:
     maintainers_team: owners
     maintainers_friendly_name: GitHub Admin Team
