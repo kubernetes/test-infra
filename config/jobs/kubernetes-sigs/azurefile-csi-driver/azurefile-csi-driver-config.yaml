@@ -85,3 +85,34 @@ presubmits:
       testgrid-tab-name: pr-azurefile-csi-driver-windows-build
       description: "Run make azurefile-windows for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-sanity
+    cluster: eks-prow-build-cluster
+    decorate: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    labels:
+      preset-service-account: "true"
+      preset-azure-community: "true"
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - sanity-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
+      testgrid-tab-name: pr-azurefile-csi-driver-sanity
+      description: "Run sanity tests for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
