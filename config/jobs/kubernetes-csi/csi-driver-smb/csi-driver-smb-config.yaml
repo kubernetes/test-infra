@@ -292,6 +292,6 @@ presubmits:
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2022
+      testgrid-tab-name: pull-csi-driver-smb-e2e-windows-2022
       description: "Run E2E Windows tests on a capz Windows 2022 cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
