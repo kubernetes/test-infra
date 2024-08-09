@@ -1,0 +1,79 @@
+periodics:
+- name: periodic-publishing-bot
+  cluster: k8s-infra-prow-build-trusted
+  annotations:
+    testgrid-dashboards: sig-release-publishing-bot
+    testgrid-tab-name: publish
+  spec:
+    initContainers:
+    - name: initialize-repos
+      command:
+      - /init-repo
+      - --alsologtostderr
+      - --source-repo=kubernetes
+      - --source-org=kubernetes
+      - --target-org=kubernetes
+      - --rules-file=https://raw.githubusercontent.com/kubernetes/kubernetes/master/staging/publishing/rules.yaml
+      - 2>&1
+      image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot:latest
+      imagePullPolicy: Always
+      resources:
+        requests:
+          cpu: 300m
+          memory: 2Gi
+        limits:
+          cpu: 2
+          memory: 2Gi
+      volumeMounts:
+      - mountPath: /go-workspace
+        name: publisher-gopath
+      - mountPath: /.cache
+        name: cache
+    containers:
+    - name: publisher
+      command:
+      - /publishing-bot
+      - --alsologtostderr
+      - --source-repo=kubernetes
+      - --source-org=kubernetes
+      - --target-org=kubernetes
+      - --token-file=/etc/secret-volume/token
+      - --interval=0
+      - --server-port=8080
+      - --dry-run=false
+      - --github-issue=56876
+      - 2>&1
+      image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot
+      imagePullPolicy: Always
+      resources:
+        requests:
+          cpu: 300m
+          memory: 2Gi
+        limits:
+          cpu: 2
+          memory: 2Gi
+      volumeMounts:
+      - mountPath: /etc/secret-volume
+        name: secret-volume
+      - mountPath: /netrc
+        name: netrc
+      - mountPath: /gitrepos
+        name: repo
+      - mountPath: /go-workspace
+        name: publisher-gopath
+      - mountPath: /.cache
+        name: cache
+    volumes:
+    - name: secret-volume
+      secret:
+        secretName: publishing-bot-github-token
+    - name: repo
+      emptyDir: {}
+    - name: cache
+      emptyDir: {}
+    - name: netrc
+      emptyDir:
+        medium: Memory
+    - name: publisher-gopath
+      persistentVolumeClaim:
+        claimName: publishing-bot-pvc
