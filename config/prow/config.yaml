@@ -515,6 +515,10 @@ branch-protection:
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        apisnoop:
+          branches:
+            gh-pages:
+              protect: false
         aws-ebs-csi-driver:
           branches:
             gh-pages:
