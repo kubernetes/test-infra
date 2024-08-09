@@ -8,6 +8,7 @@ dashboard_groups:
   - sig-etcd-postsubmits
   - sig-etcd-robustness
   - sig-etcd-etcd-manager
+  - sig-etcd-website-presubmits
 
 dashboards:
   - name: sig-etcd-amd64
@@ -122,3 +123,4 @@ dashboards:
         - key: etcdVersion
           value: v3.4
   - name: sig-etcd-etcd-manager
+  - name: sig-etcd-website-presubmits
