@@ -1,3 +1,12 @@
+presets:
+- labels:
+    preset-gomaxprocs: "true"
+  env:
+  - name: GOMAXPROCS
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.cpu
+
 presubmits:
   kubernetes-sigs/kueue:
   - name: pull-kueue-test-unit-main
@@ -6,6 +15,8 @@ presubmits:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
     decorate: true
+    labels:
+      preset-gomaxprocs: "true"
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
@@ -17,8 +28,6 @@ presubmits:
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
-        - name: GOMAXPROCS
-          value: "2"
         command:
         - make
         args:
@@ -36,6 +45,8 @@ presubmits:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
     decorate: true
+    labels:
+      preset-gomaxprocs: "true"
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
@@ -48,9 +59,6 @@ presubmits:
         - make
         args:
         - test-integration
-        env:
-        - name: GOMAXPROCS
-          value: "6"
         resources:
           requests:
             cpu: "6"
@@ -261,6 +269,7 @@ presubmits:
       description: "Run kueue verify checks"
     labels:
       preset-dind-enabled: "true"
+      preset-gomaxprocs: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
@@ -271,9 +280,6 @@ presubmits:
         args:
           - make
           - verify
-        env:
-        - name: GOMAXPROCS
-          value: "4"
         resources:
           requests:
             cpu: "4"
@@ -294,6 +300,7 @@ presubmits:
       description: "Build container image of kueue"
     labels:
       preset-dind-enabled: "true"
+      preset-gomaxprocs: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
@@ -306,8 +313,6 @@ presubmits:
         - image-local-build
         - importer-image
         env:
-        - name: GOMAXPROCS
-          value: "2"
         - name: BUILDER_IMAGE
           value: public.ecr.aws/docker/library/golang:1.22
         resources:
@@ -323,6 +328,8 @@ presubmits:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
     decorate: true
+    labels:
+      preset-gomaxprocs: "true"
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
@@ -336,8 +343,6 @@ presubmits:
         args:
         - test-performance-scheduler
         env:
-        - name: GOMAXPROCS
-          value: "6"
         resources:
           requests:
             cpu: "6"
@@ -358,6 +363,7 @@ presubmits:
       description: "Run kjobctl tests"
     labels:
       preset-dind-enabled: "true"
+      preset-gomaxprocs: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
@@ -370,9 +376,6 @@ presubmits:
         - -C
         - cmd/experimental/kjobctl
         - test
-        env:
-        - name: GOMAXPROCS
-          value: "6"
         resources:
           requests:
             cpu: "6"

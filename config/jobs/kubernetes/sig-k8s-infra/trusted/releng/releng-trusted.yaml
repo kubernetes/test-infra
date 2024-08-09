@@ -1,3 +1,12 @@
+presets:
+- labels:
+    preset-gomaxprocs: "true"
+  env:
+  - name: GOMAXPROCS
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.cpu
+
 postsubmits:
   kubernetes/k8s.io:
   - name: post-k8sio-file-promo
@@ -28,6 +37,8 @@ postsubmits:
   - name: post-k8sio-image-promo
     cluster: k8s-infra-prow-build-trusted
     decorate: true
+    labels:
+      preset-gomaxprocs: "true"
     decoration_config:
       timeout: 4h
     run_if_changed: 'registry.k8s.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
@@ -55,8 +66,6 @@ postsubmits:
         - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
         - --certificate-oidc-issuer=https://accounts.google.com
         env:
-        - name: GOMAXPROCS
-          value: "7"
         resources:
           # request most of one node 🚀
           requests:
@@ -232,6 +241,8 @@ periodics:
   # Enable Pod Utilities.
   # See https://git.k8s.io/test-infra/prow/pod-utilities.md.
   decorate: true
+  labels:
+    preset-gomaxprocs: "true"
   extra_refs:
   # We clone the below repo automatically (via Pod Utilities), and get dropped
   # into /home/prow/go/src/github.com/kubernetes/k8s.io.
@@ -252,9 +263,6 @@ periodics:
       - --confirm
       - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
       - --certificate-oidc-issuer=https://accounts.google.com
-      env:
-      - name: GOMAXPROCS
-        value: "7"
       resources:
         # request most of one node 🚀
         requests:
