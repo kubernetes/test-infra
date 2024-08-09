@@ -189,3 +189,28 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-e2e-full-test
+  - name: pull-cluster-api-provider-openstack-apidiff
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    optional: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    run_if_changed: '^((api|config|controllers|hack|scripts|test|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-1.30
+        resources:
+          requests:
+            cpu: 6000m
+            memory: 2Gi
+          limits:
+            cpu: 6000m
+            memory: 2Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
+      testgrid-tab-name: pr-apidiff
