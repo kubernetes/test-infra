@@ -103,7 +103,6 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --env=PREPARE_KONNECTIVITY_SERVICE=true
         - --env=RUN_KONNECTIVITY_PODS=true
         - --env=EGRESS_VIA_KONNECTIVITY=true
@@ -111,7 +110,6 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-http-connect
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m
@@ -155,7 +153,6 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
-        - --extract=local
         - --env=PREPARE_KONNECTIVITY_SERVICE=true
         - --env=RUN_KONNECTIVITY_PODS=true
         - --env=EGRESS_VIA_KONNECTIVITY=true
@@ -163,7 +160,6 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-grpc
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m

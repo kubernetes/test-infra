@@ -38,12 +38,10 @@ presubmits:
         - --env=KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
         - --env=KUBE_ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,Priority
         - --env=ENABLE_POD_PRIORITY=true
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=3
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-autoscaling
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=400m
@@ -86,7 +84,6 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --extract=local
         - --check-leaked-resources
         - --provider=gce
         - --gcp-zone=us-west1-b
@@ -95,7 +92,6 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
         - --test_args=--ginkgo.focus=\[Feature:HPA\] --minStartupPods=8
         - --ginkgo-parallel=1
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-autoscaling-hpa-cpu
         - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
         securityContext:
@@ -137,7 +133,6 @@ presubmits:
         args:
         - --build=quick
         - --cluster=hpa
-        - --extract=local
         - --check-leaked-resources
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -145,7 +140,6 @@ presubmits:
         # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
         - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-autoscaling-hpa-cm
         - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
         securityContext:
