@@ -102,6 +102,13 @@ presubmits:
         args:
         - make
         - sanity-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
         securityContext:
           privileged: true
     annotations:
