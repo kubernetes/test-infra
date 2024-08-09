@@ -93,9 +93,9 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
-	    preset-azure-community: "true"
+      preset-azure-community: "true"
     spec:
-	    serviceAccountName: azure
+      serviceAccountName: azure
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
         command:
