@@ -3,7 +3,7 @@
 presubmits:
   kubernetes-csi/csi-driver-nfs:
   - name: pull-csi-driver-nfs-sanity
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
@@ -36,7 +36,7 @@ presubmits:
       description: "Run sanity tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-unit
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
@@ -67,7 +67,7 @@ presubmits:
       description: "Run unit tests for NFS CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-nfs-integration
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: false
     path_alias: github.com/kubernetes-csi/csi-driver-nfs
