@@ -2,14 +2,14 @@ postsubmits:
   kubernetes/ingress-nginx:
     # Ingress NGINX: Controller
     - name: post-ingress-nginx-controller
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'TAG'
       branches:
         - ^main$
         - ^release-.*$
+      run_if_changed: 'TAG'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -20,20 +20,20 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - --with-git-dir
               - --build-dir=.
+              - --with-git-dir
               - .
 
     # Ingress NGINX: NGINX
     - name: post-ingress-nginx-nginx
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/nginx/.*'
       branches:
         - ^main$
         - ^release-.*$
+      run_if_changed: 'images/nginx/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -50,14 +50,14 @@ postsubmits:
 
     # Ingress NGINX: NGINX v1.25
     - name: post-ingress-nginx-nginx-1-25
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/nginx-1.25/.*'
       branches:
         - ^main$
         - ^release-.*$
+      run_if_changed: 'images/nginx-1.25/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -74,14 +74,14 @@ postsubmits:
 
     # Ingress NGINX: OpenTelemetry
     - name: post-ingress-nginx-opentelemetry
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/opentelemetry/.*'
       branches:
         - ^main$
         - ^release-.*$
+      run_if_changed: 'images/opentelemetry/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -98,14 +98,14 @@ postsubmits:
 
     # Ingress NGINX: Test Runner
     - name: post-ingress-nginx-test-runner
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/test-runner/.*|NGINX_BASE'
       branches:
         - ^main$
         - ^release-.*$
+      run_if_changed: 'images/test-runner/.*|NGINX_BASE'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -122,13 +122,13 @@ postsubmits:
 
     # Ingress NGINX: CFSSL
     - name: post-ingress-nginx-cfssl
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/cfssl/.*'
       branches:
         - ^main$
+      run_if_changed: 'images/cfssl/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -145,13 +145,13 @@ postsubmits:
 
     # Ingress NGINX: E2E Test Echo
     - name: post-ingress-nginx-e2e-test-echo
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/echo/.*|NGINX_BASE'
       branches:
         - ^main$
+      run_if_changed: 'images/echo/.*|NGINX_BASE'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -168,13 +168,13 @@ postsubmits:
 
     # Ingress NGINX: FastCGI HelloServer
     - name: post-ingress-nginx-fastcgi-helloserver
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/fastcgi-helloserver/.*'
       branches:
         - ^main$
+      run_if_changed: 'images/fastcgi-helloserver/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -191,13 +191,13 @@ postsubmits:
 
     # Ingress NGINX: HTTPBun
     - name: post-ingress-nginx-httpbun
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/httpbun/.*'
       branches:
         - ^main$
+      run_if_changed: 'images/httpbun/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -214,13 +214,13 @@ postsubmits:
 
     # Ingress NGINX: Kube Webhook CertGen
     - name: post-ingress-nginx-kube-webhook-certgen
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/kube-webhook-certgen/.*'
       branches:
         - ^main$
+      run_if_changed: 'images/kube-webhook-certgen/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -237,13 +237,13 @@ postsubmits:
 
     # Ingress NGINX: Custom Error Pages
     - name: post-ingress-nginx-custom-error-pages
-      cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/custom-error-pages/.*'
       branches:
         - ^main$
+      run_if_changed: 'images/custom-error-pages/.*'
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
