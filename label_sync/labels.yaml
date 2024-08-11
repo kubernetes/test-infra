@@ -2229,3 +2229,23 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/kubespray:
+    labels:
+      - color: d4c5f9
+        description: Run every available tests
+        name: ci-full
+        target: prs
+        prowPlugin: label
+        addedBy: approvers or reviewers or members
+      - color: d4c5f9
+        description: Run a quick CI pipeline
+        name: ci-short
+        target: prs
+        prowPlugin: label
+        addedBy: approvers or reviewers or members
+      - color: d4c5f9
+        description: Run additional tests
+        name: ci-extended
+        target: prs
+        prowPlugin: label
+        addedBy: approvers or reviewers or members
