@@ -23,102 +23,6 @@ postsubmits:
               - --with-git-dir
               - .
 
-    # Ingress NGINX: NGINX
-    - name: post-ingress-nginx-nginx
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      branches:
-        - ^main$
-        - ^release-.+$
-      run_if_changed: ^images/nginx/
-      cluster: k8s-infra-prow-build-trusted
-      decorate: true
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - --build-dir=.
-              - --with-git-dir
-              - images/nginx
-
-    # Ingress NGINX: NGINX v1.25
-    - name: post-ingress-nginx-nginx-1-25
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      branches:
-        - ^main$
-        - ^release-.+$
-      run_if_changed: ^images/nginx-1.25/
-      cluster: k8s-infra-prow-build-trusted
-      decorate: true
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - --build-dir=.
-              - --with-git-dir
-              - images/nginx-1.25
-
-    # Ingress NGINX: OpenTelemetry
-    - name: post-ingress-nginx-opentelemetry
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      branches:
-        - ^main$
-        - ^release-.+$
-      run_if_changed: ^images/opentelemetry/
-      cluster: k8s-infra-prow-build-trusted
-      decorate: true
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - --build-dir=.
-              - --with-git-dir
-              - images/opentelemetry
-
-    # Ingress NGINX: Test Runner
-    - name: post-ingress-nginx-test-runner
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      branches:
-        - ^main$
-        - ^release-.+$
-      run_if_changed: ^images/test-runner/
-      cluster: k8s-infra-prow-build-trusted
-      decorate: true
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - --build-dir=.
-              - --with-git-dir
-              - images/test-runner
-
     # Ingress NGINX: CFSSL
     - name: post-ingress-nginx-cfssl
       annotations:
@@ -142,6 +46,30 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/cfssl
+
+    # Ingress NGINX: Custom Error Pages
+    - name: post-ingress-nginx-custom-error-pages
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
+      branches:
+        - ^main$
+        - ^release-.+$
+      run_if_changed: ^images/custom-error-pages/
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/custom-error-pages
 
     # Ingress NGINX: E2E Test Echo
     - name: post-ingress-nginx-e2e-test-echo
@@ -239,14 +167,14 @@ postsubmits:
               - --with-git-dir
               - images/kube-webhook-certgen
 
-    # Ingress NGINX: Custom Error Pages
-    - name: post-ingress-nginx-custom-error-pages
+    # Ingress NGINX: NGINX
+    - name: post-ingress-nginx-nginx
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
         - ^release-.+$
-      run_if_changed: ^images/custom-error-pages/
+      run_if_changed: ^images/nginx/
       cluster: k8s-infra-prow-build-trusted
       decorate: true
       spec:
@@ -261,4 +189,76 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
-              - images/custom-error-pages
+              - images/nginx
+
+    # Ingress NGINX: NGINX v1.25
+    - name: post-ingress-nginx-nginx-1-25
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
+      branches:
+        - ^main$
+        - ^release-.+$
+      run_if_changed: ^images/nginx-1.25/
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/nginx-1.25
+
+    # Ingress NGINX: OpenTelemetry
+    - name: post-ingress-nginx-opentelemetry
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
+      branches:
+        - ^main$
+        - ^release-.+$
+      run_if_changed: ^images/opentelemetry/
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/opentelemetry
+
+    # Ingress NGINX: Test Runner
+    - name: post-ingress-nginx-test-runner
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
+      branches:
+        - ^main$
+        - ^release-.+$
+      run_if_changed: ^images/test-runner/
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - images/test-runner
