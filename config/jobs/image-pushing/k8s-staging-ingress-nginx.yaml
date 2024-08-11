@@ -1,7 +1,7 @@
 postsubmits:
   kubernetes/ingress-nginx:
-
-    - name: post-ingress-nginx-push-images
+    # Ingress NGINX: Controller
+    - name: post-ingress-nginx-controller
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -24,7 +24,8 @@ postsubmits:
               - --build-dir=.
               - .
 
-    - name: post-ingress-nginx-build-nginx-image
+    # Ingress NGINX: NGINX
+    - name: post-ingress-nginx-nginx
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -47,7 +48,8 @@ postsubmits:
               - --with-git-dir
               - images/nginx
 
-    - name: post-ingress-nginx-build-nginx-1-25-image
+    # Ingress NGINX: NGINX v1.25
+    - name: post-ingress-nginx-nginx-1-25
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -70,7 +72,8 @@ postsubmits:
               - --with-git-dir
               - images/nginx-1.25
 
-    - name: post-ingress-nginx-build-opentelemetry
+    # Ingress NGINX: OpenTelemetry
+    - name: post-ingress-nginx-opentelemetry
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -93,7 +96,8 @@ postsubmits:
               - --with-git-dir
               - images/opentelemetry
 
-    - name: post-ingress-nginx-build-e2e-image
+    # Ingress NGINX: Test Runner
+    - name: post-ingress-nginx-test-runner
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -116,7 +120,8 @@ postsubmits:
               - --with-git-dir
               - images/test-runner
 
-    - name: post-ingress-nginx-build-cfssl-image
+    # Ingress NGINX: CFSSL
+    - name: post-ingress-nginx-cfssl
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -138,7 +143,8 @@ postsubmits:
               - --with-git-dir
               - images/cfssl
 
-    - name: post-ingress-nginx-build-echo-image
+    # Ingress NGINX: E2E Test Echo
+    - name: post-ingress-nginx-e2e-test-echo
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -160,7 +166,8 @@ postsubmits:
               - --with-git-dir
               - images/echo
 
-    - name: post-ingress-nginx-build-fastcgi-helloserver-image
+    # Ingress NGINX: FastCGI HelloServer
+    - name: post-ingress-nginx-fastcgi-helloserver
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -182,7 +189,8 @@ postsubmits:
               - --with-git-dir
               - images/fastcgi-helloserver
 
-    - name: post-ingress-nginx-build-httpbun-image
+    # Ingress NGINX: HTTPBun
+    - name: post-ingress-nginx-httpbun
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -204,7 +212,8 @@ postsubmits:
               - --with-git-dir
               - images/httpbun
 
-    - name: post-ingress-nginx-build-webhook-certgen-image
+    # Ingress NGINX: Kube Webhook CertGen
+    - name: post-ingress-nginx-kube-webhook-certgen
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
@@ -226,7 +235,8 @@ postsubmits:
               - --with-git-dir
               - images/kube-webhook-certgen
 
-    - name: post-ingress-nginx-build-custom-error-pages-image
+    # Ingress NGINX: Custom Error Pages
+    - name: post-ingress-nginx-custom-error-pages
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
