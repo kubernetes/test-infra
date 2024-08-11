@@ -5,8 +5,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
-        - ^main$
-        - ^release-.*$
+        - ^release-.+$
       run_if_changed: 'TAG'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -30,7 +29,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
-        - ^release-.*$
+        - ^release-.+$
       run_if_changed: 'images/nginx/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -54,7 +53,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
-        - ^release-.*$
+        - ^release-.+$
       run_if_changed: 'images/nginx-1.25/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -78,7 +77,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
-        - ^release-.*$
+        - ^release-.+$
       run_if_changed: 'images/opentelemetry/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -102,7 +101,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
-        - ^release-.*$
+        - ^release-.+$
       run_if_changed: 'images/test-runner/.*|NGINX_BASE'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -126,6 +125,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
+        - ^release-.+$
       run_if_changed: 'images/cfssl/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -149,6 +149,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
+        - ^release-.+$
       run_if_changed: 'images/echo/.*|NGINX_BASE'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -172,6 +173,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
+        - ^release-.+$
       run_if_changed: 'images/fastcgi-helloserver/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -195,6 +197,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
+        - ^release-.+$
       run_if_changed: 'images/httpbun/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -218,6 +221,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
+        - ^release-.+$
       run_if_changed: 'images/kube-webhook-certgen/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
@@ -241,6 +245,7 @@ postsubmits:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
         - ^main$
+        - ^release-.+$
       run_if_changed: 'images/custom-error-pages/.*'
       cluster: k8s-infra-prow-build-trusted
       decorate: true
