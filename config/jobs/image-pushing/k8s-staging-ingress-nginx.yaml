@@ -165,7 +165,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
-              - images/echo
+              - images/e2e-test-echo
 
     # Ingress NGINX: FastCGI HelloServer
     - name: post-ingress-nginx-fastcgi-helloserver
