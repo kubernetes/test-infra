@@ -42,7 +42,7 @@ presubmits:
             - runner.sh
           args:
           - make
-           - verify
+          - verify
           resources:
             requests:
               memory: 4Gi
