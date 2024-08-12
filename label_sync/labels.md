@@ -22,6 +22,7 @@
 - [Labels that apply to kubernetes-sigs/gateway-api, only for PRs](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-prs)
 - [Labels that apply to kubernetes-sigs/kind, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskind-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/kubespray, only for PRs](#labels-that-apply-to-kubernetes-sigskubespray-only-for-prs)
 - [Labels that apply to kubernetes-sigs/promo-tools, for both issues and PRs](#labels-that-apply-to-kubernetes-sigspromo-tools-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/dns, only for issues](#labels-that-apply-to-kubernetesdns-only-for-issues)
@@ -342,6 +343,14 @@ larger set of contributors to apply/remove them.
 | <a id="priority/P1" href="#priority/P1">`priority/P1`</a> | P1 issues or PRs| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="priority/P2" href="#priority/P2">`priority/P2`</a> | P2 issues or PRs| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 | <a id="priority/P3" href="#priority/P3">`priority/P3`</a> | P3 issues or PRs| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/kubespray, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="ci-extended" href="#ci-extended">`ci-extended`</a> | Run additional tests| approvers or reviewers or members |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
+| <a id="ci-full" href="#ci-full">`ci-full`</a> | Run every available tests| approvers or reviewers or members |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
+| <a id="ci-short" href="#ci-short">`ci-short`</a> | Run a quick CI pipeline| approvers or reviewers or members |  [label](https://github.com/kubernetes-sigs/prow/tree/main/prow/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/promo-tools, for both issues and PRs
 
