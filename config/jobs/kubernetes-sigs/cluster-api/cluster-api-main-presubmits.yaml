@@ -135,7 +135,7 @@ presubmits:
         # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
         # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
         - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-          value: "1.27.1"
+          value: "1.28.3"
         resources:
           requests:
             cpu: 7300m
@@ -183,7 +183,7 @@ presubmits:
         # Please also make sure to refer a version where a kindest/node image exists
         # for (see https://github.com/kubernetes-sigs/kind/releases/)
         - name: KUBERNETES_VERSION_MANAGEMENT
-          value: "v1.27.13"
+          value: "v1.28.9"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -280,7 +280,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-main
-  - name: pull-cluster-api-e2e-upgrade-1-30-1-31-main
+  - name: pull-cluster-api-e2e-upgrade-1-31-1-32-main
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -308,11 +308,11 @@ presubmits:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.30"
+            value: "stable-1.31"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.31"
+            value: "ci/latest-1.32"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.12-0"
+            value: "3.5.15-0"
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.11.1"
           - name: GINKGO_FOCUS
@@ -329,7 +329,7 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-30-1-31
+      testgrid-tab-name: capi-pr-e2e-main-1-31-1-32
 
   - name: pull-cluster-api-e2e-conformance-main
     cluster: eks-prow-build-cluster
