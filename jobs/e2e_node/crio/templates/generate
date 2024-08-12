@@ -34,6 +34,7 @@ declare -A CONFIGURATIONS=(
     ["crio_cgroupsv2_splitfs"]="root splitfs"
     ["crio_cgroupsv2_hugepages"]="root hugepages"
     ["crio_cgroupsv2_userns"]="root userns crun-enabled"
+    ["crio_cgroupsv2_crun"]="root crun-enabled"
 )
 
 CONTAINER_RUNTIME=$(which podman 2>/dev/null) ||
