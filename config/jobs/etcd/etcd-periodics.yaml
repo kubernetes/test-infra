@@ -11,7 +11,7 @@ periodics:
       base_ref: main
   annotations:
     testgrid-dashboards: sig-etcd-periodics, sig-etcd-arm64
-    testgrid-tab-name: ci-etcd-e2e-armd64
+    testgrid-tab-name: ci-etcd-e2e-arm64
   spec:
     containers:
     - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
