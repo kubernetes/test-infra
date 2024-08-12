@@ -815,6 +815,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
+    kubernetes-sigs/jobset: squash
     kubernetes-sigs/karpenter: squash
     kubernetes-sigs/kernel-module-management: rebase
     kubernetes-sigs/krew-index: squash
