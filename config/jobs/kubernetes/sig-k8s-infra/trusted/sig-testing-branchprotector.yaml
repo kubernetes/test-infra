@@ -24,6 +24,7 @@ periodics:
       - --confirm
       - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - --github-endpoint=https://api.github.com
+      - --github-hourly-tokens=1000 # Up the rate limit from default (300) to 1000
       volumeMounts:
       - name: github
         mountPath: /etc/github
