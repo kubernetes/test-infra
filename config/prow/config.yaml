@@ -1054,6 +1054,14 @@ presets:
       hostPath:
         path: /sys/fs/cgroup
         type: Directory
+# gomaxprocs preset for performance
+- labels:
+    preset-gomaxprocs: "true"
+  env:
+  - name: GOMAXPROCS
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.cpu
 # enable GOPROXY by default
 - env:
   - name: GOPROXY
