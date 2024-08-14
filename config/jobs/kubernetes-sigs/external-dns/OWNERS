@@ -3,19 +3,18 @@
 # Synced to the root OWNERS file in sigs.k8s.io/external-dns as of 09/16/23
 
 approvers:
-  - johngmyers
   - mloiseleur
   - raffo
   - szuecs
 
 reviewers:
-  - johngmyers
   - mloiseleur
   - raffo
   - szuecs
 
 emeritus_approvers:
   - hjacobs
+  - johngmyers
   - linki
   - njuettner
   - seanmalloy
