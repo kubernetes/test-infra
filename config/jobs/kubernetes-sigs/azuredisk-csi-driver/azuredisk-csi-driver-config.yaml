@@ -759,6 +759,13 @@ presubmits:
               make e2e-test
           securityContext:
             privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 4
+              memory: 8Gi
           env:
             - name: ENABLE_TOPOLOGY
               value: "false"
