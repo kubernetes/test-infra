@@ -58,7 +58,7 @@ periodics:
       - --extract=ci/latest-1.28
       - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_NODE_OS_DISTRIBUTION=gci
-      - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
+      - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
       - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
