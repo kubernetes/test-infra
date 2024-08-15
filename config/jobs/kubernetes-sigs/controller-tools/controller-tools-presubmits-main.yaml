@@ -1,12 +1,12 @@
 presubmits:
   kubernetes-sigs/controller-tools:
-  - name: pull-controller-tools-test-master
+  - name: pull-controller-tools-test-main
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/controller-tools
     branches:
-    - ^master$
+    - ^main$
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.22
@@ -22,4 +22,4 @@ presubmits:
             memory: 24Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-tools-master
+      testgrid-tab-name: controller-tools-main
