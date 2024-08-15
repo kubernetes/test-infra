@@ -65,8 +65,8 @@ presubmits:
     path_alias: sigs.k8s.io/blob-csi-driver
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-azure-community: "true"
     spec:
       serviceAccountName: azure
       containers:
