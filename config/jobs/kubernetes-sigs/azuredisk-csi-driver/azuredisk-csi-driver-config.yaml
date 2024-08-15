@@ -744,7 +744,7 @@ presubmits:
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
-	  serviceAccountName: azure
+      serviceAccountName: azure
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
           command:
