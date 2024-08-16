@@ -177,7 +177,6 @@ presubmits:
 
   - name: pull-etcd-e2e-amd64
     cluster: eks-prow-build-cluster
-    optional: true # remove this once the job is green
     always_run: true
     branches:
     - main
@@ -200,14 +199,13 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "8Gi"
+            memory: "4Gi"
           limits:
             cpu: "4"
-            memory: "8Gi"
+            memory: "4Gi"
 
   - name: pull-etcd-e2e-386
     cluster: eks-prow-build-cluster
-    optional: true # remove this once the job is green
     always_run: true
     branches:
     - main
@@ -229,14 +227,13 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "8Gi"
+            memory: "4Gi"
           limits:
             cpu: "4"
-            memory: "8Gi"
+            memory: "4Gi"
 
   - name: pull-etcd-e2e-arm64
     cluster: k8s-infra-prow-build
-    optional: true # remove this once the job is green
     always_run: true
     branches:
     - main
