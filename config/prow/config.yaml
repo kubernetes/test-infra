@@ -190,28 +190,6 @@ prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
 
-managed_webhooks:
-  # This has to be true if any of the managed repo/org is using the legacy global token that is manually created.
-  respect_legacy_global_token: true
-  # Config for orgs and repos that have been onboarded to this Prow instance.
-  org_repo_config:
-    kubernetes:
-      token_created_after: 2020-08-12T00:00:00Z
-    kubernetes-client:
-      token_created_after: 2020-07-24T00:00:00Z
-    kubernetes-csi:
-      token_created_after: 2020-08-12T00:00:00Z
-    kubernetes-security:
-      token_created_after: 2021-05-19T00:00:00Z
-    kubernetes-sigs:
-      token_created_after: 2020-08-12T00:00:00Z
-    containerd/containerd:
-      token_created_after: 2020-09-17T00:00:00Z
-    kubernetes-sigs/apisnoop:
-      token_created_after: 2020-09-22T00:00:00Z
-    etcd-io:
-      token_created_after: 2023-11-13T00:00:00Z
-
 slack_reporter_configs:
   '*':
     job_types_to_report:

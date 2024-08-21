@@ -32,51 +32,6 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: deploys the configured version of prow by running prow/deploy.sh
-  - name: post-test-infra-reconcile-hmacs
-    cluster: test-infra-trusted
-    run_if_changed: 'config/prow/config.yaml'
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      containers:
-      - image: us-docker.pkg.dev/k8s-infra-prow/images/hmac:v20240802-66b115076
-        command:
-        - hmac
-        args:
-        - --config-path=config/prow/config.yaml
-        - --hook-url=https://prow.k8s.io/hook
-        - --hmac-token-secret-name=hmac-token
-        - --hmac-token-key=hmac
-        - --kubeconfig=/etc/kubeconfig/config
-        - --kubeconfig-context=prow-services
-        - --github-token-path=/etc/github/oauth
-        - --github-endpoint=http://ghproxy.default.svc.cluster.local
-        - --github-endpoint=https://api.github.com
-        - --dry-run=false
-        volumeMounts:
-        - name: kubeconfig
-          mountPath: /etc/kubeconfig
-          readOnly: true
-        - name: oauth
-          mountPath: /etc/github
-          readOnly: true
-      volumes:
-      - name: kubeconfig
-        secret:
-          defaultMode: 420
-          secretName: kubeconfig-prow-services
-      - name: oauth
-        secret:
-          defaultMode: 420
-          secretName: oauth-token
-    annotations:
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: reconcile-hmacs
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: reconcile the hmac tokens and webhooks based on the managed_webhooks configuration in prow core config file
   - name: post-test-infra-gencred-refresh-kubeconfig
     cluster: test-infra-trusted
     run_if_changed: '^config/prow/gencred-config/'
