@@ -300,7 +300,6 @@ func TestCommunityJobs(t *testing.T) {
 		"ci-test-infra-gencred-refresh-kubeconfig",
 		"post-test-infra-deploy-prow",
 		"post-test-infra-gencred-refresh-kubeconfig",
-		"post-test-infra-reconcile-hmacs",
 		"ci-test-infra-autobump-prow",
 		"ci-test-infra-autobump-prow-for-auto-deploy",
 	)
