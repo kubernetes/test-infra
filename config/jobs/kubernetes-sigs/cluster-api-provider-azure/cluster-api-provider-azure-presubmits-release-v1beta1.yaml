@@ -113,7 +113,7 @@ presubmits:
             - name: GINKGO_FOCUS
               value: "API Version Upgrade"
             - name: KUBERNETES_VERSION
-              value: "v1.26.15"
+              value: "v1.27.16"
           resources:
             limits:
               cpu: 6
