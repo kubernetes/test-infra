@@ -69,10 +69,6 @@ deck:
     - lens:
         name: buildlog
         config:
-          highlighter:
-            endpoint: http://halogen.default.svc.cluster.local
-            pin: true
-            auto: false
           highlight_regexes:
           - Automatic merge failed
           - cannot convert.+to type
