@@ -292,33 +292,21 @@ func TestRetestMatchJobsName(t *testing.T) {
 func TestCommunityJobs(t *testing.T) {
 	const legacyDefault = "default"
 	const legacyTrusted = "test-infra-trusted"
-
-	// These jobs are used to automate prow itself and will not be migrating
-	// They run in prow's own cluster and will be removed right before we migrate the control plane
-	// DO NOT ADD ANY MORE JOBS HERE
-	knownBadJobs := sets.NewString(
-		"ci-test-infra-gencred-refresh-kubeconfig",
-		"post-test-infra-deploy-prow",
-		"post-test-infra-gencred-refresh-kubeconfig",
-		"ci-test-infra-autobump-prow",
-		"ci-test-infra-autobump-prow-for-auto-deploy",
-	)
-
 	// error if any job tries to run in the legacy default cluster
-	// error if any unknown job tries to run in the legacy trusted cluster
+	// error if any job tries to run in the legacy trusted cluster
 	const errFmt = "job %q uses deprecated cluster: %q which may not be used for new jobs, see: https://groups.google.com/a/kubernetes.io/g/dev/c/p6PAML90ZOU"
 	for _, job := range c.AllStaticPresubmits(nil) {
-		if job.Cluster == legacyDefault || (job.Cluster == legacyTrusted && !knownBadJobs.Has(job.Name)) {
+		if job.Cluster == legacyDefault || job.Cluster == legacyTrusted {
 			t.Errorf(errFmt, job.Name, job.Cluster)
 		}
 	}
 	for _, job := range c.AllStaticPostsubmits(nil) {
-		if job.Cluster == legacyDefault || (job.Cluster == legacyTrusted && !knownBadJobs.Has(job.Name)) {
+		if job.Cluster == legacyDefault || job.Cluster == legacyTrusted {
 			t.Errorf(errFmt, job.Name, job.Cluster)
 		}
 	}
 	for _, job := range c.AllPeriodics() {
-		if job.Cluster == legacyDefault || (job.Cluster == legacyTrusted && !knownBadJobs.Has(job.Name)) {
+		if job.Cluster == legacyDefault || job.Cluster == legacyTrusted {
 			t.Errorf(errFmt, job.Name, job.Cluster)
 		}
 	}
