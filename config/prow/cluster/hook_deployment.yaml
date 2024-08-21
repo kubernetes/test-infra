@@ -20,7 +20,7 @@ metadata:
   labels:
     app: hook
 spec:
-  replicas: 4
+  replicas: 0
   strategy:
     type: RollingUpdate
     rollingUpdate:

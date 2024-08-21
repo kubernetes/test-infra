@@ -7,7 +7,7 @@ metadata:
   name: kube-state-metrics
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: kube-state-metrics
