@@ -54,7 +54,7 @@ sinker:
 
 deck:
   spyglass:
-    announcement: "We're migrating Prow on Aug 21! Expect CI disruption and avoid releases that week. Updates on <a href='https://groups.google.com/a/kubernetes.io/g/dev/c/qzNYpcN5la4'>groups/kubernetes.io/dev</a>"
+    announcement: "Prow has been successfully migrated to community Infrastructure on the 22nd of August. Updates on <a href='https://groups.google.com/a/kubernetes.io/g/dev/c/qzNYpcN5la4'>groups/kubernetes.io/dev</a>"
     size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
@@ -807,10 +807,6 @@ tide:
   - labels: [ "kind/flake", "priority/critical-urgent" ]
   - labels: [ "kind/failing-test", "priority/critical-urgent" ]
   - labels: [ "kind/bug", "priority/critical-urgent" ]
-
-push_gateway:
-  endpoint: pushgateway
-  serve_metrics: true
 
 github_reporter:
   job_types_to_report:
