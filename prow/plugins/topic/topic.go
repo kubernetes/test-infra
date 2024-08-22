@@ -334,6 +334,34 @@ type AddProjectV2ItemByIdInput struct {
 	ClientMutationID *githubql.String `json:"clientMutationId,omitempty"`
 }
 
+// UpdateProjectV2Mutation is a GraphQL mutation struct compatible with shurcooL/githubql's client
+//
+// See https://docs.github.com/en/graphql/reference/mutations#updateprojectv2
+type updateProjectV2Mutation struct {
+	UpdateProjectV2 struct {
+		ProjectV2 struct {
+			Public githubql.Boolean
+		}
+	} `graphql:"updateProjectV2(input: $input)"`
+}
+
+type UpdateProjectV2Input struct {
+	// A unique identifier for the client performing the mutation. (Optional.)
+	ClientMutationID *githubql.String `json:"clientMutationId,omitempty"`
+	// Set the project to closed or open. (Optional.)
+	Closed githubql.Boolean `json:"closed"`
+	// The ID of the Project to update. (Required.)
+	ProjectID githubql.ID `json:"projectId,omitempty"`
+	// 	Set the project to public or private. (Optional.)
+	Public githubql.Boolean `json:"public"`
+	// Set the readme description of the project. (Optional.)
+	Readme *githubql.String `json:"readme"`
+	// Set the readme description of the project. (Optional.)
+	ShortDescription *githubql.String `json:"shortDescription"`
+	// The title of project. (Optional.)
+	Title *githubql.String `json:"title"`
+}
+
 // func getProjectsV2Id
 // get projectv2 id with name
 func getProjectsV2Id(log *logrus.Entry, ghc githubClient, org, topic string) githubql.String {
@@ -438,6 +466,17 @@ func AddOrCreateTopic(log *logrus.Entry, ghc githubClient, config *plugins.Confi
 			}
 			log.Infof("Get topic's project id: %v", m.CreateProjectV2.ProjectV2.Id)
 			pID = m.CreateProjectV2.ProjectV2.Id
+
+			// Update github project to public by default
+			updateM := &updateProjectV2Mutation{}
+			updateInput := UpdateProjectV2Input{
+				ProjectID: pID,
+				Public:    true,
+			}
+			err = ghc.MutateWithGitHubAppsSupport(context.Background(), updateM, updateInput, nil, org)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Add pr to topic's project
