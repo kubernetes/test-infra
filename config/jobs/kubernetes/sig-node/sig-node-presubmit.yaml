@@ -1182,7 +1182,7 @@ presubmits:
         - --provider=gce
         - '--test_args=--nodes=8 --label-filter="(NodeConformance || !(NodeFeature: isEmpty)) && !Flaky && !Slow && !Serial"'
         - --timeout=180m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-drop-infra-ctr.yaml
         resources:
           limits:
             cpu: 4
