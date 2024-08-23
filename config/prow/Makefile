@@ -43,12 +43,9 @@ deploy-prow: get-cluster-credentials
 deploy-build: get-build-cluster-credentials
 	kubectl apply -f ./cluster/build/
 
-deploy-monitoring: get-cluster-credentials
-	$(MAKE) -C ./cluster/monitoring apply
+deploy-all: deploy-prow deploy-build
 
-deploy-all: deploy-prow deploy-build deploy-monitoring
-
-.PHONY: update-config update-plugins deploy-prow deploy-build deploy-monitoring deploy-all
+.PHONY: update-config update-plugins deploy-prow deploy-build deploy-all
 
 # The targets below are for breaking glass usages, should not run on a regular
 # basis
