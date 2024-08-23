@@ -17,7 +17,7 @@ presubmits:
             - bash
           args:
             - -c
-            - 'go test -v -race ./... && (cd ./examples/defaulter-gen/_output_tests && go test -v -race ./...)'
+            - 'make test'
           resources:
             requests:
               memory: 4Gi
