@@ -4,7 +4,8 @@ presubmits:
   - name: pull-website-lint
     cluster: eks-prow-build-cluster
     optional: true # remove this once the job is green
-    always_run: true
+    always_run: false
+    run_if_changed: '.*\.md$'
     branches:
     - main
     decorate: true
@@ -19,6 +20,7 @@ presubmits:
         args:
         - -c
         - |
+          apt-get update && apt-get install -y gawk
           npm install -g markdownlint-cli2
           make markdown-diff-lint
         resources:
