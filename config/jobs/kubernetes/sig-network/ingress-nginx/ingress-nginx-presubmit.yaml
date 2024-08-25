@@ -18,10 +18,10 @@ presubmits:
             command:
               - ./hack/verify-boilerplate.sh
             resources:
-              limits:
+              requests:
                 cpu: 2
                 memory: 4Gi
-              requests:
+              limits:
                 cpu: 2
                 memory: 4Gi
 
@@ -43,10 +43,10 @@ presubmits:
             command:
               - ./hack/verify-codegen.sh
             resources:
-              limits:
+              requests:
                 cpu: 2
                 memory: 4Gi
-              requests:
+              limits:
                 cpu: 2
                 memory: 4Gi
 
@@ -69,9 +69,9 @@ presubmits:
               - make
               - lua-test
             resources:
-              limits:
+              requests:
                 cpu: 2
                 memory: 4Gi
-              requests:
+              limits:
                 cpu: 2
                 memory: 4Gi
