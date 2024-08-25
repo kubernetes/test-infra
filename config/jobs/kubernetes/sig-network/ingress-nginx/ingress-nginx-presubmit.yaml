@@ -8,7 +8,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx
         testgrid-tab-name: boilerplate
-      run_if_changed: '\.go$|\.sh$'
+      run_if_changed: \.(go|sh)$
       cluster: eks-prow-build-cluster
       decorate: true
       decoration_config:
@@ -35,7 +35,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx
         testgrid-tab-name: codegen
-      run_if_changed: '\.go$'
+      run_if_changed: \.go$
       cluster: eks-prow-build-cluster
       decorate: true
       decoration_config:
@@ -62,7 +62,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx
         testgrid-tab-name: test-lua
-      run_if_changed: '\.lua$'
+      run_if_changed: \.lua$
       always_run: false
       cluster: eks-prow-build-cluster
       decorate: true
