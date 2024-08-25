@@ -57,7 +57,7 @@ presubmits:
         preset-kind-volume-mounts: "true"
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx
-        testgrid-tab-name: test-lua
+        testgrid-tab-name: lua-test
       run_if_changed: \.lua$
       cluster: eks-prow-build-cluster
       decorate: true
