@@ -1,0 +1,177 @@
+periodics:
+- name: apisnoop-weekly-updater
+  cron: "0 12 * * 6"  # on the 6th day of the week at midday
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: apisnoop
+    base_ref: main
+  max_concurrency: 1
+  labels:
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-dashboards: sig-arch-conformance
+    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
+    description: |
+      Generate new APISnoop coverage metadata in a pull-request
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-apisnoop/snoopdb:v20240121-auditlogger-1.2.11-4-gb17b29c
+      securityContext:
+        privileged: true
+      env:
+        - name: GIT_NAME
+          value: "Kubernetes Prow Robot"
+        - name: GIT_EMAIL
+          value: "20407524+k8s-ci-robot@users.noreply.github.com"
+        - name: POSTGRES_DB
+          value: apisnoop
+        - name: POSTGRES_USER
+          value: apisnoop
+        - name: LOAD_K8S_DATA
+          value: "true"
+      command:
+        - bash
+        - -x
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          apt-get update -y
+          # TODO pre-install gh inside snoopdb
+          git config user.name "$GIT_NAME"
+          git config user.email "$GIT_EMAIL"
+          (type -p wget >/dev/null || (apt-get install wget -y)) \
+          && mkdir -p -m 755 /etc/apt/keyrings \
+          && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && apt-get update \
+          && apt-get install gh -y
+
+          if [ ! -f /etc/github-token/token ]; then
+            echo "WARNING: github token is missing and will NOT push any changes to coverage, expected path: /etc/github-token/token" >/dev/stderr
+          else
+            gh auth login --with-token < /etc/github-token/token
+          fi
+          gh auth status 2>&1 || true
+
+          unset JOB_NAME # TODO make an override env to keep running DB as a ProwJob
+          /usr/local/bin/docker-entrypoint.sh postgres&
+          PID=$!
+          cleanup() {
+            kill "$PID"
+          }
+          trap cleanup EXIT
+
+          until psql -U apisnoop -d apisnoop -h localhost -c 'select 0;'; do
+            sleep 10s
+          done
+          cd $(git rev-parse --show-toplevel)
+          psql -U apisnoop -d apisnoop -h localhost -f ./505_output_coverage_jsons.sql
+
+          if { git ls-files --others --exclude-standard ; git diff-index --name-only --diff-filter=d HEAD ; } | grep --regexp='[.]json$'; then
+            echo changes detected
+          else
+            exit 0
+          fi
+          TIMESTAMP="$(date +%Y-%m-%d-%H-%M)"
+          NEW_BRANCH="coverage-update-for-${TIMESTAMP}"
+          git add resources/coverage/*.json
+          git branch "${NEW_BRANCH}"
+          git checkout "${NEW_BRANCH}"
+
+          git commit -m "chore: update coverage for ${TIMESTAMP}" -m "updates coverage metadata for ${TIMESTAMP}"
+          REMOTE="$(git remote)"
+          git push "$REMOTE" "${NEW_BRANCH}"
+          gh pr create --title "Update APISnoop coverage ${TIMESTAMP}" --body "updates to coverage for ${TIMESTAMP}"
+
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
+- name: apisnoop-kubernetes-version-updater
+  cron: "0 12 * * *"  # at midday each day
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: apisnoop
+    base_ref: main
+  max_concurrency: 1
+  annotations:
+    testgrid-dashboards: sig-arch-conformance
+    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
+    description: |
+      Update the list of Kubernetes releases stored in the APISnoop repo with a pull-request
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      env:
+        - name: GIT_NAME
+          value: "Kubernetes Prow Robot"
+        - name: GIT_EMAIL
+          value: "20407524+k8s-ci-robot@users.noreply.github.com"
+      command:
+        - runner.sh
+      args:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          (type -p wget >/dev/null || (apt-get install wget -y)) \
+          && mkdir -p -m 755 /etc/apt/keyrings \
+          && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && apt-get update \
+          && apt-get install gh -y
+
+          git config user.name "$GIT_NAME"
+          git config user.email "$GIT_EMAIL"
+          if [ ! -f /etc/github-token/token ]; then
+            echo "WARNING: github token is missing and will NOT push any changes to coverage, expected path: /etc/github-token/token" >/dev/stderr
+          else
+            gh auth login --with-token < /etc/github-token/token
+          fi
+          gh auth status 2>&1 || true
+
+          cd $(git rev-parse --show-toplevel)
+          go run cmd/update-kubernetes-release-version/main.go
+
+          if { git ls-files --others --exclude-standard ; git diff-index --name-only --diff-filter=d HEAD ; } | grep 'resources/coverage/releases.yaml'; then
+              echo "changes detected"
+            else
+              echo "no changes detected"
+              exit 0
+          fi
+          TIMESTAMP="$(date +%Y-%m-%d-%H-%M)"
+          NEW_BRANCH="coverage-update-for-${TIMESTAMP}"
+          git add resources/coverage/releases.yaml
+          git branch "${NEW_BRANCH}"
+          git checkout "${NEW_BRANCH}"
+          git commit -m "update Kubernetes version for ${TIMESTAMP}"
+          REMOTE="$(git remote)"
+          git push "$REMOTE" "${NEW_BRANCH}"
+          gh pr create --title "Update Kubernetes version ${TIMESTAMP}" --body "updates to Kubernetes version for ${TIMESTAMP}"
+
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
