@@ -11,8 +11,6 @@ presubmits:
       run_if_changed: \.(go|sh)$
       cluster: eks-prow-build-cluster
       decorate: true
-      decoration_config:
-        timeout: 15m
       path_alias: k8s.io/ingress-nginx
       spec:
         containers:
@@ -38,8 +36,6 @@ presubmits:
       run_if_changed: \.go$
       cluster: eks-prow-build-cluster
       decorate: true
-      decoration_config:
-        timeout: 15m
       path_alias: k8s.io/ingress-nginx
       spec:
         containers:
@@ -66,8 +62,6 @@ presubmits:
       always_run: false
       cluster: eks-prow-build-cluster
       decorate: true
-      decoration_config:
-        timeout: 10m
       path_alias: k8s.io/ingress-nginx
       spec:
         containers:
