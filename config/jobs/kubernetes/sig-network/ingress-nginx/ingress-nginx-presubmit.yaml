@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/ingress-nginx:
-    - name: pull-ingress-nginx-boilerplate
+    # Ingress NGINX: Boilerplate
+    - name: pre-ingress-nginx-boilerplate
       cluster: eks-prow-build-cluster
       decorate: true
       decoration_config:
@@ -26,7 +27,8 @@ presubmits:
         testgrid-dashboards: sig-network-ingress-nginx
         testgrid-tab-name: boilerplate
 
-    - name: pull-ingress-nginx-codegen
+    # Ingress NGINX: CodeGen
+    - name: pre-ingress-nginx-codegen
       cluster: eks-prow-build-cluster
       decorate: true
       decoration_config:
@@ -52,7 +54,8 @@ presubmits:
         testgrid-dashboards: sig-network-ingress-nginx
         testgrid-tab-name: codegen
 
-    - name: pull-ingress-nginx-test-lua
+    # Ingress NGINX: Lua Test
+    - name: pre-ingress-nginx-lua-test
       cluster: eks-prow-build-cluster
       always_run: false
       decorate: true
