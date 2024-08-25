@@ -59,7 +59,6 @@ presubmits:
         testgrid-dashboards: sig-network-ingress-nginx
         testgrid-tab-name: test-lua
       run_if_changed: \.lua$
-      always_run: false
       cluster: eks-prow-build-cluster
       decorate: true
       path_alias: k8s.io/ingress-nginx
