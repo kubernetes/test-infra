@@ -153,7 +153,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: "API Version Upgrade"
           - name: KUBERNETES_VERSION
-            value: "v1.26.15"
+            value: "v1.27.16"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
