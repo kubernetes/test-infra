@@ -16,8 +16,6 @@ presubmits:
     decoration_config:
       timeout: 5h
     path_alias: k8s.io/autoscaler
-    branches:
-      - master
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
