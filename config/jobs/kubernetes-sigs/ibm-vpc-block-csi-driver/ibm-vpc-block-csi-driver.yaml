@@ -42,7 +42,7 @@ presubmits:
       description: Unit tests in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.10
+      - image: public.ecr.aws/docker/library/golang:1.22.0
         command:
         - make
         args:
@@ -68,7 +68,7 @@ presubmits:
       description: ibm-vpc-block-csi-driver basic code verification.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.10
+      - image: public.ecr.aws/docker/library/golang:1.22.0
         command:
         - make
         args:
@@ -94,7 +94,7 @@ presubmits:
       description: ibm-vpc-block-csi-driver sanity execution.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.10
+      - image: public.ecr.aws/docker/library/golang:1.22.0
         command:
         - make
         args:
