@@ -32,7 +32,7 @@ When running `make` within this directory, an intermediate
 then gets transformed into the resulting ignition file
 [`crio_cgroupsv1.ign`](./crio_cgroupsv1.ign).
 The ignition file will be then referenced from image configurations like
-[`./latest/image-config-cgrpv1.yaml`](./latest/image-config-cgrpv1.yaml).
+[`./latest/image-config-cgroupv1.yaml`](./latest/image-config-cgroupv1.yaml).
 
 This means modifying, adding or removing jobs should always result in running
 `make` as well as committing all changes into this repository.
