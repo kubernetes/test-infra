@@ -454,3 +454,56 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
 {{ end -}}
+{{ if eq $.branch "main" }}
+  - name: pull-cluster-api-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^{{ $.branch }}$
+    path_alias: sigs.k8s.io/cluster-api
+    spec:
+      containers:
+      - image: {{ $.config.TestImage }}
+        args:
+        - runner.sh
+        - ./scripts/ci-e2e.sh
+        env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        - name: GINKGO_SKIP
+          value: "\\[Conformance\\]"
+        - name: KUBERNETES_VERSION_MANAGEMENT
+          value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+        - name: KUBERNETES_VERSION
+          value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+        - name: KUBERNETES_VERSION_UPGRADE_FROM
+          value: {{ index (index $.versions ((last $.config.Upgrades).From)) "k8sRelease" }}
+        - name: KUBERNETES_VERSION_UPGRADE_TO
+          value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 3000m
+            memory: 8Gi
+          limits:
+            cpu: 3000m
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-tab-name: capi-pr-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
+{{ end -}}
