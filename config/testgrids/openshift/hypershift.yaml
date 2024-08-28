@@ -1,182 +1,122 @@
 test_groups:
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-powervs
+  name: 4.18-powervs
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-kubevirt-conformance
+  name: 4.18-kubevirt-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-ovn-proxy-conformance
+  name: 4.18-aws-ovn-proxy-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-ovn-conformance-serial
+  name: 4.18-aws-ovn-conformance-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-ovn-conformance
+  name: 4.18-aws-ovn-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-ovn
+  name: 4.18-aws-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-powervs
   name: 4.17-powervs
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-kubevirt-mce-conformance
-  name: 4.17-kubevirt-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-kubevirt-conformance
   name: 4.17-kubevirt-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-ibmcloud-roks
-  name: 4.17-ibmcloud-roks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-ibmcloud-iks
-  name: 4.17-ibmcloud-iks
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.17-aws-ovn-proxy-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aws-ovn-mce-conformance
-  name: 4.17-aws-ovn-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aws-ovn-conformance-serial
   name: 4.17-aws-ovn-conformance-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aws-ovn-conformance
   name: 4.17-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aws-ovn
   name: 4.17-aws-ovn
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-agent-ovn-conformance
-  name: 4.17-agent-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-powervs
   name: 4.16-powervs
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-mce-conformance
-  name: 4.16-kubevirt-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-conformance
   name: 4.16-kubevirt-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-ibmcloud-roks
-  name: 4.16-ibmcloud-roks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-ibmcloud-iks
-  name: 4.16-ibmcloud-iks
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.16-aws-ovn-proxy-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-mce-conformance
-  name: 4.16-aws-ovn-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-conformance-serial
   name: 4.16-aws-ovn-conformance-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn-conformance
   name: 4.16-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-aws-ovn
   name: 4.16-aws-ovn
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-agent-ovn-conformance
-  name: 4.16-agent-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-powervs
   name: 4.15-powervs
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-kubevirt-mce-conformance
-  name: 4.15-kubevirt-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-kubevirt-conformance
   name: 4.15-kubevirt-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-ibmcloud-roks
-  name: 4.15-ibmcloud-roks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-ibmcloud-iks
-  name: 4.15-ibmcloud-iks
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.15-aws-ovn-proxy-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-mce-conformance
-  name: 4.15-aws-ovn-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-conformance-serial
   name: 4.15-aws-ovn-conformance-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn-conformance
   name: 4.15-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-aws-ovn
   name: 4.15-aws-ovn
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.15-periodics-e2e-agent-ovn-conformance
-  name: 4.15-agent-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-powervs
   name: 4.14-powervs
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-kubevirt-mce-conformance
-  name: 4.14-kubevirt-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-kubevirt-conformance
   name: 4.14-kubevirt-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-ibmcloud-roks
-  name: 4.14-ibmcloud-roks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-ibmcloud-iks
-  name: 4.14-ibmcloud-iks
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-proxy-conformance
   name: 4.14-aws-ovn-proxy-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-mce-conformance
-  name: 4.14-aws-ovn-mce-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-conformance-serial
   name: 4.14-aws-ovn-conformance-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn-conformance
   name: 4.14-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-aws-ovn
   name: 4.14-aws-ovn
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.14-periodics-e2e-agent-ovn-conformance
-  name: 4.14-agent-ovn-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-powervs
-  name: 4.13-powervs
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-kubevirt-mce-conformance
-  name: 4.13-kubevirt-mce-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-kubevirt-conformance
-  name: 4.13-kubevirt-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-ibmcloud-roks
-  name: 4.13-ibmcloud-roks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-ibmcloud-iks
-  name: 4.13-ibmcloud-iks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-proxy-conformance
-  name: 4.13-aws-ovn-proxy-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-mce-conformance
-  name: 4.13-aws-ovn-mce-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-conformance-serial
-  name: 4.13-aws-ovn-conformance-serial
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn-conformance
-  name: 4.13-aws-ovn-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-aws-ovn
-  name: 4.13-aws-ovn
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.13-periodics-e2e-agent-ovn-conformance
-  name: 4.13-agent-ovn-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-powervs
-  name: 4.12-powervs
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-kubevirt-mce-conformance
-  name: 4.12-kubevirt-mce-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-kubevirt-conformance
-  name: 4.12-kubevirt-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-ibmcloud-roks
-  name: 4.12-ibmcloud-roks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-ibmcloud-iks
-  name: 4.12-ibmcloud-iks
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-proxy-conformance
-  name: 4.12-aws-ovn-proxy-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-mce-conformance
-  name: 4.12-aws-ovn-mce-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-conformance-serial
-  name: 4.12-aws-ovn-conformance-serial
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn-conformance
-  name: 4.12-aws-ovn-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-aws-ovn
-  name: 4.12-aws-ovn
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.12-periodics-e2e-agent-ovn-conformance
-  name: 4.12-agent-ovn-conformance
 
 dashboards:
 - name: redhat-hypershift
   dashboard_tab:
+  - name: 4.18-powervs
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-powervs
+  - name: 4.18-kubevirt-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-kubevirt-conformance
+  - name: 4.18-aws-ovn-proxy-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aws-ovn-proxy-conformance
+  - name: 4.18-aws-ovn-conformance-serial
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aws-ovn-conformance-serial
+  - name: 4.18-aws-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aws-ovn-conformance
+  - name: 4.18-aws-ovn
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aws-ovn
   - name: 4.17-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.17-powervs
-  - name: 4.17-kubevirt-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.17-kubevirt-mce-conformance
   - name: 4.17-kubevirt-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.17-kubevirt-conformance
-  - name: 4.17-ibmcloud-roks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.17-ibmcloud-roks
-  - name: 4.17-ibmcloud-iks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.17-ibmcloud-iks
   - name: 4.17-aws-ovn-proxy-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.17-aws-ovn-proxy-conformance
-  - name: 4.17-aws-ovn-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.17-aws-ovn-mce-conformance
   - name: 4.17-aws-ovn-conformance-serial
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
@@ -195,54 +135,24 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.17-aws-ovn
-  - name: 4.17-agent-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.17-agent-ovn-conformance
   - name: 4.16-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.16-powervs
-  - name: 4.16-kubevirt-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.16-kubevirt-mce-conformance
   - name: 4.16-kubevirt-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.16-kubevirt-conformance
-  - name: 4.16-ibmcloud-roks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.16-ibmcloud-roks
-  - name: 4.16-ibmcloud-iks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.16-ibmcloud-iks
   - name: 4.16-aws-ovn-proxy-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.16-aws-ovn-proxy-conformance
-  - name: 4.16-aws-ovn-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.16-aws-ovn-mce-conformance
   - name: 4.16-aws-ovn-conformance-serial
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
@@ -261,54 +171,24 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.16-aws-ovn
-  - name: 4.16-agent-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.16-agent-ovn-conformance
   - name: 4.15-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.15-powervs
-  - name: 4.15-kubevirt-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.15-kubevirt-mce-conformance
   - name: 4.15-kubevirt-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.15-kubevirt-conformance
-  - name: 4.15-ibmcloud-roks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.15-ibmcloud-roks
-  - name: 4.15-ibmcloud-iks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.15-ibmcloud-iks
   - name: 4.15-aws-ovn-proxy-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.15-aws-ovn-proxy-conformance
-  - name: 4.15-aws-ovn-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.15-aws-ovn-mce-conformance
   - name: 4.15-aws-ovn-conformance-serial
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
@@ -327,54 +207,24 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.15-aws-ovn
-  - name: 4.15-agent-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.15-agent-ovn-conformance
   - name: 4.14-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.14-powervs
-  - name: 4.14-kubevirt-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.14-kubevirt-mce-conformance
   - name: 4.14-kubevirt-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.14-kubevirt-conformance
-  - name: 4.14-ibmcloud-roks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.14-ibmcloud-roks
-  - name: 4.14-ibmcloud-iks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.14-ibmcloud-iks
   - name: 4.14-aws-ovn-proxy-conformance
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.14-aws-ovn-proxy-conformance
-  - name: 4.14-aws-ovn-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.14-aws-ovn-mce-conformance
   - name: 4.14-aws-ovn-conformance-serial
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
@@ -393,141 +243,3 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.14-aws-ovn
-  - name: 4.14-agent-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.14-agent-ovn-conformance
-  - name: 4.13-powervs
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-powervs
-  - name: 4.13-kubevirt-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-kubevirt-mce-conformance
-  - name: 4.13-kubevirt-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-kubevirt-conformance
-  - name: 4.13-ibmcloud-roks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-ibmcloud-roks
-  - name: 4.13-ibmcloud-iks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-ibmcloud-iks
-  - name: 4.13-aws-ovn-proxy-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-aws-ovn-proxy-conformance
-  - name: 4.13-aws-ovn-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-aws-ovn-mce-conformance
-  - name: 4.13-aws-ovn-conformance-serial
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-aws-ovn-conformance-serial
-  - name: 4.13-aws-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-aws-ovn-conformance
-  - name: 4.13-aws-ovn
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-aws-ovn
-  - name: 4.13-agent-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.13-agent-ovn-conformance
-  - name: 4.12-powervs
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-powervs
-  - name: 4.12-kubevirt-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-kubevirt-mce-conformance
-  - name: 4.12-kubevirt-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-kubevirt-conformance
-  - name: 4.12-ibmcloud-roks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-ibmcloud-roks
-  - name: 4.12-ibmcloud-iks
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-ibmcloud-iks
-  - name: 4.12-aws-ovn-proxy-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-aws-ovn-proxy-conformance
-  - name: 4.12-aws-ovn-mce-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-aws-ovn-mce-conformance
-  - name: 4.12-aws-ovn-conformance-serial
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-aws-ovn-conformance-serial
-  - name: 4.12-aws-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-aws-ovn-conformance
-  - name: 4.12-aws-ovn
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-aws-ovn
-  - name: 4.12-agent-ovn-conformance
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: 4.12-agent-ovn-conformance
