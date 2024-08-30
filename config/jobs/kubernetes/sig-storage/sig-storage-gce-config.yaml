@@ -224,7 +224,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-create-test-group: 'true'
-  - name: pull-kubernetes-e2e-aws-storage-selinux
+  - name: pull-kubernetes-e2e-gce-storage-selinux
     cluster: k8s-infra-prow-build
     optional: true
     always_run: false
@@ -268,7 +268,8 @@ presubmits:
                 -- \
                 --ginkgo-args="--debug" \
                 --timeout=120m \
-                --skip-regex="\[Feature:SELinux\]" \
+                --focus-regex="\[Feature:SELinux\]" \
+                --skip-regex="\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
                 --use-built-binaries=true \
                 --parallel=1 # [Feature:SELinux] tests include serial ones
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
