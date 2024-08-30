@@ -20,7 +20,7 @@ postsubmits:
         containers:
           - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
             command:
-              - run.sh
+              - /run.sh
             args:
               # this is the project GCB will run in, which is the same as the GCR
               # images are pushed to.
