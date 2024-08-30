@@ -27,4 +27,5 @@ postsubmits:
               - --project=k8s-staging-images
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
