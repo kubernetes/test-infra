@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: sig-multicluster
+  dashboard_names:
+  - sig-multicluster-mcs-api
+
+dashboards:
+- name: sig-multicluster-mcs-api
