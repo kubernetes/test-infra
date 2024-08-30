@@ -179,7 +179,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost|\[sig-autoscaling\].\[Feature:HPA\]
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
@@ -340,7 +340,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost|\[sig-autoscaling\].\[Feature:HPA\]
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
