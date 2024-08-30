@@ -5,13 +5,13 @@ dashboard_groups:
     - sig-windows-1.28-release
     - sig-windows-1.29-release
     - sig-windows-1.30-release
+    - sig-windows-1.31-release
     - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-gce
     - sig-windows-networking
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
-    - sig-windows-soak-tests
     - sig-windows-experimental
 
 dashboards:
@@ -19,16 +19,12 @@ dashboards:
 - name: sig-windows-1.28-release
 - name: sig-windows-1.29-release
 - name: sig-windows-1.30-release
+- name: sig-windows-1.31-release
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-gce
 - name: sig-windows-push-images
 - name: sig-windows-experimental
-- name: sig-windows-soak-tests
-  dashboard_tab:
-    - name: soak-tests-capz-windows
-      description: Windows 2019 SOAK tests
-      test_group_name: sig-windows-soak-tests
 - name: sig-windows-networking
   dashboard_tab:
   - name: ltsc2022-containerd-flannel-sdnbridge-master
@@ -111,6 +107,3 @@ test_groups:
 - name: integration-containerd-windows-ltsc2022
   gcs_prefix: containerd-integration/logs/windows-ltsc2022
   disable_prowjob_analysis: true
-# Windows SOAK tests
-- name: sig-windows-soak-tests
-  gcs_prefix: sig-windows-soak-tests/logs/windows-capz
