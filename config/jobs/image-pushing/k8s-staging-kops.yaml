@@ -17,6 +17,14 @@ postsubmits:
         # Build tags also
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      reporter_config:
+        slack:
+          channel: "kops-dev"
+          job_states_to_report:
+          - failure
+          - aborted
+          - error
+          report_template: 'Postsubmit push to staging failed: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/kops-misc#kops-postsubmit-push-to-staging|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       spec:
         serviceAccountName: gcb-builder
         containers:
