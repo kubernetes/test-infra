@@ -40,7 +40,7 @@ query: |
         b.tests_failed tests_failed,
         b.passed passed
       from
-        `k8s-gubernator.build.all` AS b
+        `kubernetes-public.k8s_infra_kettle.all` AS b
       where
         b.started > timestamp_seconds(<LAST_DATA_TIME>)
         and started < timestamp_trunc(current_timestamp(), day)
