@@ -1118,7 +1118,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
-    serviceAccountName: prowjob-default-sa
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1228,9 +1228,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1248,6 +1246,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1298,9 +1297,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1318,6 +1315,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1375,9 +1373,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1395,6 +1391,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1446,9 +1443,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1461,6 +1456,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1509,9 +1505,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1529,6 +1523,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1582,9 +1577,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1602,6 +1595,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1658,9 +1652,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1678,6 +1670,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
@@ -1736,9 +1729,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-azure-capz-sa-cred: "true"
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -1756,6 +1747,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
+    serviceAccountName: azure
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
       command:
