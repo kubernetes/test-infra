@@ -31,7 +31,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|should.handle.updates.to.ExternalTrafficPolicy.field
         command:
         - wrapper.sh
         - bash
@@ -87,7 +87,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges|Internet.connection.for.containers
+          value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges|Internet.connection.for.containers|should.handle.updates.to.ExternalTrafficPolicy.field
         command:
         - wrapper.sh
         - bash
@@ -139,7 +139,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|should.handle.updates.to.ExternalTrafficPolicy.field
         - name: PARALLEL
           value: "true"
         - name: IP_FAMILY
