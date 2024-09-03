@@ -13,7 +13,7 @@ query: |
     select /* filter to jobs that ran this week */
       job,
       count(1) weekly_builds
-    from `k8s-gubernator.build.all`
+    from `kubernetes-public.k8s_infra_kettle.all`
     where
       started > timestamp_sub(current_timestamp(), interval 7 day)
     group by job
@@ -24,7 +24,7 @@ query: |
       job,
       date(min(started)) first_run,
       date(max(started)) latest_run
-    from `k8s-gubernator.build.all`
+    from `kubernetes-public.k8s_infra_kettle.all`
     group by job
   ) runs
   on jobs.job = runs.job
@@ -32,7 +32,7 @@ query: |
     select /* find the most recent time each job passed (may not be this week) */
       job,
       max(started) latest_pass
-    from `k8s-gubernator.build.all`
+    from `kubernetes-public.k8s_infra_kettle.all`
     where
       result = 'SUCCESS'
     group by job

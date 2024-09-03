@@ -43,7 +43,7 @@ query: |
           elapsed,
           REGEXP_EXTRACT(path, "/(\\d+)/") pr
         FROM
-          `k8s-gubernator.build.all`
+          `kubernetes-public.k8s_infra_kettle.all`
         WHERE
           REGEXP_CONTAINS(job, '^pr:')
           AND started > TIMESTAMP_SECONDS(<LAST_DATA_TIME>)

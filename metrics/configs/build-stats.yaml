@@ -13,7 +13,7 @@ query: |
     COUNT(started) invocations,
     countif(result = 'SUCCESS') passes
   FROM
-    `k8s-gubernator.build.all`
+    `kubernetes-public.k8s_infra_kettle.all`
   where
     started >= TIMESTAMP_SECONDS(<LAST_DATA_TIME>)
     and started < timestamp_trunc(current_timestamp(), day)

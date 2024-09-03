@@ -67,7 +67,7 @@ query: |
             test  /* repeated tuple of tests */
           from (
                 select *,
-                       ifnull(b.repos, (select i.value from b.metadata i where i.key = 'repos')) repo from `k8s-gubernator.build.week` as b
+                       ifnull(b.repos, (select i.value from b.metadata i where i.key = 'repos')) repo from `kubernetes-public.k8s_infra_kettle.week` as b
           ) as t
           where
             datetime(started) > datetime_sub(current_datetime(), interval 7 DAY)
