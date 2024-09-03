@@ -74,6 +74,7 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
+  - kubernetes-sigs/etcd-manager
   - kubernetes-sigs/external-dns
   - kubernetes-sigs/cluster-api-provider-openstack
   require_self_approval: true
@@ -234,6 +235,7 @@ lgtm:
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/external-dns
+  - kubernetes-sigs/etcd-manager
   - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
@@ -1414,6 +1416,11 @@ plugins:
     - mergecommitblocker
     - override
     - branchcleaner
+
+  kubernetes-sigs/etcd-manager:
+    plugins:
+    - mergecommitblocker
+    - override
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
     plugins:

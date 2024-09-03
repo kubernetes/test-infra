@@ -548,6 +548,13 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        etcd-manager:
+          required_status_checks:
+            contexts:
+            - build
+            - test
+            - test-backuprestore
+            - test-upgradedowngrade
         external-dns:
           branches:
             gh-pages:
