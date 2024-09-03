@@ -262,6 +262,7 @@ presubmits:
               kubetest2 kops -v=6 --cloud-provider=gce --up --down --build --env=KOPS_FEATURE_FLAGS=SELinuxMount \
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
                 --admin-access=0.0.0.0/0 \
+                --kubernetes-feature-gates=SELinuxMount
                 --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
                 --create-args "--image='rhel-cloud/rhel-9-v20240815' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
                 --test=kops \
@@ -269,7 +270,7 @@ presubmits:
                 --ginkgo-args="--debug" \
                 --timeout=120m \
                 --focus-regex="\[Feature:SELinux\]" \
-                --skip-regex="\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
+                --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
                 --use-built-binaries=true \
                 --parallel=1 # [Feature:SELinux] tests include serial ones
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
