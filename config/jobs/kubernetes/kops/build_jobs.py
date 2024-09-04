@@ -430,16 +430,14 @@ distro_options = [
 ]
 
 k8s_versions = [
-    "1.25",
-    "1.26",
-    "1.27",
     "1.28",
     "1.29",
+    "1.30",
+    "1.31",
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.28", # TODO: Remove around kOps 1.30.0 release
     "1.29",
     "1.30",
 ]
