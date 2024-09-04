@@ -14,10 +14,9 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
           command:
             - runner.sh
-            - bash
           args:
-            - -c
-            - 'make test'
+            - make
+            - test
           resources:
             requests:
               memory: 4Gi
