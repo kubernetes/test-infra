@@ -131,8 +131,8 @@ data:
         - do-not-merge/hold
         - do-not-merge/work-in-progress
         - do-not-merge/invalid-owners-file
-        repos:
-        - $GITHUB_REPO
+        orgs:
+        - $GITHUB_ORG
 
     decorate_all_jobs: true
     periodics:
