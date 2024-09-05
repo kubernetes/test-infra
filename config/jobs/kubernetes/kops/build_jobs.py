@@ -752,17 +752,6 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-updown",
-                   k8s_version="stable",
-                   distro="u2204arm64",
-                   networking="calico",
-                   kops_channel="alpha",
-                   kops_version=marker_updown_green("master"),
-                   publish_version_marker="gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt",
-                   runs_per_day=24,
-                   focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
-                   extra_dashboards=["kops-misc"]),
-
         build_test(name_override="kops-aws-aws-load-balancer-controller",
                    cloud="aws",
                    networking="cilium",
