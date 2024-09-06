@@ -1,44 +1,5 @@
 presubmits:
   kubernetes/autoscaler:
-  - name: pull-cluster-autoscaler-e2e-azure
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-      testgrid-tab-name: cloudprovider-azure
-    always_run: false
-    optional: true
-    run_if_changed: 'cluster-autoscaler\/cloudprovider\/azure'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
-    decorate: true
-    decoration_config:
-      timeout: 5h
-    path_alias: k8s.io/autoscaler
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.16
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-1.29
-        # This job is being phased out in favor of pull-cluster-autoscaler-e2e-azure-master. It always
-        # passes in order not to block PRs where the previous version of this job failed. This job can
-        # be removed when it is passing on all open PRs.
-        command:
-          - runner.sh
-          - "true"
-        resources:
-          requests:
-            cpu: 1
-            memory: "1Gi"
-          limits:
-            cpu: 1
-            memory: "1Gi"
   - name: pull-cluster-autoscaler-e2e-azure-master
     cluster: eks-prow-build-cluster
     annotations:
@@ -82,6 +43,61 @@ presubmits:
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
             value: "1.30" # latest available in AKS
+          - name: CLUSTER_TEMPLATE
+            value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+            memory: "9Gi"
+          limits:
+            cpu: 4
+            memory: "9Gi"
+  - name: pull-cluster-autoscaler-e2e-azure-1-31
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: cloudprovider-azure-1.31
+    always_run: false
+    optional: true
+    run_if_changed: 'cluster-autoscaler\/cloudprovider\/azure'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    decorate: true
+    decoration_config:
+      timeout: 5h
+    path_alias: k8s.io/autoscaler
+    branches:
+      - cluster-autoscaler-release-1.31
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.16
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-1.31
+        command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+        args:
+          - bash
+          - -c
+          - |
+            cd ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test
+            make test-e2e TAG=$(git rev-parse --short HEAD)
+        env:
+          # CAPZ config
+          - name: ADDITIONAL_ASO_CRDS
+            value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
+          - name: KUBERNETES_VERSION
+            value: "1.30" # 1.31 not yet available in AKS
           - name: CLUSTER_TEMPLATE
             value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
         # docker-in-docker needs privileged mode
