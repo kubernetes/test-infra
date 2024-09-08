@@ -24,8 +24,8 @@ presubmits:
         env:
         - name: BUILD_TYPE
           value: docker
-        - name: FOCUS
-          value: \[Conformance\]|DualStack
+        - name: LABEL_FILTER
+          value: "(Conformance || sig-network ) && Feature: isSubsetOf IPv6DualStack  && !Feature: containsAny {Alpha, Beta} && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
