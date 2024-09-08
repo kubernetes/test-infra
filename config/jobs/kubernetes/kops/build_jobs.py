@@ -540,7 +540,7 @@ def generate_misc():
         # Test Cilium against ci k8s test suite
         build_test(name_override="kops-aws-cni-cilium-k8s-ci",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="ci",
                    networking="cilium",
                    runs_per_day=1,
@@ -576,7 +576,7 @@ def generate_misc():
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="calico",
                    runs_per_day=3,
@@ -590,7 +590,7 @@ def generate_misc():
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-aws-cni-cilium-ipv6",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="cilium",
                    runs_per_day=3,
@@ -630,7 +630,7 @@ def generate_misc():
         # A special test for disabling IRSA
         build_test(name_override="kops-scenario-no-irsa",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    runs_per_day=3,
                    irsa=False,
@@ -641,7 +641,7 @@ def generate_misc():
         # A special test for warm pool
         build_test(name_override="kops-warm-pool",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    runs_per_day=3,
                    networking="cilium",
@@ -653,7 +653,7 @@ def generate_misc():
         # A special test for private topology
         build_test(name_override="kops-aws-private",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    runs_per_day=3,
                    networking="calico",
@@ -664,7 +664,7 @@ def generate_misc():
 
         build_test(name_override="kops-scenario-terraform",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    runs_per_day=1,
                    terraform_version="1.5.5",
@@ -675,7 +675,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
         build_test(name_override="kops-scenario-ipv6-terraform",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    runs_per_day=1,
                    terraform_version="1.5.5",
@@ -690,7 +690,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-ha-euwest1",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="calico",
                    kops_channel="alpha",
@@ -704,7 +704,7 @@ def generate_misc():
         build_test(name_override="kops-aws-arm64-release",
                    cloud="aws",
                    k8s_version="latest",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -716,7 +716,7 @@ def generate_misc():
         build_test(name_override="kops-aws-arm64-ci",
                    cloud="aws",
                    k8s_version="ci",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -728,7 +728,7 @@ def generate_misc():
         build_test(name_override="kops-aws-arm64-conformance",
                    cloud="aws",
                    k8s_version="ci",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -742,7 +742,7 @@ def generate_misc():
         build_test(name_override="kops-aws-amd64-conformance",
                    cloud="aws",
                    k8s_version="ci",
-                   distro='u2204',
+                   distro='u2404',
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -800,7 +800,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-external-dns",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="cilium",
                    kops_channel="alpha",
@@ -813,7 +813,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-ipv6-external-dns",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="cilium",
                    kops_channel="alpha",
@@ -828,7 +828,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-apiserver-nodes",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    runs_per_day=3,
                    template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
@@ -837,7 +837,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-karpenter",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="cilium",
                    kops_channel="alpha",
@@ -852,7 +852,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-ipv6-karpenter",
                    cloud="aws",
-                   distro="u2204arm64",
+                   distro="u2404arm64",
                    k8s_version="stable",
                    networking="cilium",
                    kops_channel="alpha",
@@ -1335,7 +1335,7 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
-                distro="u2204arm64",
+                distro="u2404arm64",
                 extra_flags=["--zones=eu-central-1a",
                              "--node-size=t4g.large",
                              "--master-size=t4g.large"],
@@ -1427,7 +1427,7 @@ def generate_network_plugins():
             k8s_version = 'ci'
         results.append(
             build_test(
-                distro='u2204',
+                distro='u2404',
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -1539,7 +1539,7 @@ def generate_upgrades():
     results.append(
         build_test(name_override='kops-aws-upgrade-bug16276-calico',
                    cluster_name='bug16276-calico.k8s.local',
-                   distro='u2204',
+                   distro='u2404',
                    networking='calico',
                    k8s_version='stable',
                    kops_channel='alpha',
@@ -1819,7 +1819,7 @@ def generate_presubmits_network_plugins():
             optional = True
         results.append(
             presubmit_test(
-                distro='u2204arm64',
+                distro='u2404arm64',
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
@@ -1837,7 +1837,7 @@ def generate_presubmits_network_plugins():
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
-                    distro='u2204arm64',
+                    distro='u2404arm64',
                     tab_name=f"e2e-{plugin}-ipv6",
                     networking=networking_arg,
                     extra_flags=['--ipv6',
@@ -1859,7 +1859,7 @@ def generate_presubmits_network_plugins():
 def generate_presubmits_e2e():
     jobs = [
         presubmit_test(
-            distro='u2204arm64',
+            distro='u2404arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci',
@@ -1869,7 +1869,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
-            distro='u2204arm64',
+            distro='u2404arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci-ha',
@@ -1975,7 +1975,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-cloud-controller-manager",
             cloud="aws",
-            distro="u2204",
+            distro="u2404",
             k8s_version="ci",
             extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
@@ -1993,7 +1993,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-metrics-server",
             cloud="aws",
-            distro="u2204",
+            distro="u2404",
             networking="calico",
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
@@ -2002,7 +2002,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-pod-identity-webhook",
             cloud="aws",
-            distro="u2204",
+            distro="u2404",
             networking="calico",
             scenario="podidentitywebhook",
             tab_name="pull-kops-e2e-aws-pod-identity-webhook",
@@ -2031,7 +2031,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-node-local-dns",
             cloud="aws",
-            distro='u2204arm64',
+            distro='u2404arm64',
             extra_flags=[
                 '--set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true'
             ],
@@ -2047,7 +2047,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-arm64",
             cloud="aws",
-            distro="u2204arm64",
+            distro="u2404arm64",
             networking="calico",
             extra_flags=["--zones=eu-central-1a",
                          "--node-size=m6g.large",
@@ -2057,7 +2057,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-dns-none",
             cloud="aws",
-            distro="u2204arm64",
+            distro="u2404arm64",
             networking="calico",
             extra_flags=["--dns=none"],
         ),
@@ -2072,7 +2072,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-nlb",
             cloud="aws",
-            distro="u2204arm64",
+            distro="u2404arm64",
             networking="calico",
             extra_flags=[
                 "--api-loadbalancer-type=public",
@@ -2083,7 +2083,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-terraform",
             cloud="aws",
-            distro="u2204arm64",
+            distro="u2404arm64",
             terraform_version="1.5.5",
             extra_flags=[
                 "--dns=public",
@@ -2092,7 +2092,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-ipv6-terraform",
             cloud="aws",
-            distro="u2204arm64",
+            distro="u2404arm64",
             terraform_version="1.5.5",
             extra_flags=[
                 '--ipv6',
@@ -2139,7 +2139,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            distro='u2204arm64',
+            distro='u2404arm64',
             name="pull-kops-e2e-aws-karpenter",
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
@@ -2152,7 +2152,7 @@ def generate_presubmits_e2e():
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
         ),
         presubmit_test(
-            distro='u2204arm64',
+            distro='u2404arm64',
             name="pull-kops-e2e-aws-ipv6-karpenter",
             #run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",

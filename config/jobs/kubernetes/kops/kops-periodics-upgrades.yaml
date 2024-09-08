@@ -3068,7 +3068,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-kci-kolatest-many-addons
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-bug16276-calico
   cluster: k8s-infra-kops-prow-build
   cron: '16 3-23/8 * * *'
@@ -3129,12 +3129,12 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-bug16276-calico
 
