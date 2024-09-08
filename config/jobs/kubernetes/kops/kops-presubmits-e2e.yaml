@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-ci
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -64,7 +64,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -73,7 +73,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-containerd-ci
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-ci-ha
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -105,7 +105,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=calico --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -134,7 +134,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -677,7 +677,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-cloud-controller-manager
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -709,7 +709,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240830' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20240906' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -737,7 +737,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/extra_flags: --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -803,7 +803,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-load-balancer-controller
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-metrics-server
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -852,7 +852,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
@@ -860,7 +860,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-metrics-server
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-pod-identity-webhook
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -909,7 +909,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
@@ -1051,7 +1051,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-ipv6-external-dns
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-node-local-dns
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1083,7 +1083,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=cilium --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=cilium --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1109,7 +1109,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1188,7 +1188,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-apiserver-nodes
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-arm64
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1220,7 +1220,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1246,7 +1246,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1255,7 +1255,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-arm64
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--dns=none --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--dns=none --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-dns-none
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1287,7 +1287,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=calico --dns=none --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --dns=none --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1313,7 +1313,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --dns=none --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1388,7 +1388,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-gce-dns-none
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-nlb
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1420,7 +1420,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=calico --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1446,7 +1446,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1455,7 +1455,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-nlb
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--dns=public --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--dns=public --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-terraform
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1487,7 +1487,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=cilium --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=cilium --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --terraform-version=1.5.5 \
@@ -1514,7 +1514,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --dns=public --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1523,7 +1523,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-terraform
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-ipv6-terraform
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1555,7 +1555,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=cilium --ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=cilium --ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --terraform-version=1.5.5 \
@@ -1582,7 +1582,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --ipv6 --bastion --dns=public --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1859,7 +1859,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-1-26
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-karpenter
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1892,7 +1892,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1920,7 +1920,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -1929,7 +1929,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-karpenter
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-ipv6-karpenter
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -1961,7 +1961,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240830' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1989,7 +1989,7 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204arm64
+      test.kops.k8s.io/distro: u2404arm64
       test.kops.k8s.io/extra_flags: --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
