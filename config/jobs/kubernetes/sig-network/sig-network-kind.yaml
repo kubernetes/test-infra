@@ -195,7 +195,7 @@ presubmits:
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: LABEL_FILTER
-          value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer} && !Disruptive && !Flaky"
+          value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
