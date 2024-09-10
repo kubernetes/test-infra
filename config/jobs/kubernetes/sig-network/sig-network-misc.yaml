@@ -112,7 +112,8 @@ presubmits:
         - --provider=gce
         # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
-        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Alpha|Beta|Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|SCTPConnectivity)\]|DualStack|GCE|Disruptive|Serial|SNAT|LoadBalancer|ESIPP
+        - >
+          --test_args=--ginkgo.skip=GCE|Disruptive|Serial|SNAT --ginkgo.label-filter='(sig-network || Conformance || Feature: containsAny {NetworkPolicy, NetworkPolicyEndPort} ) && !Feature: containsAny {Alpha, Beta, Example, Federation, IPv6DualStack, LoadBalancer, Networking-IPv6, PerformanceDNS, SCTPConnectivity, KubeProxyDaemonSetMigration}'
         - --timeout=100m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         resources:
