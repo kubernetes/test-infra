@@ -62,3 +62,163 @@ presubmits:
           requests:
             cpu: 1
             memory: 4Gi
+  - name: pull-gateway-api-crds-validation-1
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: crds-validation-1
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - test.crds-validation
+          - VERSION=1
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+  - name: pull-gateway-api-crds-validation-2
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: crds-validation-2
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - test.crds-validation
+          - VERSION=2
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+  - name: pull-gateway-api-crds-validation-3
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: crds-validation-3
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - test.crds-validation
+          - VERSION=3
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+  - name: pull-gateway-api-crds-validation-4
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: crds-validation-4
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - test.crds-validation
+          - VERSION=4
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+  - name: pull-gateway-api-crds-validation-5
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: crds-validation-5
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - test.crds-validation
+          - VERSION=5
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
