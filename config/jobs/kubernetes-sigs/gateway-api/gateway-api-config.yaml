@@ -45,20 +45,20 @@ presubmits:
     skip_report: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
-          command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
-            - runner.sh
-          args:
-            - make
-            - test
-          # docker-in-docker needs privileged mode.
-          securityContext:
-            privileged: true
-          resources:
-            limits:
-              cpu: 1
-              memory: 4Gi
-            requests:
-              cpu: 1
-              memory: 4Gi
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - test
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
