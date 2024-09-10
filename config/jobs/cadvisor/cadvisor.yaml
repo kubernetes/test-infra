@@ -39,7 +39,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         resources:
           limits:
             cpu: 4
@@ -89,7 +89,7 @@ periodics:
       path_alias: github.com/google/cadvisor
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       resources:
         limits:
           cpu: 4
