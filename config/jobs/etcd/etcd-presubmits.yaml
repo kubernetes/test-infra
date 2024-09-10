@@ -170,10 +170,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "1Gi"
+            memory: "4Gi"
           limits:
             cpu: "4"
-            memory: "1Gi"
+            memory: "4Gi"
 
   - name: pull-etcd-e2e-amd64
     cluster: eks-prow-build-cluster
