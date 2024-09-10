@@ -10,7 +10,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-build
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
