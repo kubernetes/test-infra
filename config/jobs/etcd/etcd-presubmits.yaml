@@ -354,7 +354,6 @@ presubmits:
 
   - name: pull-etcd-robustness-amd64
     cluster: k8s-infra-prow-build
-    optional: true # remove this once the job is green
     always_run: true
     branches:
       - main
@@ -401,7 +400,6 @@ presubmits:
 
   - name: pull-etcd-robustness-arm64
     cluster: k8s-infra-prow-build
-    optional: true # remove this once the job is green
     always_run: true
     branches:
       - main
