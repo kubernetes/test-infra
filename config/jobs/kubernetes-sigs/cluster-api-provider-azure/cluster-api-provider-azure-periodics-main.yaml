@@ -89,7 +89,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 12h # TODO: increase this to 48h when we're confident it's stable
+  interval: 2h # TODO: increase this to 48h when we're confident it's stable
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
