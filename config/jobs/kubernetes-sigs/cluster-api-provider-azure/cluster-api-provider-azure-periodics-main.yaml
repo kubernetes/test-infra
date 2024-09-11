@@ -119,7 +119,7 @@ periodics:
         - name: CONFORMANCE_FLAVOR
           value: conformance-ci-artifacts-dra
         - name: KUBETEST_CONF_PATH
-          value: ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/test/e2e/data/kubetest/conformance-dra-ginkgo-v2.yaml
+          value: ${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-dra-ginkgo-v2.yaml
         - name: KUBERNETES_VERSION
           value: latest
         # docker-in-docker needs privileged mode
