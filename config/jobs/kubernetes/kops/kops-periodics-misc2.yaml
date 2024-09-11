@@ -2872,7 +2872,7 @@ periodics:
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Disruptive\]" \
-          --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
+          --skip-regex="\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]|\[sig-cloud-provider-gcp\]" \
           --parallel=1
       env:
       - name: KUBE_SSH_KEY_PATH

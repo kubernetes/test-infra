@@ -1150,7 +1150,7 @@ def generate_misc():
                        "--gce-service-account=default",
                    ],
                    focus_regex=r'\[Disruptive\]',
-                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]',
+                   skip_regex=r'\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]|\[sig-cloud-provider-gcp\]',
                    test_timeout_minutes=600,
                    test_parallelism=1, # serial tests
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
