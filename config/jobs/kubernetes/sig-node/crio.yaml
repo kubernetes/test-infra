@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -33,7 +33,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -60,7 +60,7 @@ periodics:
 #     preset-k8s-ssh: "true"
 #   spec:
 #     containers:
-#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
 #       args:
 #       - --root=/go/src
 #       - --repo=k8s.io/kubernetes
@@ -76,7 +76,7 @@ periodics:
 #       - --test_args=--nodes=8 --focus="\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]" --skip="\[Flaky\]|\[Serial\]"
 #       - --runtime-config=api/all=true
 #       - --timeout=65m
-#       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+#       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
 #       env:
 #       - name: GOPATH
 #         value: /go
@@ -108,7 +108,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -121,7 +121,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -160,7 +160,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -173,7 +173,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[NodeFeature:NodeSwap\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
       - name: GOPATH
         value: /go
@@ -212,7 +212,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -225,7 +225,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Flaky\]"
       - --timeout=60m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -264,7 +264,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -277,7 +277,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -316,7 +316,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -329,7 +329,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
       - name: GOPATH
         value: /go
@@ -368,7 +368,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -381,7 +381,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]" --timeout=300m
       - --timeout=300m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
       - name: GOPATH
         value: /go
@@ -420,7 +420,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -433,7 +433,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]" --timeout=300m
       - --timeout=300m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
       - name: GOPATH
         value: /go
@@ -472,7 +472,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -485,7 +485,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=1 --focus="Node Performance Testing"
       - --timeout=60m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-performance.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-performance.yaml
       env:
       - name: GOPATH
         value: /go
@@ -524,7 +524,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -537,7 +537,7 @@ periodics:
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
-      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
       - name: GOPATH
         value: /go
@@ -576,7 +576,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -589,7 +589,7 @@ periodics:
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]"
           - --timeout=90m
-          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-resource-managers.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-resource-managers.yaml
         env:
           - name: GOPATH
             value: /go
@@ -628,7 +628,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -641,7 +641,7 @@ periodics:
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]"
           - --timeout=90m
-          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-resource-managers.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-resource-managers.yaml
         env:
           - name: GOPATH
             value: /go
@@ -680,7 +680,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -693,7 +693,7 @@ periodics:
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
           - --timeout=90m
-          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-hugepages.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-hugepages.yaml
         env:
           - name: GOPATH
             value: /go
@@ -732,7 +732,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -745,7 +745,7 @@ periodics:
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
           - --timeout=90m
-          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-hugepages.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-hugepages.yaml
         env:
           - name: GOPATH
             value: /go
@@ -784,7 +784,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -805,7 +805,7 @@ periodics:
           - --test_args=--nodes=8 --focus="\[NodeConformance\]"
             --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
           - --timeout=180m
-          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-evented-pleg.yaml
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-evented-pleg.yaml
         env:
           - name: GOPATH
             value: /go
@@ -849,7 +849,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -862,7 +862,7 @@ periodics:
         - --provider=gce
         - --test_args=--focus="\[NodeSpecialFeature:CDI\]" --skip="\[Flaky\]"
         - --timeout=60m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"

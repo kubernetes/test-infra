@@ -275,3 +275,62 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 {{ end -}}
+{{ if eq $.branch "main" }}
+- name: periodic-cluster-api-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
+  cluster: eks-prow-build-cluster
+  interval: {{ $.config.Interval }}
+  decorate: true
+  decoration_config:
+    timeout: 180m
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: {{ $.branch }}
+    path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+      - image: {{ $.config.TestImage }}
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+            # enable IPV6 in bootstrap image
+          - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+            value: "true"
+          - name: GINKGO_SKIP
+            value: "\\[Conformance\\]"
+          - name: KUBERNETES_VERSION_MANAGEMENT
+            value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+          - name: KUBERNETES_VERSION
+            value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: {{ index (index $.versions ((last $.config.Upgrades).From)) "k8sRelease" }}
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 3000m
+            memory: 8Gi
+          limits:
+            cpu: 3000m
+            memory: 8Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-tab-name: capi-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+{{ end -}}

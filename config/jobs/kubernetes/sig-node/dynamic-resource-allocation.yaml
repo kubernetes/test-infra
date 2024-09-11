@@ -22,7 +22,7 @@ periodics:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -71,7 +71,7 @@ periodics:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -122,7 +122,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -135,7 +135,7 @@ periodics:
         - --provider=gce
         - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf DynamicResourceAllocation && !Flaky"'
         - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -175,7 +175,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -188,7 +188,7 @@ periodics:
         - --provider=gce
         - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf DynamicResourceAllocation && !Flaky"'
         - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-serial.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -228,7 +228,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -241,7 +241,7 @@ periodics:
         - --provider=gce
         - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf DynamicResourceAllocation && !Flaky"'
         - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -280,7 +280,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -293,7 +293,7 @@ periodics:
         - --provider=gce
         - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf DynamicResourceAllocation && !Flaky"'
         - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-serial.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -333,7 +333,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

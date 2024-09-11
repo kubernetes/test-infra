@@ -12,7 +12,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -41,7 +41,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -67,7 +67,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -94,7 +94,7 @@ presubmits:
       timeout: 30m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -126,7 +126,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:

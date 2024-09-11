@@ -20,7 +20,7 @@ metadata:
   labels:
     app: crier
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: crier

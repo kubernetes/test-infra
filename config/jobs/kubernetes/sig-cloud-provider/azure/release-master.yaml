@@ -1,0 +1,290 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-capz-azure-disk
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master # TODO(releng): Remove once repo default branch has been renamed
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.16
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: azuredisk-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              make e2e-test
+          env:
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
+              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 4
+              memory: 8Gi
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-azure-disk-vmss
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master # TODO(releng): Remove once repo default branch has been renamed
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.16
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: azuredisk-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              make e2e-test
+          env:
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
+              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+            - name: EXP_MACHINE_POOL # CAPZ config
+              value: "true"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 4
+              memory: 8Gi
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-vmss
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-azure-file
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master # TODO(releng): Remove once repo default branch has been renamed
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.16
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: azurefile-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              kubectl apply -f templates/addons/azurefile-role.yaml &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              make e2e-test
+          env:
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
+              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 4
+              memory: 8Gi
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-file
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-azure-file-vmss
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master # TODO(releng): Remove once repo default branch has been renamed
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.16
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: azurefile-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              kubectl apply -f templates/addons/azurefile-role.yaml &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              make e2e-test
+          env:
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
+              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+            - name: EXP_MACHINE_POOL # CAPZ config
+              value: "true"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 4
+              memory: 8Gi
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-file-vmss
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-conformance
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master # TODO(releng): Remove once repo default branch has been renamed
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.16
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+        command:
+        - runner.sh
+        - ./scripts/ci-conformance.sh
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        env:
+        - name: KUBETEST_CONF_PATH
+          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
+        - name: CONFORMANCE_NODES
+          value: "25"
+    annotations:
+      testgrid-dashboards: provider-azure-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-num-columns-recent: '30'

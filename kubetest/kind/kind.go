@@ -235,7 +235,7 @@ func (d *Deployer) Build() error {
 		buildNodeImage = kindNodeImageLatest
 	}
 
-	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel, "--kube-root=" + d.importPathK8s}
+	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel}
 	if buildNodeImage != "" {
 		args = append(args, "--image="+buildNodeImage)
 		// override user-specified node image
@@ -246,6 +246,7 @@ func (d *Deployer) Build() error {
 	}
 
 	// Build the node image (including kubernetes)
+	args = append(args, d.importPathK8s)
 	cmd := exec.Command("kind", args...)
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err

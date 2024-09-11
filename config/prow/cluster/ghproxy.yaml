@@ -45,7 +45,7 @@ spec:
   selector:
     matchLabels:
       app: ghproxy
-  replicas: 1  # TODO(fejta): this should be HA
+  replicas: 0  # TODO(fejta): this should be HA
   template:
     metadata:
       labels:

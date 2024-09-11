@@ -9,7 +9,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - hack/pull-security-profiles-operator-build
         resources:
@@ -29,7 +29,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - hack/pull-security-profiles-operator-verify
         resources:
@@ -49,7 +49,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - hack/pull-security-profiles-operator-test-unit
         resources:
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -103,7 +103,7 @@ presubmits:
       hostNetwork: true
       hostPID: true
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         securityContext:
           privileged: true  # for dind
         resources:

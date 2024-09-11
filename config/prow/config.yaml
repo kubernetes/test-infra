@@ -54,7 +54,7 @@ sinker:
 
 deck:
   spyglass:
-    announcement: "We're migrating Prow on Aug 21! Expect CI disruption and avoid releases that week. Updates on <a href='https://groups.google.com/a/kubernetes.io/g/dev/c/qzNYpcN5la4'>groups/kubernetes.io/dev</a>"
+    announcement: "Prow has been successfully migrated to community Infrastructure on the 22nd of August. Updates on <a href='https://groups.google.com/a/kubernetes.io/g/dev/c/qzNYpcN5la4'>groups/kubernetes.io/dev</a>"
     size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
@@ -69,10 +69,6 @@ deck:
     - lens:
         name: buildlog
         config:
-          highlighter:
-            endpoint: http://halogen.default.svc.cluster.local
-            pin: true
-            auto: false
           highlight_regexes:
           - Automatic merge failed
           - cannot convert.+to type
@@ -189,28 +185,6 @@ deck:
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
-
-managed_webhooks:
-  # This has to be true if any of the managed repo/org is using the legacy global token that is manually created.
-  respect_legacy_global_token: true
-  # Config for orgs and repos that have been onboarded to this Prow instance.
-  org_repo_config:
-    kubernetes:
-      token_created_after: 2020-08-12T00:00:00Z
-    kubernetes-client:
-      token_created_after: 2020-07-24T00:00:00Z
-    kubernetes-csi:
-      token_created_after: 2020-08-12T00:00:00Z
-    kubernetes-security:
-      token_created_after: 2021-05-19T00:00:00Z
-    kubernetes-sigs:
-      token_created_after: 2020-08-12T00:00:00Z
-    containerd/containerd:
-      token_created_after: 2020-09-17T00:00:00Z
-    kubernetes-sigs/apisnoop:
-      token_created_after: 2020-09-22T00:00:00Z
-    etcd-io:
-      token_created_after: 2023-11-13T00:00:00Z
 
 slack_reporter_configs:
   '*':
@@ -515,6 +489,10 @@ branch-protection:
         - "^dependabot/" # don't protect branches created by dependabot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        apisnoop:
+          branches:
+            gh-pages:
+              protect: false
         aws-ebs-csi-driver:
           branches:
             gh-pages:
@@ -570,6 +548,13 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        etcd-manager:
+          required_status_checks:
+            contexts:
+            - build
+            - test
+            - test-backuprestore
+            - test-upgradedowngrade
         external-dns:
           branches:
             gh-pages:
@@ -701,32 +686,6 @@ tide:
     - do-not-merge/work-in-progress
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-      - master
-      - release-1.31
-    labels:
-      - lgtm
-      - approved
-      - "cncf-cla: yes"
-    missingLabels:
-      - do-not-merge
-      - do-not-merge/blocked-paths
-      - do-not-merge/cherry-pick-not-approved
-      - do-not-merge/contains-merge-commits
-      - do-not-merge/hold
-      - do-not-merge/invalid-commit-message
-      - do-not-merge/invalid-owners-file
-      - do-not-merge/needs-kind
-      - do-not-merge/needs-sig
-      - do-not-merge/release-note-label-needed
-      - do-not-merge/work-in-progress
-      - needs-rebase
-  - repos:
-      - kubernetes/kubernetes
-    milestone: v1.31
-    includedBranches:
-      - master
-      - release-1.31
     labels:
     - lgtm
     - approved
@@ -815,6 +774,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
+    kubernetes-sigs/jobset: squash
     kubernetes-sigs/karpenter: squash
     kubernetes-sigs/kernel-module-management: rebase
     kubernetes-sigs/krew-index: squash
@@ -858,10 +818,6 @@ tide:
   - labels: [ "kind/flake", "priority/critical-urgent" ]
   - labels: [ "kind/failing-test", "priority/critical-urgent" ]
   - labels: [ "kind/bug", "priority/critical-urgent" ]
-
-push_gateway:
-  endpoint: pushgateway
-  serve_metrics: true
 
 github_reporter:
   job_types_to_report:

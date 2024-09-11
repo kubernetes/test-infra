@@ -14,7 +14,7 @@ query: |
   select /* find the most recent time each job passed (may not be this week) */
     job,
     max(started) latest_pass
-  from `k8s-gubernator.build.all`
+  from `kubernetes-public.k8s_infra_kettle.all`
   where
     result = 'SUCCESS'
   group by job

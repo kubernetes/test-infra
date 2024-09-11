@@ -13,7 +13,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240909-d870e42d3d
             command:
               - /run.sh
             args:
@@ -35,7 +35,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240725-9fc4a08b13
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240909-d870e42d3d
             command:
               - /run.sh
             args:
@@ -44,3 +44,26 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
               - --env-passthrough=PULL_BASE_REF
               - apps/snoopdb
+  kubernetes-sigs/verify-conformance:
+    - name: post-verify-conformance-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: conformance-apisnoop, sig-k8s-infra-gcb
+        testgrid-tab-name: verify-conformance-image
+        testgrid-alert-email: apisnoop@ii.coop
+        description: Builds the verify-conformance image
+      decorate: true
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240909-d870e42d3d
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-apisnoop
+              - --scratch-bucket=gs://k8s-staging-apisnoop-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

@@ -24,29 +24,29 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.27
-1.28
 1.29
+1.30
+1.31
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.27
-1.28
 1.29
+1.30
+1.31
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.29"
+experimental_k8s_version="1.31"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.28"
+latest_stable_k8s_version="1.30"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.12.1"
+hostpath_driver_version="v1.15.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here

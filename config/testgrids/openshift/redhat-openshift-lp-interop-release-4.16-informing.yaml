@@ -100,33 +100,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-interop-amq-streams-2-7
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-interop-amq-streams-2-7
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-ansible-tower-qa-devel-ocp4.16-lp-interop-aap-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -162,60 +135,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.16-lp-interop-cost-management-interop-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-interop-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-interop-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-xp-interop-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-xp-interop-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -397,33 +316,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-redhat-developer-gitops-operator-v1.12-gitops-ocp4.16-lp-interop-redhat-openshift-gitops-interop-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-redhat-developer-gitops-operator-v1.12-gitops-ocp4.16-lp-interop-redhat-openshift-gitops-interop-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.16-acceptance-lp-interop
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -432,33 +324,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.16-acceptance-lp-interop
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.16-lp-interop-amq-broker-interop-aws
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.16-lp-interop-amq-broker-interop-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -548,16 +413,10 @@ test_groups:
   name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.16-lp-interop-service-registry-2-5
 - gcs_prefix: test-platform-results/logs/periodic-ci-RedHatQE-interop-testing-cnv-4.16-cnv-odf-ocp4.16-lp-interop-cnv-odf-tests-aws-upi-ocp416
   name: periodic-ci-RedHatQE-interop-testing-cnv-4.16-cnv-odf-ocp4.16-lp-interop-cnv-odf-tests-aws-upi-ocp416
-- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-interop-amq-streams-2-7
-  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-interop-amq-streams-2-7
 - gcs_prefix: test-platform-results/logs/periodic-ci-ansible-tower-qa-devel-ocp4.16-lp-interop-aap-interop-aws
   name: periodic-ci-ansible-tower-qa-devel-ocp4.16-lp-interop-aap-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.16-lp-interop-cost-management-interop-aws
   name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.16-lp-interop-cost-management-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-interop-aws
-  name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-xp-interop-aws
-  name: periodic-ci-jboss-eap-qe-openshift-eap-tests-pit-7.4.x-eap-ocp4.16-lp-interop-eap-74-xp-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.16-lp-interop-rhba-interop-aws
   name: periodic-ci-kiegroup-kie-cloud-tests-container-main-rhba-ocp4.16-lp-interop-rhba-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.16-lp-interop-servicemesh-interop-aws
@@ -570,12 +429,8 @@ test_groups:
   name: periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.16-lp-interop-odf-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.16-lp-interop-odf-interop-aws-fips
   name: periodic-ci-red-hat-storage-ocs-ci-master-odf-ocp4.16-lp-interop-odf-interop-aws-fips
-- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-gitops-operator-v1.12-gitops-ocp4.16-lp-interop-redhat-openshift-gitops-interop-aws
-  name: periodic-ci-redhat-developer-gitops-operator-v1.12-gitops-ocp4.16-lp-interop-redhat-openshift-gitops-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.16-acceptance-lp-interop
   name: periodic-ci-redhat-developer-service-binding-operator-release-v1.4.x-4.16-acceptance-lp-interop
-- gcs_prefix: test-platform-results/logs/periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.16-lp-interop-amq-broker-interop-aws
-  name: periodic-ci-rh-messaging-qe-claire-lpt-amq-broker-ocp4.16-lp-interop-amq-broker-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.16-lp-interop-rhscl-interop-aws
   name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.16-lp-interop-rhscl-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-stolostron-acmqe-autotest-main-acm-ocp4.16-lp-interop-acm-interop-aws

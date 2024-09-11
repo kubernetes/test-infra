@@ -23,7 +23,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -31,7 +31,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|should.handle.updates.to.ExternalTrafficPolicy.field
         command:
         - wrapper.sh
         - bash
@@ -73,7 +73,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -87,7 +87,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges|Internet.connection.for.containers
+          value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges|Internet.connection.for.containers|should.handle.updates.to.ExternalTrafficPolicy.field
         command:
         - wrapper.sh
         - bash
@@ -129,7 +129,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
@@ -139,7 +139,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|should.handle.updates.to.ExternalTrafficPolicy.field
         - name: PARALLEL
           value: "true"
         - name: IP_FAMILY

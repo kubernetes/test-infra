@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -38,7 +38,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -67,7 +67,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -96,7 +96,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -126,9 +126,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -143,7 +141,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -188,10 +186,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
+      preset-azure-community: "true"
       preset-azure-windows: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -206,7 +202,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -261,10 +257,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
+      preset-azure-community: "true"
       preset-azure-windows: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -279,7 +273,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -318,10 +312,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
+      preset-azure-community: "true"
       preset-azure-windows: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -336,7 +328,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -373,9 +365,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -390,7 +380,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -433,9 +423,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -450,7 +438,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -497,9 +485,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -514,7 +500,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -559,9 +545,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -576,7 +560,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -627,9 +611,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-azure-community-only: "true"
-      preset-azure-anonymous-pull: "true"
-      preset-azure-capz-sa-cred: "true"
+      preset-azure-community: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -644,7 +626,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh

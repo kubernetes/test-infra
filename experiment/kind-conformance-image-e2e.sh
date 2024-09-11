@@ -48,7 +48,7 @@ install_kind() {
 # build kubernetes / node image, e2e binaries
 build() {
     # build the node image w/ kubernetes
-    kind build node-image --kube-root="${PWD}"
+    kind build node-image "${PWD}"
 
     # ensure kubectl is in path
     local maybe_kubectl
@@ -94,7 +94,7 @@ EOF
         --image=kindest/node:latest \
         --retain \
         --wait=1m \
-        --loglevel=debug \
+        -v=3 \
         "--config=${ARTIFACTS}/kind-config.yaml"
 }
 

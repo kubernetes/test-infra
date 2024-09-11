@@ -20,7 +20,7 @@ metadata:
   labels:
     app: needs-rebase
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: needs-rebase

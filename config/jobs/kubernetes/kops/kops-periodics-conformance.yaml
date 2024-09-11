@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240801' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240830' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.29/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -47,7 +47,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -68,7 +68,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-29
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.29", "kops_channel": "alpha", "kops_version": "1.29", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.29", "kops_channel": "alpha", "kops_version": "1.29", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-29
   cron: '45 22-23/24 * * *'
   labels:
@@ -98,7 +98,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240801' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.29/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -113,7 +113,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -124,13 +124,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204arm64
+    test.kops.k8s.io/distro: u2404arm64
     test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.29'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.29'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.29, kops-conformance, kops-distro-u2204, kops-k8s-1.29, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-1.29, kops-conformance, kops-distro-u2404, kops-k8s-1.29, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-29
 
@@ -164,7 +164,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240801' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240830' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -179,7 +179,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -200,7 +200,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-28
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "1.28", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-28
   cron: '11 0-23/24 * * *'
   labels:
@@ -230,7 +230,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240801' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.28/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
           --test=kops \
@@ -245,7 +245,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -256,13 +256,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204arm64
+    test.kops.k8s.io/distro: u2404arm64
     test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.28'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.28'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.28, kops-conformance, kops-distro-u2204, kops-k8s-1.28, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-1.28, kops-conformance, kops-distro-u2404, kops-k8s-1.28, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-28
 
@@ -296,7 +296,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240801' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240830' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -311,7 +311,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -332,7 +332,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-27
 
-# {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": "1.27", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-27
   cron: '42 9-23/24 * * *'
   labels:
@@ -362,7 +362,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240801' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20240906' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
           --test=kops \
@@ -377,7 +377,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -388,12 +388,12 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204arm64
+    test.kops.k8s.io/distro: u2404arm64
     test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.27'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.27'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.27, kops-conformance, kops-distro-u2204, kops-k8s-1.27, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-1.27, kops-conformance, kops-distro-u2404, kops-k8s-1.27, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-27

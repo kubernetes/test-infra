@@ -21,7 +21,7 @@ metadata:
     app: prow-controller-manager
 spec:
   # Mutually exclusive with plank. Only one of them may have more than zero replicas.
-  replicas: 1
+  replicas: 0
   strategy:
     type: RollingUpdate
     rollingUpdate:

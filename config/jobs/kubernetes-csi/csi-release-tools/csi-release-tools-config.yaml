@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -53,11 +53,11 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-csi-test
-      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.28 on Kubernetes 1.28
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.30 on Kubernetes 1.30
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -94,11 +94,11 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-external-provisioner
-      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.28 on Kubernetes 1.28
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.30 on Kubernetes 1.30
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -117,11 +117,11 @@ presubmits:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.28.0"
+          value: "1.30.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.28"
+          value: "1.30"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.12.1"
+          value: "v1.15.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -145,11 +145,11 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-external-snapshotter
-      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.28 on Kubernetes 1.28
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.30 on Kubernetes 1.30
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -168,11 +168,11 @@ presubmits:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.28.0"
+          value: "1.30.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.28"
+          value: "1.30"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.12.1"
+          value: "v1.15.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -196,11 +196,11 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-csi-driver-host-path
-      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-driver-host-path, using deployment 1.28 on Kubernetes 1.28
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-driver-host-path, using deployment 1.30 on Kubernetes 1.30
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
         - runner.sh
         args:
@@ -219,11 +219,11 @@ presubmits:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.28.0"
+          value: "1.30.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.28"
+          value: "1.30"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.12.1"
+          value: "v1.15.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION

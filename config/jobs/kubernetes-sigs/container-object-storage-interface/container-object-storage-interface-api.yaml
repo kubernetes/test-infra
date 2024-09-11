@@ -11,9 +11,10 @@ presubmits:
       description: Build test in container-object-storage-interface-api repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.18.4
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
-        # Plain make runs also verify
+        - runner.sh
+        args:
         - make
         resources:
           limits:
@@ -34,10 +35,11 @@ presubmits:
       description: Unit tests in container-object-storage-interface-api repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.18.4
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - test
         resources:
           limits:

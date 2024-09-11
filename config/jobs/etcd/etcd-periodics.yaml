@@ -16,7 +16,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -84,7 +84,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -100,100 +100,6 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: amd64
 
-- name: ci-etcd-robustness-amd64
-  interval: 24h
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 210m
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-create-test-group: 'true'
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        result=0
-        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
-        sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
-        make install-lazyfs
-        set -euo pipefail
-        GO_TEST_FLAGS="-v --count 120 --timeout '200m' --run TestRobustnessExploratory"
-        make gofail-enable
-        make build
-        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/data/results make test-robustness || result=$?
-        if [ -d /data/results ]; then
-          zip -r ${ARTIFACTS}/results.zip /data/results
-        fi
-        exit $result
-      resources:
-        requests:
-          cpu: "7"
-          memory: "14Gi"
-        limits:
-          cpu: "7"
-          memory: "14Gi"
-      # fuse needs privileged mode
-      securityContext:
-        privileged: true
-    nodeSelector:
-      kubernetes.io/arch: amd64
-
-- name: ci-etcd-robustness-arm64
-  interval: 24h
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 210m
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-create-test-group: 'true'
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        result=0
-        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
-        sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
-        make install-lazyfs
-        set -euo pipefail
-        GO_TEST_FLAGS="-v --count 120 --timeout '200m' --run TestRobustnessExploratory"
-        make gofail-enable
-        make build
-        VERBOSE=1 GOOS=linux GOARCH=arm64 CPU=8 EXPECT_DEBUG=true GO_TEST_FLAGS=${GO_TEST_FLAGS} RESULTS_DIR=/data/results make test-robustness || result=$?
-        if [ -d /data/results ]; then
-          zip -r ${ARTIFACTS}/results.zip /data/results
-        fi
-        exit $result
-      resources:
-        requests:
-          cpu: "7"
-          memory: "14Gi"
-        limits:
-          cpu: "7"
-          memory: "14Gi"
-      # fuse needs privileged mode
-      securityContext:
-        privileged: true
-    nodeSelector:
-      kubernetes.io/arch: arm64
-
 - name: ci-etcd-robustness-main-amd64
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -208,7 +114,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -216,7 +122,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -253,7 +159,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -261,7 +167,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -298,7 +204,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -306,7 +212,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -343,7 +249,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -351,7 +257,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -388,7 +294,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -396,7 +302,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -433,7 +339,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240903-6a352c5344-master
       command:
       - runner.sh
       args:
@@ -441,7 +347,7 @@ periodics:
       - -c
       - |
         result=0
-        apt update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
+        apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install cmake libfuse3-dev libfuse3-3 fuse3
         sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
         make install-lazyfs
         set -euo pipefail
@@ -463,183 +369,3 @@ periodics:
         privileged: true
     nodeSelector:
       kubernetes.io/arch: arm64
-
-- name: ci-etcd-performance-ratio-1-128-amd64
-  interval: 24h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-dashboards: sig-etcd-periodics
-    testgrid-tab-name: ci-etcd-performance-ratio-1-128-amd64
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        set -euo pipefail
-        make build tools
-        RATIO_LIST=1/128 ./tools/rw-heatmaps/rw-benchmark.sh
-        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
-      resources:
-        requests:
-          cpu: "7"
-          memory: "4Gi"
-        limits:
-          cpu: "7"
-          memory: "4Gi"
-    nodeSelector:
-      kubernetes.io/arch: amd64
-
-- name: ci-etcd-performance-ratio-1-8-amd64
-  interval: 24h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 10h
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-dashboards: sig-etcd-periodics
-    testgrid-tab-name: ci-etcd-performance-ratio-1-8-amd64
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        set -euo pipefail
-        make build tools
-        RATIO_LIST=1/8 ./tools/rw-heatmaps/rw-benchmark.sh
-        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
-      resources:
-        requests:
-          cpu: "7"
-          memory: "8Gi"
-        limits:
-          cpu: "7"
-          memory: "8Gi"
-    nodeSelector:
-      kubernetes.io/arch: amd64
-
-- name: ci-etcd-performance-ratio-1-4-amd64
-  interval: 24h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 14h
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-dashboards: sig-etcd-periodics
-    testgrid-tab-name: ci-etcd-performance-ratio-1-4-amd64
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        set -euo pipefail
-        make build tools
-        RATIO_LIST=1/4 ./tools/rw-heatmaps/rw-benchmark.sh
-        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
-      resources:
-        requests:
-          cpu: "7"
-          memory: "8Gi"
-        limits:
-          cpu: "7"
-          memory: "8Gi"
-    nodeSelector:
-      kubernetes.io/arch: amd64
-
-- name: ci-etcd-performance-ratio-1-2-amd64
-  interval: 24h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 16h
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-dashboards: sig-etcd-periodics
-    testgrid-tab-name: ci-etcd-performance-ratio-1-2-amd64
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        set -euo pipefail
-        make build tools
-        RATIO_LIST=1/2 ./tools/rw-heatmaps/rw-benchmark.sh
-        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
-      resources:
-        requests:
-          cpu: "7"
-          memory: "10Gi"
-        limits:
-          cpu: "7"
-          memory: "10Gi"
-    nodeSelector:
-      kubernetes.io/arch: amd64
-
-- name: ci-etcd-performance-ratio-2-1-amd64
-  interval: 24h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 16h
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-dashboards: sig-etcd-periodics
-    testgrid-tab-name: ci-etcd-performance-ratio-2-1-amd64
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20240705-131cd74733-master
-      command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        set -euo pipefail
-        make build tools
-        RATIO_LIST=2/1 ./tools/rw-heatmaps/rw-benchmark.sh
-        cp result-*.csv "${ARTIFACTS}/result-$(git rev-parse HEAD).csv"
-      resources:
-        requests:
-          cpu: "7"
-          memory: "10Gi"
-        limits:
-          cpu: "7"
-          memory: "10Gi"
-    nodeSelector:
-      kubernetes.io/arch: amd64

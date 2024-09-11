@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
@@ -24,8 +24,8 @@ presubmits:
         env:
         - name: BUILD_TYPE
           value: docker
-        - name: FOCUS
-          value: \[Conformance\]|DualStack
+        - name: LABEL_FILTER
+          value: "(Conformance || sig-network ) && Feature: isSubsetOf IPv6DualStack  && !Feature: containsAny {Alpha, Beta} && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -64,7 +64,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
@@ -124,7 +124,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
@@ -183,7 +183,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
@@ -192,12 +192,10 @@ presubmits:
         env:
         - name: PARALLEL
           value: "true"
-        - name: FOCUS
-          value: \[sig-network\]|\[Conformance\]
         - name: KUBE_PROXY_MODE
           value: "nftables"
-        - name: SKIP
-          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        - name: LABEL_FILTER
+          value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -234,7 +232,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
@@ -282,7 +280,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -330,7 +328,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -384,7 +382,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -440,7 +438,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -490,7 +488,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -546,7 +544,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -603,7 +601,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -652,7 +650,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -707,7 +705,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -764,7 +762,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -813,7 +811,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -871,7 +869,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
       - wrapper.sh
       - bash
@@ -921,7 +919,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -974,7 +972,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
         - wrapper.sh
         - bash
@@ -1024,7 +1022,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-kind
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
       - wrapper.sh
       - bash
@@ -1083,7 +1081,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
       command:
       - wrapper.sh
       - bash

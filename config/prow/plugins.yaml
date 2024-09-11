@@ -74,6 +74,7 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
+  - kubernetes-sigs/etcd-manager
   - kubernetes-sigs/external-dns
   - kubernetes-sigs/cluster-api-provider-openstack
   require_self_approval: true
@@ -234,6 +235,7 @@ lgtm:
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/external-dns
+  - kubernetes-sigs/etcd-manager
   - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
@@ -456,30 +458,31 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.31
+    master: v1.32
   kubernetes/kubernetes:
-    master: v1.31
+    master: v1.32
     release-1.31: v1.31
     release-1.30: v1.30
     release-1.29: v1.29
     release-1.28: v1.28
   kubernetes/org:
-    main: v1.31
+    main: v1.32
   kubernetes/release:
-    master: v1.31
+    master: v1.32
   kubernetes/sig-release:
-    master: v1.31
+    master: v1.32
   kubernetes/test-infra:
-    master: v1.31
+    master: v1.32
   kubernetes-sigs/kueue:
     main: v0.9
     release-0.6: v0.6
     release-0.7: v0.7
     release-0.8: v0.8
   kubernetes/k8s.io:
-    main: v1.31
+    main: v1.32
   kubernetes/kops:
-    master: v1.30
+    master: v1.31
+    release-1.30: v1.30
     release-1.29: v1.29
     release-1.28: v1.28
     release-1.27: v1.27
@@ -526,7 +529,8 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-vsphere:
-    main: v1.11
+    main: v1.12
+    release-1.11: v1.11
     release-1.10: v1.10
     release-1.9: v1.9
     release-1.8: v1.8
@@ -538,7 +542,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.31: 1.31
+    dev-1.32: 1.32
 
 repo_milestone:
   # Default maintainer
@@ -583,7 +587,7 @@ repo_milestone:
     maintainers_friendly_name: Kops Maintainers
   kubernetes/ingress-nginx:
     maintainers_team: ingress-nginx-maintainers
-    maintainers_friendly_name: Ingress Nginx Maintainers
+    maintainers_friendly_name: Ingress NGINX Maintainers
   kubernetes/org:
     maintainers_team: owners
     maintainers_friendly_name: GitHub Admin Team
@@ -1413,6 +1417,11 @@ plugins:
     - override
     - branchcleaner
 
+  kubernetes-sigs/etcd-manager:
+    plugins:
+    - mergecommitblocker
+    - override
+
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
     plugins:
     - release-note
@@ -1793,6 +1802,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/controller-runtime:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/cri-tools:
   - name: cherrypicker
     events:
     - issue_comment
