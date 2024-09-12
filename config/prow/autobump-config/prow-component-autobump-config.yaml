@@ -5,6 +5,7 @@ gitName: "Kubernetes Prow Robot"
 gitEmail: "20407524+k8s-ci-robot@users.noreply.github.com"
 onCallAddress: "" # No oncall assigned to this at the moment.
 selfAssign: true # Commenting `/cc`, so that autobump PR is not assigned to anyone
+additionalPRBody: "/cc @dims"
 skipPullRequest: false
 gitHubOrg: "kubernetes"
 gitHubRepo: "test-infra"
