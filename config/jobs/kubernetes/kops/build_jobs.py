@@ -2087,6 +2087,15 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            branch='release-1.30',
+            k8s_version='1.30',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-calico-1-30',
+            networking='calico',
+            tab_name='e2e-1-30',
+            always_run=True,
+        ),
+        presubmit_test(
             branch='release-1.29',
             k8s_version='1.29',
             kops_channel='alpha',
