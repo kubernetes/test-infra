@@ -25,7 +25,7 @@ presubmits:
         - name: BUILD_TYPE
           value: docker
         - name: LABEL_FILTER
-          value: "(Conformance || sig-network ) && Feature: isSubsetOf IPv6DualStack  && !Feature: containsAny {Alpha, Beta} && !Disruptive && !Flaky"
+          value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta} && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -73,8 +73,8 @@ presubmits:
         env:
         - name: BUILD_TYPE
           value: docker
-        - name: FOCUS
-          value: \[Conformance\]|DualStack
+        - name: LABEL_FILTER
+          value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta} && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -290,10 +290,10 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -344,10 +344,10 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -400,10 +400,10 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|PodHostIPs|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -450,10 +450,10 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -506,10 +506,10 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -564,10 +564,10 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|PodHostIPs|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -613,10 +613,10 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -668,10 +668,10 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -725,10 +725,10 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|PodHostIPs|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -825,10 +825,10 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       command:
         - wrapper.sh
         - bash
@@ -878,10 +878,10 @@ periodics:
       env:
       - name: PARALLEL
         value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -929,10 +929,10 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       - name: KUBE_PROXY_DETECT_LOCAL_MODE
         value: NodeCIDR
       # we need privileged mode in order to do docker in docker
@@ -982,10 +982,10 @@ periodics:
       # don't retry network tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: Alpha|Beta
       - name: KUBE_PROXY_DETECT_LOCAL_MODE
         value: InterfaceNamePrefix
       # we need privileged mode in order to do docker in docker
@@ -1038,11 +1038,11 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort
+        value: Alpha|Beta|LoadBalancer.Service.without.NodePort
+      #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -1092,10 +1092,8 @@ periodics:
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
-      - name: FOCUS
-        value: \[sig-network\]
-      - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|NetworkPolicy|DualStack
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !Feature: containsAny {NetworkPolicy, Networking-IPv6, Example, Federation, PerformanceDNS, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
