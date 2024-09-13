@@ -74,6 +74,7 @@ presubmits:
           make test || result=$?
           cp cover.out ${ARTIFACTS}
           cd ../../k8s.io/test-infra/gopherage
+          GO111MODULE=on go build .
           ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/cover.out" > "${ARTIFACTS}/filtered.cov" || result=$?
           ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
           ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
