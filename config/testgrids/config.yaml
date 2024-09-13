@@ -96,8 +96,6 @@ dashboards:
 #
 
 dashboard_groups:
-- name: sig-multicluster
-
 - name: vmware
   dashboard_names:
   - vmware-presubmits-cloud-provider-vsphere

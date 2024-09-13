@@ -1,0 +1,123 @@
+presubmits:
+  kubernetes-sigs/mcs-api:
+  - name: pull-mcs-api-build
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/mcs-api"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-1.31
+        command:
+        - make
+        - controller
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-multicluster-mcs-api
+      testgrid-tab-name: mcs-api-pr-build-main
+  - name: pull-mcs-api-verify
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/mcs-api"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-1.31
+        command:
+        - make
+        - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-multicluster-mcs-api
+      testgrid-tab-name: mcs-api-pr-verify-main
+  - name: pull-mcs-api-test
+    cluster: eks-prow-build-cluster
+    always_run: true
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/mcs-api"
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-1.31
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          result=0
+          make test || result=$?
+          cp cover.out ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/cover.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          exit $result
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-multicluster-mcs-api
+      testgrid-tab-name: mcs-api-pr-test-main
+  - name: pull-mcs-api-e2e
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/mcs-api"
+    optional: true
+    decorate: true
+    skip_if_only_changed: "\\.md$|^(LICENSE|OWNERS|SECURITY_CONTACTS)$"
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-1.31
+        command:
+          - runner.sh
+        args:
+          - make
+          - e2e-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-multicluster-mcs-api
+      testgrid-tab-name: mcs-api-pr-e2e-main
