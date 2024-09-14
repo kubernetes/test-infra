@@ -22,10 +22,6 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: BUILD_TYPE
-          value: docker
-        - name: LABEL_FILTER
-          value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta, LoadBalancer, NetworkPolicy, Networking-IPv6} && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
@@ -34,6 +30,10 @@ presubmits:
         # tell kind CI script to use DualStack
         - name: "IP_FAMILY"
           value: "dual"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|LoadBalancer
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -89,11 +89,11 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        - name: LABEL_FILTER
-          value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, IPv6DualStack, NetworkPolicy} && !Disruptive && !Flaky"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
         #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
         - name: SKIP
-          value: Alpha|Beta|LoadBalancer.Service.without.NodePort
+          value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|LoadBalancer.Service.without.NodePort
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -143,8 +143,10 @@ presubmits:
           value: "true"
         - name: KUBE_PROXY_MODE
           value: "nftables"
-        - name: LABEL_FILTER
-          value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -188,10 +190,12 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
         env:
-        - name: PARALLEL
+        - name: "PARALLEL"
           value: "true"
-        - name: LABEL_FILTER
-          value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -234,13 +238,10 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -288,13 +289,10 @@ periodics:
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -321,7 +319,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -344,13 +342,12 @@ periodics:
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "dual"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta, LoadBalancer, NetworkPolicy, Networking-IPv6} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -377,7 +374,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -392,15 +389,14 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -427,7 +423,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -448,15 +444,14 @@ periodics:
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -483,7 +478,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -506,15 +501,14 @@ periodics:
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "dual"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "ipvs"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, LoadBalancer} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|Internet.connection
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -540,7 +534,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -560,10 +554,12 @@ periodics:
         value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -589,7 +585,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -610,15 +606,14 @@ periodics:
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv4, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -644,7 +639,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -664,18 +659,16 @@ periodics:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
-      # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "dual"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, Networking-IPv4, LoadBalancer} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -714,13 +707,10 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta, Networking-IPv6, IPv6DualStack, LoadBalancer} && !Disruptive && !Flaky"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection
       command:
         - wrapper.sh
         - bash
@@ -767,15 +757,12 @@ periodics:
       - name: "IP_FAMILY"
         value: "ipv6"
       # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
+      - name: PARALLEL
         value: "true"
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv4, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection
       command:
         - wrapper.sh
         - bash
@@ -825,10 +812,10 @@ periodics:
       env:
       - name: PARALLEL
         value: "true"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -854,7 +841,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -873,13 +860,12 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
       env:
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack
       - name: KUBE_PROXY_DETECT_LOCAL_MODE
         value: NodeCIDR
       # we need privileged mode in order to do docker in docker
@@ -907,7 +893,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 60m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -926,13 +912,12 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
       env:
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack
       - name: KUBE_PROXY_DETECT_LOCAL_MODE
         value: InterfaceNamePrefix
       # we need privileged mode in order to do docker in docker
@@ -985,10 +970,10 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network) && !Feature: containsAny {Alpha, Beta, NetworkPolicy, Networking-IPv6, IPv6DualStack} && !Disruptive && !Flaky"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer.Service.without.NodePort
+        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|NetworkPolicy|Disruptive|Flaky|IPv6
       #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
       # we need privileged mode in order to do docker in docker
       securityContext:
