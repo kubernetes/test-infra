@@ -318,6 +318,10 @@ periodics:
             value: {{ index (index $.versions ((last $.config.Upgrades).From)) "k8sRelease" }}
           - name: KUBERNETES_VERSION_UPGRADE_TO
             value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: {{ index (index $.versions ((last $.config.Upgrades).To)) "etcd" }}
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: {{ index (index $.versions ((last $.config.Upgrades).To)) "coreDNS" }}
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
