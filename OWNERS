@@ -6,17 +6,18 @@ reviewers:
 - stevekuznetsov
 - cjwagner # oncall, lead
 - mpherman2 # oncall
+- krzyzacy
 approvers:
 - aojea # lead
 - BenTheElder # lead
 - stevekuznetsov
+- krzyzacy
 - test-infra-oncall # oncall
 - sig-k8s-infra-oncall # oncall
 emeritus_approvers:
 - amwat
 - fejta
 - ixdy
-- krzyzacy
 - spiffxp
 
 labels:
