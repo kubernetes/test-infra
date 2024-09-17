@@ -26,7 +26,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+        value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv6|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
       command:
         - wrapper.sh
         - bash
@@ -80,7 +80,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ServiceCIDRs)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges|Internet.connection.for.containers
+        value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv4|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|Internet.connection|loadbalancer.source.ranges
       command:
         - wrapper.sh
         - bash
