@@ -329,7 +329,7 @@ def main(db, jobs_dirs, threads, get_junit, build_limit, skip_gcs, client_class=
     """Collect test info in matching jobs."""
     setup_logging()
     if not skip_gcs:
-        get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
+        get_all_builds(db, 'gs://kubernetes-ci-logs/pr-logs', {'pr': True},
                        threads, client_class, build_limit)
         for bucket, metadata in jobs_dirs.items():
             if not bucket.endswith('/'):

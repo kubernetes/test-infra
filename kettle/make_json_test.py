@@ -29,7 +29,7 @@ class ValidateBuckets(unittest.TestCase):
     def test_buckets(self):
         prefixes = set()
         for name, options in sorted(make_json.BUCKETS.items()):
-            if name == 'gs://kubernetes-jenkins/logs/':
+            if name == 'gs://kubernetes-ci-logs/logs/':
                 continue  # only bucket without a prefix
             prefix = options.get('prefix', '')
             self.assertNotEqual(prefix, '', 'bucket %s must have a prefix' % name)
@@ -46,8 +46,8 @@ class BuildObjectTests(unittest.TestCase):
         ),
         (
             "Base_Build",
-            make_json.Build("gs://kubernetes-jenkins/pr-logs/path", []),
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
+            make_json.Build("gs://kubernetes-ci-logs/pr-logs/path", []),
+            {"path":"gs://kubernetes-ci-logs/pr-logs/path",
              "test": [],
              "tests_run": 0,
              "tests_failed": 0,
@@ -57,10 +57,10 @@ class BuildObjectTests(unittest.TestCase):
         (
             "Tests_populate",
             make_json.Build(
-                "gs://kubernetes-jenkins/pr-logs/path",
+                "gs://kubernetes-ci-logs/pr-logs/path",
                 [{'name': 'Test1', 'failed': True}],
             ),
-            {"path":"gs://kubernetes-jenkins/pr-logs/path",
+            {"path":"gs://kubernetes-ci-logs/pr-logs/path",
              "test": [{'name': 'Test1', 'failed': True}],
              "tests_run": 1,
              "tests_failed": 1,
@@ -143,9 +143,9 @@ class BuildObjectTests(unittest.TestCase):
         ),
     ])
     def test_populate_start(self, _, started, updates):
-        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
+        build = make_json.Build("gs://kubernetes-ci-logs/pr-logs/path", [])
         attrs = {
-            "path":"gs://kubernetes-jenkins/pr-logs/path",
+            "path":"gs://kubernetes-ci-logs/pr-logs/path",
             "test": [],
             "tests_run": 0,
             "tests_failed": 0,
@@ -223,8 +223,8 @@ class BuildObjectTests(unittest.TestCase):
         ),
     ])
     def test_populate_finish(self, _, finished, updates):
-        build = make_json.Build("gs://kubernetes-jenkins/pr-logs/path", [])
-        attrs = {"path":"gs://kubernetes-jenkins/pr-logs/path",
+        build = make_json.Build("gs://kubernetes-ci-logs/pr-logs/path", [])
+        attrs = {"path":"gs://kubernetes-ci-logs/pr-logs/path",
                  "test": [],
                  "tests_run": 0,
                  "tests_failed": 0,
@@ -239,7 +239,7 @@ class GenerateBuilds(unittest.TestCase):
     @parameterized.expand([
         (
             "Basic_pass",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': False}],
             None,
             None,
@@ -247,7 +247,7 @@ class GenerateBuilds(unittest.TestCase):
             None,
             {
                 'job': 'pr:pr-logs',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': False}],
                 'tests_run': 1,
                 'tests_failed':0,
@@ -255,7 +255,7 @@ class GenerateBuilds(unittest.TestCase):
         ),
         (
             "Basic_fail",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': True}],
             None,
             None,
@@ -263,7 +263,7 @@ class GenerateBuilds(unittest.TestCase):
             None,
             {
                 'job': 'pr:pr-logs',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': True}],
                 'tests_run': 1,
                 'tests_failed':1,
@@ -271,7 +271,7 @@ class GenerateBuilds(unittest.TestCase):
         ),
         (
             "Ci_decorated",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': True}],
             {
                 "timestamp":1595284709,
@@ -289,7 +289,7 @@ class GenerateBuilds(unittest.TestCase):
             None,
             {
                 'job': 'pr:pr-logs',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': True}],
                 'passed': True,
                 'result': 'SUCCESS',
@@ -304,7 +304,7 @@ class GenerateBuilds(unittest.TestCase):
         ),
         (
             "Pr_decorated",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': True}],
             {
                 "timestamp":1595277241,
@@ -323,7 +323,7 @@ class GenerateBuilds(unittest.TestCase):
             None,
             {
                 'job': 'pr:pr-logs',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': True}],
                 'passed': True,
                 'result': 'SUCCESS',
@@ -338,7 +338,7 @@ class GenerateBuilds(unittest.TestCase):
         ),
         (
             "Pr_bootstrap",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': True}],
             {
                 "node": "0790211c-cacb-11ea-a4b9-4a19d9b965b2",
@@ -371,7 +371,7 @@ class GenerateBuilds(unittest.TestCase):
             {
                 'job': 'pr:pr-logs',
                 'executor': '0790211c-cacb-11ea-a4b9-4a19d9b965b2',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': True}],
                 'passed': True,
                 'result': 'SUCCESS',
@@ -393,7 +393,7 @@ class GenerateBuilds(unittest.TestCase):
         ),
         (
             "Ci_bootstrap",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': True}],
             {
                 "timestamp":1595263104,
@@ -427,7 +427,7 @@ class GenerateBuilds(unittest.TestCase):
             {
                 'job': 'pr:pr-logs',
                 'executor': '592473ae-caa7-11ea-b130-525df2b76a8d',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': True}],
                 'passed': True,
                 'result': 'SUCCESS',
@@ -452,7 +452,7 @@ class GenerateBuilds(unittest.TestCase):
         ),
         (
             "Started_no_meta_repo",
-            "gs://kubernetes-jenkins/pr-logs/path",
+            "gs://kubernetes-ci-logs/pr-logs/path",
             [{'name': "Test1", 'failed': False}],
             {
                 "timestamp":1595263104,
@@ -469,7 +469,7 @@ class GenerateBuilds(unittest.TestCase):
             {
                 'job': 'pr:pr-logs',
                 'executor': '592473ae-caa7-11ea-b130-525df2b76a8d',
-                'path': 'gs://kubernetes-jenkins/pr-logs/path',
+                'path': 'gs://kubernetes-ci-logs/pr-logs/path',
                 'test': [{'name': 'Test1', 'failed': False}],
                 'tests_run': 1,
                 'tests_failed':0,
@@ -495,9 +495,9 @@ class MakeJsonTest(unittest.TestCase):
             build = make_json.Build(path, [])
             self.assertEqual((build.job, build.number), (job, number))
 
-        expect('gs://kubernetes-jenkins/logs/some-build/123', 'some-build', 123)
-        expect('gs://kubernetes-jenkins/logs/some-build/123asdf', 'some-build', None)
-        expect('gs://kubernetes-jenkins/pr-logs/123/e2e-node/456', 'pr:e2e-node', 456)
+        expect('gs://kubernetes-ci-logs/logs/some-build/123', 'some-build', 123)
+        expect('gs://kubernetes-ci-logs/logs/some-build/123asdf', 'some-build', None)
+        expect('gs://kubernetes-ci-logs/pr-logs/123/e2e-node/456', 'pr:e2e-node', 456)
 
         with self.assertRaises(ValueError):
             expect('gs://unknown-bucket/foo/123', None, None)
@@ -517,7 +517,7 @@ class MakeJsonTest(unittest.TestCase):
             row = make_json.row_for_build(path, start, finish, results)
             self.assertEqual(row, expected)
 
-        path = 'gs://kubernetes-jenkins/logs/J/123'
+        path = 'gs://kubernetes-ci-logs/logs/J/123'
         expect(path, None, None, [], job='J', number=123)
         expect(path, None, None, [], job='J', number=123)
         expect(path,
@@ -559,7 +559,7 @@ class MakeJsonTest(unittest.TestCase):
         junits = ['<testsuite><testcase name="t1" time="3.0"></testcase></testsuite>']
 
         def add_build(path, start, finish, result, junits):
-            path = 'gs://kubernetes-jenkins/logs/%s' % path
+            path = 'gs://kubernetes-ci-logs/logs/%s' % path
             self.db.insert_build(
                 path, {'timestamp': start}, {'timestamp': finish, 'result': result})
             # fake build rowid doesn't matter here
@@ -607,8 +607,8 @@ class MakeJsonTest(unittest.TestCase):
         expect([], [], ['123', '456', '457'])                     # reset only works for given day
 
         # verify that direct paths work
-        expect(['gs://kubernetes-jenkins/logs/some-job/123'], ['123'], [])
-        expect(['gs://kubernetes-jenkins/logs/some-job/123'], ['123'], [])
+        expect(['gs://kubernetes-ci-logs/logs/some-job/123'], ['123'], [])
+        expect(['gs://kubernetes-ci-logs/logs/some-job/123'], ['123'], [])
 
         # verify that assert_oldest works
         expect(['--days=30'], ['123', '456'], [])

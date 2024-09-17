@@ -40,8 +40,8 @@ kubectl logs -l app=kettle
 PULLED 174
 ACK irrelevant 172
 EXTEND-ACK  2
-gs://kubernetes-jenkins/pr-logs/pull/kubeflow_kubeflow/1136/kubeflow-presubmit/2385 True True 2018-07-06 07:51:49 PDT FAILED
-gs://kubernetes-jenkins/logs/ci-cri-containerd-e2e-ubuntu-gce/5742 True True 2018-07-06 07:44:17 PDT FAILURE
+gs://kubernetes-ci-logs/pr-logs/pull/kubeflow_kubeflow/1136/kubeflow-presubmit/2385 True True 2018-07-06 07:51:49 PDT FAILED
+gs://kubernetes-ci-logs/logs/ci-cri-containerd-e2e-ubuntu-gce/5742 True True 2018-07-06 07:44:17 PDT FAILURE
 ACK "finished.json" 2
 Downloading JUnit artifacts.
 ```
@@ -102,9 +102,9 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 
 # PubSub
 
-Kettle `stream.py` leverages Google Cloud [PubSub] to alert on GCS changes within the `kubernetes-jenkins` bucket. These events are tied to the `gcs-changes` Topic in the `kubernetes-jenkins` project where Prow job artifacts are collated. Each time an artifact is finalized, a PubSub event is triggered and Kettle collects job information when it sees a resource uploaded called `finished.json` (indicating the build completed).
+Kettle `stream.py` leverages Google Cloud [PubSub] to alert on GCS changes within the `kubernetes-ci-logs` bucket. These events are tied to the `gcs-changes` Topic in the `kubernetes-ci-logs` project where Prow job artifacts are collated. Each time an artifact is finalized, a PubSub event is triggered and Kettle collects job information when it sees a resource uploaded called `finished.json` (indicating the build completed).
 
-[Topic Creation] can be performed by running `gcloud config set project kubernetes-jenkins` and `gsutil notification create -t gcs-changes -f json gs://kubernetes-jenkins`
+[Topic Creation] can be performed by running `gcloud config set project kubernetes-ci-logs` and `gsutil notification create -t gcs-changes -f json gs://kubernetes-ci-logs`
 
 [Subscriptions] are in Kuberenetes Jenkins Build - PubSub.
 - kettle
@@ -114,14 +114,14 @@ They are split so that the staging instance does not consume events aimed at pro
 
 These can be created via:
 ```
-gcloud pubsub subscriptions create <subscription name> --topic=gcs-changes --topic-project="kubernetes-jenkins" --message-filter='attributes.eventType = "OBJECT_FINALIZE"'
+gcloud pubsub subscriptions create <subscription name> --topic=gcs-changes --topic-project="kubernetes-ci-logs" --message-filter='attributes.eventType = "OBJECT_FINALIZE"'
 ```
 
 ### Auth
 For kettle to have permission, kettle's user needs access. When updating or changing a [Subscription] make sure to add `kettle@kubernetes-public.iam.gserviceaccount.com` as a `PubSub Editor`.
 ```
 gcloud pubsub subscriptions add-iam-policy-binding \
-  projects/kubernetes-jenkins/subscriptions/kettle-staging \
+  projects/kubernetes-ci-logs/subscriptions/kettle-staging \
   --member=serviceAccount:kettle@kubernetes-public.iam.gserviceaccount.com \
   --role=roles/pubsub.editor
 ```
@@ -134,5 +134,5 @@ gcloud pubsub subscriptions add-iam-policy-binding \
 [Big Query All]: https://console.cloud.google.com/bigquery?project=kubernetes-public&page=table&t=all&d=build&p=kubernetes-public
 [Big Query Staging]: https://console.cloud.google.com/bigquery?project=kubernetes-public&page=table&t=staging&d=build&p=kubernetes-public
 [PubSub]: https://cloud.google.com/pubsub/docs
-[Subscriptions]: https://console.cloud.google.com/cloudpubsub/subscription/list?project=kubernetes-jenkins
+[Subscriptions]: https://console.cloud.google.com/cloudpubsub/subscription/list?project=kubernetes-ci-logs
 [Topic Creation]: https://cloud.google.com/storage/docs/reporting-changes#enabling

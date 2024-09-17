@@ -8,7 +8,7 @@
 #     collection phase, and defaults to true.
 #   exclude_jobs: A list of job names that will not be uploaded to BQ
 
-gs://kubernetes-jenkins/logs/:
+gs://kubernetes-ci-logs/logs/:
   contact: "bentheelder"
   prefix: ""
   sequential: false
