@@ -283,6 +283,7 @@ presubmits:
               kubetest2 ec2 \
                --build \
                --instance-type=g4dn.xlarge \
+               --device-plugin-nvidia true \
                --worker-image="$AMI_ID" \
                --region us-east-1 \
                --target-build-arch linux/amd64 \
