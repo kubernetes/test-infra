@@ -318,6 +318,10 @@ periodics:
             value: stable-1.31
           - name: KUBERNETES_VERSION_UPGRADE_TO
             value: ci/latest-1.32
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: 3.5.15-0
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: v1.11.3
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
