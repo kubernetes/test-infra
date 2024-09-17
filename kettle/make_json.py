@@ -115,9 +115,9 @@ class Build:
             if self.path.startswith(bucket):
                 prefix = meta['prefix']
                 break
-        #if job path not in buckets.yaml or gs://kubernetes-jenkins/pr-logs it is unmatched
+        #if job path not in buckets.yaml or gs://kubernetes-ci-logs/pr-logs it is unmatched
         else:
-            if self.path.startswith('gs://kubernetes-jenkins/pr-logs'):
+            if self.path.startswith('gs://kubernetes-ci-logs/pr-logs'):
                 prefix = 'pr:'
             else:
                 raise ValueError(f'unknown build path for {self.path} in known bucket paths')

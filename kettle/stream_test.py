@@ -116,7 +116,7 @@ class HelperTest(unittest.TestCase):
 
 class StreamTest(unittest.TestCase):
 
-    fake_buckets = {'kubernetes-jenkins':
+    fake_buckets = {'kubernetes-ci-logs':
                         {'contact': 'bentheelder',
                          'prefix': '',
                          'sequential': False,
@@ -139,17 +139,17 @@ class StreamTest(unittest.TestCase):
                         'no_data', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/finished.json',
-                            'bucketId': 'kubernetes-jenkins'})),
+                            'bucketId': 'kubernetes-ci-logs'})),
                 FakeReceivedMessage(
                     'b', FakePubSubMessage(
                         'no_data2', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164B/finished.json',
-                            'bucketId': 'kubernetes-jenkins'}))
+                            'bucketId': 'kubernetes-ci-logs'}))
             ],
             ([], [
-                ('a', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164A"),
-                ('b', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
+                ('a', "gs://kubernetes-ci-logs/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164A"),
+                ('b', "gs://kubernetes-ci-logs/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
             ])
         ),
         (
@@ -160,16 +160,16 @@ class StreamTest(unittest.TestCase):
                         'no_data', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164A/started.json',
-                            'bucketId': 'kubernetes-jenkins'})),
+                            'bucketId': 'kubernetes-ci-logs'})),
                 FakeReceivedMessage(
                     'b', FakePubSubMessage(
                         'no_data2', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'pr-logs/pull/100038/pull-kubernetes-bazel-test/136941941204137164B/finished.json',
-                            'bucketId': 'kubernetes-jenkins'}))
+                            'bucketId': 'kubernetes-ci-logs'}))
             ],
             (['a'], [
-                ('b', "gs://kubernetes-jenkins/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
+                ('b', "gs://kubernetes-ci-logs/pr-logs/pull/100038/pull-kubernetes-bazel-test", "136941941204137164B"),
             ])
         ),
         (
@@ -180,13 +180,13 @@ class StreamTest(unittest.TestCase):
                         'no_data', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'pr-logs/pull/100038/ci-test-infra-benchmark-demo/136941941204137164A/started.json',
-                            'bucketId': 'kubernetes-jenkins'})),
+                            'bucketId': 'kubernetes-ci-logs'})),
                 FakeReceivedMessage(
                     'b', FakePubSubMessage(
                         'no_data2', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'pr-logs/pull/100038/ci-test-infra-benchmark-demo/136941941204137164B/finished.json',
-                            'bucketId': 'kubernetes-jenkins'}))
+                            'bucketId': 'kubernetes-ci-logs'}))
             ],
             (['a', 'b'], [])
         ),
@@ -211,7 +211,7 @@ class StreamTest(unittest.TestCase):
                             'no_data', {
                                 'eventType': 'OBJECT_FINALIZE',
                                 'objectId': 'logs/fake/123/finished.json',
-                                'bucketId': 'kubernetes-jenkins'})
+                                'bucketId': 'kubernetes-ci-logs'})
                     )]
                 ),
                 FakePullResponse([]),
@@ -221,7 +221,7 @@ class StreamTest(unittest.TestCase):
                         FakePubSubMessage('no_data', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'logs/fake/123/finished.json',
-                            'bucketId': 'kubernetes-jenkins'})
+                            'bucketId': 'kubernetes-ci-logs'})
                     )]
                 ),
                 FakePullResponse([]),
@@ -231,7 +231,7 @@ class StreamTest(unittest.TestCase):
                         FakePubSubMessage('no_data', {
                             'eventType': 'OBJECT_FINALIZE',
                             'objectId': 'logs/fake/124/started.json',
-                            'bucketId': 'kubernetes-jenkins'})
+                            'bucketId': 'kubernetes-ci-logs'})
                     )]
                 ),
                 FakePullResponse([]),
@@ -276,7 +276,7 @@ class StreamTest(unittest.TestCase):
                  'job': 'fake',
                  'number': 123,
                  'passed': True,
-                 'path': 'gs://kubernetes-jenkins/logs/fake/123',
+                 'path': 'gs://kubernetes-ci-logs/logs/fake/123',
                  'result': 'SUCCESS',
                  'started': now - 5,
                  'test': [{'name': 'Foo', 'time': 3.0},
