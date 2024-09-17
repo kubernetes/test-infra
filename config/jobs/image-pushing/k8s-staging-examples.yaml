@@ -22,4 +22,6 @@ postsubmits:
               - --project=k8s-staging-examples
               - --scratch-bucket=gs://k8s-staging-examples-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - --gcb-config=dev/cloudbuild/cloudbuild.yaml
               - .
