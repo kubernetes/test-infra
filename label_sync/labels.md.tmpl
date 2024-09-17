@@ -19,7 +19,7 @@ sync github labels across repos in the [kubernetes github org](https://github.co
 
 The rule of thumb is that labels are here because they are intended to be produced or consumed by
 our automation (primarily prow) across all repos. There are some labels that can only be manually
-applied/removed, and where possible we would rather remove them or add automation to allow a 
+applied/removed, and where possible we would rather remove them or add automation to allow a
 larger set of contributors to apply/remove them.
 
 ### How do I add a new label?
@@ -38,6 +38,6 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 {{ range $labelData.Labels -}}
-  | <a id="{{ anchor .Name }}" href="#{{ anchor .Name }}">`{{ .Name }}`</a> | {{ if .DeleteAfter -}} REMOVING. This will be deleted after {{ .DeleteAfter }} <br><br> {{ end -}} {{ .Description }} {{- if .Previously }} <br><br> This was previously {{ range .Previously -}} `{{.Name }}`, {{ end -}}  {{ end -}} | {{.AddedBy }} | {{ if .ProwPlugin }} [{{.ProwPlugin}}](https://github.com/kubernetes-sigs/prow/tree/main/prow/{{ if .IsExternalPlugin }}external-{{ end }}plugins/{{.ProwPlugin}}) {{ end }}|
+  | <a id="{{ anchor .Name }}" href="#{{ anchor .Name }}">`{{ .Name }}`</a> | {{ if .DeleteAfter -}} REMOVING. This will be deleted after {{ .DeleteAfter }} <br><br> {{ end -}} {{ .Description }} {{- if .Previously }} <br><br> This was previously {{ range .Previously -}} `{{.Name }}`, {{ end -}}  {{ end -}} | {{.AddedBy }} | {{ if .ProwPlugin }} [{{.ProwPlugin}}](https://github.com/kubernetes-sigs/prow/tree/main/{{ if .IsExternalPlugin }}cmd/external-plugins{{ else }}pkg/plugins{{ end }}/{{.ProwPlugin}}) {{ end }}|
 {{ end }}
 {{ end }}
