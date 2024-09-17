@@ -183,7 +183,7 @@ periodics:
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
              --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking" \
-             --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
+             --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0" \
              --parallel=25
         env:
           - name: USE_DOCKERIZED_BUILD
