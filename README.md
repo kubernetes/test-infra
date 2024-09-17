@@ -65,9 +65,9 @@ Please see [CONTRIBUTING.MD](CONTRIBUTING.md)
 [`config/jobs`]: /config/jobs
 [`gubernator`]: /gubernator
 [`metrics`]: /metrics
-[`prow`]: /prow
-[`prow/cmd/tide`]: /prow/cmd/tide
-[`prow/cmd/deck`]: /prow/cmd/deck
+[`prow`]: https://github.com/kubernetes-sigs/prow
+[`prow/cmd/tide`]: https://github.com/kubernetes-sigs/prow/tree/main/cmd/tide
+[`prow/cmd/deck`]: https://github.com/kubernetes-sigs/prow/tree/main/cmd/deck
 [`testgrid`]: /testgrid
 [testgrid.k8s.io]: https://testgrid.k8s.io
 [`triage`]: /triage
