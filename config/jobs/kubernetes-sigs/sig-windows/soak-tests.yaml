@@ -34,7 +34,7 @@ presubmits:
               cd ${GOPATH}/src/k8s.io/perf-tests/ &&
               ./run-e2e.sh cluster-loader2
               --testconfig=testing/windows-tests/config.yaml
-              --provider=aks
+              --provider=azure
               --report-dir=${ARTIFACTS}
               --v=2
           securityContext:
@@ -125,7 +125,7 @@ periodics:
               ./run-e2e.sh cluster-loader2
               --kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig
               --testconfig=testing/windows-tests/config.yaml
-              --provider=aks
+              --provider=azure
               --report-dir=${ARTIFACTS}
               --v=2
           env:
@@ -310,7 +310,7 @@ periodics:
               cd ${GOPATH}/src/k8s.io/perf-tests/ &&
               ./run-e2e.sh cluster-loader2
               --testconfig=testing/windows-tests/config.yaml
-              --provider=aks
+              --provider=azure
               --report-dir=${ARTIFACTS}
               --v=2
           securityContext:
