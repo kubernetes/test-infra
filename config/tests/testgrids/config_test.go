@@ -78,6 +78,8 @@ var (
 	prowGcsPrefixes = []string{
 		"kubernetes-jenkins/logs/",
 		"kubernetes-jenkins/pr-logs/directory/",
+		"kubernetes-ci-logs/logs/",
+		"kubernetes-ci-logs/pr-logs/directory/",
 	}
 )
 
@@ -178,7 +180,7 @@ func TestConfig(t *testing.T) {
 			for _, prowGcsPrefix := range prowGcsPrefixes {
 				if strings.Contains(testgroup.GcsPrefix, prowGcsPrefix) {
 					// The expectation is that testgroup.Name is the name of a Prow job and the GCSPrefix
-					// follows the convention kubernetes-jenkins/logs/.../jobName
+					// follows the convention kubernetes-ci-logs/logs/.../jobName
 					// The final part of the prefix should be the job name.
 					expected := filepath.Join(filepath.Dir(testgroup.GcsPrefix), testgroup.Name)
 					if expected != testgroup.GcsPrefix {
@@ -199,7 +201,7 @@ func TestConfig(t *testing.T) {
 			}
 
 			// All PR testgroup has num_columns_recent equals 20
-			if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
+			if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") || strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-ci-logs/pr-logs/directory/") {
 				if testgroup.NumColumnsRecent < 20 {
 					t.Errorf("presubmit num_columns_recent want >=20, got %d", testgroup.NumColumnsRecent)
 				}
