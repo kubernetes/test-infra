@@ -87,11 +87,16 @@ presubmits:
     run_if_changed: '.*\.\w*sh$'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
+    labels:
+      # required for shellcheck in container.
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.7.1
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
         command:
-        - /bin/shellcheck.sh
+          - "runner.sh"
+          - "make"
+          - "shellcheck"
         resources:
           limits:
             cpu: 2
@@ -99,6 +104,9 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
       testgrid-tab-name: pr-verify-shell
