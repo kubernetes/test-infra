@@ -755,6 +755,8 @@ periodics:
       # even on very powerful machines
       - name: BENCHTIME
         value: 1ns
+      - name: SHORT
+        value: --short=false
       # We need to constraint compute resources so all the tests
       # finish approximately at the same time. More compute power
       # can increase scheduling throughput and make consequent results
