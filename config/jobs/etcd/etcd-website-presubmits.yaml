@@ -3,7 +3,6 @@ presubmits:
   etcd-io/website:
   - name: pull-website-lint
     cluster: eks-prow-build-cluster
-    optional: true # remove this once the job is green
     always_run: false
     run_if_changed: '.*\.md$'
     branches:
