@@ -764,12 +764,17 @@ presubmits:
         env:
         - name: KUBE_TIMEOUT
           value: --timeout=2h25m
+        # Keep the unprocessed `go test` JSON output for debugging.
+        - name: KUBE_KEEP_VERBOSE_TEST_OUTPUT
+          value: "y"
         - name: TEST_PREFIX
           value: BenchmarkPerfScheduling
         # Set the benchtime to a very low value so every test is ran at most once
         # even on very powerful machines
         - name: BENCHTIME
           value: 1ns
+        - name: SHORT
+          value: --short=false
         # We need to constraint compute resources so all the tests
         # finish approximately at the same time. More compute power
         # can increase scheduling throughput and make consequent results
