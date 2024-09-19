@@ -718,6 +718,8 @@ periodics:
           cpu: 1
           memory: "2Gi"
 
+# Note: we have a presubmit job "pull-scheduler-perf",
+# which you likely want to change when you change parameters in this test.
 - name: ci-benchmark-scheduler-perf-master
   cluster: k8s-infra-prow-build
   tags:
@@ -755,6 +757,10 @@ periodics:
       # even on very powerful machines
       - name: BENCHTIME
         value: 1ns
+      # We distinguish which test cases to run with --short, and we want to run longer test cases in this job.
+      # We have to explicitly disable --short flag because the script enables by default.
+      - name: SHORT
+        value: --short=false
       # We need to constraint compute resources so all the tests
       # finish approximately at the same time. More compute power
       # can increase scheduling throughput and make consequent results
