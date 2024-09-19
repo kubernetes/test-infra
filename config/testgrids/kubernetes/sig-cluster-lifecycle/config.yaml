@@ -73,14 +73,14 @@ dashboards:
 
 test_groups:
 - name: periodic-cluster-api-provider-azure-coverage
-  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-azure-coverage
+  gcs_prefix: kubernetes-ci-logs/logs/periodic-cluster-api-provider-azure-coverage
   short_text_metric: coverage
 - name: periodic-cluster-api-provider-aws-coverage
-  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-coverage
+  gcs_prefix: kubernetes-ci-logs/logs/periodic-cluster-api-provider-aws-coverage
   short_text_metric: coverage
 - name: periodic-cluster-api-provider-ibmcloud-coverage
-  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-ibmcloud-coverage
+  gcs_prefix: kubernetes-ci-logs/logs/periodic-cluster-api-provider-ibmcloud-coverage
   short_text_metric: coverage
 - name: pull-cluster-api-provider-ibmcloud-coverage
-  gcs_prefix: kubernetes-jenkins/logs/pull-cluster-api-provider-ibmcloud-coverage
+  gcs_prefix: kubernetes-ci-logs/logs/pull-cluster-api-provider-ibmcloud-coverage
   short_text_metric: coverage
