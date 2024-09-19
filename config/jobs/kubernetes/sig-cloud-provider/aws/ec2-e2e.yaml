@@ -282,7 +282,7 @@ presubmits:
                      --query 'Parameters[0].[Value]' --output text)
               kubetest2 ec2 \
                --build \
-               --instance-type=g4dn.xlarge \
+               --instance-type=g4dn.16xlarge \
                --device-plugin-nvidia true \
                --worker-image="$AMI_ID" \
                --region us-east-1 \
