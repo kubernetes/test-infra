@@ -525,6 +525,13 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorel
 			if err != nil {
 				o.log.Warnf("Write remote owner file %s failed: %v", url, err)
 			}
+		} else if filenames.OwnersFilePath != "" {
+			// mv owner path's file to repo base dir
+			realPath := filepath.Join(o.baseDir, filenames.OwnersFilePath, filenames.Owners)
+			err = os.Rename(realPath, baseOwnersFile)
+			if err != nil {
+				o.log.Warnf("Rename  owner path's file %s failed: %v", realPath, err)
+			}
 		}
 	}
 
