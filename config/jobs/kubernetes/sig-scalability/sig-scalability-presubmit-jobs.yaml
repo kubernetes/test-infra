@@ -773,6 +773,8 @@ presubmits:
         # even on very powerful machines
         - name: BENCHTIME
           value: 1ns
+        # We distinguish which test cases to run with --short, and we want to run longer test cases in this job.
+        # We have to explicitly disable --short flag because the script enables by default.
         - name: SHORT
           value: --short=false
         # We need to constraint compute resources so all the tests
