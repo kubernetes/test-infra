@@ -128,7 +128,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/cluster-api-provider-vsphere/extra/mdlint:0.17.0
+      - image: registry.k8s.io/cloud-pv-vsphere/extra/mdlint:0.17.0
         command:
         - /nodejs/bin/node
         args:
@@ -159,7 +159,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
+      - image: registry.k8s.io/cloud-pv-vsphere/extra/shellcheck:stable
         command:
         - /bin/shellcheck.sh
         resources:
