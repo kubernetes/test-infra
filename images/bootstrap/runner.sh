@@ -24,6 +24,8 @@ cleanup_dind() {
         docker ps -aq | xargs -r docker rm -f || true
         echo "Waiting for docker to stop for 30 seconds"
         timeout 30 service docker stop || true
+        # force kill docker related processes
+        (cat /var/run/docker*.pid | xargs kill -9) || true
     fi
 }
 
