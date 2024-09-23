@@ -14,7 +14,7 @@
 
 # Includes git, gcloud, and bazel.
 ARG OLD_BAZEL_VERSION
-FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
+FROM gcr.io/bazel-public/bazel:${OLD_BAZEL_VERSION} as old
 FROM ubuntu:18.04
 
 # add env we can debug with the image name:tag
