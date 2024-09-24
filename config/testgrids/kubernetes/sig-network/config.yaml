@@ -12,6 +12,7 @@ dashboard_groups:
     - sig-network-ingress-controller-conformance
     - sig-network-kind
     - sig-network-node-ipam-controller
+    - sig-network-gwctl
 
 dashboards:
 - name: sig-network-dns
@@ -100,3 +101,4 @@ dashboards:
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind
 - name: sig-network-node-ipam-controller
+- name: sig-network-gwctl
