@@ -214,7 +214,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20240705-131cd74733-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
         command:
         - wrapper.sh
         - bash
