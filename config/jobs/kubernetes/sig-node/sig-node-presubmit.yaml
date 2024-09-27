@@ -1522,7 +1522,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv1-evented-pleg-gce-e2e-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240903-6a352c5344-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
         command:
         - runner.sh
         args:
