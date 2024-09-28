@@ -2196,7 +2196,7 @@ def generate_presubmits_e2e():
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k127-ko127-to-klatest-kolatest-many-addons",
+            name="pull-kops-e2e-aws-upgrade-k129-ko129-to-klatest-kolatest-many-addons",
             optional=True,
             distro='u2204',
             networking='cilium',
@@ -2206,8 +2206,8 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.28",
-                'K8S_VERSION_A': "v1.28.0",
+                'KOPS_VERSION_A': "1.29",
+                'K8S_VERSION_A': "v1.29.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
