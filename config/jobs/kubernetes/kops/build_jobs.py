@@ -1788,6 +1788,8 @@ def generate_presubmits_network_plugins():
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
         networking_arg = plugin
+        master_size = "c6g.large"
+        node_size = "t4g.large"
         optional = False
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
@@ -1795,6 +1797,9 @@ def generate_presubmits_network_plugins():
             networking_arg = 'kube-router'
             k8s_version = 'ci'
             optional = True
+        if plugin == 'amazonvpc':
+            master_size = "r5d.xlarge"
+            node_size = "r5d.xlarge"
         results.append(
             presubmit_test(
                 distro='u2404arm64',
@@ -1803,7 +1808,10 @@ def generate_presubmits_network_plugins():
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
-                extra_flags=["--node-size=t4g.large"],
+                extra_flags=[
+                    f"--master-size={master_size}",
+                    f"--node-size={node_size}"
+                ],
                 run_if_changed=run_if_changed,
                 optional=optional,
             )
