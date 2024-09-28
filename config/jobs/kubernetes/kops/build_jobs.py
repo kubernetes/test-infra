@@ -1798,8 +1798,8 @@ def generate_presubmits_network_plugins():
             k8s_version = 'ci'
             optional = True
         if plugin == 'amazonvpc':
-            master_size = "r5d.xlarge"
-            node_size = "r5d.xlarge"
+            master_size = "r6g.xlarge"
+            node_size = "r6g.xlarge"
         results.append(
             presubmit_test(
                 distro='u2404arm64',
