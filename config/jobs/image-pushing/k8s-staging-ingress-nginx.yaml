@@ -215,30 +215,6 @@ postsubmits:
               - --with-git-dir
               - images/nginx-1.25
 
-    # Ingress NGINX: OpenTelemetry
-    - name: post-ingress-nginx-opentelemetry
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      branches:
-        - ^main$
-        - ^release-.+$
-      run_if_changed: ^images/opentelemetry/
-      cluster: k8s-infra-prow-build-trusted
-      decorate: true
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240909-d870e42d3d
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - --build-dir=.
-              - --with-git-dir
-              - images/opentelemetry
-
     # Ingress NGINX: Test Runner
     - name: post-ingress-nginx-test-runner
       annotations:
