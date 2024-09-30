@@ -6,11 +6,13 @@ reviewers:
 - nrb
 - faiq
 - fiunchinho
+- damdo
 approvers:
 - richardcase
 - Ankitasw
 - dlipovetsky
-- vincepri
+- nrb
+- AndiDog
 emeritus_approvers:
 - chuckha
 - detiber
@@ -18,3 +20,4 @@ emeritus_approvers:
 - randomvariable
 - rudoi
 - Skarlso
+- vincepri
