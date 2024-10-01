@@ -852,7 +852,7 @@ periodics:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0-rc.5
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
@@ -903,7 +903,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0-rc.4
+      - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0-rc.5
       - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.1.13
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
       - --env=KUBE_PROXY_DAEMONSET=true
