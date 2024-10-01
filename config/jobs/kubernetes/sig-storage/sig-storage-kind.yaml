@@ -100,6 +100,49 @@ presubmits:
             cpu: "2"
             memory: "6Gi"
 
+  - name: pull-kubernetes-e2e-storage-kind-volume-group-snapshots
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-volume-group-snapshots
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run storage tests volume group snapshots in a KIND cluster.
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && test/e2e/testing-manifests/storage-csi/external-snapshotter/volume-group-snapshots/run_group_snapshot_e2e.sh
+        env:
+        - name: RUNTIME_CONFIG
+          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
+        - name: FOCUS
+          value: \[Feature:volumegroupsnapshot\]
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+
 periodics:
   # This jobs runs storage tests that need Kubernetes In Docker (kind).
   - name: ci-kubernetes-e2e-storage-kind-disruptive
