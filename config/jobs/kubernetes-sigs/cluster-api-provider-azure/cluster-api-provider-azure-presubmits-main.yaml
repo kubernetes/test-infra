@@ -756,7 +756,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
-    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|^scripts\/|conformance.mk'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
