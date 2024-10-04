@@ -763,6 +763,10 @@ presubmits:
     branches:
     - ^main$
     extra_refs:
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
     - org: kubernetes
       repo: kubernetes
       base_ref: master
@@ -801,8 +805,10 @@ presubmits:
           # CAPZ variables
         - name: TEST_K8S
           value: "true"
+        - name: WINDOWS
+          value: "false"
         - name: CLUSTER_TEMPLATE
-          value: "templates/test/ci/cluster-template-prow-load.yaml"
+          value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
         - name: TEST_WINDOWS
