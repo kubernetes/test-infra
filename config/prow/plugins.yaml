@@ -223,6 +223,16 @@ label:
         - sig-storage-leads
         - sig-testing-leads
         - sig-windows-leads
+    kubernetes-sigs/kubespray:
+      - label: ci-short
+        allowed_teams:
+          - kubernetes-sigs
+      - label: ci-extended
+        allowed_teams:
+          - kubernetes-sigs
+      - label: ci-full
+        allowed_teams:
+          - kubernetes-sigs
 
 lgtm:
 - repos:
