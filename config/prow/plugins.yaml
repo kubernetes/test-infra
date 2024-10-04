@@ -170,6 +170,10 @@ label:
     - team/katacoda
     # This label, for k/website, identifies PRs with large refactoring changes
     - refactor
+    # These labels are used by kubespray to test more stuff (or less for 'short') on some PRs
+    - ci-short
+    - ci-extended
+    - ci-full
 
   restricted_labels:
     kubernetes/kubernetes:
