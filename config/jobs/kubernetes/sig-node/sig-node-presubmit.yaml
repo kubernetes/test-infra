@@ -4059,7 +4059,7 @@ presubmits:
                 cpu: 8
                 memory: 10Gi
 
-    - name: pull-kubernetes-node-e2e-cri-proxy
+    - name: pull-kubernetes-node-e2e-cri-proxy-serial
       cluster: k8s-infra-prow-build
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
@@ -4097,6 +4097,7 @@ presubmits:
               - '--node-test-args=--cri-proxy-enabled=true  --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
               - --node-tests=true
               - --provider=gce
+              # all criproxy tests are serial, but no need to specify it
               - --focus=--nodes=1 "\[Feature:CriProxy\]" --skip="\[Flaky\]"
               - --timeout=65m
             env:

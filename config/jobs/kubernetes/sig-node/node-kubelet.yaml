@@ -874,11 +874,11 @@ periodics:
             cpu: 4
             memory: 6Gi
 
-- name: ci-kubernetes-node-e2e-cri-proxy
+- name: ci-kubernetes-node-e2e-cri-proxy-serial
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
-    testgrid-dashboards: sig-node-release-blocking
+    testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-cri-proxy
     description: "Use cri proxy"
   labels:
@@ -910,6 +910,7 @@ periodics:
           - '--node-test-args=--cri-proxy-enabled=true  --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           - --node-tests=true
           - --provider=gce
+          # all criproxy tests are serial, but no need to specify it
           - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]"
           - --timeout=65m
         env:
