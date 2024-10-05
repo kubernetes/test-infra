@@ -1399,13 +1399,16 @@ def generate_network_plugins():
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
         k8s_version = 'stable'
+        distro = 'u2404'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin in ['kuberouter']:
             k8s_version = 'ci'
+        if plugin in ['cilium-eni', 'amazon-vpc']:
+            distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         results.append(
             build_test(
-                distro='u2404',
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -1791,6 +1794,7 @@ def generate_presubmits_network_plugins():
         master_size = "c6g.large"
         node_size = "t4g.large"
         optional = False
+        distro = 'u2404arm64'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin == 'kuberouter':
@@ -1800,9 +1804,11 @@ def generate_presubmits_network_plugins():
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"
             node_size = "r6g.xlarge"
+        if plugin in ['amazonvpc', 'cilium-eni']:
+            distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         results.append(
             presubmit_test(
-                distro='u2404arm64',
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
