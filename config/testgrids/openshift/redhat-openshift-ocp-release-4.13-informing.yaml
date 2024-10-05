@@ -19,33 +19,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.13-stage-tempo-stage-tests
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.13-stage-tempo-stage-tests
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-arm64
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1053,33 +1026,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.13-upgrade-from-stable-4.12-ocp-e2e-aws-sdn-arm64
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.13-stage-opentelemetry-stage-tests
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.13-stage-opentelemetry-stage-tests
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4781,8 +4727,6 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.10-to-4.11-to-4.12-to-4.13-ci
   name: redhat-openshift-ocp-release-4.13-informing
 test_groups:
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.13-stage-tempo-stage-tests
-  name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.13-stage-tempo-stage-tests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-aws-ovn-arm64-single-node
@@ -4859,8 +4803,6 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-upgrade-from-stable-4.12-ocp-e2e-aws-ovn-heterogeneous-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-upgrade-from-stable-4.12-ocp-e2e-aws-sdn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-upgrade-from-stable-4.12-ocp-e2e-aws-sdn-arm64
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.13-stage-opentelemetry-stage-tests
-  name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.13-stage-opentelemetry-stage-tests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-nightly-4.13-osd-aws
   name: periodic-ci-openshift-osde2e-main-nightly-4.13-osd-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-nightly-4.13-osd-gcp
