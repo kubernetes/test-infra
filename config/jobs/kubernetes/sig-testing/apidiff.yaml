@@ -26,7 +26,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: controller-runtime
-      base_ref: master
+      base_ref: main
       path_alias: sigs.k8s.io/controller-runtime
     spec:
       containers:
