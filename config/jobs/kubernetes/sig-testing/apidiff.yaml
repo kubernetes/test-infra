@@ -43,11 +43,7 @@ presubmits:
         # We get that from "git merge-base".
         #
         # -b can be used more than once.
-        - >-
-          ./hack/apidiff.sh
-              -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA})
-              -t ${PULL_PULL_SHA}
-              -b /workspace/sigs.k8s.io/controller-runtime
+        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA} -b /workspace/sigs.k8s.io/controller-runtime"
         env:
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
