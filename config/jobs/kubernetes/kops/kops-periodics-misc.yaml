@@ -43,11 +43,11 @@ periodics:
           --parallel 15 \
       resources:
         limits:
-          memory: "3Gi"
-          cpu: "2"
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: "3Gi"
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: digitalocean
     test.kops.k8s.io/k8s_version: 'stable'
@@ -101,11 +101,11 @@ periodics:
         --parallel 15 \
       resources:
         limits:
-          memory: "3Gi"
-          cpu: "2"
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: "3Gi"
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: digitalocean
     test.kops.k8s.io/k8s_version: 'stable'
@@ -160,11 +160,11 @@ periodics:
           --parallel 15 \
       resources:
         limits:
-          memory: "3Gi"
-          cpu: "2"
+          cpu: "4"
+          memory: 6Gi
         requests:
-          cpu: "2"
-          memory: "3Gi"
+          cpu: "4"
+          memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: digitalocean
     test.kops.k8s.io/k8s_version: 'stable'
