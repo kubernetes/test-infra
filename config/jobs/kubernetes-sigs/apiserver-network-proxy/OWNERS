@@ -2,11 +2,13 @@
 
 reviewers:
   - cheftako
-  - mcrute
-  - anfernee
-  - andrewsykim
+  - ipochi
+  - jkh52
 approvers:
   - cheftako
-  - mcrute
-  - anfernee
+  - ipochi
+  - jkh52
+emeritus_approvers:
   - andrewsykim
+  - anfernee
+  - mcrute
