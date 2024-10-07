@@ -17,6 +17,11 @@ periodics:
     timeout: 60m
   extra_refs:
   - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
     repo: test-infra
     base_ref: master
     path_alias: k8s.io/test-infra
@@ -28,7 +33,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && "$(go env GOPATH)"/src/k8s.io/test-infra/experiment/compatibility-versions/e2e-k8s-compatibility-versions.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./../test-infra/experiment/compatibility-versions/e2e-k8s-compatibility-versions.sh
       env:
       - name: EMULATED_VERSION
         value: "1.31"  # TODO(aaron-prindle) FIXME - hardcoded for now
