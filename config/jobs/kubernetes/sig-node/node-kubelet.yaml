@@ -874,6 +874,56 @@ periodics:
             cpu: 4
             memory: 6Gi
 
+- name: ci-kubernetes-node-e2e-cri-proxy-serial
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-cri-proxy
+    description: "Use cri proxy"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+        command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - '--node-test-args=--cri-proxy-enabled=true  --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+          - --node-tests=true
+          - --provider=gce
+          # all criproxy tests are serial, but no need to specify it
+          - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]"
+          - --timeout=65m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          requests:
+            cpu: 4
+            memory: 6Gi
+          limits:
+            cpu: 4
+            memory: 6Gi
+
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
 #  interval: 12h
