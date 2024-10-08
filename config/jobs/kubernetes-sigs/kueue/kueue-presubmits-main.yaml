@@ -51,6 +51,8 @@ presubmits:
         env:
         - name: GOMAXPROCS
           value: "6"
+        - name: INTEGRATION_RUN_ALL
+          value: "false"
         resources:
           requests:
             cpu: "6"

@@ -19,6 +19,438 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -73,6 +505,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.18-lp-interop-rhsi-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -108,13 +594,107 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.18-lp-interop-rhsi-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws-fips
   name: redhat-openshift-lp-interop-release-4.18-informing
 test_groups:
+- gcs_prefix: test-platform-results/logs/periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6
+  name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6
+- gcs_prefix: test-platform-results/logs/periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6-fips
+  name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
+  name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws-fips
+  name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws
+  name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws-fips
+  name: periodic-ci-quarkus-qe-quarkus-openshift-interop-main-quarkus-ocp4.18-lp-interop-quarkus-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws
+  name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws-fips
+  name: periodic-ci-redhat-developer-devspaces-interop-tests-main-devspaces-ocp4.18-lp-interop-devspaces-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws
+  name: periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws-fips
+  name: periodic-ci-redhat-developer-gitops-operator-v1.14-gitops-ocp4.18-lp-interop-redhat-openshift-gitops-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws
+  name: periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws-fips
+  name: periodic-ci-redhat-developer-odo-main-odo-ocp4.18-lp-interop-odo-scenario-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws
+  name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws-fips
+  name: periodic-ci-rh-openjdk-jdkContainerOcpTests-main-openjdk-ocp4.18-lp-interop-openjdk-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws
+  name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws-fips
+  name: periodic-ci-rhbk-sso-test-main-rhsso-product-ocp4.18-lp-interop-rhsso-interop-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws
   name: periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws-fips
   name: periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
+  name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws-fips
+  name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.18-lp-interop-rhsi-interop-aws
   name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.18-lp-interop-rhsi-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.18-lp-interop-rhsi-interop-aws-fips
   name: periodic-ci-skupperproject-skupper-openshift-smoke-test-image-main-service-interconnect-ocp4.18-lp-interop-rhsi-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws
+  name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws-fips
+  name: periodic-ci-windup-windup-ui-tests-v1.2-mtr-ocp4.18-lp-interop-mtr-interop-aws-fips

@@ -81,7 +81,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-capz-windows-common: "true"
-    preset-capz-windows-2019: "true"
+    preset-capz-windows-2022: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-azure-community: "true"
   extra_refs:
@@ -119,9 +119,6 @@ periodics:
           limits:
             cpu: 2
             memory: "9Gi"
-        env:
-          - name: IMAGE_VERSION
-            value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"

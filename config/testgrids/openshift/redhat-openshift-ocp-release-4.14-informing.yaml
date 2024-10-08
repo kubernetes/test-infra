@@ -73,33 +73,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-arm-stage-tempo-stage-tests
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-arm-stage-tempo-stage-tests
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-interop-tempo-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -162,33 +135,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-rosa-classic-tempo-rosa-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-stage-tempo-stage-tests
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-stage-tempo-stage-tests
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1477,33 +1423,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-arm-stage-opentelemetry-stage-tests
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-arm-stage-opentelemetry-stage-tests
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-interop-opentelemetry-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1566,33 +1485,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-rosa-classic-opentelemetry-rosa-aws
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-stage-opentelemetry-stage-tests
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-stage-opentelemetry-stage-tests
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -5689,87 +5581,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-e2e-aws-mirrors-4.14
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-e2e-aws-mirrors-4.14
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-origin-installer-e2e-aws-disruptive-4.14
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-disruptive-4.14
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.14
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.14
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-4.11-to-4.12-to-4.13-to-4.14-ci
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -5778,76 +5589,18 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.11-to-4.12-to-4.13-to-4.14-ci
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.14
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.14
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.14
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.14
   name: redhat-openshift-ocp-release-4.14-informing
 test_groups:
 - gcs_prefix: test-platform-results/logs/periodic-ci-jws-qe-interop-ocp-ci-main-ocp-4.14-lp-interop-jws-interop-aws
   name: periodic-ci-jws-qe-interop-ocp-ci-main-ocp-4.14-lp-interop-jws-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-jws-qe-interop-ocp-ci-main-ocp-4.14-lp-interop-jws-interop-ibmcloud
   name: periodic-ci-jws-qe-interop-ocp-ci-main-ocp-4.14-lp-interop-jws-interop-ibmcloud
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-arm-stage-tempo-stage-tests
-  name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-arm-stage-tempo-stage-tests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-interop-tempo-interop-aws
   name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-interop-tempo-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-interop-tempo-interop-ibmcloud
   name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-interop-tempo-interop-ibmcloud
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-rosa-classic-tempo-rosa-aws
   name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-lp-rosa-classic-tempo-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-stage-tempo-stage-tests
-  name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.14-stage-tempo-stage-tests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-jaegertracing-jaeger-operator-main-jaeger-product-ocp-4.14-lp-interop-jaeger-interop-aws
   name: periodic-ci-openshift-jaegertracing-jaeger-operator-main-jaeger-product-ocp-4.14-lp-interop-jaeger-interop-aws
 - days_of_results: 60
@@ -5963,16 +5716,12 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.14-upgrade-from-stable-4.13-ocp-e2e-aws-sdn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.14-upgrade-from-stable-4.13-ocp-e2e-aws-sdn-arm64
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-arm-stage-opentelemetry-stage-tests
-  name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-arm-stage-opentelemetry-stage-tests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-interop-opentelemetry-interop-aws
   name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-interop-opentelemetry-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-interop-opentelemetry-interop-ibmcloud
   name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-interop-opentelemetry-interop-ibmcloud
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-rosa-classic-opentelemetry-rosa-aws
   name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-lp-rosa-classic-opentelemetry-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-stage-opentelemetry-stage-tests
-  name: periodic-ci-openshift-open-telemetry-opentelemetry-operator-main-opentelemetry-product-ocp-4.14-stage-opentelemetry-stage-tests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-nightly-4.14-osd-aws
   name: periodic-ci-openshift-osde2e-main-nightly-4.14-osd-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-osde2e-main-nightly-4.14-osd-gcp
@@ -6397,20 +6146,5 @@ test_groups:
 - gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4-14-lp-interop-acs-tests-aws
   name: periodic-ci-stackrox-stackrox-master-ocp-4-14-lp-interop-acs-tests-aws
 - days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-ocp-installer-e2e-aws-mirrors-4.14
-  name: release-openshift-ocp-installer-e2e-aws-mirrors-4.14
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-disruptive-4.14
-  name: release-openshift-origin-installer-e2e-aws-disruptive-4.14
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.14
-  name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.14
-- days_of_results: 60
   gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.11-to-4.12-to-4.13-to-4.14-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.11-to-4.12-to-4.13-to-4.14-ci
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.14
-  name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.14
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.14
-  name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.14

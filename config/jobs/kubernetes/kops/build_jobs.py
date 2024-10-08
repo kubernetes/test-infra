@@ -130,7 +130,11 @@ def build_test(cloud='aws',
     if irsa and cloud == "aws" and scenario is None:
         if extra_flags is None:
             extra_flags = []
-        extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
+        if build_cluster == "k8s-infra-kops-prow-build":
+            # TODO: migrate to an s3 bucket within the k8s-infra-kops-prow-build cluster's account
+            extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
+        else:
+            extra_flags.append("--discovery-store=s3://k8s-kops-ci-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image)
@@ -1399,13 +1403,16 @@ def generate_network_plugins():
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
         k8s_version = 'stable'
+        distro = 'u2404'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin in ['kuberouter']:
             k8s_version = 'ci'
+        if plugin in ['cilium-eni', 'amazon-vpc']:
+            distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         results.append(
             build_test(
-                distro='u2404',
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -1748,7 +1755,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.30', '1.29', '1.28', '1.27']:
+    for version in ['master', '1.30', '1.29']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -1791,6 +1798,7 @@ def generate_presubmits_network_plugins():
         master_size = "c6g.large"
         node_size = "t4g.large"
         optional = False
+        distro = 'u2404arm64'
         if plugin in ['canal', 'flannel']:
             k8s_version = '1.27'
         if plugin == 'kuberouter':
@@ -1800,9 +1808,11 @@ def generate_presubmits_network_plugins():
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"
             node_size = "r6g.xlarge"
+        if plugin in ['amazonvpc', 'cilium-eni']:
+            distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         results.append(
             presubmit_test(
-                distro='u2404arm64',
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",

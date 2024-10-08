@@ -1,10 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- sttts
-- nikhita
+- aaron-prindle
 approvers:
-- sttts
-- nikhita
-labels:
-- sig/apimachinery
+- aaron-prindle

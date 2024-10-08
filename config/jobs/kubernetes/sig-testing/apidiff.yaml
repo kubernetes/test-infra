@@ -18,6 +18,16 @@ presubmits:
       testgrid-dashboards: sig-testing-misc
       testgrid-create-test-group: 'true'
     path_alias: k8s.io/kubernetes
+    # Additional downstream projects can be checked out for a trial build.
+    # For now, controller-runtime is used because it tends to exercise
+    # quite a lot of the more advanced client-go functionality and breaking
+    # builds with it tends to be disruptive for additional downstream
+    # consumers.
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: controller-runtime
+      base_ref: main
+      path_alias: sigs.k8s.io/controller-runtime
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
@@ -31,7 +41,9 @@ presubmits:
         # PR gets merged into. What we want instead is the revision at
         # which the PR branch diverged from the target branch.
         # We get that from "git merge-base".
-        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA}"
+        #
+        # -b can be used more than once.
+        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA} -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
         env:
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
