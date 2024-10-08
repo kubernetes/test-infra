@@ -586,6 +586,9 @@ branch-protection:
               - Test Linux
               - Test MacOS
               - Test Windows
+        lwkd:
+          exclude:
+            - "^20\\d+" # don't protect weekly article dev branch
         metrics-server:
           branches:
             gh-pages:
