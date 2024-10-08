@@ -931,8 +931,9 @@ func writeDocs(template string, output string, config Configuration) error {
 func linkify(text string) string {
 	// swap space with dash
 	link := strings.Replace(text, " ", "-", -1)
+	link = strings.ReplaceAll(link, ".", "")
 	// discard some special characters
-	discard, _ := regexp.Compile("[.,/]")
+	discard, _ := regexp.Compile("[,/]")
 	link = discard.ReplaceAllString(link, "")
 	// lowercase
 	return strings.ToLower(link)
