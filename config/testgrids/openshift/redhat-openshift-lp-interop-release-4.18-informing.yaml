@@ -73,6 +73,114 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -505,6 +613,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -654,6 +816,14 @@ test_groups:
   name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6
 - gcs_prefix: test-platform-results/logs/periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6-fips
   name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.18-lp-interop-service-registry-2-6-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws
+  name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws-fips
+  name: periodic-ci-insights-qe-iqe-cost-management-plugin-master-ocp4.18-lp-interop-cost-management-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws
+  name: periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws-fips
+  name: periodic-ci-konveyor-tackle-ui-tests-mta_7.0.3-mta-ocp4.18-lp-interop-mta-interop-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
   name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.18-lp-interop-servicemesh-interop-aws-fips
@@ -686,6 +856,10 @@ test_groups:
   name: periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws-fips
   name: periodic-ci-rhoar-qe-spring-boot-openshift-interop-tests-main-springboot-ocp4.18-lp-interop-springboot-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws
+  name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws-fips
+  name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.18-lp-interop-dotnet-interop-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
   name: periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-sclorg-ansible-tests-master-rhscl-ocp4.18-lp-interop-rhscl-interop-aws-fips
