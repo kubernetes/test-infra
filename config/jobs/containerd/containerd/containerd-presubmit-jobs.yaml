@@ -265,6 +265,65 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
+  - name: pull-containerd-node-e2e-1-6-systemd-cgroup
+    always_run: false
+    optional: true
+    cluster: k8s-infra-prow-build
+    max_concurrency: 8
+    decorate: true
+    branches:
+    - release/1.6
+    decoration_config:
+      timeout: 100m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
+      testgrid-tab-name: pull-containerd-node-e2e-1-6-systemd-cgroup
+      description: run node e2e tests
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - name: pull-containerd-node-e2e-1-6
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+        env:
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
+        command:
+        - sh
+        - -c
+        - >
+          runner.sh
+          ./test/build.sh
+          &&
+          cd ${GOPATH}/src/k8s.io/kubernetes
+          &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --deployment=node
+          --gcp-zone=us-central1-f
+          '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+          --node-tests=true
+          --provider=gce
+          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
+          --timeout=65m
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.6-systemd-cgroup-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
   - name: pull-containerd-k8s-e2e-ec2
     branches:
     - main
