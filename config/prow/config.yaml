@@ -18,7 +18,7 @@ plank:
         entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20240802-66b115076"
         sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20240802-66b115076"
       gcs_configuration:
-        bucket: "kubernetes-jenkins"
+        bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
         default_org: "kubernetes"
         default_repo: "kubernetes"
