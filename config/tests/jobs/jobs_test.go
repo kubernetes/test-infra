@@ -47,7 +47,7 @@ import (
 var configPath = flag.String("config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var deckPath = flag.String("deck-path", "https://prow.k8s.io", "Path to deck")
-var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
+var bucket = flag.String("bucket", "kubernetes-ci-logs", "Gcs bucket for log upload")
 var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster")
 
 // Loaded at TestMain.

@@ -22,5 +22,5 @@ git clone https://github.com/kubernetes/test-infra
 	--bare \
 	--job=${JOB_NAME} \
 	--service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
-	--upload="gs://kubernetes-jenkins/logs" \
+	--upload="gs://kubernetes-ci-logs/logs" \
 	"$@"
