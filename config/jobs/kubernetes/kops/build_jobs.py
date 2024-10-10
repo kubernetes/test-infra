@@ -1292,7 +1292,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.29', '1.28', '1.27']:
+    for version in ['1.30', '1.29']:
         results.append(
             build_test(
                 cloud='aws',
