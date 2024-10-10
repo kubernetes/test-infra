@@ -11,7 +11,7 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: golang:1.22.4
         command:
         - make
         - verify
@@ -35,7 +35,7 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: golang:1.22.4
         command:
         - make
         - shellcheck
@@ -57,7 +57,7 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: golang:1.22.4
         command:
         - make
         - test
@@ -79,7 +79,7 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: golang:1.22.4
         command:
         - make
         - e2e-test-local
@@ -101,7 +101,7 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
       containers:
-      - image: golang
+      - image: golang:1.22.4
         command:
         - make
         - images
