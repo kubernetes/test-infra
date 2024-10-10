@@ -818,7 +818,7 @@ presubmits:
         - name: WINDOWS_WORKER_MACHINE_COUNT
           value: "0" # Don't create windows workers
         - name: WORKER_MACHINE_COUNT
-          value: "80"
+          value: "100"
         # clusterloader2 variables
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
