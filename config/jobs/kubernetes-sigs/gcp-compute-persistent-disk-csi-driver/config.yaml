@@ -31,6 +31,42 @@ presubmits:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
       description: Kubernetes e2e tests for Kubernetes Master branch and Driver latest build
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-nvme
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240223-1ded72f317-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          test/run-e2e.sh \
+            --enable-confidential-compute \
+            --vm-name-prefix=gce-pd-csi-e2e-nvme \
+            --ginkgo.focus="\[NVMe\]"
+        env:
+        - name: ZONE
+          value: us-central1-c
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+      testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e-nvme
+      description: Kubernetes e2e tests for Kubernetes Master branch and Driver latest build on NVMe
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
     cluster: k8s-infra-prow-build
     always_run: true
