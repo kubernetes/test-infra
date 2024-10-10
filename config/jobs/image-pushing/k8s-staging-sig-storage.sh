@@ -27,6 +27,7 @@ readonly REPOS=(
     kubernetes-csi/external-provisioner
     kubernetes-csi/external-resizer
     kubernetes-csi/external-snapshotter
+    kubernetes-csi/external-snapshot-metadata
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs

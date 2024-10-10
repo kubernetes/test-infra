@@ -10,6 +10,7 @@ dashboard_groups:
     - sig-storage-csi-external-provisioner
     - sig-storage-csi-external-resizer
     - sig-storage-csi-external-snapshotter
+    - sig-storage-csi-external-snapshot-metadata
     - sig-storage-csi-livenessprobe
     - sig-storage-csi-node-driver-registrar
     - sig-storage-csi-other
@@ -85,6 +86,7 @@ dashboards:
 - name: sig-storage-csi-external-provisioner
 - name: sig-storage-csi-external-resizer
 - name: sig-storage-csi-external-snapshotter
+- name: sig-storage-csi-external-snapshot-metadata
 - name: sig-storage-csi-livenessprobe
 - name: sig-storage-csi-node-driver-registrar
 - name: sig-storage-csi-other
