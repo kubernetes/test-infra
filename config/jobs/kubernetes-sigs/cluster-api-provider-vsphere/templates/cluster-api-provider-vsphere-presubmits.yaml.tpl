@@ -182,6 +182,9 @@ presubmits:
           requests:
             cpu: "4000m"
             memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-{{ $mode }}-blocking-{{ ReplaceAll $.branch "." "-" }}
@@ -230,6 +233,9 @@ presubmits:
             add: ["NET_ADMIN"]
         resources:
           requests:
+            cpu: "4000m"
+            memory: "6Gi"
+          limits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
@@ -335,6 +341,9 @@ presubmits:
           requests:
             cpu: "4000m"
             memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
@@ -384,6 +393,9 @@ presubmits:
           requests:
             cpu: "4000m"
             memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -431,6 +443,9 @@ presubmits:
           requests:
             cpu: "4000m"
             memory: "6Gi"
+          limits:
+            cpu: "4000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
@@ -463,6 +478,9 @@ presubmits:
             add: ["NET_ADMIN"]
         resources:
           requests:
+            cpu: "2000m"
+            memory: "4Gi"
+          limits:
             cpu: "2000m"
             memory: "4Gi"
     annotations:
