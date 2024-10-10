@@ -138,6 +138,9 @@ periodics:
         requests:
           cpu: "4000m"
           memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -252,6 +255,9 @@ periodics:
         requests:
           cpu: "4000m"
           memory: "6Gi"
+        limits:
+          cpu: "4000m"
+          memory: "6Gi"
   annotations:
     testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
     testgrid-tab-name: periodic-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
@@ -303,6 +309,9 @@ periodics:
           add: ["NET_ADMIN"]
       resources:
         requests:
+          cpu: "4000m"
+          memory: "6Gi"
+        limits:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
@@ -400,6 +409,9 @@ periodics:
           add: ["NET_ADMIN"]
       resources:
         requests:
+          cpu: "2000m"
+          memory: "4Gi"
+        limits:
           cpu: "2000m"
           memory: "4Gi"
   annotations:
