@@ -4114,10 +4114,6 @@ presubmits:
                 memory: 10Gi
     - name: pull-kubernetes-node-e2e-cri-proxy-serial
       cluster: k8s-infra-prow-build
-      branches:
-        # TODO(releng): Remove once repo default branch has been renamed
-        - master
-        - main
       always_run: false
       optional: true
       max_concurrency: 12
