@@ -135,6 +135,8 @@ periodics:
   max_concurrency: 1
   name: ci-k8sio-file-promo-mirrors
   decorate: true
+  decoration_config:
+    timeout: 3h
   extra_refs:
   - org: kubernetes
     repo: k8s.io
