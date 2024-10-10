@@ -893,6 +893,10 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
       workdir: true
+    - org: containerd
+      repo: containerd
+      base_ref: main
+      path_alias: github.com/containerd/containerd
     - org: kubernetes
       repo: test-infra
       base_ref: master
