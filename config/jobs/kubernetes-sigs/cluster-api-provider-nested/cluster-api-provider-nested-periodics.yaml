@@ -14,7 +14,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -43,7 +43,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       command:
       - "runner.sh"
       - "./scripts/ci-test.sh"

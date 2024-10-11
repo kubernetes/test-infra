@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       resources:
         limits:
           cpu: 2

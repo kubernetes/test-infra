@@ -10,7 +10,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -34,7 +34,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -64,7 +64,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -104,7 +104,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
           command:
             - runner.sh
           args:
@@ -147,7 +147,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -189,7 +189,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -232,7 +232,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -269,7 +269,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
         - "runner.sh"
         - "make"
@@ -305,7 +305,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -336,7 +336,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -367,7 +367,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         command:
           - runner.sh
         args:
@@ -415,7 +415,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
           command:
             - runner.sh
           args:
@@ -457,7 +457,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-1.29
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
