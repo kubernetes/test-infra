@@ -176,6 +176,7 @@ deck:
   # false
   skip_storage_path_validation: false
   additional_allowed_buckets:
+    - kubernetes-jenkins # required for 6/12 months from 11th of October 2024
     - k8s-ovn
     - containerd-integration
     - ppc64le-kubernetes
