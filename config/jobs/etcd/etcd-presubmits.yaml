@@ -293,7 +293,6 @@ presubmits:
             memory: "3Gi"
 
   - name: pull-etcd-integration-1-cpu-arm64
-    optional: true # remove when stable
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
@@ -356,7 +355,6 @@ presubmits:
             memory: "3Gi"
 
   - name: pull-etcd-integration-2-cpu-arm64
-    optional: true # remove when stable
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
@@ -419,7 +417,6 @@ presubmits:
             memory: "3Gi"
 
   - name: pull-etcd-integration-4-cpu-arm64
-    optional: true # remove when stable
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
