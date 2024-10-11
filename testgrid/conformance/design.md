@@ -39,17 +39,17 @@ For each scenario the command line will look something like the following.
 
 - Forwarding to testgrid from e2e.log and junit.xml already obtained by the user (EG dumped from the cluster or downloaded manually from Scanner, etc...):
 
-`conformance2testgrid --bucket=gs://kubernetes-jenkins/logs/foo-job-name --junit=/path/to/junit_01.xml --log=/path/to/e2e.log`
+`conformance2testgrid --bucket=gs://kubernetes-ci-logs/logs/foo-job-name --junit=/path/to/junit_01.xml --log=/path/to/e2e.log`
 
 - Forwarding to testgrid from a running cluster that has just run the tests (assumes kubectl in path and KUBECONFIG pointed at the cluster):
 
-`conformance2testgrid --bucket=gs://kubernetes-jenkins/logs/foo-job-name --dump-from-cluster`
+`conformance2testgrid --bucket=gs://kubernetes-ci-logs/logs/foo-job-name --dump-from-cluster`
 
 - Forwarding to testgrid from Heptio Scanner results (automatically downloaded by the tool):
 
-`conformance2testgrid --bucket=gs://kubernetes-jenkins/logs/foo-job-name --scanner-url=https://scanner.heptio.com/3f15e956994d70722e8e306b7bd4d13d/diagnostics/`
+`conformance2testgrid --bucket=gs://kubernetes-ci-logs/logs/foo-job-name --scanner-url=https://scanner.heptio.com/3f15e956994d70722e8e306b7bd4d13d/diagnostics/`
 
-`conformance2testgrid --bucket=gs://kubernetes-jenkins/logs/foo-job-name --scanner-uuid=3f15e956994d70722e8e306b7bd4d13d`
+`conformance2testgrid --bucket=gs://kubernetes-ci-logs/logs/foo-job-name --scanner-uuid=3f15e956994d70722e8e306b7bd4d13d`
 
 _Note: Scanner integration was dropped in the final design in order to focus on Continuous Integration results, however the tool can still be used to upload scanner results once they've been downloaded._
 

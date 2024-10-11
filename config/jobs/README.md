@@ -78,7 +78,7 @@ A presubmit job named "pull-community-verify" that will run against all PRs to
 kubernetes/community's master branch. It will run `make verify` in a checkout
 of kubernetes/community at the PR's HEAD. It will report back to the PR via a
 status context named `pull-kubernetes-community`. Its logs and results are going
-to end up in GCS under `kubernetes-jenkins/pr-logs/pull/community`. Historical
+to end up in GCS under `kubernetes-ci-logs/pr-logs/pull/community`. Historical
 results will display in testgrid on the `sig-contribex-community` dashboard
 under the `pull-verify` tab
 
@@ -110,7 +110,7 @@ branch. It will run `./scripts/ci-aws-cred-test.sh` in a checkout of the repo
 located at `sigs.k8s.io/cluster-api-provider-aws`. The presets it's using will
 ensure it has aws credentials and aws ssh keys in well known locations. Its
 logs and results are going to end up in GCS under 
-`kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds`.
+`kubernetes-ci-logs/logs/periodic-cluster-api-provider-aws-test-creds`.
 Historical results will display in testgrid on the `sig-cluster-lifecycle-cluster-api-provider-aws`
 dashboard under the `test-creds` tab
 

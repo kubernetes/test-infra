@@ -132,7 +132,7 @@ Ex:
 ```yaml
 test_groups:
 - name: {test_group_name}
-  gcs_prefix: kubernetes-jenkins/logs/{test_group_name}
+  gcs_prefix: kubernetes-ci-logs/logs/{test_group_name}
 ```
 
 See the `TestGroup` message in [`config.proto`] for additional fields to
@@ -198,7 +198,7 @@ Specify `days_of_results` in a test group to increase or decrease the number of 
 ```yaml
 test_groups:
 - name: kubernetes-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-build
   days_of_results: 7
 ```
 
@@ -273,7 +273,7 @@ for your test group. Example:
 test_groups:
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   gcs_prefix:
-  kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+  kubernetes-ci-logs/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   column_header:
   - configuration_value: Commit
   - configuration_value: my_custom_key
@@ -305,7 +305,7 @@ runs).
 # haven't run in the last day.
 test_groups:
 - name: ci-kubernetes-e2e-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-e2e-gce
   alert_stale_results_hours: 24
   num_failures_to_alert: 3
 
@@ -338,7 +338,7 @@ If you run multiple versions of a test against different parameters, show which 
 ```yaml
 # Show a test case as "{test_case_name} [{Context}]"
 - name: ci-kubernetes-node-kubelet-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-node-kubelet-benchmark
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -392,7 +392,7 @@ or
 ```yaml
 test_groups:  # Attach to a specific test_group
 - name: kubernetes-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-build
   notifications:
   - summary: Hello world (first notification)
   - summary: Tests are failing to start (second notification).
@@ -407,7 +407,7 @@ TestGrid uses this to calculate things like 'is this test stale?' (and hides the
 ```yaml
 test_groups:
 - name: kubernetes-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-build
   num_columns_recent: 3
 ```
 
@@ -432,7 +432,7 @@ be shown if we have data for them. If you want to have these not show up, add:
 ```yaml
 test_groups:
 - name: kubernetes-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-build
   ignore_pending: true
 ```
 
@@ -443,7 +443,7 @@ Specify `short_text_metric` to display a custom numeric metric in the TestGrid c
 ```yaml
 test_groups:
 - name: ci-kubernetes-coverage-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
+  gcs_prefix: kubernetes-ci-logs/logs/ci-kubernetes-coverage-conformance
   short_text_metric: coverage
 ```
 

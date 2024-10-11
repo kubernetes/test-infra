@@ -31,7 +31,7 @@ spec:
         - name: DEPLOYMENT
           value: staging
         - name: SUBSCRIPTION_PATH
-          value: kubernetes-jenkins/gcs-changes/kettle-staging
+          value: kubernetes-public/kubernetes-ci-logs-updates/k8s-infra-kettle-staging
         volumeMounts:
         - name: data
           mountPath: /data
