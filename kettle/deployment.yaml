@@ -33,7 +33,7 @@ spec:
         - name: DEPLOYMENT
           value: prod
         - name: SUBSCRIPTION_PATH
-          value: kubernetes-jenkins/gcs-changes/kettle-filtered
+          value: kubernetes-public/kubernetes-ci-logs-updates/k8s-infra-kettle
         resources:
           requests:
             memory: 4Gi
