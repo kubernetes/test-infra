@@ -4660,7 +4660,7 @@ presubmits:
             - --node-tests=true
             - --provider=gce
             # all criproxy tests are serial, but no need to specify it
-            - --focus=--nodes=1 "\[Feature:CriProxy\]" --skip="\[Flaky\]"
+            - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]"
             - --timeout=65m
           env:
             - name: GOPATH
