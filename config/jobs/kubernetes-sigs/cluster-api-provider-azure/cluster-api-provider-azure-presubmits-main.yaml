@@ -786,6 +786,7 @@ presubmits:
         - bash
         - -c
         - >-
+          sleep 300 &&
           cd ${GOPATH}/src/k8s.io/perf-tests/ &&
           ./run-e2e.sh cluster-loader2
           --nodes=100 \
