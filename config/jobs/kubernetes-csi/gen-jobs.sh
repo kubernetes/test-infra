@@ -58,6 +58,7 @@ external-attacher
 external-provisioner
 external-resizer
 external-snapshotter
+external-snapshot-metadata
 livenessprobe
 node-driver-registrar
 "
