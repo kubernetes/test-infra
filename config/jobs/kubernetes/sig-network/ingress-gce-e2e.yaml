@@ -94,7 +94,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
         command:
         - runner.sh
         - make
@@ -125,7 +125,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
         command:
         - runner.sh
         - make
@@ -157,7 +157,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
         resources:
           limits:
             cpu: 4
@@ -188,7 +188,7 @@ periodics:
     timeout: 340m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
