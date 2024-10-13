@@ -162,6 +162,8 @@ presubmits:
     cluster: eks-prow-build-cluster
     max_concurrency: 50
     decorate: true
+    decoration_config:
+      timeout: 240m
     extra_refs:
       - org: kubernetes-sigs
         repo: provider-aws-test-infra
@@ -188,17 +190,17 @@ presubmits:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=cgroupfs"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
           resources:
             limits:
-              cpu: 4
-              memory: 6Gi
+              cpu: 8
+              memory: 10Gi
             requests:
-              cpu: 4
-              memory: 6Gi
+              cpu: 8
+              memory: 10Gi
   - name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2
     skip_branches:
       - release-\d+\.\d+  # per-release image
