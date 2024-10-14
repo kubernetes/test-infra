@@ -820,18 +820,7 @@ presubmits:
           value: "0" # Don't create windows workers
         - name: WORKER_MACHINE_COUNT
           value: "100"
-        # clusterloader2 variables
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
-          value: "true"
-        - name: PROMETHEUS_APISERVER_SCRAPE_PORT
-          value: "6443"
-        - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
-          value: "true"
-        - name: CL2_PROMETHEUS_TOLERATE_MASTER
-          value: "true"
-        # from google cl2
+        # From google cl2
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
@@ -840,13 +829,9 @@ presubmits:
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
           value: "99.5"
-        # azuredisk variables - required for Prometheus PVC
+        # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
         - name: DEPLOY_AZURE_CSI_DRIVER
           value: "false"
-        - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
-          value: "kubernetes.io/azure-disk"
-        - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
-          value: "StandardSSD_LRS"
         resources:
           requests:
             cpu: "4"
