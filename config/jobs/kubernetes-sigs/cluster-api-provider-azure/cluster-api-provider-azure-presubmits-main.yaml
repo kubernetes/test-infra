@@ -771,9 +771,9 @@ presubmits:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: kubernetes
+    - org: Jont828
       repo: perf-tests
-      base_ref: "master"
+      base_ref: "cl2-namespace-fix"
       path_alias: "k8s.io/perf-tests"
     spec:
       serviceAccountName: azure
