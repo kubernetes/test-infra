@@ -3,9 +3,9 @@
 periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127
+- name: e2e-kops-aws-upgrade-k128-ko128-to-k129-ko129
   cluster: k8s-infra-kops-prow-build
-  cron: '6 10-23/24 * * *'
+  cron: '33 13-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -29,13 +29,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.26.6"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
-        value: "v1.26.11"
+        value: "v1.28.14"
       - name: KOPS_VERSION_B
-        value: "1.27"
+        value: "1.29"
       - name: K8S_VERSION_B
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -45,12 +45,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-9ba274829e-feea8.tests-kops-aws.k8s.io"
+        value: "e2e-2d6e5e2687-868df.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -70,12 +70,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko127
+    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k129-ko129
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko127-many-addons
+- name: e2e-kops-aws-upgrade-k128-ko128-to-k129-ko129-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '5 13-23/24 * * *'
+  cron: '29 13-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -99,13 +99,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.26.6"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
-        value: "v1.26.11"
+        value: "v1.28.14"
       - name: KOPS_VERSION_B
-        value: "1.27"
+        value: "1.29"
       - name: K8S_VERSION_B
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -121,12 +121,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-ebe0e4cc67-046aa.tests-kops-aws.k8s.io"
+        value: "e2e-21e4ab0a00-b21cd.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -146,12 +146,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko127-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k129-ko129-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127
+- name: e2e-kops-aws-upgrade-k129-ko129-to-k129-ko129
   cluster: k8s-infra-kops-prow-build
-  cron: '40 4-23/24 * * *'
+  cron: '3 3-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -175,13 +175,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.27.7"
+        value: "v1.29.8"
       - name: KOPS_VERSION_B
-        value: "1.27"
+        value: "1.29"
       - name: K8S_VERSION_B
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -191,12 +191,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-5f6a7c34d6-41951.tests-kops-aws.k8s.io"
+        value: "e2e-ef508ab0ca-d8b4e.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -216,12 +216,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k127-ko127
+    testgrid-tab-name: kops-aws-upgrade-k129-ko129-to-k129-ko129
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko127-to-k127-ko127-many-addons
+- name: e2e-kops-aws-upgrade-k129-ko129-to-k129-ko129-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '3 23-23/24 * * *'
+  cron: '7 15-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -245,13 +245,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.27.7"
+        value: "v1.29.8"
       - name: KOPS_VERSION_B
-        value: "1.27"
+        value: "1.29"
       - name: K8S_VERSION_B
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -267,12 +267,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-ec26b3174a-cd001.tests-kops-aws.k8s.io"
+        value: "e2e-884e0f87c8-79e59.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -292,10 +292,80 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k127-ko127-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k129-ko129-to-k129-ko129-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128
+- name: e2e-kops-aws-upgrade-k128-ko128-to-k129-ko130
+  cluster: k8s-infra-kops-prow-build
+  cron: '56 8-23/24 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "v1.28.7"
+      - name: K8S_VERSION_A
+        value: "v1.28.14"
+      - name: KOPS_VERSION_B
+        value: "1.30"
+      - name: K8S_VERSION_B
+        value: "v1.29.9"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-3403df09d3-5350d.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k129-ko130
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k128-ko128-to-k129-ko130-many-addons
   cluster: k8s-infra-kops-prow-build
   cron: '11 19-23/24 * * *'
   labels:
@@ -321,83 +391,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.26.6"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
-        value: "v1.26.11"
+        value: "v1.28.14"
       - name: KOPS_VERSION_B
-        value: "1.28"
+        value: "1.30"
       - name: K8S_VERSION_B
-        value: "v1.27.8"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-13b41b15e5-ff6f5.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko128
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko126-to-k127-ko128-many-addons
-  cluster: k8s-infra-kops-prow-build
-  cron: '52 8-23/24 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.26.6"
-      - name: K8S_VERSION_A
-        value: "v1.26.11"
-      - name: KOPS_VERSION_B
-        value: "1.28"
-      - name: K8S_VERSION_B
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -413,12 +413,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-6734e67200-e477d.tests-kops-aws.k8s.io"
+        value: "e2e-871b28a00e-59919.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -438,12 +438,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-ko128-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k129-ko130-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128
+- name: e2e-kops-aws-upgrade-k129-ko129-to-k130-ko130
   cluster: k8s-infra-kops-prow-build
-  cron: '40 4-23/24 * * *'
+  cron: '19 3-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -467,13 +467,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_VERSION_B
-        value: "1.28"
+        value: "1.30"
       - name: K8S_VERSION_B
-        value: "v1.28.4"
+        value: "v1.30.5"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -483,12 +483,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-5cce897dd9-6fae0.tests-kops-aws.k8s.io"
+        value: "e2e-eca79059e6-965f5.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -508,12 +508,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-ko128
+    testgrid-tab-name: kops-aws-upgrade-k129-ko129-to-k130-ko130
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko127-to-k128-ko128-many-addons
+- name: e2e-kops-aws-upgrade-k129-ko129-to-k130-ko130-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '24 12-23/24 * * *'
+  cron: '42 10-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -537,13 +537,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.27.8"
+        value: "v1.29.9"
       - name: KOPS_VERSION_B
-        value: "1.28"
+        value: "1.30"
       - name: K8S_VERSION_B
-        value: "v1.28.4"
+        value: "v1.30.5"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -559,12 +559,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-eb7d632f12-192d9.tests-kops-aws.k8s.io"
+        value: "e2e-2c397c5cfa-6a78e.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -584,12 +584,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-ko128-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k129-ko129-to-k130-ko130-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128
+- name: e2e-kops-aws-upgrade-k130-ko130-to-k130-ko130
   cluster: k8s-infra-kops-prow-build
-  cron: '23 23-23/24 * * *'
+  cron: '9 13-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -613,13 +613,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.30.1"
       - name: K8S_VERSION_A
-        value: "v1.28.3"
+        value: "v1.30.4"
       - name: KOPS_VERSION_B
-        value: "1.28"
+        value: "1.30"
       - name: K8S_VERSION_B
-        value: "v1.28.4"
+        value: "v1.30.5"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -629,12 +629,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-42bfef03b8-389b1.tests-kops-aws.k8s.io"
+        value: "e2e-8e6e1e25dc-e681d.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -654,12 +654,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k128-ko128
+    testgrid-tab-name: kops-aws-upgrade-k130-ko130-to-k130-ko130
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k128-ko128-to-k128-ko128-many-addons
+- name: e2e-kops-aws-upgrade-k130-ko130-to-k130-ko130-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '48 16-23/24 * * *'
+  cron: '44 0-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -683,13 +683,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.30.1"
       - name: K8S_VERSION_A
-        value: "v1.28.3"
+        value: "v1.30.4"
       - name: KOPS_VERSION_B
-        value: "1.28"
+        value: "1.30"
       - name: K8S_VERSION_B
-        value: "v1.28.4"
+        value: "v1.30.5"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -705,12 +705,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-cb6ec85b38-a11dd.tests-kops-aws.k8s.io"
+        value: "e2e-1f324f187a-6e26b.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -730,12 +730,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k128-ko128-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k130-ko130-to-k130-ko130-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest
+- name: e2e-kops-aws-upgrade-k128-ko128-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '32 5-23/8 * * *'
+  cron: '51 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -759,9 +759,9 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.26.6"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
-        value: "v1.26.0"
+        value: "v1.28.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
@@ -775,12 +775,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-a107ec63ea-42cbe.tests-kops-aws.k8s.io"
+        value: "e2e-c71cd64100-cf4fc.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -800,12 +800,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k127-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko126-to-k127-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k128-ko128-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '10 2-23/8 * * *'
+  cron: '41 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -829,9 +829,9 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.26.6"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
-        value: "v1.26.0"
+        value: "v1.28.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
@@ -851,12 +851,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-cb261a338c-88b03.tests-kops-aws.k8s.io"
+        value: "e2e-67da7f3a18-52fa9.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -876,12 +876,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko126-to-k127-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k128-ko128-to-k127-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest
+- name: e2e-kops-aws-upgrade-k126-ko129-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '43 6-23/8 * * *'
+  cron: '16 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -905,299 +905,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
-      - name: K8S_VERSION_A
-        value: "v1.24.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.25.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-47fcbdd84b-0374e.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k124-ko127-to-k125-kolatest
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-ko127-to-k125-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
-  cron: '1 1-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.27.3"
-      - name: K8S_VERSION_A
-        value: "v1.24.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.25.0"
-      - name: KOPS_SKIP_E2E
-        value: "1"
-      - name: KOPS_TEMPLATE
-        value: "tests/e2e/templates/many-addons.yaml.tmpl"
-      - name: KOPS_CONTROL_PLANE_SIZE
-        value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-f377e4ced7-0f515.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k124-ko127-to-k125-kolatest-many-addons
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest
-  cluster: k8s-infra-kops-prow-build
-  cron: '19 2-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.27.3"
-      - name: K8S_VERSION_A
-        value: "v1.25.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.26.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-c46fe1ee39-eabd1.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k125-ko127-to-k126-kolatest
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k125-ko127-to-k126-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
-  cron: '8 4-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.27.3"
-      - name: K8S_VERSION_A
-        value: "v1.25.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.26.0"
-      - name: KOPS_SKIP_E2E
-        value: "1"
-      - name: KOPS_TEMPLATE
-        value: "tests/e2e/templates/many-addons.yaml.tmpl"
-      - name: KOPS_CONTROL_PLANE_SIZE
-        value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-0c89ac61ed-69907.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k125-ko127-to-k126-kolatest-many-addons
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest
-  cluster: k8s-infra-kops-prow-build
-  cron: '37 4-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
         value: "v1.26.0"
       - name: KOPS_VERSION_B
@@ -1213,12 +921,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-96cbebf7ac-5a314.tests-kops-aws.k8s.io"
+        value: "e2e-03f788856c-b9e71.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1238,12 +946,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko127-to-k127-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k126-ko129-to-k127-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko127-to-k127-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k126-ko129-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '6 2-23/8 * * *'
+  cron: '39 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1267,7 +975,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
         value: "v1.26.0"
       - name: KOPS_VERSION_B
@@ -1289,12 +997,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-5b97447976-b7284.tests-kops-aws.k8s.io"
+        value: "e2e-a89a5943ef-fc8a0.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1314,12 +1022,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko127-to-k127-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k126-ko129-to-k127-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest
+- name: e2e-kops-aws-upgrade-k127-ko129-to-k128-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '55 6-23/8 * * *'
+  cron: '30 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1343,7 +1051,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
         value: "v1.27.0"
       - name: KOPS_VERSION_B
@@ -1359,12 +1067,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-1731c72aa2-b68de.tests-kops-aws.k8s.io"
+        value: "e2e-f8fa69f086-6aa7c.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1384,12 +1092,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k127-ko129-to-k128-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko127-to-k128-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k127-ko129-to-k128-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '31 7-23/8 * * *'
+  cron: '54 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1413,7 +1121,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.27.3"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
         value: "v1.27.0"
       - name: KOPS_VERSION_B
@@ -1435,12 +1143,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-3e38f4058a-0e0be.tests-kops-aws.k8s.io"
+        value: "e2e-5e49c41116-3b45e.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1460,12 +1168,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko127-to-k128-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k127-ko129-to-k128-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest
+- name: e2e-kops-aws-upgrade-k128-ko129-to-k129-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '51 6-23/8 * * *'
+  cron: '17 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1489,13 +1197,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.24.0"
+        value: "v1.28.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.25.0"
+        value: "v1.29.0"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1505,12 +1213,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-91780086ad-c0835.tests-kops-aws.k8s.io"
+        value: "e2e-3764f0160b-69478.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1530,12 +1238,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k124-ko128-to-k125-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k128-ko129-to-k129-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-ko128-to-k125-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k128-ko129-to-k129-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '40 0-23/8 * * *'
+  cron: '41 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1559,13 +1267,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.24.0"
+        value: "v1.28.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.25.0"
+        value: "v1.29.0"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -1581,12 +1289,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-6d3bfe8337-84e86.tests-kops-aws.k8s.io"
+        value: "e2e-cff7790a39-6a0ee.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1606,12 +1314,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k124-ko128-to-k125-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k128-ko129-to-k129-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest
+- name: e2e-kops-aws-upgrade-k129-ko129-to-k130-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '47 2-23/8 * * *'
+  cron: '20 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1635,13 +1343,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.25.0"
+        value: "v1.29.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.26.0"
+        value: "v1.30.0"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1651,12 +1359,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-1e995c134b-6d07a.tests-kops-aws.k8s.io"
+        value: "e2e-1be01b4fec-344aa.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1676,12 +1384,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k125-ko128-to-k126-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k129-ko129-to-k130-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k129-ko129-to-k130-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '37 5-23/8 * * *'
+  cron: '56 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1705,13 +1413,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.29.2"
       - name: K8S_VERSION_A
-        value: "v1.25.0"
+        value: "v1.29.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.26.0"
+        value: "v1.30.0"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -1727,12 +1435,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-78a1b4a809-b1e59.tests-kops-aws.k8s.io"
+        value: "e2e-1adb2b8eed-238e4.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1752,12 +1460,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k125-ko128-to-k126-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k129-ko129-to-k130-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest
+- name: e2e-kops-aws-upgrade-k126-ko130-to-k127-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '5 4-23/8 * * *'
+  cron: '53 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1781,89 +1489,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
-      - name: K8S_VERSION_A
-        value: "v1.26.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.27.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-cbcff57532-10a01.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko128-to-k127-kolatest
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k126-ko128-to-k127-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
-  cron: '23 3-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.30.1"
       - name: K8S_VERSION_A
         value: "v1.26.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
         value: "v1.27.0"
-      - name: KOPS_SKIP_E2E
-        value: "1"
-      - name: KOPS_TEMPLATE
-        value: "tests/e2e/templates/many-addons.yaml.tmpl"
-      - name: KOPS_CONTROL_PLANE_SIZE
-        value: "3"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -1873,82 +1505,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-e9a54c1e99-7ace6.tests-kops-aws.k8s.io"
+        value: "e2e-19286525ea-a4fd9.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k126-ko128-to-k127-kolatest-many-addons
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest
-  cluster: k8s-infra-kops-prow-build
-  cron: '55 6-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "v1.28.4"
-      - name: K8S_VERSION_A
-        value: "v1.27.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.28.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-e27d55cd2a-41048.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1968,12 +1530,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko128-to-k128-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k126-ko130-to-k127-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k127-ko128-to-k128-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k126-ko130-to-k127-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '42 6-23/8 * * *'
+  cron: '43 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1997,7 +1559,153 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.30.1"
+      - name: K8S_VERSION_A
+        value: "v1.26.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.27.0"
+      - name: KOPS_SKIP_E2E
+        value: "1"
+      - name: KOPS_TEMPLATE
+        value: "tests/e2e/templates/many-addons.yaml.tmpl"
+      - name: KOPS_CONTROL_PLANE_SIZE
+        value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-1703c34bc8-52589.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k126-ko130-to-k127-kolatest-many-addons
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k127-ko130-to-k128-kolatest
+  cluster: k8s-infra-kops-prow-build
+  cron: '35 2-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "v1.30.1"
+      - name: K8S_VERSION_A
+        value: "v1.27.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.28.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-2cd1ec8d69-62b98.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k127-ko130-to-k128-kolatest
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k127-ko130-to-k128-kolatest-many-addons
+  cluster: k8s-infra-kops-prow-build
+  cron: '26 6-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "v1.30.1"
       - name: K8S_VERSION_A
         value: "v1.27.0"
       - name: KOPS_VERSION_B
@@ -2019,12 +1727,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-3788fcc203-58f41.tests-kops-aws.k8s.io"
+        value: "e2e-f6f6d04b57-9ffc0.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2044,12 +1752,12 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k127-ko128-to-k128-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k127-ko130-to-k128-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest
+- name: e2e-kops-aws-upgrade-k128-ko130-to-k129-kolatest
   cluster: k8s-infra-kops-prow-build
-  cron: '46 4-23/8 * * *'
+  cron: '8 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2073,13 +1781,13 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "latest"
+        value: "v1.30.1"
       - name: K8S_VERSION_A
         value: "v1.28.0"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "latest"
+        value: "v1.29.0"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-ci-prow-state-store"
       - name: KOPS_DNS_DOMAIN
@@ -2089,12 +1797,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-e2cdb5dc79-ded41.tests-kops-aws.k8s.io"
+        value: "e2e-27163eaf63-fff4c.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2114,12 +1822,526 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k128-kolatest-to-klatest-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k128-ko130-to-k129-kolatest
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k128-kolatest-to-klatest-kolatest-many-addons
+- name: e2e-kops-aws-upgrade-k128-ko130-to-k129-kolatest-many-addons
   cluster: k8s-infra-kops-prow-build
-  cron: '0 7-23/8 * * *'
+  cron: '9 1-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "v1.30.1"
+      - name: K8S_VERSION_A
+        value: "v1.28.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.29.0"
+      - name: KOPS_SKIP_E2E
+        value: "1"
+      - name: KOPS_TEMPLATE
+        value: "tests/e2e/templates/many-addons.yaml.tmpl"
+      - name: KOPS_CONTROL_PLANE_SIZE
+        value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-dd96f7c979-02e8e.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k128-ko130-to-k129-kolatest-many-addons
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k129-ko130-to-k130-kolatest
+  cluster: k8s-infra-kops-prow-build
+  cron: '25 0-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "v1.30.1"
+      - name: K8S_VERSION_A
+        value: "v1.29.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.30.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-0060c14f14-4e333.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k129-ko130-to-k130-kolatest
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k129-ko130-to-k130-kolatest-many-addons
+  cluster: k8s-infra-kops-prow-build
+  cron: '12 0-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "v1.30.1"
+      - name: K8S_VERSION_A
+        value: "v1.29.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.30.0"
+      - name: KOPS_SKIP_E2E
+        value: "1"
+      - name: KOPS_TEMPLATE
+        value: "tests/e2e/templates/many-addons.yaml.tmpl"
+      - name: KOPS_CONTROL_PLANE_SIZE
+        value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-48513dbe69-9f11d.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k129-ko130-to-k130-kolatest-many-addons
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k130-kolatest-to-klatest-kolatest
+  cluster: k8s-infra-kops-prow-build
+  cron: '54 4-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "latest"
+      - name: K8S_VERSION_A
+        value: "v1.30.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "latest"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-6bfc0252c3-8e342.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k130-kolatest-to-klatest-kolatest
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k130-kolatest-to-klatest-kolatest-many-addons
+  cluster: k8s-infra-kops-prow-build
+  cron: '44 3-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "latest"
+      - name: K8S_VERSION_A
+        value: "v1.30.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "latest"
+      - name: KOPS_SKIP_E2E
+        value: "1"
+      - name: KOPS_TEMPLATE
+        value: "tests/e2e/templates/many-addons.yaml.tmpl"
+      - name: KOPS_CONTROL_PLANE_SIZE
+        value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-32059edf0e-e8534.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k130-kolatest-to-klatest-kolatest-many-addons
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k129-kolatest-to-k130-kolatest
+  cluster: k8s-infra-kops-prow-build
+  cron: '54 4-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "latest"
+      - name: K8S_VERSION_A
+        value: "v1.29.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.30.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-cd416be34a-407d2.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k129-kolatest-to-k130-kolatest
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k129-kolatest-to-k130-kolatest-many-addons
+  cluster: k8s-infra-kops-prow-build
+  cron: '46 2-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
+        value: "latest"
+      - name: K8S_VERSION_A
+        value: "v1.29.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.30.0"
+      - name: KOPS_SKIP_E2E
+        value: "1"
+      - name: KOPS_TEMPLATE
+        value: "tests/e2e/templates/many-addons.yaml.tmpl"
+      - name: KOPS_CONTROL_PLANE_SIZE
+        value: "3"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-6097540672-d838f.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k129-kolatest-to-k130-kolatest-many-addons
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k128-kolatest-to-k129-kolatest
+  cluster: k8s-infra-kops-prow-build
+  cron: '1 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2149,7 +2371,77 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
+        value: "v1.29.0"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-kops-ci-prow-state-store"
+      - name: KOPS_DNS_DOMAIN
+        value: "tests-kops-aws.k8s.io"
+      - name: DISCOVERY_STORE
+        value: "s3://k8s-kops-ci-prow"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-172a12e2ae-df4fa.tests-kops-aws.k8s.io"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: 6Gi
+        requests:
+          cpu: "4"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: latest
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: kops-aws-upgrade-k128-kolatest-to-k129-kolatest
+
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+- name: e2e-kops-aws-upgrade-k128-kolatest-to-k129-kolatest-many-addons
+  cluster: k8s-infra-kops-prow-build
+  cron: '59 7-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-dind-enabled: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      env:
+      - name: KOPS_VERSION_A
         value: "latest"
+      - name: K8S_VERSION_A
+        value: "v1.28.0"
+      - name: KOPS_VERSION_B
+        value: "latest"
+      - name: K8S_VERSION_B
+        value: "v1.29.0"
       - name: KOPS_SKIP_E2E
         value: "1"
       - name: KOPS_TEMPLATE
@@ -2165,12 +2457,12 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-1fb091dcd3-b22a5.tests-kops-aws.k8s.io"
+        value: "e2e-73f49c02d7-9ea9c.tests-kops-aws.k8s.io"
       - name: KUBE_SSH_USER
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2190,7 +2482,7 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k128-kolatest-to-klatest-kolatest-many-addons
+    testgrid-tab-name: kops-aws-upgrade-k128-kolatest-to-k129-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k127-kolatest-to-k128-kolatest
@@ -2240,7 +2532,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2316,7 +2608,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2386,7 +2678,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2462,7 +2754,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2483,298 +2775,6 @@ periodics:
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-upgrade-k126-kolatest-to-k127-kolatest-many-addons
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest
-  cluster: k8s-infra-kops-prow-build
-  cron: '38 4-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "latest"
-      - name: K8S_VERSION_A
-        value: "v1.25.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.26.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-867a23fec4-ae36a.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k125-kolatest-to-k126-kolatest
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
-  cron: '52 0-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "latest"
-      - name: K8S_VERSION_A
-        value: "v1.25.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.26.0"
-      - name: KOPS_SKIP_E2E
-        value: "1"
-      - name: KOPS_TEMPLATE
-        value: "tests/e2e/templates/many-addons.yaml.tmpl"
-      - name: KOPS_CONTROL_PLANE_SIZE
-        value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-777e381679-439d4.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest
-  cluster: k8s-infra-kops-prow-build
-  cron: '40 6-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "latest"
-      - name: K8S_VERSION_A
-        value: "v1.24.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.25.0"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-b6570541df-e1aa5.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k124-kolatest-to-k125-kolatest
-
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
-  cluster: k8s-infra-kops-prow-build
-  cron: '29 1-23/8 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
-  max_concurrency: 1
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
-      env:
-      - name: KOPS_VERSION_A
-        value: "latest"
-      - name: K8S_VERSION_A
-        value: "v1.24.0"
-      - name: KOPS_VERSION_B
-        value: "latest"
-      - name: K8S_VERSION_B
-        value: "v1.25.0"
-      - name: KOPS_SKIP_E2E
-        value: "1"
-      - name: KOPS_TEMPLATE
-        value: "tests/e2e/templates/many-addons.yaml.tmpl"
-      - name: KOPS_CONTROL_PLANE_SIZE
-        value: "3"
-      - name: KOPS_STATE_STORE
-        value: "s3://k8s-kops-ci-prow-state-store"
-      - name: KOPS_DNS_DOMAIN
-        value: "tests-kops-aws.k8s.io"
-      - name: DISCOVERY_STORE
-        value: "s3://k8s-kops-ci-prow"
-      - name: CLOUD_PROVIDER
-        value: "aws"
-      - name: CLUSTER_NAME
-        value: "e2e-34130155e9-15435.tests-kops-aws.k8s.io"
-      - name: KUBE_SSH_USER
-        value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-      securityContext:
-        privileged: true
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: stable
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-upgrades-many-addons, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
@@ -2824,7 +2824,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2900,7 +2900,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2970,7 +2970,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3046,7 +3046,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3095,7 +3095,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
         value: "v1.28.0"
       - name: KOPS_VERSION_B
@@ -3116,7 +3116,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3165,7 +3165,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.28.4"
+        value: "v1.28.7"
       - name: K8S_VERSION_A
         value: "v1.28.0"
       - name: KOPS_VERSION_B
@@ -3186,7 +3186,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240923-c8645c1a17-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
       imagePullPolicy: Always
       resources:
         limits:

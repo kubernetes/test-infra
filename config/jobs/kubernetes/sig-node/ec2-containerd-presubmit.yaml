@@ -1,0 +1,288 @@
+presubmits:
+  kubernetes-sigs/provider-aws-test-infra:
+    - name: pull-kubernetes-node-e2e-containerd-ec2-canary
+      # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+      always_run: true
+      optional: true
+      cluster: eks-prow-build-cluster
+      decorate: true
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: node-e2e-tests
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+            command:
+              - runner.sh
+            args:
+              - hack/make-rules/test-e2e-node.sh
+            env:
+              - name: FOCUS
+                value: NodeConformance
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance.yaml
+              - name: TEST_ARGS
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+    - name: pull-kubernetes-node-e2e-containerd-ec2-eks-canary
+      # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+      always_run: false
+      optional: true
+      cluster: eks-prow-build-cluster
+      decorate: true
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: node-e2e-tests
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+            command:
+              - runner.sh
+            args:
+              - hack/make-rules/test-e2e-node.sh
+            env:
+              - name: FOCUS
+                value: NodeConformance
+              - name: BUILD_EKS_AMI
+                value: "true"
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance-eks.yaml
+              - name: TEST_ARGS
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+    - name: pull-kubernetes-node-arm64-e2e-containerd-ec2-canary
+      # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+        preset-dind-enabled: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+      always_run: false
+      optional: true
+      cluster: eks-prow-build-cluster
+      decorate: true
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: node-e2e-tests
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+            command:
+              - runner.sh
+            args:
+              - hack/make-rules/test-e2e-node.sh
+            env:
+              - name: FOCUS
+                value: NodeConformance
+              - name: USE_DOCKERIZED_BUILD
+                value: "true"
+              - name: TARGET_BUILD_ARCH
+                value: "linux/arm64"
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance-arm64.yaml
+              - name: TEST_ARGS
+                value: '--kubelet-flags="--cgroup-driver=cgroupfs"'
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+    - name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
+      # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+      always_run: true
+      optional: true
+      cluster: eks-prow-build-cluster
+      decorate: true
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: node-e2e-tests
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+            command:
+              - runner.sh
+            args:
+              - hack/make-rules/test-e2e-node.sh
+            env:
+              - name: FOCUS
+                value: \[Serial\]
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance.yaml
+              - name: SKIP
+                value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              - name: TEST_ARGS
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
+            resources:
+              limits:
+                cpu: 8
+                memory: 10Gi
+              requests:
+                cpu: 8
+                memory: 10Gi
+    - name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
+      # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      decoration_config:
+        timeout: 240m
+      labels:
+        preset-e2e-containerd-ec2: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+      always_run: false
+      optional: true
+      cluster: eks-prow-build-cluster
+      decorate: true
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: node-e2e-tests
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+            command:
+              - runner.sh
+            args:
+              - hack/make-rules/test-e2e-node.sh
+            env:
+              - name: FOCUS
+                value: \[Serial\]
+              - name: SKIP
+                value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              - name: BUILD_EKS_AMI
+                value: "true"
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance-eks.yaml
+              - name: TEST_ARGS
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
+            resources:
+              limits:
+                cpu: 8
+                memory: 10Gi
+              requests:
+                cpu: 8
+                memory: 10Gi
+    - name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
+      # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+        preset-dind-enabled: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+      always_run: false
+      optional: true
+      cluster: eks-prow-build-cluster
+      decorate: true
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: node-e2e-tests
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+            command:
+              - runner.sh
+            args:
+              - hack/make-rules/test-e2e-node.sh
+            env:
+              - name: FOCUS
+                value: \[Serial\]
+              - name: SKIP
+                value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              - name: USE_DOCKERIZED_BUILD
+                value: "true"
+              - name: TARGET_BUILD_ARCH
+                value: "linux/arm64"
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance-arm64.yaml
+              - name: TEST_ARGS
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 8
+                memory: 10Gi
+              requests:
+                cpu: 8
+                memory: 10Gi

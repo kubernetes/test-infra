@@ -27,6 +27,7 @@ readonly REPOS=(
     kubernetes-csi/external-provisioner
     kubernetes-csi/external-resizer
     kubernetes-csi/external-snapshotter
+    kubernetes-csi/external-snapshot-metadata
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs
@@ -84,7 +85,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20240909-d870e42d3d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241011-e8871c079d
             command:
               - /run.sh
             args:
@@ -130,7 +131,7 @@ cat >>"${OUTPUT}" <<EOF
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20240909-d870e42d3d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241011-e8871c079d
           command:
             - /run.sh
           env:

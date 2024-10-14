@@ -932,7 +932,7 @@ func linkify(text string) string {
 	// swap space with dash
 	link := strings.Replace(text, " ", "-", -1)
 	// discard some special characters
-	discard, _ := regexp.Compile("[.,/]")
+	discard, _ := regexp.Compile("[,/]")
 	link = discard.ReplaceAllString(link, "")
 	// lowercase
 	return strings.ToLower(link)
