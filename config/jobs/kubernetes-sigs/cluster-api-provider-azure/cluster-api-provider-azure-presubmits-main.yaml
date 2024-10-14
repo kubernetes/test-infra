@@ -842,9 +842,7 @@ presubmits:
           value: "99.5"
         # azuredisk variables - required for Prometheus PVC
         - name: DEPLOY_AZURE_CSI_DRIVER
-          value: "true"
-        - name: AZUREDISK_CSI_DRIVER_VERSION
-          value: "master"
+          value: "false"
         - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
           value: "kubernetes.io/azure-disk"
         - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
