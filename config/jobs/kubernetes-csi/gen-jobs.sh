@@ -46,7 +46,7 @@ latest_stable_k8s_version="1.30"
 hostpath_driver_version="v1.15.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-f5fd905349-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
