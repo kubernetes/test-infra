@@ -790,8 +790,6 @@ presubmits:
           cd ${GOPATH}/src/k8s.io/perf-tests/ &&
           ./run-e2e.sh cluster-loader2
           --nodes=100 \
-          --prometheus-scrape-kubelets=true \
-          --prometheus-scrape-node-exporter \
           --provider=aks \
           --testconfig=testing/load/config.yaml \
           --testconfig=testing/huge-service/config.yaml \
@@ -799,6 +797,7 @@ presubmits:
           --testoverrides=./testing/experiments/enable_restart_count_check.yaml \
           --testoverrides=./testing/experiments/use_simple_latency_query.yaml \
           --testoverrides=./testing/overrides/load_throughput.yaml \
+          --report-dir=${ARTIFACTS}
           --v=2
         securityContext:
           privileged: true
