@@ -17,7 +17,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-1.28
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-f5fd905349-1.28
           resources:
             limits:
               cpu: 2
@@ -56,7 +56,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-1.28
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-f5fd905349-1.28
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
