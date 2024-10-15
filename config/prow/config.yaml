@@ -351,6 +351,7 @@ branch-protection:
         kops:
           required_status_checks:
             contexts:
+            - tests-e2e-scenarios-bare-metal
             - build-linux-amd64
             - build-macos-amd64
             - build-windows-amd64
@@ -587,6 +588,9 @@ branch-protection:
               - Test Linux
               - Test MacOS
               - Test Windows
+        lwkd:
+          exclude:
+            - "^20\\d+" # don't protect weekly article dev branch
         metrics-server:
           branches:
             gh-pages:

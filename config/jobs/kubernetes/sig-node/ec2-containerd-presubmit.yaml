@@ -22,7 +22,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
             command:
               - runner.sh
             args:
@@ -65,7 +65,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
             command:
               - runner.sh
             args:
@@ -103,6 +103,8 @@ presubmits:
       optional: true
       cluster: eks-prow-build-cluster
       decorate: true
+      decoration_config:
+        timeout: 240m
       extra_refs:
         - org: kubernetes
           repo: kubernetes
@@ -111,7 +113,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
             command:
               - runner.sh
             args:
@@ -128,17 +130,17 @@ presubmits:
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-arm64.yaml
               - name: TEST_ARGS
-                value: '--kubelet-flags="--cgroup-driver=cgroupfs"'
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
             # docker-in-docker needs privileged mode
             securityContext:
               privileged: true
             resources:
               limits:
-                cpu: 4
-                memory: 6Gi
+                cpu: 8
+                memory: 10Gi
               requests:
-                cpu: 4
-                memory: 6Gi
+                cpu: 8
+                memory: 10Gi
     - name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
       # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
       annotations:
@@ -161,7 +163,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
             command:
               - runner.sh
             args:
@@ -208,7 +210,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
             command:
               - runner.sh
             args:
@@ -256,7 +258,7 @@ presubmits:
       spec:
         serviceAccountName: node-e2e-tests
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241011-e8871c079d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
             command:
               - runner.sh
             args:
