@@ -40,7 +40,7 @@ This stage gets run for each [BigQuery] table that Kettle is tasked with uploadi
 This step uploads all of the `tar.gz` data to BQ while conforming to the [Schema], this schema must match the defined fields within [BigQuery] (see README for details on adding fields).
 
 # Stream Results
-After all historical data has been uploaded, Kettle enters a Streaming phase. It subscribes to pub-sub results from `kubernetes-jenkins/gcs-changes/kettle` (or the specified GCS subscription path) and listens for events (Jobs completing). When a job triggers an event, it:
+After all historical data has been uploaded, Kettle enters a Streaming phase. It subscribes to pub-sub results from `kubernetes-public/kubernetes-ci-logs-updates/k8s-infra-kettle` (or the specified GCS subscription path) and listens for events (Jobs completing). When a job triggers an event, it:
 - will collect data for this job
 - insert it in the database
 - create a BQ client
