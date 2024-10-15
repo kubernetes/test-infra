@@ -52,7 +52,7 @@ periodics:
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
       - name: LABEL_FILTER
-      - value: >-
+        value: >-
           (Conformance || Feature: containsAny DynamicResourceAllocation) &&
           Feature: isSubsetOf DynamicResourceAllocation && !Slow && !Disruptive && !Flaky
       - name: PARALLEL
