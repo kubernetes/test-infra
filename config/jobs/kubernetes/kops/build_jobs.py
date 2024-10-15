@@ -34,7 +34,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-f5fd905349-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
