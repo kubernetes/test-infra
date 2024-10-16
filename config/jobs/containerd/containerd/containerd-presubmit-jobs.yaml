@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
         command:
         - runner.sh
         args:
@@ -61,7 +61,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -119,7 +119,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -177,7 +177,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -235,7 +235,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e-1-6
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -294,7 +294,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e-1-6
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
@@ -361,7 +361,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
           command:
             - runner.sh
           args:
