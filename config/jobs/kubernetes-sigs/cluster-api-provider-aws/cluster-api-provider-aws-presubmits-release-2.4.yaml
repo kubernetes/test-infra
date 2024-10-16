@@ -123,11 +123,11 @@ presubmits:
         - "verify"
         resources:
           requests:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "4"
+            memory: "8Gi"
           limits:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "4"
+            memory: "8Gi"
         # docker-in-docker needs privileged mode
         securityContext:
             privileged: true
