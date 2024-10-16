@@ -14,6 +14,7 @@ dashboard_groups:
   - redhat-openshift-lp-rosa-classic-release-4.14-informing
   - redhat-openshift-lp-rosa-classic-release-4.15-informing
   - redhat-openshift-lp-rosa-classic-release-4.16-informing
+  - redhat-openshift-lp-rosa-classic-release-4.17-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.14-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.15-informing
   - redhat-openshift-lp-rosa-hypershift-release-4.16-informing
