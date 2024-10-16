@@ -7,7 +7,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.29$
+    - ^release-1.30$
     always_run: true
     spec:
       containers:
@@ -29,7 +29,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.29$
+    - ^release-1.30$
     always_run: true
     spec:
       containers:
@@ -51,7 +51,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.29$
+    - ^release-1.30$
     always_run: true
     spec:
       containers:
@@ -81,7 +81,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.29
+    - release-1.30
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
@@ -90,7 +90,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.30.0"
+          value: "v1.30.4"
         - name: KIND_E2E
           value: "true"
         args:
@@ -120,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.29
+    - release-1.30
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
@@ -129,7 +129,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.29.4"
+          value: "v1.29.8"
         - name: KIND_E2E
           value: "true"
         args:
@@ -159,7 +159,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.29
+    - release-1.30
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
