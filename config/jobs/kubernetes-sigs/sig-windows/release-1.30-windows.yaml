@@ -50,7 +50,7 @@ periodics:
       - runner.sh
       - env
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.30
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.30
       name: ""
       resources:
         requests:
@@ -94,7 +94,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.30
         command:
           - "runner.sh"
           - "env"

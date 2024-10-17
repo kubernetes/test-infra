@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
         command:
         - wrapper.sh
         - bash
@@ -73,7 +73,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
         command:
         - wrapper.sh
         - bash
@@ -132,7 +132,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
         command:
         - wrapper.sh
         - bash
@@ -183,7 +183,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
         command:
         - wrapper.sh
         - bash
@@ -231,7 +231,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -276,7 +276,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -327,7 +327,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -382,7 +382,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -431,7 +431,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -486,7 +486,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -542,7 +542,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -593,7 +593,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -647,7 +647,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -702,7 +702,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -748,7 +748,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -803,7 +803,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
       - wrapper.sh
       - bash
@@ -853,7 +853,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -905,7 +905,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
         - wrapper.sh
         - bash
@@ -954,7 +954,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-kind
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
       - wrapper.sh
       - bash
@@ -1013,7 +1013,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241016-ea6eab1555-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241017-ea6eab1555-master
       command:
       - wrapper.sh
       - bash
