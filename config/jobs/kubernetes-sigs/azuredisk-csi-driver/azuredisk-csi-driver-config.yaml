@@ -143,7 +143,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.27
+        base_ref: release-1.29
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -172,7 +172,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.27"
+              value: "latest-1.29"
             - name: ENABLE_TOPOLOGY # azuredisk-csi-driver config
               value: "true"
     annotations:
@@ -236,7 +236,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.27"
+              value: "latest-1.29"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration
@@ -465,7 +465,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.29
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -500,7 +500,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.29"
+              value: "latest-1.30"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz
@@ -527,7 +527,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.27
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -564,7 +564,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.27"
+              value: "latest-1.30"
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Flexible"
             - name: AZURE_LOADBALANCER_SKU # azuredisk-csi-driver config

@@ -170,7 +170,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.27"
+              value: "latest-1.30"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration
@@ -267,7 +267,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.27
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -294,7 +294,7 @@ presubmits:
               memory: 8Gi
           env:
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.27"
+              value: "latest-1.30"
             - name: EXTERNAL_E2E_TEST_SMB
               value: "true"
     annotations:
@@ -322,7 +322,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.28
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -349,7 +349,7 @@ presubmits:
               memory: 8Gi
           env:
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.28"
+              value: "latest-1.30"
             - name: EXTERNAL_E2E_TEST_NFS
               value: "true"
     annotations:
