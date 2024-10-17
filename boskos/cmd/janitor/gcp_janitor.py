@@ -361,6 +361,50 @@ def clean_gke_cluster(project, age, filt):
 
     return len(errs) > 0
 
+def clean_secrets(project, age, filt):
+    """Clean up secrets from Google secret manager"""
+    os.environ['CLOUDSDK_API_ENDPOINT_OVERRIDES_SECRETMANAGER'] = 'https://secretmanager.googleapis.com/'
+    cmd = [
+            'gcloud', 'secrets', 'list',
+            '--project=%s' % project,
+            '--format=json(name,createTime)'
+        ]
+    log('running %s' % cmd)
+
+    output = ''
+    try:
+        output = subprocess.check_output(cmd)
+    except subprocess.CalledProcessError as exc:
+        # expected error
+        log('Cannot list secrets')
+        return 1
+
+    for item in json.loads(output):
+        log('secret info: %r' % item)
+        if 'name' not in item or 'createTime' not in item:
+            raise ValueError('name and createTime must be present: %r' % item)
+
+        # createTime in format '2024-10-16T07:22:22.119486Z'
+        # Only `024-10-16T07:22:22` this part is required.
+        item['createTime'] = item['createTime'].split('+')[0]
+        created = datetime.datetime.strptime(
+            item['createTime'][:19], '%Y-%m-%dT%H:%M:%S')
+        if created < age:
+            log('Found stale gke cluster %r, created time = %r' %
+                (item['name'], item['createTime']))
+            delete = [
+                'gcloud', 'secrets', '-q', 'delete',
+                item['name'],
+                '--project=%s' % project,
+            ]
+            try:
+                output = subprocess.check_output(delete)
+            except subprocess.CalledProcessError as exc:
+                # expected error
+                log('Cannot delete secret %r'%(item['name']))
+                continue
+    return 0
+
 
 def activate_service_account(service_account):
     print('[=== Activating service_account %s ===]' % service_account)
@@ -401,6 +445,13 @@ def main(project, days, hours, filt, rate_limit, service_account):
             print('Failed to activate service account %r' % (
                 service_account), file=sys.stderr)
             sys.exit(err)
+
+
+    try:
+        err |= clean_secrets(project, age, filt)
+    except ValueError:
+        err |= 1  # keep clean the other resource
+        print('Fail to clean up secrets from project %r' % project, file=sys.stderr)
 
     # try to clean a leaked GKE cluster first, rather than attempting to delete
     # its associated resources individually.
