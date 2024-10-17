@@ -35,7 +35,7 @@ presubmits:
     run_if_changed: 'images/capi/Makefile|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/azure/.*'
     optional: true
     decoration_config:
-      timeout: 1h
+      timeout: 90m
     max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
