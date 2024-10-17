@@ -17,7 +17,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
         command:
           - runner.sh
         args:
@@ -61,7 +61,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
         command:
           - runner.sh
         args:
@@ -108,7 +108,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
         command:
           - runner.sh
         args:
@@ -155,7 +155,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
       command:
         - runner.sh
       args:
@@ -197,7 +197,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
         command:
           - runner.sh
         args:
@@ -237,7 +237,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
       command:
         - runner.sh
       args:
@@ -280,7 +280,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
       command:
         - runner.sh
       args:
@@ -322,7 +322,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-1.29
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-1.29
       command:
         - runner.sh
       args:
