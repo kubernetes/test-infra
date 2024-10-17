@@ -767,6 +767,118 @@ presubmits:
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
         - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
+  - name: pull-cos-cgroupv2-inplace-pod-resize-containerd-main-e2e-gce-serial
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pull-cos-cgroupv2-inplace-pod-resize-containerd-e2e-serial
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: main
+      path_alias: github.com/containerd/containerd
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
+        - --env=ENABLE_POD_SECURITY_POLICY=true
+        - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+        - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+        - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --fail-cgroupv1=true --cgroup-driver=systemd
+        - --extract=ci/latest
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=1
+        - --image-family=cos-stable
+        - --image-project=cos-cloud
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
+        - --timeout=150m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  - name: pull-cos-cgroupv1-inplace-pod-resize-containerd-main-e2e-gce-serial
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pull-cos-cgroupv1-inplace-pod-resize-containerd-e2e-serial
+    decorate: true
+    decoration_config:
+      timeout: 180m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: main
+      path_alias: github.com/containerd/containerd
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
+        - --env=ENABLE_POD_SECURITY_POLICY=true
+        - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+        - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+        - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service
+        - --extract=ci/latest
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=1
+        - --image-family=cos-stable
+        - --image-project=cos-cloud
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
+        - --timeout=150m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-podresize
     cluster: k8s-infra-prow-build
     always_run: false
@@ -4032,78 +4144,6 @@ presubmits:
           limits:
             cpu: 4
             memory: 6Gi
-
-  #TODO(vinaykul,InPlacePodVerticalScaling): Remove this job once we have updated to a COS OS with containerd >= 1.6.9
-  #     Until then, this job complements pull-kubernetes-e2e-gce-cos-alpha-features by running inplace pod resize e2e tests
-  #     full-spectrum against containerd/main which has the necessary CRI support.
-  - name: pull-kubernetes-e2e-inplace-pod-resize-containerd-main-v2
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    run_if_changed: 'test/e2e/node/pod_resize.go|pkg/kubelet/kubelet.go|pkg/kubelet/kubelet_pods.go|pkg/kubelet/kuberuntime/kuberuntime_manager.go'
-    skip_report: true
-    branches:
-    # TODO(releng): Remove once repo default branch has been renamed
-    - master
-    - main
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    annotations:
-      testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-kubelet-gce-cluster-e2e-inplace-pod-resize-containerd-main-v2
-      description: Executes inplace pod resize e2e tests with containerd/main and cgroupv2
-    decorate: true
-    decoration_config:
-      timeout: 180m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: containerd
-      repo: containerd
-      base_ref: main
-      path_alias: github.com/containerd/containerd
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --ginkgo-parallel=1
-        - --build=quick
-        - --cluster=
-        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd containerd-installation
-        - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
-        - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
-        - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
-        - --env=KUBELET_TEST_ARGS=--fail-cgroupv1=true --runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --provider=gce
-        - --gcp-nodes=1
-        - --runtime-config=api/all=true
-        - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
-        - --timeout=150m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241016-ea6eab1555-master
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        securityContext:
-          privileged: true
 
   - name: pull-kubernetes-node-e2e-containerd-standalone-mode-all-alpha
     cluster: k8s-infra-prow-build
