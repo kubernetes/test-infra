@@ -1505,6 +1505,11 @@ def generate_upgrades():
                        env=env,
                        )
         )
+        # Older kops versions have a conflict between aws-load-balancer-controller and cert-manager
+        # The fix was only backported to 1.30, so we skip many-addons for older upgrades.
+        # Ref: https://github.com/kubernetes/kops/pull/16743
+        if kops_a in (kops28, kops29):
+            continue
         results.append(
             build_test(name_override=job_name + "-many-addons",
                        distro='u2204',
