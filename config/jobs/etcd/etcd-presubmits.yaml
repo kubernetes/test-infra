@@ -153,6 +153,8 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.5
+    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
