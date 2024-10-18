@@ -1,0 +1,163 @@
+periodics:
+- name: verify-conformance-conformanceyaml-updater
+  cron: "0 0 */2 * *" # every two days
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: verify-conformance
+    base_ref: main
+  max_concurrency: 1
+  annotations:
+    testgrid-dashboards: sig-arch-conformance
+    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
+    description: |
+      Update conformance.yaml metadata in the verify-conformance repo with a pull-request
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      env:
+        - name: GIT_NAME
+          value: "Kubernetes Prow Robot"
+        - name: GIT_EMAIL
+          value: "20407524+k8s-ci-robot@users.noreply.github.com"
+      command:
+        - bash
+        - -x
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          apt-get update -y
+          (type -p wget >/dev/null || (apt-get install wget -y)) \
+          && mkdir -p -m 755 /etc/apt/keyrings \
+          && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && apt-get update \
+          && apt-get install gh -y
+
+          git config user.name "$GIT_NAME"
+          git config user.email "$GIT_EMAIL"
+          if [ ! -f /etc/github-token/token ]; then
+            echo "WARNING: github token is missing and will NOT push any changes to coverage, expected path: /etc/github-token/token" >/dev/stderr
+          else
+            gh auth login --with-token < /etc/github-token/token
+          fi
+          gh auth status 2>&1 || true
+
+          cd $(git rev-parse --show-toplevel)
+          ./hack/generate-conformanceyaml.sh
+          git status
+
+          if { git ls-files --others --exclude-standard ; git diff-index --name-only --diff-filter=d HEAD ; } | grep 'kodata/conformance-testdata/'; then
+              echo "changes detected"
+            else
+              echo "no changes detected"
+              exit 0
+          fi
+
+          TIMESTAMP="$(git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d-%H-%M')"
+          NEW_BRANCH="conformance-yaml-update-for-${TIMESTAMP}"
+          git add ./kodata/conformance-testdata/
+          git branch "${NEW_BRANCH}"
+          git checkout "${NEW_BRANCH}"
+          git commit -m "update conformance yaml for ${TIMESTAMP}"
+          git push -f origin "${NEW_BRANCH}"
+          gh pr create --title "Update conformance yaml ${TIMESTAMP}" --body "updates conformance yaml for ${TIMESTAMP}"
+
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
+- name: verify-conformance-stabletxt-updater
+  cron: "0 0 */2 * *" # every two days
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: verify-conformance
+    base_ref: main
+  max_concurrency: 1
+  annotations:
+    testgrid-dashboards: sig-arch-conformance
+    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
+    description: |
+      Update stable.txt metadata in the verify-conformance repo with a pull-request
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      env:
+        - name: GIT_NAME
+          value: "Kubernetes Prow Robot"
+        - name: GIT_EMAIL
+          value: "20407524+k8s-ci-robot@users.noreply.github.com"
+      command:
+        - bash
+        - -x
+        - -c
+        - |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
+          apt-get update -y
+          (type -p wget >/dev/null || (apt-get install wget -y)) \
+          && mkdir -p -m 755 /etc/apt/keyrings \
+          && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && apt-get update \
+          && apt-get install gh -y
+
+          git config user.name "$GIT_NAME"
+          git config user.email "$GIT_EMAIL"
+          if [ ! -f /etc/github-token/token ]; then
+            echo "WARNING: github token is missing and will NOT push any changes to coverage, expected path: /etc/github-token/token" >/dev/stderr
+          else
+            gh auth login --with-token < /etc/github-token/token
+          fi
+          gh auth status 2>&1 || true
+
+          cd $(git rev-parse --show-toplevel)
+          ./hack/update-stable-txt.sh
+          git status
+
+          STABLE="$(<./kodata/metadata/stable.txt)"
+          if ! [[ "$STABLE" =~ ^v[0-9]\.[0-9]{1,2}\.[0-9]{1,2}$ ]]; then
+            echo "error: stable.txt format is invalid" >/dev/stderr
+            exit 1
+          fi
+          if { git ls-files --others --exclude-standard ; git diff-index --name-only --diff-filter=d HEAD ; } | grep -E 'kodata/metadata/stable.txt$'; then
+              echo "changes detected"
+            else
+              echo "no changes detected"
+              exit 0
+          fi
+
+          STABLE="$(<./kodata/metadata/stable.txt)"
+          TIMESTAMP="$(git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d-%H-%M')"
+          NEW_BRANCH="new-stable-kubernetes-version-$STABLE-released-${TIMESTAMP}"
+          git add ./kodata/metadata/stable.txt
+          git branch "${NEW_BRANCH}"
+          git checkout "${NEW_BRANCH}"
+          git commit -m "update Kubernetes stable.txt to $STABLE for ${TIMESTAMP}"
+          git push -f origin "${NEW_BRANCH}"
+          gh pr create --title "Update stable.txt to $STABLE ${TIMESTAMP}" --body "updates stable.txt to $STABLE for ${TIMESTAMP}"
+
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
