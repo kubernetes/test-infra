@@ -43,7 +43,7 @@ presubmits:
       description: "Run jobset integration tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - make
         args:
@@ -73,7 +73,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.28.9
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.22
+          value: public.ecr.aws/docker/library/golang:1.23
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -108,7 +108,7 @@ presubmits:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.29.4
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.22
+          value: public.ecr.aws/docker/library/golang:1.23
 
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
@@ -144,7 +144,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.30.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.22
+              value: public.ecr.aws/docker/library/golang:1.23
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -179,7 +179,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.22
+              value: public.ecr.aws/docker/library/golang:1.23
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -209,7 +209,7 @@ presubmits:
       description: "Run jobset verify checks"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - make
         args:
