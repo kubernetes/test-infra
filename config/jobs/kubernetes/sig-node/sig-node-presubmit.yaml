@@ -4672,3 +4672,57 @@ presubmits:
             limits:
               cpu: 4
               memory: 6Gi
+  - name: pull-kubernetes-e2e-relaxed-environment-variable-validation
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-relaxed-environment-variable-validation
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-master
+        command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --build=quick
+          - --cluster=
+          - --env=KUBE_FEATURE_GATES=RelaxedEnvironmentVariableValidation=true
+          - --gcp-zone=us-west1-b
+          - --gcp-node-image=gci
+          - --gcp-nodes=1
+          - --provider=gce
+          - --ginkgo-parallel=10
+          - --test_args=--ginkgo.focus=\[Feature:RelaxedEnvironmentVariableValidation\]
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
