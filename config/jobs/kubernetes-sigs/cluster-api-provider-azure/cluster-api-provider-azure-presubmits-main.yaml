@@ -814,7 +814,7 @@ presubmits:
         - name: TEST_WINDOWS
           value: "false"
         - name: "CONTROL_PLANE_MACHINE_COUNT"
-          value: "3"
+          value: "7"
         - name: WINDOWS_WORKER_MACHINE_COUNT
           value: "0" # Don't create windows workers
         - name: WORKER_MACHINE_COUNT
