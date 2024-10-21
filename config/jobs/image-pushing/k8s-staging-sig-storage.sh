@@ -76,6 +76,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       branches:
         # For publishing canary images.
         - ^master$
+        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
