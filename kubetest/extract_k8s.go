@@ -73,6 +73,7 @@ func (l *extractStrategies) String() string {
 
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
+	value = os.ExpandEnv(value)
 	var strategies = map[string]extractMode{
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
