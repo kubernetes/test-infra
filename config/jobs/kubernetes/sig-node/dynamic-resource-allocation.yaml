@@ -56,7 +56,7 @@ periodics:
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
-      testgrid-tab-name: ci-kind-classic-dra
+      testgrid-tab-name: ci-kind-dra-all
       testgrid-alert-email: patrick.ohly@intel.com
     decorate: true
     decoration_config:
