@@ -927,6 +927,53 @@ periodics:
           limits:
             cpu: 4
             memory: 6Gi
+- name: ci-kubernetes-e2e-relaxed-environment-variable-validation
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: ci-kubernetes-e2e-relaxed-environment-variable-validation
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241017-ea6eab1555-master
+        command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --build=quick
+          - --cluster=
+          - --env=KUBE_FEATURE_GATES=RelaxedEnvironmentVariableValidation=true
+          - --gcp-zone=us-west1-b
+          - --gcp-node-image=gci
+          - --gcp-nodes=1
+          - --provider=gce
+          - --ginkgo-parallel=10
+          - --test_args=--ginkgo.focus=\[Feature:RelaxedEnvironmentVariableValidation\]
+          - --timeout=60m
+        env:
+          - name: GOPATH
+            value: /go
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
 
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
