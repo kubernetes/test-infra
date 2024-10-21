@@ -1618,6 +1618,7 @@ presubmits:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
       testgrid-tab-name: pr-crio-cgrpv1-evented-pleg-gce-e2e
     always_run: false
+    run_if_changed: '^(pkg\/kubelet\/pleg)'
     optional: true
     max_concurrency: 12
     labels:
