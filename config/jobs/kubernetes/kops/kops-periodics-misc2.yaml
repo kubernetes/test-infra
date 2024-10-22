@@ -3036,7 +3036,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-disruptive-canary
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos105", "extra_flags": "--set=cluster.spec.cloudConfig.manageStorageClasses=false --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
 - name: e2e-ci-kubernetes-e2e-cos-gce-serial-canary
   cron: '31 4-23/6 * * *'
   labels:
@@ -3067,7 +3067,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default" \
+          --create-args="--channel=alpha --networking=kubenet --set=cluster.spec.cloudConfig.manageStorageClasses=false --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3096,7 +3096,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default
+    test.kops.k8s.io/extra_flags: cluster.spec.cloudConfig.manageStorageClasses=false --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
