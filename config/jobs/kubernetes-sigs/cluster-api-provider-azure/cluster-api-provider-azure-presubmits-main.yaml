@@ -810,7 +810,7 @@ presubmits:
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D32s_v3"
+          value: "Standard_D64s_v3"
         - name: AZURE_NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
