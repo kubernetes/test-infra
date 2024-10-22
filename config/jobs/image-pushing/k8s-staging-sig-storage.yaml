@@ -869,7 +869,7 @@ postsubmits:
 # them periodically. One additional benefit is that build errors show up
 # in the sig-storage-image-build *before* tagging a release.
 #
-# Periodic jobs are currently only specified for the "master" branch
+# Periodic jobs are currently only specified for the default branch
 # which produces the "canary" images. While other branches
 # could produce release-x.y-canary images, we don't use those.
 periodics:
@@ -1132,7 +1132,7 @@ periodics:
       # the cloud image build.
       - org: kubernetes-csi
         repo: external-snapshot-metadata
-        base_ref: master
+        base_ref: main
     spec:
       serviceAccountName: gcb-builder
       containers:
@@ -1143,7 +1143,7 @@ periodics:
             # We need to emulate a pull job for the cloud build to work the same
             # way as it usually does.
             - name: PULL_BASE_REF
-              value: master
+              value: main
           args:
             # this is the project GCB will run in, which is the same as the GCR
             # images are pushed to.
