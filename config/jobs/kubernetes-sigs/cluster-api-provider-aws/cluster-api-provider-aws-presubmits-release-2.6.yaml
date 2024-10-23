@@ -57,6 +57,9 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-2.6$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.30
@@ -81,6 +84,9 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-2.6$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.30
