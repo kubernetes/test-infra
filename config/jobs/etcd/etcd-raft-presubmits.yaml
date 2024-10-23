@@ -19,7 +19,7 @@ presubmits:
               - bash
               - -c
               - |
-                GOARCH=arm64 PASSES='unit' RACE='true' CPU='4' ./scripts/test.sh -p=2
+                CGO_ENABLED=1 GOARCH=arm64 PASSES='unit' RACE='true' CPU='4' ./scripts/test.sh -p=2
             resources:
               requests:
                 cpu: "4"
