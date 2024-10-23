@@ -11,6 +11,10 @@ test_groups:
   name: 4.18-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-ovn
   name: 4.18-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aks
+  name: 4.18-aks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-azure-aks-ovn-conformance
+  name: 4.18-aks-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-powervs
   name: 4.17-powervs
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-kubevirt-conformance
@@ -23,6 +27,10 @@ test_groups:
   name: 4.17-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aws-ovn
   name: 4.17-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-aks
+  name: 4.17-aks
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.17-periodics-e2e-azure-aks-ovn-conformance
+  name: 4.17-aks-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-powervs
   name: 4.16-powervs
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.16-periodics-e2e-kubevirt-conformance
@@ -99,6 +107,18 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.18-aws-ovn
+  - name: 4.18-aks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aks
+  - name: 4.18-aks-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aks-ovn-conformance
   - name: 4.17-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
@@ -135,6 +155,18 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.17-aws-ovn
+  - name: 4.17-aks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.17-aks
+  - name: 4.17-aks-ovn-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.17-aks-ovn-conformance
   - name: 4.16-powervs
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
