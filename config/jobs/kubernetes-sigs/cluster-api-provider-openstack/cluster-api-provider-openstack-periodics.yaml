@@ -8,7 +8,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 12h
+  interval: 24h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
@@ -62,7 +62,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 12h
+  interval: 24h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
@@ -109,7 +109,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 12h
+  interval: 24h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
