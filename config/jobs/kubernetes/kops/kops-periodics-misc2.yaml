@@ -3096,7 +3096,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos105
-    test.kops.k8s.io/extra_flags: cluster.spec.cloudConfig.manageStorageClasses=false --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.cloudConfig.manageStorageClasses=false --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
