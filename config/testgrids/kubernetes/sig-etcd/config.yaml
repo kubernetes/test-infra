@@ -9,6 +9,7 @@ dashboard_groups:
   - sig-etcd-robustness
   - sig-etcd-etcd-manager
   - sig-etcd-website-presubmits
+  - sig-etcd-raft-presubmits
 
 dashboards:
   - name: sig-etcd-amd64
@@ -98,3 +99,4 @@ dashboards:
           value: v3.4
   - name: sig-etcd-etcd-manager
   - name: sig-etcd-website-presubmits
+  - name: sig-etcd-raft-presubmits
