@@ -1206,6 +1206,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
+                       "--set=cluster.spec.cloudConfig.manageStorageClasses=false",
                        "--image=cos-cloud/cos-105-17412-370-67",
                        "--node-volume-size=100",
                        "--gce-service-account=default",
