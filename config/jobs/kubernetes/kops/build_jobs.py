@@ -1738,8 +1738,6 @@ def generate_versions():
             networking='calico',
             extra_dashboards=['kops-versions'],
             runs_per_day=8,
-            # This version marker is only used by the k/k presubmit job
-            publish_version_marker='gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt',
         )
     ]
     for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
