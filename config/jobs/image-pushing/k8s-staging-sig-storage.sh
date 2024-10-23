@@ -53,7 +53,6 @@ readonly BROKEN_REPOS=(
 )
 
 using_main_branch() {
-  echo REPO:  $1
   for repo_main in "${REPOS_MAIN_BRANCH[@]}"; do
     if [[ ${repo_main} == ${1} ]]; then
       return 0
@@ -69,6 +68,10 @@ postsubmits:
 EOF
 
 for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
+    default_branch="master"
+    if using_main_branch ${repo}; then
+      default_branch="main"
+    fi
     IFS=/ read -r org repo <<<"${repo}"
     cat >>"${OUTPUT}" <<EOF
   ${org}/${repo}:
@@ -90,8 +93,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
         grace_period: 15m
       branches:
         # For publishing canary images.
-        - ^master$
-        - ^main$
+        - ^${default_branch}$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to

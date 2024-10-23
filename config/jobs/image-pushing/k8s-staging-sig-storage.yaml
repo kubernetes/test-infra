@@ -21,7 +21,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -62,7 +61,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -103,7 +101,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -144,7 +141,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -185,7 +181,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -226,7 +221,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -267,7 +261,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -308,7 +301,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -348,7 +340,6 @@ postsubmits:
         grace_period: 15m
       branches:
         # For publishing canary images.
-        - ^master$
         - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
@@ -390,7 +381,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -431,7 +421,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -472,7 +461,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -513,7 +501,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -554,7 +541,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -595,7 +581,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -636,7 +621,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -677,7 +661,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -718,7 +701,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -759,7 +741,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -800,7 +781,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -841,7 +821,6 @@ postsubmits:
       branches:
         # For publishing canary images.
         - ^master$
-        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
