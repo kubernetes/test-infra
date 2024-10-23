@@ -27,7 +27,7 @@ spec:
       serviceAccountName: kettle
       containers:
       - name: kettle
-        image: gcr.io/k8s-staging-infra-tools/kettle:latest
+        image: gcr.io/k8s-staging-test-infra/kettle:v20241015-f5fd905349
         imagePullPolicy: Always
         env:
         - name: DEPLOYMENT
