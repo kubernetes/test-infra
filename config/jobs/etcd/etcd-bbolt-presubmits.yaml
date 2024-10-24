@@ -142,5 +142,8 @@ presubmits:
               limits:
                 cpu: "4"
                 memory: "8Gi"
+            # dmflakey needs privileged mode
+            securityContext:
+              privileged: true
         nodeSelector:
           kubernetes.io/arch: arm64
