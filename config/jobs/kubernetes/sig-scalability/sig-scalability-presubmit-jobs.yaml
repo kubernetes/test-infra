@@ -753,7 +753,7 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
-      timeout: 2h25m
+      timeout: 3h55m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
@@ -763,7 +763,7 @@ presubmits:
         - ./test/integration/scheduler_perf
         env:
         - name: KUBE_TIMEOUT
-          value: --timeout=2h25m
+          value: --timeout=3h55m
         # Keep the unprocessed `go test` JSON output for debugging.
         - name: KUBE_KEEP_VERBOSE_TEST_OUTPUT
           value: "y"

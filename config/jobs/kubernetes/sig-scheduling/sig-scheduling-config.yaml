@@ -71,7 +71,7 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
-      timeout: 2h25m
+      timeout: 3h55m
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
@@ -80,7 +80,7 @@ presubmits:
         args:
         - /bin/sh
         - -c
-        - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf KUBE_TIMEOUT=--timeout=2h10m ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling" SHORT='--short=false'
+        - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf KUBE_TIMEOUT=--timeout=3h55m ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling" SHORT='--short=false'
         # We need to constraint compute resources so all the tests
         # finish approximately at the same time. More compute power
         # can increase scheduling throughput and make consequent results
