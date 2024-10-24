@@ -185,7 +185,7 @@ presubmits:
         path_alias: "k8s.io/test-infra"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/krte:v20240903-6a352c5344-master
+        - image: gcr.io/k8s-staging-test-infra/krte:v20241021-d3a4913879-master
           command:
             - wrapper.sh
             - bash
