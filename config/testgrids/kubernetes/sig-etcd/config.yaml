@@ -11,6 +11,7 @@ dashboard_groups:
   - sig-etcd-website-presubmits
   - sig-etcd-raft-presubmits
   - sig-etcd-bbolt-presubmits
+  - sig-etcd-bbolt-periodics
 
 dashboards:
   - name: sig-etcd-amd64
@@ -102,3 +103,4 @@ dashboards:
   - name: sig-etcd-website-presubmits
   - name: sig-etcd-raft-presubmits
   - name: sig-etcd-bbolt-presubmits
+  - name: sig-etcd-bbolt-periodics
