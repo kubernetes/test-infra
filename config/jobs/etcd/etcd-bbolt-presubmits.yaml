@@ -113,3 +113,34 @@ presubmits:
                 memory: "4Gi"
         nodeSelector:
           kubernetes.io/arch: arm64
+    - name: pull-bbolt-robustness-arm64
+      cluster: k8s-infra-prow-build
+      always_run: true
+      branches:
+        - main
+      decorate: true
+      decoration_config:
+        timeout: 40m
+      annotations:
+        testgrid-dashboards: sig-etcd-bbolt-presubmits
+        testgrid-tab-name: pull-bbolt-robustness-arm64
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241021-d3a4913879-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install dmsetup xfsprogs
+                ROBUSTNESS_TESTFLAGS="--count 10 --timeout 30m -failfast" make test-robustness
+            resources:
+              requests:
+                cpu: "4"
+                memory: "8Gi"
+              limits:
+                cpu: "4"
+                memory: "8Gi"
+        nodeSelector:
+          kubernetes.io/arch: arm64
