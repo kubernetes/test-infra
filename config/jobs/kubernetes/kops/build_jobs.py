@@ -1206,6 +1206,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
+                       "--set=cluster.spec.cloudConfig.manageStorageClasses=false",
                        "--image=cos-cloud/cos-105-17412-370-67",
                        "--node-volume-size=100",
                        "--gce-service-account=default",
@@ -1737,8 +1738,6 @@ def generate_versions():
             networking='calico',
             extra_dashboards=['kops-versions'],
             runs_per_day=8,
-            # This version marker is only used by the k/k presubmit job
-            publish_version_marker='gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt',
         )
     ]
     for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
