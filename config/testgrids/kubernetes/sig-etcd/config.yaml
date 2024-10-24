@@ -10,6 +10,7 @@ dashboard_groups:
   - sig-etcd-etcd-manager
   - sig-etcd-website-presubmits
   - sig-etcd-raft-presubmits
+  - sig-etcd-bbolt-presubmits
 
 dashboards:
   - name: sig-etcd-amd64
@@ -100,3 +101,4 @@ dashboards:
   - name: sig-etcd-etcd-manager
   - name: sig-etcd-website-presubmits
   - name: sig-etcd-raft-presubmits
+  - name: sig-etcd-bbolt-presubmits

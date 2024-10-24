@@ -1,0 +1,31 @@
+---
+presubmits:
+  etcd-io/bbolt:
+    - name: pull-bbolt-test-1-cpu-arm64
+      cluster: k8s-infra-prow-build
+      always_run: true
+      branches:
+        - main
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-etcd-bbolt-presubmits
+        testgrid-tab-name: pull-bbolt-test-1-cpu-arm64
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241021-d3a4913879-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                CPU=1 make test
+            resources:
+              requests:
+                cpu: "2"
+                memory: "4Gi"
+              limits:
+                cpu: "2"
+                memory: "4Gi"
+        nodeSelector:
+          kubernetes.io/arch: arm64
