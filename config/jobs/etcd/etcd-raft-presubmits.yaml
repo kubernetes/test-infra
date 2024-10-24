@@ -27,3 +27,5 @@ presubmits:
               limits:
                 cpu: "4"
                 memory: "4Gi"
+        nodeSelector:
+          kubernetes.io/arch: arm64
