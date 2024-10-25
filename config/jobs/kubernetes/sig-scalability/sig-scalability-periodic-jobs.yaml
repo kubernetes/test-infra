@@ -718,7 +718,7 @@ periodics:
           cpu: 1
           memory: "2Gi"
 
-# Note: we have a presubmit job "pull-scheduler-perf",
+# Note: we have a presubmit job "pull-kubernetes-scheduler-perf",
 # which you likely want to change when you change parameters in this test.
 - name: ci-benchmark-scheduler-perf-master
   cluster: k8s-infra-prow-build
