@@ -3259,14 +3259,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-ipv4-conformance
+    name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-ipv4-conformance
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8538,8 +8538,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.18-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.18-console-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-ipv4-conformance
-  name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-ipv4-conformance
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-fips
+  name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-compact-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-ha-dualstack-conformance
   name: periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-ha-dualstack-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.18-e2e-agent-single-node-ipv6
