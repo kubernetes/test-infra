@@ -115,6 +115,7 @@ presubmits:
           kubernetes.io/arch: arm64
     - name: pull-bbolt-robustness-arm64
       cluster: k8s-infra-prow-build
+      optional: true # remove once the job is stable
       always_run: true
       branches:
         - main
