@@ -451,6 +451,37 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
 
+  - name: pull-etcd-smoke-4-cpu-arm64
+    cluster: k8s-infra-prow-build
+    always_run: true
+    branches:
+    - release-3.5
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-smoke-4-cpu-arm64
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241021-d3a4913879-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
+          GOOS=linux GOARCH=arm64 CPU=4 make test-smoke
+        resources:
+          requests:
+            cpu: "6"
+            memory: "3Gi"
+          limits:
+            cpu: "6"
+            memory: "3Gi"
+      nodeSelector:
+        kubernetes.io/arch: arm64
+
   - name: pull-etcd-robustness-amd64
     cluster: k8s-infra-prow-build
     always_run: true
