@@ -744,7 +744,7 @@ periodics:
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
-      - ./test/integration/scheduler_perf
+      - ./test/integration/scheduler_perf/...
       env:
       - name: KUBE_TIMEOUT
         value: --timeout=3h55m
