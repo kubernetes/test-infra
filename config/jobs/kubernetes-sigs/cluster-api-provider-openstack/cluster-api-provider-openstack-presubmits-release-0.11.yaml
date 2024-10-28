@@ -3,7 +3,7 @@ presubmits:
   - name: pull-cluster-api-provider-openstack-build
     cluster: eks-prow-build-cluster
     branches:
-    - ^main$
+    - ^release-0.11$
     always_run: true
     optional: false
     decorate: true
@@ -12,7 +12,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-main
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         command:
         - "./scripts/ci-build.sh"
         # docker-in-docker needs privileged mode
@@ -31,14 +31,14 @@ presubmits:
   - name: pull-cluster-api-provider-openstack-test
     cluster: eks-prow-build-cluster
     branches:
-    - ^main$
+    - ^release-0.11$
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-main
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -54,7 +54,7 @@ presubmits:
   - name: pull-cluster-api-provider-openstack-e2e-test
     cluster: k8s-infra-prow-build
     branches:
-    - ^main$
+    - ^release-0.11$
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -72,7 +72,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-main
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
@@ -100,7 +100,7 @@ presubmits:
   - name: pull-cluster-api-provider-openstack-conformance-test
     cluster: k8s-infra-prow-build
     branches:
-    - ^main$
+    - ^release-0.11$
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -122,7 +122,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-main
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
@@ -149,7 +149,7 @@ presubmits:
   - name: pull-cluster-api-provider-openstack-e2e-full-test
     cluster: k8s-infra-prow-build
     branches:
-    - ^main$
+    - ^release-0.11$
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -167,7 +167,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-main
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
