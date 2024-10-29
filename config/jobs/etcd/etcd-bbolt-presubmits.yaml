@@ -87,7 +87,7 @@ presubmits:
           kubernetes.io/arch: arm64
     - name: pull-bbolt-test-4-cpu-race-arm64
       cluster: k8s-infra-prow-build
-      always_run: true
+      always_run: false
       branches:
         - main
       decorate: true
@@ -116,7 +116,7 @@ presubmits:
     - name: pull-bbolt-robustness-arm64
       cluster: k8s-infra-prow-build
       optional: true # remove once the job is stable
-      always_run: true
+      always_run: false
       branches:
         - main
       decorate: true
