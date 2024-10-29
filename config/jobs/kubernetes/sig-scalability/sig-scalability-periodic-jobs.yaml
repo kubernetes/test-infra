@@ -718,14 +718,14 @@ periodics:
           cpu: 1
           memory: "2Gi"
 
-# Note: we have a presubmit job "pull-scheduler-perf",
+# Note: we have a presubmit job "pull-kubernetes-scheduler-perf",
 # which you likely want to change when you change parameters in this test.
 - name: ci-benchmark-scheduler-perf-master
   cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: scheduler-perf-benchmark"
   - "perfDashJobType: benchmark"
-  interval: 2h30m
+  interval: 4h
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler-perf
@@ -737,17 +737,17 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 2h25m
+    timeout: 3h55m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
-      - ./test/integration/scheduler_perf
+      - ./test/integration/scheduler_perf/...
       env:
       - name: KUBE_TIMEOUT
-        value: --timeout=2h25m
+        value: --timeout=3h55m
       # Keep the unprocessed `go test` JSON output for debugging.
       - name: KUBE_KEEP_VERBOSE_TEST_OUTPUT
         value: "y"
