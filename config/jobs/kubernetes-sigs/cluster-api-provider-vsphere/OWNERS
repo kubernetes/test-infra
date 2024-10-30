@@ -4,7 +4,6 @@ reviewers:
   - sig-cluster-lifecycle-leads
   - chrischdi
   - gab-satchi
-  - killianmuldoon
   - randomvariable
   - sbueringer
   - srm09
@@ -13,7 +12,6 @@ approvers:
   - sig-cluster-lifecycle-leads
   - chrischdi
   - gab-satchi
-  - killianmuldoon
   - randomvariable
   - sbueringer
   - srm09
