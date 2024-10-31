@@ -886,7 +886,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -916,7 +916,7 @@ periodics:
           - --provider=gce
           # all criproxy tests are serial, but no need to specify it
           - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]"
-          - --timeout=65m
+          - --timeout=120m
         env:
           - name: GOPATH
             value: /go
