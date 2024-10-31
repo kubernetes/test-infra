@@ -1002,7 +1002,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--set=spec.packages=nfs-utils",
                    ],
@@ -1090,7 +1090,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
                        "--master-size=r5d.xlarge",
@@ -1117,7 +1117,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1226,7 +1226,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-volume-size=100",
                        "--set=spec.packages=nfs-utils",
@@ -1246,7 +1246,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
