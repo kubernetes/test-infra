@@ -1179,7 +1179,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="eks-prow-build-cluster",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
                        "--master-size=r5d.xlarge",
