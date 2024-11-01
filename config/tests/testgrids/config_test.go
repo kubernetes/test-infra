@@ -539,20 +539,28 @@ func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
 			if dashboardtab.Description == "" {
 				t.Errorf("%v: - Must have a description", intro)
 			}
+
 			// TODO(spiffxp): enforce for informing as well
 			if suffix == "informing" {
-				if !strings.HasPrefix(dashboardtab.Description, "OWNER: ") {
-					t.Logf("NOTICE: %v: - Must have a description that starts with OWNER: ", intro)
-				}
-				if dashboardtab.AlertOptions == nil {
-					t.Logf("NOTICE: %v: - Must have alert_options (ensure informing dashboard is listed first in testgrid-dashboards)", intro)
-				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
-					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
-				}
+				// if !strings.HasPrefix(dashboardtab.Description, "OWNER: ") {
+				// 	t.Logf("NOTICE: %v: - Must have a description that starts with OWNER: ", intro)
+				// }
+				// if dashboardtab.AlertOptions == nil {
+				// 	t.Logf("NOTICE: %v: - Must have alert_options (ensure informing dashboard is listed first in testgrid-dashboards)", intro)
+				// } else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+				// 	t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
+				// }
 			} else {
+				// if dashboardtab.AlertOptions != nil {
+				// 	t.Log("------", dashboardtab.Name, dashboardtab.AlertOptions.AlertMailToAddresses)
+				// }
+				if dashboardtab.Name == "gci-gce-ingress" {
+					t.Log("------------------------------", dashboardtab.AlertOptions.AlertMailToAddresses)
+				}
 				if dashboardtab.AlertOptions == nil {
 					t.Errorf("%v: - Must have alert_options (ensure blocking dashboard is listed first in testgrid-dashboards)", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+
 					t.Errorf("%v: - Must have alert_options.alert_mail_to_addresses", intro)
 				}
 			}

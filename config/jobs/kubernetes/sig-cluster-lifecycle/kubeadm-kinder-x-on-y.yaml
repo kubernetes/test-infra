@@ -9,7 +9,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-master-informing
+    testgrid-dashboards: sig-release-master-blocking, sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-latest-on-1-31
     testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
@@ -53,7 +53,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-1.31-informing
+    testgrid-dashboards: sig-release-1.31-blocking, sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-1-31-on-1-30
     testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
@@ -97,7 +97,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-1.30-informing
+    testgrid-dashboards: sig-release-1.30-blocking, sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-1-30-on-1-29
     testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
@@ -141,7 +141,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kubeadm, sig-release-1.29-informing
+    testgrid-dashboards: sig-release-1.29-blocking, sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-1-29-on-1-28
     testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
