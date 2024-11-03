@@ -7,7 +7,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.22
+          - image: public.ecr.aws/docker/library/golang:1.23
             imagePullPolicy: Always
             command:
               - make
@@ -29,7 +29,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.22
+          - image: public.ecr.aws/docker/library/golang:1.23
             imagePullPolicy: Always
             command:
               - make
@@ -51,7 +51,7 @@ presubmits:
       cluster: eks-prow-build-cluster
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.22
+          - image: public.ecr.aws/docker/library/golang:1.23
             imagePullPolicy: Always
             command:
               - make
