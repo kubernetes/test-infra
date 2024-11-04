@@ -17,6 +17,8 @@ runcmd:
   - 'chmod 600 /swapfile'
   - 'mkswap /swapfile'
   - 'swapon /swapfile'
+  - 'sudo systemctl set-property system.slice MemorySwapMax=0'
+  - 'sudo systemctl set-property user.slice MemorySwapMax=0'
   - 'echo "/swapfile swap swap defaults 0 0" | tee -a /etc/fstab'
   - 'echo swap files'
   - 'swapon --show'
