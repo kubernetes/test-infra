@@ -152,14 +152,10 @@ periodics:
         value: json
       - name: KIND_CLUSTER_LOG_LEVEL
         value: "6"
-      - name: FEATURE_GATES
-        value: '{"DynamicResourceAllocation":true,"ContextualLogging":true}'
-      - name: RUNTIME_CONFIG
-        value: '{"api/alpha":"true", "api/beta":"true"}'
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
       - name: LABEL_FILTER
-        value: '(Conformance || Feature: containsAny DynamicResourceAllocation) && Feature: isSubsetOf DynamicResourceAllocation && !Slow && !Disruptive && !Flaky'
+        value: 'Conformance && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
       image: gcr.io/k8s-staging-test-infra/krte:v20241021-d3a4913879-1.31
