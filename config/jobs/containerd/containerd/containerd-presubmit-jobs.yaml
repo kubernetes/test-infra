@@ -7,6 +7,7 @@ presubmits:
     - main
     - release/1.6
     - release/1.7
+    - release/2.0
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-containerd,containerd-presubmits
@@ -40,6 +41,7 @@ presubmits:
     decorate: true
     branches:
     - main
+    - release/2.0
     decoration_config:
       timeout: 100m
     extra_refs:
@@ -328,6 +330,7 @@ presubmits:
     branches:
     - main
     - release/1.7
+    - release/2.0
     annotations:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
