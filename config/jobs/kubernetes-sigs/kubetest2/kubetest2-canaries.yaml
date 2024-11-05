@@ -244,6 +244,11 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/kubetest2
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     labels:
       preset-dind-enabled: "true"
     annotations:
@@ -261,14 +266,6 @@ presubmits:
         command:
         - runner.sh
         args:
-        - "/bin/bash"
-        - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          make install-all;
-          go install sigs.k8s.io/kind@v0.20.0;
-          kubetest2 kind --up --down --test=exec -- kubectl get all -A
+        - "./kubetest2-kind/ci-tests/buildupdown.sh"
         securityContext:
           privileged: true
