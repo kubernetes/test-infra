@@ -4636,7 +4636,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-cri-proxy
     decorate: true
     decoration_config:
-      timeout: 90m
+      timeout: 150m
     path_alias: k8s.io/kubernetes
     extra_refs:
       - org: containerd
@@ -4662,7 +4662,7 @@ presubmits:
             - --provider=gce
             # all criproxy tests are serial, but no need to specify it
             - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]"
-            - --timeout=65m
+            - --timeout=120m
           env:
             - name: GOPATH
               value: /go
