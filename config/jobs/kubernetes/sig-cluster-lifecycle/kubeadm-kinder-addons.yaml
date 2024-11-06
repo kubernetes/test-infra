@@ -34,7 +34,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "upgrade-latest-no-addon-config-maps"
+      - "upgrade-no-addon-config-maps-latest"
       securityContext:
         privileged: true
       resources:
