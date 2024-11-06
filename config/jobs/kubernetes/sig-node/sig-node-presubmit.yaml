@@ -3088,7 +3088,7 @@ presubmits:
     always_run: false
     optional: true
     skip_report: false
-    run_if_changed: '^(pkg\/credential\/provider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
+    run_if_changed: '^(pkg\/credentialprovider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
@@ -3252,7 +3252,7 @@ presubmits:
     always_run: false
     optional: true
     skip_report: false
-    run_if_changed: '^(pkg\/credential\/provider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
+    run_if_changed: '^(pkg\/credentialprovider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
