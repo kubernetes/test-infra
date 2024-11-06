@@ -820,6 +820,58 @@ presubmits:
           env:
             - name: GOPATH
               value: /go
+  - name: pull-kubernetes-node-kubelet-serial-podresources
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-podresources
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --deployment=node
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
+            - --node-test-args=--service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true" --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
+            - --node-tests=true
+            - --provider=gce
+            - --runtime-config=api/all=true
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:PodLevelResources\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
   - name: pull-kubernetes-node-e2e-alpha-ec2
     # duplicate job of ci-kubernetes-e2e-ec2-alpha-features to test changes in provider-aws-test-infra
     cluster: eks-prow-build-cluster
