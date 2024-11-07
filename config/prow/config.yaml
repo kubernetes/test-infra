@@ -331,6 +331,11 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        externaljwt:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         git-sync:
           enforce_admins: true
           restrictions: # only allow admins
