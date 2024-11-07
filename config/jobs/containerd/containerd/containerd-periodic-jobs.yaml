@@ -137,6 +137,42 @@ periodics:
     testgrid-tab-name: ci-containerd-build-2.0
     description: "builds release/2.0 branch of upstream containerd"
 
+- name: ci-containerd-arm64-build-2-0
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: release/2.0
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
+        command:
+          - runner.sh
+        args:
+          - test/build.sh
+        env:
+          - name: DEPLOY_DIR
+            value: release-2.0
+          - name: DEPLOY_BUCKET
+            value: k8s-staging-cri-tools
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+    nodeSelector:
+      kubernetes.io/arch: arm64
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: ci-containerd-arm64-build-2.0
+    description: "builds release/2.0 branch of upstream containerd (arm64)"
+
 - name: ci-containerd-build-test-images
   interval: 24h
   labels:
