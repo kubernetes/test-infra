@@ -2,7 +2,7 @@
 # The intervals are specifically set to 24h as these jobs also run as postsubmits for main and last 2 releases
 periodics:
 - name: ci-containerd-build
-  interval: 24h
+  cron: "0 6,18 * * *" # Run twice a day - ensure this is the same time as ci-containerd-arm64-build
   labels:
     preset-service-account: "true"
   cluster: k8s-infra-prow-build
@@ -36,7 +36,7 @@ periodics:
     description: "builds development in progress branch of upstream containerd"
 
 - name: ci-containerd-arm64-build
-  interval: 24h
+  cron: "0 6,18 * * *" # Run twice a day - ensure this is the same time as ci-containerd-build
   labels:
     preset-service-account: "true"
   cluster: k8s-infra-prow-build
@@ -106,7 +106,7 @@ periodics:
     description: "builds release/1.6 branch of upstream containerd"
 
 - name: ci-containerd-build-1-7
-  interval: 24h
+  cron: "0 7,19 * * *" # Run twice a day - ensure this is the same time as ci-containerd-arm64-build-1-7
   labels:
     preset-service-account: "true"
   cluster: k8s-infra-prow-build
@@ -140,7 +140,7 @@ periodics:
     description: "builds release/1.7 branch of upstream containerd"
 
 - name: ci-containerd-arm64-build-1-7
-  interval: 24h
+  cron: "0 7,19 * * *" # Run twice a day - ensure this is the same time as ci-containerd-build-1-7
   labels:
     preset-service-account: "true"
   cluster: k8s-infra-prow-build
@@ -176,7 +176,7 @@ periodics:
     description: "builds release/1.7 branch of upstream containerd (arm64)"
 
 - name: ci-containerd-build-2-0
-  interval: 24h
+  cron: "0 8,20 * * *" # Run twice a day - ensure this is the same time as ci-containerd-arm64-build-2-0
   labels:
     preset-service-account: "true"
   cluster: k8s-infra-prow-build
@@ -210,7 +210,7 @@ periodics:
     description: "builds release/2.0 branch of upstream containerd"
 
 - name: ci-containerd-arm64-build-2-0
-  interval: 24h
+  cron: "0 8,20 * * *" # Run twice a day - ensure this is the same time as ci-containerd-build-2-0
   labels:
     preset-service-account: "true"
   cluster: k8s-infra-prow-build
