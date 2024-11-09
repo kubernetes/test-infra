@@ -767,7 +767,7 @@ presubmits:
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
         - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
-  - name: pull-kubernetes-node-kubelet-serial-podresize
+  - name: pull-kubernetes-node-kubelet-podresize
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
@@ -776,7 +776,7 @@ presubmits:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-kubelet-serial-gce-e2e-podresize
+      testgrid-tab-name: pr-kubelet-gce-e2e-podresize
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -814,7 +814,7 @@ presubmits:
             - --node-tests=true
             - --provider=gce
             - --runtime-config=api/all=true
-            - --test_args=--nodes=1 --skip="" --focus="\[Feature:InPlacePodVerticalScaling\]"
+            - --test_args=--nodes=8 --skip="" --focus="\[Feature:InPlacePodVerticalScaling\]"
             - --timeout=180m
           env:
             - name: GOPATH
