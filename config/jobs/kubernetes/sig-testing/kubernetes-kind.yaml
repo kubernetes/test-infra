@@ -382,7 +382,7 @@ presubmits:
   - name: pull-kubernetes-e2e-kind-alpha-beta-features
     cluster: k8s-infra-prow-build
     optional: true
-    always_run: false
+    run_if_changed: ^pkg/features/
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
