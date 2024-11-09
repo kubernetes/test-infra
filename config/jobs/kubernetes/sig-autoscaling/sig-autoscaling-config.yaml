@@ -293,8 +293,8 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
-      - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
+      # Enable HPAScaleToZero. Required for scale to zero tests.
+      - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
@@ -373,8 +373,8 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
-      - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
+      # Enable HPAScaleToZero. Required for scale to zero tests.
+      - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-master
@@ -408,8 +408,6 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      # Enable HPAContainerMetrics. Required for container metrics tests.
-      - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
       - --extract=ci/latest
       - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
