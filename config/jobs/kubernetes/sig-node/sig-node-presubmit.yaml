@@ -4095,7 +4095,7 @@ presubmits:
     optional: true
     always_run: false
     run_if_changed: 'test/e2e/node/pod_resize.go|pkg/kubelet/kubelet.go|pkg/kubelet/kubelet_pods.go|pkg/kubelet/kuberuntime/kuberuntime_manager.go'
-    skip_report: true
+    skip_report: false
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
     - master
