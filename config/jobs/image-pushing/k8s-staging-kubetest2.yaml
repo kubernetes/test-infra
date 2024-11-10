@@ -7,6 +7,9 @@ postsubmits:
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
         testgrid-num-columns-recent: '3'
       decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
       spec:
         serviceAccountName: gcb-builder
         containers:
