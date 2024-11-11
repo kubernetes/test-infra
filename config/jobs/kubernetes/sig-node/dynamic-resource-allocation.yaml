@@ -242,7 +242,7 @@ periodics:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates="DynamicResourceAllocation=true,KubeletCrashLoopBackOffMax=true"--service-feature-gates="AllAlpha=true,AllBeta=true" --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--node-test-args=--feature-gates="DynamicResourceAllocation=true,KubeletCrashLoopBackOffMax=true" --service-feature-gates="AllAlpha=true,AllBeta=true" --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
         - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf DynamicResourceAllocation && !Flaky"'
