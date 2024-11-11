@@ -49,6 +49,7 @@ periodics:
             - --project=k8s-staging-kubetest2
             - --scratch-bucket=gs://k8s-staging-kubetest2-gcb
             - --env-passthrough=PULL_BASE_SHA
+            - --with-git-dir
             - --build-dir=.
             - hack/ci/push-binaries/
           env:
