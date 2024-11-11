@@ -23,11 +23,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/utils/strings/slices"
 	cfg "sigs.k8s.io/prow/pkg/config"
 )
 
