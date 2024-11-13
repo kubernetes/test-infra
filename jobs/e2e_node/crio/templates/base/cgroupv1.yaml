@@ -1,4 +1,4 @@
 ---
 kernel_arguments:
   should_exist:
-    - systemd.unified_cgroup_hierarchy=0
+    - SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1

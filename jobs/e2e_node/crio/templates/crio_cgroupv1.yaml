@@ -5,7 +5,7 @@ kernel_arguments:
   should_not_exist:
     - mitigations=auto,nosmt
   should_exist:
-    - systemd.unified_cgroup_hierarchy=0
+    - SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
