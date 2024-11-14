@@ -418,7 +418,7 @@ presubmits:
   - name: pull-azurefile-csi-driver-e2e-capz-windows-2022
     cluster: eks-prow-build-cluster
     decorate: true
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/azurefile-csi-driver
     labels:
       preset-dind-enabled: "true"
