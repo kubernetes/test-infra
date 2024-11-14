@@ -383,7 +383,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - (master)|(^release-.+$)
