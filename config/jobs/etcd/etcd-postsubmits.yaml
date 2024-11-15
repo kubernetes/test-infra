@@ -1,3 +1,4 @@
+---
 postsubmits:
   etcd-io/etcd:
   - name: post-etcd-build
@@ -16,6 +17,66 @@ postsubmits:
         args:
         - make
         - build
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+  - name: post-etcd-verify
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-postsubmits
+      testgrid-tab-name: post-etcd-verify
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241021-d3a4913879-master
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+          export PATH=$GOPATH/bin:$PATH && make verify
+          export PATH=$GOPATH/bin:$PATH && make fix
+          DIFF=$(git status --porcelain)
+          if [ -n "$DIFF" ]; then
+            echo "These files were modified:"
+            echo
+            echo "$DIFF"
+            echo
+            exit 1
+          fi
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+
+  - name: post-etcd-govulncheck
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-postsubmits
+      testgrid-tab-name: post-etcd-govulncheck
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241021-d3a4913879-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          export PATH=$GOPATH/bin:$PATH && make run-govulncheck
         resources:
           requests:
             cpu: "4"
