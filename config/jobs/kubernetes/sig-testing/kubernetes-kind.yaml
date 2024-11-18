@@ -479,7 +479,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-features
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-alpha
     description: Uses kubetest to run e2e tests against a latest kubernetes master and alpha features enabled cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -531,7 +531,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-beta
     description: Uses kubetest to run e2e tests against a latest kubernetes master and beta features enabled cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -583,7 +583,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-features
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-alpha-beta
     description: Uses kubetest to run e2e tests against a latest kubernetes master and all features enabled cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
