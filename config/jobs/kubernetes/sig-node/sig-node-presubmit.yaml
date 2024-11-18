@@ -814,7 +814,7 @@ presubmits:
             - --node-tests=true
             - --provider=gce
             - --runtime-config=api/all=true
-            - --test_args=--nodes=8 --skip="" --focus="\[Feature:InPlacePodVerticalScaling\]"
+            - --test_args=--nodes=8 --skip="" --focus="Pod InPlace Resize Container"
             - --timeout=180m
           env:
             - name: GOPATH
