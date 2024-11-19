@@ -90,7 +90,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.31
     decorate: true
     decoration_config:
-      timeout: 30m
+      timeout: 40m
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -128,7 +128,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.30
     decorate: true
     decoration_config:
-      timeout: 30m
+      timeout: 40m
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -166,7 +166,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.29
     decorate: true
     decoration_config:
-      timeout: 30m
+      timeout: 40m
     always_run: true
     labels:
       preset-dind-enabled: "true"
