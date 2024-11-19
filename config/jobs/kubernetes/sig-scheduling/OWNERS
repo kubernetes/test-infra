@@ -1,12 +1,19 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- ahg-g
-- alculquicondor
-- Huang-Wei
+    - alculquicondor
+    - Huang-Wei
+    - AxeZhan
+    - damemi
+    - denkensk
+    - macsko
+    - sanposhiho
+    - kerthcet
 approvers:
-- ahg-g
-- alculquicondor
-- Huang-Wei
+    - alculquicondor
+    - Huang-Wei
+    - ahg-g
+    - kerthcet
+    - sanposhiho
 labels:
 - sig/scheduling
