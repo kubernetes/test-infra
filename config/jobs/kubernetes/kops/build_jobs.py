@@ -1041,7 +1041,6 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="eks-prow-build-cluster",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1063,7 +1062,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="eks-prow-build-cluster",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
                        "--master-size=r5d.xlarge",
@@ -1578,7 +1576,6 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
-            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
@@ -1589,7 +1586,6 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
-            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
