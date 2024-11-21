@@ -761,6 +761,10 @@ periodics:
       # We have to explicitly disable --short flag because the script enables by default.
       - name: SHORT
         value: --short=false
+      # Capture success/failure and duration for each individual test case instead
+      # of reducing everything at the package level.
+      - name: KUBE_PRUNE_JUNIT_TESTS
+        value: "false"
       # We need to constraint compute resources so all the tests
       # finish approximately at the same time. More compute power
       # can increase scheduling throughput and make consequent results
