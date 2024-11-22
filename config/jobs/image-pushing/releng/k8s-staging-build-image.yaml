@@ -123,6 +123,7 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-build-image-gcb
               - --env-passthrough=REGISTRY
               - --build-dir=.
+              - --with-git-dir
               - images/build/cross
             env:
               - name: LOG_TO_STDOUT
