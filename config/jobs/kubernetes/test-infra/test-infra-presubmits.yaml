@@ -111,7 +111,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-master
         command:
         - runner.sh
         args:
@@ -144,7 +144,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-master
         command:
         - runner.sh
         args:
@@ -175,7 +175,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-master
         command:
         - runner.sh
         args:
@@ -206,7 +206,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-master
         command:
         - runner.sh
         args:
@@ -236,7 +236,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-master
         command:
         - runner.sh
         args:
