@@ -79,7 +79,7 @@ presubmits:
               BUILD_IMAGE=ko.local:${VERSION}
               REGION=${REGION:-"us-east-1"}
 
-              make switch-to-latest-k8s ko-build-local
+              make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
 
               AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
               IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
@@ -162,7 +162,7 @@ presubmits:
               BUILD_IMAGE=ko.local:${VERSION}
               REGION=${REGION:-"us-east-1"}
 
-              make switch-to-latest-k8s ko-build-local
+              make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
 
               AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
               IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
