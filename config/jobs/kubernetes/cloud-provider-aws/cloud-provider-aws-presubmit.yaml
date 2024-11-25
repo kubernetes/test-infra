@@ -69,6 +69,10 @@ presubmits:
             - bash
             - -c
             - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
 
               VERSION=$(git describe --dirty --tags --match='v*')
@@ -148,6 +152,10 @@ presubmits:
             - bash
             - -c
             - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
 
               VERSION=$(git describe --dirty --tags --match='v*')
