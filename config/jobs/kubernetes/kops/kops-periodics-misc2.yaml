@@ -1948,9 +1948,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ipv6-karpenter
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.28", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-k28-hostname-bug123255
-  cron: '0 7-23/8 * * *'
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+- name: e2e-kops-aws-hostname-bug121018
+  cron: '4 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1980,11 +1980,13 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.6.20241121.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/stable-1.28.txt \
+          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-marker=stable-1.28.txt \
+          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-dir=ci \
+          --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits" \
           --parallel=25
       env:
@@ -2005,13 +2007,13 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
-    test.kops.k8s.io/k8s_version: '1.28'
+    test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-al2023, kops-k8s-1.28, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-al2023, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-k28-hostname-bug123255
+    testgrid-tab-name: kops-aws-hostname-bug121018
 
 # {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.containerd.selinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-selinux
