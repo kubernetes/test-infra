@@ -5,13 +5,6 @@ variants:
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
-  test-infra:
-    CONFIG: test-infra
-    GO_VERSION: 1.21.12
-    K8S_RELEASE: stable
-    BAZEL_VERSION: 3.4.1
-    OLD_BAZEL_VERSION: 3.1.0
-    KIND_VERSION: 0.17.0
   master:
     CONFIG: master
     GO_VERSION: 1.23.3
