@@ -46,14 +46,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-7-rosa-aws
+    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-8-rosa-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-7-rosa-aws
+    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-8-rosa-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -355,8 +355,8 @@ dashboards:
 test_groups:
 - gcs_prefix: test-platform-results/logs/periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.16-lp-rosa-classic-3scale-amp-interop-rosa-aws
   name: periodic-ci-3scale-qe-3scale-deploy-main-3scale-amp-ocp4.16-lp-rosa-classic-3scale-amp-interop-rosa-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-7-rosa-aws
-  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-7-rosa-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-8-rosa-aws
+  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.16-lp-rosa-classic-amq-streams-2-8-rosa-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.16-lp-rosa-classic-camel-k-interop-aws-rosa-sts
   name: periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.16-lp-rosa-classic-camel-k-interop-aws-rosa-sts
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.16-lp-rosa-classic-servicemesh-rosa-aws
