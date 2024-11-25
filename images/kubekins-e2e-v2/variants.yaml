@@ -1,11 +1,4 @@
 variants:
-  experimental:
-    CONFIG: experimental
-    GO_VERSION: 1.23.3
-    K8S_RELEASE: stable
-    BAZEL_VERSION: 3.4.1
-    OLD_BAZEL_VERSION: 2.2.0
-    KUBETEST2_VERSION: latest
   go-canary:
     CONFIG: go-canary
     GO_VERSION: 1.23.3
