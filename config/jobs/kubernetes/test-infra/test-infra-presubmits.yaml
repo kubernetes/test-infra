@@ -1,41 +1,5 @@
 presubmits:
   kubernetes/test-infra:
-  # pull-test-infra-bazel is deprecated, leave it here just in case. Will be
-  # completely removed once bazel footprint is removed from test-infra
-  - name: pull-test-infra-bazel
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    always_run: false
-    optional: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20220314-46af1b01a6-test-infra
-        command:
-        - hack/bazel.sh
-        args:
-        - test
-        - --config=ci
-        - --nobuild_tests_only
-        - //...
-        env:
-        - name: BAZEL_FETCH_PLEASE
-          value: //...
-        resources:
-          requests:
-            cpu: "4"
-            memory: "8Gi"
-          limits:
-            cpu: "4"
-            memory: "8Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: bazel
-
   - name: pull-test-infra-gubernator
     cluster: eks-prow-build-cluster
     branches:
