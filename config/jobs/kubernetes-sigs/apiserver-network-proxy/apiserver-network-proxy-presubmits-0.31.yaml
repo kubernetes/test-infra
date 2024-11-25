@@ -1,16 +1,16 @@
 presubmits:
   kubernetes-sigs/apiserver-network-proxy:
-  - name: pull-apiserver-network-proxy-test-0-28
+  - name: pull-apiserver-network-proxy-test-0-31
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
-    - release-0.28
+    - release-0.31
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20.12
+      - image: public.ecr.aws/docker/library/golang:1.22.5
         command:
         - make
         args:
@@ -24,13 +24,13 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-test-0-28
+      testgrid-tab-name: pr-test-0-31
       description: Tests the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-docker-build-amd64-0-28
+  - name: pull-apiserver-network-proxy-docker-build-amd64-0-31
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
-    - release-0.28
+    - release-0.31
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
@@ -38,7 +38,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         command:
         - "runner.sh"
         args:
@@ -59,13 +59,13 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-docker-build-amd64-0-28
+      testgrid-tab-name: pr-docker-build-amd64-0-31
       description: Build amd64 image via Docker for the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-docker-build-arm64-0-28
+  - name: pull-apiserver-network-proxy-docker-build-arm64-0-31
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
-    - release-0.28
+    - release-0.31
     skip_report: false
     decorate: true
     path_alias: sigs.k8s.io/apiserver-network-proxy
@@ -73,7 +73,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.28
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.31
         command:
         - "runner.sh"
         args:
@@ -94,34 +94,5 @@ presubmits:
             cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-docker-build-arm64-0-28
+      testgrid-tab-name: pr-docker-build-arm64-0-31
       description: Build arm64 image via Docker for the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-make-lint-0-28
-    cluster: eks-prow-build-cluster
-    always_run: true
-    branches:
-    - release-0.28
-    skip_report: false
-    decorate: true
-    path_alias: sigs.k8s.io/apiserver-network-proxy
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-d3a4913879-1.28
-        command:
-        - "runner.sh"
-        args:
-        - make
-        - lint
-        resources:
-          requests:
-            memory: 8Gi
-            cpu: 2
-          limits:
-            memory: 8Gi
-            cpu: 2
-    annotations:
-      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-make-lint-0-28
-      description: Run lint target for the apiserver-network-proxy
