@@ -17,7 +17,3 @@ approvers:
 emeritus_approvers:
 - amwat
 - spiffxp
-
-labels:
-- sig/release
-- area/release-eng
