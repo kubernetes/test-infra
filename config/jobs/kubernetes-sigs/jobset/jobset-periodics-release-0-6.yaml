@@ -58,7 +58,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - make
         args:
