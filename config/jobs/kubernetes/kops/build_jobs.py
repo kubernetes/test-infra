@@ -851,11 +851,10 @@ def generate_misc():
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'),
 
         # A job to isolate a test failure reported in
-        # https://github.com/kubernetes/kubernetes/issues/123255
-        build_test(name_override="kops-aws-k28-hostname-bug123255",
+        # https://github.com/kubernetes/kubernetes/issues/121018
+        build_test(name_override="kops-aws-hostname-bug121018",
                    cloud="aws",
                    distro="al2023",
-                   k8s_version="1.28",
                    networking="cilium",
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits',
                    runs_per_day=3,
