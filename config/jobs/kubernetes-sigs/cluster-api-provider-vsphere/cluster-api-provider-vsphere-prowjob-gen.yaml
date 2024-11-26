@@ -9,7 +9,7 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30"
       # interval for coverage job
       interval: "24h"
       upgrades:
@@ -22,7 +22,7 @@ prow_ignored:
       - from: "1.31"
         to: "1.32"
     release-1.11:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30"
       upgrades:
       - from: "1.28"
         to: "1.29"
@@ -31,7 +31,7 @@ prow_ignored:
       - from: "1.30"
         to: "1.31"
     release-1.10:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29"
       upgrades:
       - from: "1.28"
         to: "1.29"

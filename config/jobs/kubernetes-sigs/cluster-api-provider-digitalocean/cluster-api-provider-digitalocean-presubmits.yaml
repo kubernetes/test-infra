@@ -10,7 +10,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -33,7 +33,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -56,7 +56,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
         - make
         args:
@@ -88,7 +88,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -121,7 +121,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -158,7 +158,7 @@ presubmits:
       timeout: 5h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -195,7 +195,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -228,7 +228,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -264,7 +264,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-experimental.sh"

@@ -11,7 +11,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -40,7 +40,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
         resources:
           requests:
             cpu: 7300m
@@ -62,7 +62,7 @@ presubmits:
     - ^release-2.7$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -89,7 +89,7 @@ presubmits:
     - ^release-2.7$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
         command:
         - runner.sh
         args:
@@ -118,7 +118,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
         command:
         - "runner.sh"
         - "make"
@@ -168,7 +168,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -214,7 +214,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -259,7 +259,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -306,7 +306,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -348,7 +348,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"
@@ -390,7 +390,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks-gc.sh"
@@ -432,7 +432,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"
