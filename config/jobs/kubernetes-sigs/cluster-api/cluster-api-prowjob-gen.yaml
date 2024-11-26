@@ -50,6 +50,25 @@ prow_ignored:
         to: "1.31"
       - from: "1.31"
         to: "1.32"
+    release-1.9:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.31"
+      interval: "4h"
+      upgradesInterval: "24h"
+      kubernetesVersionManagement: "v1.28.9"
+      kubebuilderEnvtestKubernetesVersion: "1.28.3"
+      upgrades:
+      - from: "1.26"
+        to: "1.27"
+      - from: "1.27"
+        to: "1.28"
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
+      - from: "1.30"
+        to: "1.31"
+      - from: "1.31"
+        to: "1.32"
     release-1.8:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.30"
       interval: "4h"
@@ -88,25 +107,6 @@ prow_ignored:
         to: "1.29"
       - from: "1.29"
         to: "1.30"
-    release-1.6:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.28"
-      interval: "4h"
-      upgradesInterval: "24h"
-      kubernetesVersionManagement: "v1.25.11"
-      kubebuilderEnvtestKubernetesVersion: "1.25.0"
-      upgrades:
-      - from: "1.23"
-        to: "1.24"
-      - from: "1.24"
-        to: "1.25"
-      - from: "1.25"
-        to: "1.26"
-      - from: "1.26"
-        to: "1.27"
-      - from: "1.27"
-        to: "1.28"
-      - from: "1.28"
-        to: "1.29"
 
   # The generator will run each template per branch and use a filename friendly
   # branch variable to format the target filename.
@@ -120,10 +120,6 @@ prow_ignored:
 
   # Versions provides kubernetes minor version to key-value pairs mapping.
   versions:
-    "1.23":
-      etcd: "3.5.3-0"
-      coreDNS: "v1.8.6"
-      k8sRelease: "stable-1.23"
     "1.24":
       etcd: "3.5.3-0"
       coreDNS: "v1.8.6"
