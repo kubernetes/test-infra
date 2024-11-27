@@ -56,5 +56,47 @@ presubmits:
             cpu: 2
             memory: 12Gi
 
+  - name: pull-kubernetes-apidiff-client-go
+    cluster: eks-prow-build-cluster
+    # A job which automatically runs for changes in client-go or the generated code
+    # to have visibility on the changes that will impact the external projects
+    # that are using the Kubernetes golang clients
+    run_if_changed: '(^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples)'
+    optional: true
+    decorate: true
+    annotations:
+      # The apidiff.sh script uses the latest revision of apidiff.
+      # There is no guarantee that this will continue to work for
+      # older branches, so let's not even create per-release
+      # copies of this job.
+      fork-per-release: "false"
+      testgrid-dashboards: sig-testing-misc
+      testgrid-create-test-group: 'true'
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - -c
+        # PULL_BASE_SHA is the revision on the target branch that the
+        # PR gets merged into. What we want instead is the revision at
+        # which the PR branch diverged from the target branch.
+        # We get that from "git merge-base".
+        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA} ./staging/src/k8s.io/code-generator/examples ./staging/src/k8s.io/client-go"
+        env:
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        resources:
+          # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
+          limits:
+            cpu: 2
+            memory: 12Gi
+          requests:
+            cpu: 2
+            memory: 12Gi
+
 # A periodic job which shows API diffs for staging repos since the last release
 # might be useful. Not done yet.
