@@ -7,7 +7,10 @@ plank:
   pod_pending_timeout: 15m
   pod_unscheduled_timeout: 5m
   job_queue_capacities:
+    # limits concurrency for image promoter jobs
     'k8sio-image-promo': 1
+    # limits concurrency for k8s-test-infra-staging project
+    'test-infra-staging-image-push': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h
