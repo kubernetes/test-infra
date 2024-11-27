@@ -15,8 +15,6 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-ARG OLD_BAZEL_VERSION
-FROM gcr.io/bazel-public/bazel:${OLD_BAZEL_VERSION} as old
 FROM gcr.io/k8s-staging-test-infra/bootstrap:v20241015-f5fd905349
 
 # hint to kubetest that it is in CI
