@@ -21,6 +21,17 @@ prow_ignored:
         to: "1.31"
       - from: "1.31"
         to: "1.32"
+    release-1.12:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30"
+      upgrades:
+      - from: "1.28"
+        to: "1.29"
+      - from: "1.29"
+        to: "1.30"
+      - from: "1.30"
+        to: "1.31"
+      - from: "1.31"
+        to: "1.32"
     release-1.11:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.30"
       upgrades:
@@ -32,13 +43,6 @@ prow_ignored:
         to: "1.31"
     release-1.10:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29"
-      upgrades:
-      - from: "1.28"
-        to: "1.29"
-      - from: "1.29"
-        to: "1.30"
-    release-1.9:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.28"
       upgrades:
       - from: "1.28"
         to: "1.29"
