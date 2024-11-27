@@ -40,5 +40,4 @@ jobs:
   - pull-kubernetes-unit
   - pull-kubernetes-unit-go-compatibility
   - pull-kubernetes-verify
-  - pull-kubernetes-verify-lint
 recursive_artifacts: false
