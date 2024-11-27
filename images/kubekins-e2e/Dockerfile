@@ -81,10 +81,6 @@ ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
 COPY images/kubekins-e2e/install-bazel.sh /
 RUN bash /install-bazel.sh
 
-ARG OLD_BAZEL_VERSION
-COPY --from=old \
-    /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
-
 # install kind if a version is provided
 ARG KIND_VERSION
 RUN if [ -n "${KIND_VERSION}" ]; then \
