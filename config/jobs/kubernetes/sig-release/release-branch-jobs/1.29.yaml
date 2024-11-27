@@ -2059,31 +2059,6 @@ presubmits:
     branches:
     - release-1.29
     cluster: eks-prow-build-cluster
-    context: pull-kubernetes-verify-lint
-    decorate: true
-    name: pull-kubernetes-verify-lint
-    optional: true
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - args:
-        - verify
-        - WHAT=golangci-lint golangci-lint-pr
-        command:
-        - make
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.29
-        name: ""
-        resources:
-          limits:
-            cpu: "5"
-            memory: 12Gi
-          requests:
-            cpu: "5"
-            memory: 12Gi
-  - always_run: true
-    branches:
-    - release-1.29
-    cluster: eks-prow-build-cluster
     context: pull-kubernetes-linter-hints
     decorate: true
     name: pull-kubernetes-linter-hints
