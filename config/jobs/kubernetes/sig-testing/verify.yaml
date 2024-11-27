@@ -46,46 +46,6 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
-  - name: pull-kubernetes-verify-lint
-    cluster: eks-prow-build-cluster
-    decorate: true
-    # This job is running all required linter checks:
-    # - baseline for all code
-    # - stricter configuration for new or modified code in a pull request
-    #
-    # Both run in the same job to reuse the build and (to some extend)
-    # golangci-lint cache. Testing the baseline is necessary because,
-    # for example, a linter config change or tool update might cause
-    # failures in existing, unmodified code.
-    always_run: true
-    optional: false
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    annotations:
-      fork-per-release: "true"
-      testgrid-dashboards: sig-testing-misc
-      description: Runs golangci-lint with a stricter configuration for new code.
-      testgrid-alert-email: patrick.ohly@intel.com
-      testgrid-num-failures-to-alert: "15"
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-master
-        command:
-        - make
-        args:
-        - verify
-        - WHAT=golangci-lint golangci-lint-pr
-        resources:
-          # It peaks at around 7 cores of the EKS cluster. We can fit more jobs onto
-          # a node without much slowdown by requesting one third of a node
-          # (= 3 * 5 + 1 for kubelet).
-          limits:
-            cpu: 5
-            memory: 12Gi
-          requests:
-            cpu: 5
-            memory: 12Gi
   - name: pull-kubernetes-linter-hints
     cluster: eks-prow-build-cluster
     decorate: true
