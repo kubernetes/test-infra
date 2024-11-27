@@ -925,6 +925,23 @@ def generate_misc():
                    runs_per_day=3),
 
 
+        # [sig-network, @aojea] A job to test SIG Network beta features on Kops to validate "real-world" usage availability.
+        build_test(name_override="kops-aws-sig-network-beta",
+                   cloud="aws",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_version=marker_updown_green("master"),
+                   kops_channel="alpha",
+                   kubernetes_feature_gates="AllBeta",
+                   extra_flags=[
+                       "--set=spec.kubeAPIServer.runtimeConfig=api/all=true",
+                   ],
+                   focus_regex=r"\[sig-network\]",
+                   skip_regex=r"Alpha|LoadBalancer|NetworkPolicy|Disruptive|Flaky|IPv6|PerformanceDNS|SCTP|Ingress|KubeProxy|Traffic.Distribution|Topology.Hints",
+                   test_timeout_minutes=120,
+                   runs_per_day=3,
+                   extra_dashboards=['kops-misc']),
+
         # test kube-up to kops jobs migration
         build_test(name_override="ci-kubernetes-e2e-cos-gce-canary",
                    cloud="gce",
