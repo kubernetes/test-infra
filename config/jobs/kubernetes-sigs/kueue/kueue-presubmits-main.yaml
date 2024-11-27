@@ -230,7 +230,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.30.0
+              value: kindest/node:v1.31.2
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.23
           command:
