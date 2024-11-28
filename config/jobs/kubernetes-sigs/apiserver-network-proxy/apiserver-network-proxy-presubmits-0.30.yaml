@@ -38,7 +38,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241127-f74b74d1f9-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.30
         command:
         - "runner.sh"
         args:
@@ -73,7 +73,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241127-f74b74d1f9-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.30
         command:
         - "runner.sh"
         args:
@@ -108,7 +108,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241127-f74b74d1f9-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.30
         command:
         - "runner.sh"
         args:

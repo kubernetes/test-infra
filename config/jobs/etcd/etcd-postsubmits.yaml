@@ -11,7 +11,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-build
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - runner.sh
         args:
@@ -34,7 +34,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-verify
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - /bin/bash
         args:
@@ -69,7 +69,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-govulncheck
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - runner.sh
         args:
