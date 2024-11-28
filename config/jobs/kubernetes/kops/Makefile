@@ -13,5 +13,12 @@
 # limitations under the License.
 
 .PHONY: generate
-generate:
+generate: | invalidate-pins generate-jobs
+
+.PHONY: invalidate-pins
+invalidate-pins:
+	rm -f pinned.list
+
+.PHONY: generate-jobs
+generate-jobs:
 	PYTHONPATH=. python3 build_jobs.py
