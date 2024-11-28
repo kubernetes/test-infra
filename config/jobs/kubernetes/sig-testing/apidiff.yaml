@@ -98,5 +98,40 @@ presubmits:
             cpu: 2
             memory: 12Gi
 
-# A periodic job which shows API diffs for staging repos since the last release
-# might be useful. Not done yet.
+
+periodics:
+# A periodic job which shows API diffs for staging repos per day
+- name: ci-kubernetes-apidiff-daily
+  cluster: eks-prow-build-cluster
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 30m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      command:
+      - runner.sh
+      args:
+      - "bash"
+      - "-c"
+      - "./hack/apidiff.sh -r $(git log --since=1.day.ago --pretty=format:\"%h\" | tail -1) ./staging/src/k8s.io/*"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: 12Gi
+        requests:
+          cpu: 2
+          memory: 12Gi
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: apidiff-daily
+    description: Runs apidiff daily
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com
