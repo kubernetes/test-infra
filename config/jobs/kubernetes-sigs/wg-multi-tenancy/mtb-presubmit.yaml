@@ -13,7 +13,7 @@ presubmits:
       run_if_changed: "benchmarks/kubectl-mtb/.*"
       spec:
         containers:
-        - image: gcr.io/k8s-staging-test-infra/krte:v20241127-e9756c55c5-master
+        - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
           command:
             - wrapper.sh
             - ./benchmarks/kubectl-mtb/hack/ci-test.sh

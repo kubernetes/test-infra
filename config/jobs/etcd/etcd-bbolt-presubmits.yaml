@@ -12,7 +12,7 @@ presubmits:
         testgrid-tab-name: pull-bbolt-test-1-cpu-arm64
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
             command:
               - runner.sh
             args:
@@ -40,7 +40,7 @@ presubmits:
         testgrid-tab-name: pull-bbolt-test-2-cpu-arm64
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
             command:
               - runner.sh
             args:
@@ -68,7 +68,7 @@ presubmits:
         testgrid-tab-name: pull-bbolt-test-4-cpu-arm64
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
             command:
               - runner.sh
             args:
@@ -96,7 +96,7 @@ presubmits:
         testgrid-tab-name: pull-bbolt-test-4-cpu-race-arm64
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
             command:
               - runner.sh
             args:
@@ -127,7 +127,7 @@ presubmits:
         testgrid-tab-name: pull-bbolt-robustness-arm64
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241127-e9756c55c5-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
             command:
               - runner.sh
             args:
