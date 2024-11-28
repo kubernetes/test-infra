@@ -2232,11 +2232,15 @@ presubmits:
           requests:
             cpu: "5"
             memory: 12Gi
-  - always_run: false
+  - annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1-32
+      testgrid-num-columns-recent: '30'
+    always_run: false
     branches:
     - release-1.32
     cluster: eks-prow-build-cluster
-    context: pull-kubernetes-e2e-capz-windows-1.32
+    context: pull-kubernetes-e2e-capz-windows-1-32
     decorate: true
     extra_refs:
     - base_ref: main
@@ -2259,7 +2263,7 @@ presubmits:
       preset-capz-windows-common-pull: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-e2e-capz-windows-master
+    name: pull-kubernetes-e2e-capz-windows-1-32
     optional: true
     path_alias: k8s.io/kubernetes
     run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
