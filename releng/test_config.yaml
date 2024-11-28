@@ -79,11 +79,14 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
+    args:
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
+    args:
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8  
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
@@ -97,6 +100,7 @@ jobs:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
@@ -128,11 +132,11 @@ jobs:
     releaseBlocking: true
 
   # stable3
-  ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -155,8 +159,37 @@ jobs:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+
+  # stable4
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
     testSuite: alphafeatures-no-ccm
-  ci-kubernetes-e2e-gce-cos-k8sstable3-betaapis:
+  ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
     interval: 24h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
@@ -219,20 +252,25 @@ k8sVersions:
   # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   beta:
     args:
+    - --extract=ci/latest-1.32
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.32'
+  stable1:
+    args:
     - --extract=ci/latest-1.31
     - --extract-ci-bucket=k8s-release-dev
     version: '1.31'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.30
     - --extract-ci-bucket=k8s-release-dev
     version: '1.30'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.29
     - --extract-ci-bucket=k8s-release-dev
     version: '1.29'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.28
     - --extract-ci-bucket=k8s-release-dev
@@ -411,17 +449,21 @@ nodeK8sVersions:
   # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   beta:
     args:
+    - --repo=k8s.io/kubernetes=release-1.32
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.32
+  stable1:
+    args:
     - --repo=k8s.io/kubernetes=release-1.31
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.30
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.30
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.29
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.29
-  stable3:
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.28
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241125-b4ea3e27a6-1.28
