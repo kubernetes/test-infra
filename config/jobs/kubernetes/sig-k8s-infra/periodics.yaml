@@ -27,3 +27,77 @@ periodics:
             requests:
               cpu: 100m
               memory: 512Mi
+  - name: ci-kubernetes-cross-canary
+    cluster: k8s-infra-aks-admin
+    interval: 2h
+    decorate: true
+    max_concurrency: 1
+    path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-canaries
+      testgrid-tab-name: ci-k8s-cross-canary
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - release
+            - KUBE_RELEASE_RUN_TESTS=n
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 7300m
+              memory: "41Gi"
+            requests:
+              cpu: 7300m
+              memory: "41Gi"
+  - interval: 1h
+    cluster: k8s-infra-aks-admin
+    name: ci-kubernetes-verify-master-canary
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-canaries
+      testgrid-tab-name: verify-master-canary
+      description: "Ends up running: make verify on AKS"
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/verify-dockerized.sh
+          env:
+            - name: EXCLUDE_READONLY_PACKAGE
+              value: "y"
+            - name: KUBE_VERIFY_GIT_BRANCH
+              value: master
+            - name: REPO_DIR
+              value: /workspace/k8s.io/kubernetes
+            # Consider removing after https://github.com/golang/go/issues/49035 is solved
+            # See https://github.com/kubernetes/kubernetes/pull/108618
+            - name: TYPECHECK_SERIAL
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: 24Gi
+            requests:
+              cpu: 6
+              memory: 24Gi
