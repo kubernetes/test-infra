@@ -79,7 +79,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: 24h 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -337,7 +337,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: 24h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.29-blocking
     testgrid-tab-name: integration-1.29
@@ -409,7 +409,7 @@ periodics:
       runAsGroup: 2010
       runAsUser: 2001
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: 24h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.29-blocking
     testgrid-tab-name: verify-1.29
@@ -453,7 +453,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: 24h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.29-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -498,7 +498,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: 24h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.29-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
