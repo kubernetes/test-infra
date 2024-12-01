@@ -984,12 +984,6 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: release.triage.k8s.io, triage-party, code in apps/triageparty-release
-        name: area/apps/triageparty-release
-        target: both
-        prowPlugin: label
-        addedBy: anyone
-      - color: 0052cc
         description: Issues or PRs related to the hosting of release artifacts for subprojects
         name: area/artifacts
         target: both
