@@ -2100,6 +2100,28 @@ presubmits:
             memory: 12Gi
         securityContext:
           privileged: true
+  - always_run: false
+    branches:
+    - release-1.31
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-verify-lint
+    decorate: true
+    name: pull-kubernetes-verify-lint
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - "true"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-1.31
+        name: ""
+        resources:
+          limits:
+            cpu: 0.1
+            memory: 10Mi
+          requests:
+            cpu: 0.1
+            memory: 10Mi
   - always_run: true
     branches:
     - release-1.31

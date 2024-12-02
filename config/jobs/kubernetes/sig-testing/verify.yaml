@@ -46,6 +46,35 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
+  - name: pull-kubernetes-verify-lint
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "false"
+      testgrid-dashboards: sig-testing-misc
+      description: Runs golangci-lint with a stricter configuration for new code.
+      testgrid-alert-email: patrick.ohly@intel.com
+      testgrid-num-failures-to-alert: "15"
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241126-5bbfc324b7-master
+        command:
+        # This job is transitional: it's provided for PRs where the previous, real
+        # pull-kubernetes-verify-lint was run while it still existed and where the
+        # PR now is blocked by not having a successful test run.
+        - "true"
+        resources:
+          limits:
+            cpu: 0.1
+            memory: 10Mi
+          requests:
+            cpu: 0.1
+            memory: 10Mi
   - name: pull-kubernetes-linter-hints
     cluster: eks-prow-build-cluster
     decorate: true
