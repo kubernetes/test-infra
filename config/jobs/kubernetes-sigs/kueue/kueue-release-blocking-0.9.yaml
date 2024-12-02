@@ -223,7 +223,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0-9
+        base_ref: release-0.9
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
