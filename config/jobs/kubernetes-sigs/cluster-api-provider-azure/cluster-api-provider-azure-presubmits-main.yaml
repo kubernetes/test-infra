@@ -567,7 +567,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
     decorate: true
-    run_if_changed: '^test\/e2e\/(config\/azure-dev\.yaml)|(data\/shared\/v1beta1_provider\/metadata\.yaml)$'
+    run_if_changed: '^(test\/e2e\/(config\/azure-dev\.yaml|data\/shared\/v1beta1_provider\/metadata\.yaml)|azure\/scope\/.*)$'
     optional: false
     always_run: false
     branches:
