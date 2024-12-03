@@ -4,7 +4,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -34,7 +34,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -64,7 +64,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -102,7 +102,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -140,7 +140,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -178,7 +178,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -216,7 +216,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$|^cmd/experimental/kjobctl/"
+    skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -249,7 +249,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -285,7 +285,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^release-0.9
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
