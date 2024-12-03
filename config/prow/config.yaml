@@ -816,6 +816,7 @@ tide:
     kubernetes-sigs/jobset: squash
     kubernetes-sigs/karpenter: squash
     kubernetes-sigs/kernel-module-management: rebase
+    kubernetes-sigs/kjob: squash
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
