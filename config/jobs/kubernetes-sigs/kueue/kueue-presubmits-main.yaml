@@ -4,7 +4,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -34,7 +34,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -64,7 +64,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -102,7 +102,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -140,7 +140,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -178,7 +178,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -216,7 +216,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
       - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -254,7 +254,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$|^cmd/experimental/kjobctl/"
+    skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -287,7 +287,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -323,7 +323,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     branches:
     - ^main
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|cmd/experimental/kjobctl|site|charts)/"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -337,41 +337,6 @@ presubmits:
         - make
         args:
         - test-performance-scheduler
-        env:
-        - name: GOMAXPROCS
-          value: "6"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "9Gi"
-          limits:
-            cpu: "6"
-            memory: "9Gi"
-  - name: pull-kueue-test-kjobctl
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^main
-    run_if_changed: "^(cmd/experimental/kjobctl)/"
-    decorate: true
-    path_alias: sigs.k8s.io/kueue
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-kjobctl
-      description: "Run kjobctl tests"
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
-        securityContext:
-          privileged: true
-        command:
-        - runner.sh
-        args:
-        - make
-        - -C
-        - cmd/experimental/kjobctl
-        - test
         env:
         - name: GOMAXPROCS
           value: "6"
