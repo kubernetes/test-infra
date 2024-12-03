@@ -6,7 +6,9 @@ periodics:
     app: branchprotector
   decorate: true
   decoration_config:
-    timeout: 5h
+    # TODO: this is WAY too long, the latency on applying rules needs to be much lower.
+    # ... but failing on timeout isn't better when we already know it takes too long.
+    timeout: 12h
   extra_refs:
   - org: kubernetes
     repo: test-infra
