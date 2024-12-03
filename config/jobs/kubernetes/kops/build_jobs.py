@@ -1446,7 +1446,7 @@ def generate_upgrades():
 
     kops28 = 'v1.28.7'
     kops29 = 'v1.29.2'
-    kops30 = 'v1.30.1'
+    kops30 = 'v1.30.3'
 
     versions_list = [
         #  kops    k8s          kops      k8s
