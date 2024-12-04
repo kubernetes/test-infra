@@ -7,6 +7,8 @@ presubmits:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-verify-release-1.31
     decorate: true
+    decoration_config:
+      timeout: 15m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
@@ -32,6 +34,8 @@ presubmits:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-verify-build-release-1.31
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
@@ -57,6 +61,8 @@ presubmits:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-unit-test-release-1.31
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
@@ -84,7 +90,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-31-1.31
     decorate: true
     decoration_config:
-      timeout: 20m
+      timeout: 40m
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -122,7 +128,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-31-1.30
     decorate: true
     decoration_config:
-      timeout: 20m
+      timeout: 40m
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -160,7 +166,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-31-1.29
     decorate: true
     decoration_config:
-      timeout: 20m
+      timeout: 40m
     always_run: true
     labels:
       preset-dind-enabled: "true"
