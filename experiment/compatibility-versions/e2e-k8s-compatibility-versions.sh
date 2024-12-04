@@ -223,9 +223,6 @@ EOF
 
 # run e2es with ginkgo-e2e.sh
 run_tests() {
-  # Change to the cloned Kubernetes repository
-  pushd ../kubernetes
-
   # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
   # 1. k8s CI doesn´t offer IPv6 connectivity, so CoreDNS should be configured
   # to work in an offline environment:
@@ -286,17 +283,6 @@ run_tests() {
     "--report-dir=${ARTIFACTS}" '--disable-log-dump=true' &
   GINKGO_PID=$!
   wait "$GINKGO_PID"
-
-  # Return to the original directory
-  popd
-}
-
-# clone kubernetes repo for specific release branch
-clone_kubernetes_release() {
-  # Clone the specific Kubernetes release branch
-  # Replace "release-1.31" with the desired branch
-  KUBE_RELEASE_BRANCH=${KUBE_RELEASE_BRANCH:-release-1.31}
-  git clone --single-branch --branch "${KUBE_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git
 }
 
 main() {
@@ -306,6 +292,13 @@ main() {
   # ensure artifacts (results) directory exists when not in CI
   export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
   mkdir -p "${ARTIFACTS}"
+
+  # Get current and n-1 version numbers
+  MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
+  MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
+  export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
+  export N_MINUS_ONE_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - 1))"
+  export EMULATED_VERSION=$(N_MINUS_ONE_VERSION)
 
   # export the KUBECONFIG to a unique path for testing
   KUBECONFIG="${HOME}/.kube/kind-test-config"
@@ -327,10 +320,16 @@ main() {
   res=0
   create_cluster || res=$?
 
-  # Clone the specific Kubernetes release branch
-  clone_kubernetes_release
+  # Clone the previous versions Kubernetes release branch
+  # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
+  export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
+  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_BRANCH}"
 
+  # enter the release branch and run tests
+  pushd "${PREV_RELEASE_BRANCH}"
   run_tests || res=$?
+  popd
+
   cleanup || res=$?
   exit $res
 }
