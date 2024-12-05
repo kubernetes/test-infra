@@ -280,7 +280,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.0
+              value: kindest/node:v1.31.2
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.23
           command:
