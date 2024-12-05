@@ -8,7 +8,7 @@ presubmits:
       testgrid-tab-name: pull-descheduler-verify-master
     decorate: true
     decoration_config:
-      timeout: 10m
+      timeout: 15m
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
