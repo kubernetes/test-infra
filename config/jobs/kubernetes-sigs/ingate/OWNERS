@@ -1,0 +1,16 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- cpanato
+- Gacko
+- puerco
+- rikatz
+- strongjz
+- tao12345666333
+reviewers:
+- cpanato
+- Gacko
+- puerco
+- rikatz
+- strongjz
+- tao12345666333
