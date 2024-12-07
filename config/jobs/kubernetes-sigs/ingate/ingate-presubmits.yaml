@@ -1,1 +1,26 @@
-# No jobs yet
+presubmits:
+  kubernetes-sigs/ingate:
+    - name: pull-ingate-boilerplate
+      cluster: k8s-infra-prow-build
+      always_run: true
+      decorate: true
+      decoration_config:
+        timeout: 10m
+      path_alias: sigs.k8s.io/ingate
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
+            command:
+              - runner.sh
+            args:
+              - ./hack/verify-boilerplate.sh
+            resources:
+              limits:
+                cpu: 1
+                memory: 4Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-network-ingate
+        testgrid-tab-name: boilerplate
