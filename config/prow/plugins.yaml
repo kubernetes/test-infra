@@ -162,6 +162,8 @@ label:
     # This label is used by the API review process
     # https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics
     - api-review
+    # This label, for k/sig-security identifies issues relevant to Third Party Security Audits
+    - security-audit
     # These labels are used to make Tide merge with a non-default merge method
     - tide/merge-method-merge
     - tide/merge-method-rebase
