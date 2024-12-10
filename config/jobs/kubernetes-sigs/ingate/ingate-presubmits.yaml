@@ -3,7 +3,6 @@ presubmits:
     - name: pull-ingate-boilerplate
       cluster: k8s-infra-prow-build
       decorate: true
-      optional: false
       skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS|OWNERS_ALIAS|SECURITY_CONTACTS)$|^(site|charts)/"
       decoration_config:
         timeout: 10m
