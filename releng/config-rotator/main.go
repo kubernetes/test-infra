@@ -119,6 +119,11 @@ func updateEverything(c *config.JobConfig, old, new string) {
 				}
 			}
 		}
+		for k, v := range p.Annotations {
+			if k == "testgrid-tab-name" || k == "testgrid-dashboards" {
+				p.Annotations[k] = updateString(v, old, new)
+			}
+		}
 		for j := range p.Tags {
 			p.Tags[j] = updateString(p.Tags[j], old, new)
 		}
