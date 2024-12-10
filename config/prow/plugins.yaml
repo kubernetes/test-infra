@@ -1975,3 +1975,8 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/karpenter:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
