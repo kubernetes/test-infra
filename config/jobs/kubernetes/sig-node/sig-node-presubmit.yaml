@@ -236,7 +236,7 @@ presubmits:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeFeature:Eviction\]
             - name: USE_DOCKERIZED_BUILD
               value: "true"
             - name: TARGET_BUILD_ARCH
@@ -298,7 +298,7 @@ presubmits:
           - --focus-regex=\[Serial\]
           - --use-dockerized-build=true
           - --target-build-arch=linux/arm64
-          - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[NodeFeature:NodeSwap\]
+          - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[NodeFeature:NodeSwap\]
           - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
           - --timeout=180m
@@ -513,7 +513,7 @@ presubmits:
         - '--node-test-args=--feature-gates=AllAlpha=true,ImageVolume=false,EventedPLEG=false --service-feature-gates=ProcMountType=true,UserNamespacesSupport=true,ImageVolume=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+        - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
         - --timeout=65m
         env:
         - name: GOPATH
@@ -561,7 +561,7 @@ presubmits:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]"
+          - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]"
           - --timeout=240m
           env:
           - name: GOPATH
@@ -608,7 +608,7 @@ presubmits:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --timeout=4h --focus="\[Flaky\]" --skip="\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+          - --test_args=--nodes=1 --timeout=4h --focus="\[Flaky\]" --skip="\[Benchmark\]|\[NodeFeature:Eviction\]"
           - --timeout=240m
           env:
           - name: GOPATH
@@ -657,7 +657,7 @@ presubmits:
           - --provider=gce
           # Feature:DynamicResourceAllocation has it's own test jobs with the proper conditions set
           # DRA tests are covered here https://testgrid.k8s.io/sig-node-dynamic-resource-allocation
-          - '--test_args=--nodes=1 --timeout=4h --label-filter="Serial && !(NodeAlphaFeature: isEmpty) && !Flaky && !Benchmark && NodeSpecialFeature: isEmpty && !(NodeFeature: containsAny Eviction && Feature: containsAny CPUManager) && !(Feature: containsAny { MemoryManager, TopologyManager, DynamicResourceAllocation })"'
+          - '--test_args=--nodes=1 --timeout=4h --label-filter="Serial && !Flaky && !Benchmark && !(NodeFeature: containsAny Eviction && Feature: containsAny CPUManager) && !(Feature: containsAny { MemoryManager, TopologyManager, DynamicResourceAllocation })"'
           - --timeout=240m
           env:
           - name: GOPATH
@@ -704,7 +704,7 @@ presubmits:
           - '--node-test-args=--feature-gates=SidecarContainers=true --service-feature-gates=SidecarContainers=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - '--test_args=--nodes=1 --timeout=4h --label-filter="Serial && NodeFeature: containsAny SidecarContainers && !Flaky && !Benchmark && NodeSpecialFeature: isEmpty && !(NodeFeature: containsAny Eviction)"'
+          - '--test_args=--nodes=1 --timeout=4h --label-filter="Serial && NodeFeature: containsAny SidecarContainers && !Flaky && !Benchmark && !(NodeFeature: containsAny Eviction)"'
           - --timeout=240m
           env:
           - name: GOPATH
@@ -765,7 +765,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[Serial\]
-        - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+        - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]
         - '--test-args=--ginkgo.timeout=3h --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
   - name: pull-kubernetes-node-kubelet-serial-podresize
@@ -1969,7 +1969,7 @@ presubmits:
         - --provider=gce
         # *Manager jobs are skipped because they have corresponding test lanes with the right image
         # These jobs in serial get partially skipped and are long jobs.
-        - --test_args=--timeout=3h --nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]"
+        - --test_args=--timeout=3h --nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]"
         - --timeout=3h
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
         resources:
@@ -2022,7 +2022,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[Serial\]
-        - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]
+        - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]
         - '--test-args=--ginkgo.timeout=3h --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
         resources:
@@ -2078,7 +2078,7 @@ presubmits:
         - --provider=gce
         # *Manager jobs are skipped because they have corresponding test lanes with the right image
         # These jobs in serial get partially skipped and are long jobs.
-        - --test_args=--timeout=3h --nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]"
+        - --test_args=--timeout=3h --nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]"
         - --timeout=3h
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
         resources:
@@ -2133,7 +2133,7 @@ presubmits:
         - --focus-regex=\[Serial\]
         # *Manager jobs are skipped because they have corresponding test lanes with the right image
         # These jobs in serial get partially skipped and are long jobs.
-        - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]
+        - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]
         - '--test-args=--ginkgo.timeout=3h --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
         resources:
@@ -2962,7 +2962,7 @@ presubmits:
             - '--node-test-args=--feature-gates=NodeSwap=true --service-feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
             - --provider=gce
-            - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+            - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeFeature:Eviction\]"
             - --timeout=180m
           env:
             - name: GOPATH
@@ -3013,7 +3013,7 @@ presubmits:
         - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+        - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeFeature:Eviction\]"
         - --timeout=270m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
         resources:
@@ -3070,7 +3070,7 @@ presubmits:
             - '--node-test-args=--feature-gates=NodeSwap=true --service-feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
             - --provider=gce
-            - --test_args=--nodes=1 --focus="NodeSwap" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+            - --test_args=--nodes=1 --focus="NodeSwap" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeFeature:Eviction\]"
             - --timeout=180m
           env:
             - name: GOPATH
@@ -3121,7 +3121,7 @@ presubmits:
         - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1 --focus="NodeSwap" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+        - --test_args=--nodes=1 --focus="NodeSwap" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeFeature:Eviction\]"
         - --timeout=180m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
         resources:
@@ -3499,7 +3499,7 @@ presubmits:
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+        - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]"
         - --timeout=240m
         env:
         - name: GOPATH
@@ -4613,7 +4613,7 @@ presubmits:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance.yaml
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]
             - name: TEST_ARGS
               value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
@@ -4659,7 +4659,7 @@ presubmits:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
