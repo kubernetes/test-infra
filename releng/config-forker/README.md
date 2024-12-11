@@ -16,6 +16,7 @@ config-forker forks presubmit, periodic, and postsubmit job configs with the `fo
 - `fork-per-release-deletions`: allows deleting values in job `labels` in periodics (see [Custom deletions](#custom-deletions)).
 - `fork-per-release-periodic-interval`: if set, forked jobs will use this value for `interval`. If multiple space-separated values are provided, the first will be used.
 - `fork-per-release-cron`: if set, forked jobs will use this value for `cron`. If multiple values separated with `, ` are provided, the first will be used.
+- `fork-per-release-generic-suffix`: jobs with this set to `"true"`, forked jobs will have generic job names and shall not have version appended.
 
 ## Actions taken
 
