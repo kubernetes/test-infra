@@ -88,7 +88,7 @@
 **Test Types**
 * Node Conformance
 * Serial (Skip flaky, alpha and beta)
-* NodeFeature (Skip flaky, alpha and beta)
+* Feature (Skip flaky, alpha and beta)
 
 **Additional tests**
 * Node Conformance test for CRI-O & cgroupv1
