@@ -872,6 +872,8 @@ presubmits:
           env:
             - name: GINKGO_FOCUS
               value: "\\[API-Server-ILB\\]"
+            - name: SKIP_CLEANUP
+              value: "true"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
