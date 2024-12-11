@@ -176,7 +176,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
@@ -227,7 +227,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:NodeSwap]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
       - --timeout=240m
       env:
       - name: GOPATH
@@ -380,7 +380,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
@@ -431,7 +431,7 @@ periodics:
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-driver=systemd --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+          - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]"
           - --timeout=65m
         env:
           - name: GOPATH
@@ -537,7 +537,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]" --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Feature:Eviction\]" --timeout=300m
       - --timeout=300m
       env:
       - name: GOPATH
@@ -591,7 +591,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-driver=systemd --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
@@ -642,7 +642,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-driver=systemd --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
       env:
       - name: GOPATH
@@ -657,7 +657,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-unlabelled
-    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
+    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - interval: 1h
   name: ci-cos-containerd-e2e-cos-gce
   cluster: k8s-infra-prow-build
@@ -683,7 +683,7 @@ periodics:
       - --image-family=cos-109-lts
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
@@ -721,7 +721,7 @@ periodics:
       - --image-family=pipeline-1-29
       - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       resources:
         limits:
@@ -812,7 +812,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
@@ -863,7 +863,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]|\[NodeFeature:NodeSwap\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:NodeSwap\]"
       - --timeout=65m
       env:
       - name: GOPATH
@@ -915,7 +915,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[NodeFeature:NodeSwap\]"
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:NodeSwap\]"
       - --timeout=180m
       env:
       - name: GOPATH
@@ -1026,7 +1026,7 @@ periodics:
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:NodeSwap\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
       resources:
         limits:
@@ -1082,7 +1082,7 @@ periodics:
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:NodeSwap\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
@@ -1131,7 +1131,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
       - --timeout=240m
       env:
       - name: GOPATH
@@ -1172,7 +1172,7 @@ periodics:
       - --provider=gce
       # [Driver: gcepd] tests are skipped because CSIMigrationGCE is on in 1.23 and can be un-skipped once the cluster-up process
       # uses cloud-provider-gcp. see issue https://github.com/kubernetes/cloud-provider-gcp/issues/293
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[NodeFeature:NodeSwap\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\]|\[Feature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
@@ -1319,7 +1319,7 @@ periodics:
           - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --feature-gates=NodeSwap=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
           - --timeout=180m
         env:
           - name: GOPATH
