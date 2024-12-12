@@ -1348,8 +1348,6 @@ periodics:
         value: "capz"
       - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
         value: "3"
-      - name: GINKGO_TOLERATE_FLAKES  # cloud-provider-azure config
-        value: "y"
       resources:
         limits:
           cpu: 4
@@ -1627,8 +1625,6 @@ periodics:
         value: "capz"
       - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
         value: "1"
-      - name: GINKGO_TOLERATE_FLAKES  # cloud-provider-azure config
-        value: "y"
       resources:
         limits:
           cpu: 4
