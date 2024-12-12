@@ -493,9 +493,6 @@ periodics:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
       - name: "PARALLEL"

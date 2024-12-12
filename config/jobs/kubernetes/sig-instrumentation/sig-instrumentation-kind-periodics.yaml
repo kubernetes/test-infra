@@ -44,9 +44,6 @@ periodics:
       - name: KIND_CLUSTER_LOG_LEVEL
         # Default is 4, but we want to exercise more log calls and get more output.
         value: "6"
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: LABEL_FILTER
         value: 'Conformance && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
