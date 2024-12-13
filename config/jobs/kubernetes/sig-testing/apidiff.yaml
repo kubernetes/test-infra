@@ -37,16 +37,9 @@ presubmits:
         args:
         - /bin/sh
         - -c
-        # PULL_BASE_SHA is the revision on the target branch that the
-        # PR gets merged into. What we want instead is the revision at
-        # which the PR branch diverged from the target branch.
-        # We get that from "git merge-base".
-        #
+        # Base and target are detected automatically by the script based on Prow variables.
         # -b can be used more than once.
-        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA} -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
-        env:
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
+        - "./hack/apidiff.sh -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
         resources:
           # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
           limits:
@@ -61,7 +54,7 @@ presubmits:
     # A job which automatically runs for changes in client-go or the generated code
     # to have visibility on the changes that will impact the external projects
     # that are using the Kubernetes golang clients
-    run_if_changed: '(^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples)'
+    run_if_changed: '((^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples))/.*\.go'
     optional: true
     decorate: true
     annotations:
@@ -81,6 +74,7 @@ presubmits:
         args:
         - /bin/sh
         - -c
+        # Base and target are detected automatically by the script based on Prow variables.
         - "./hack/apidiff.sh ./staging/src/k8s.io/code-generator/examples ./staging/src/k8s.io/client-go"
         resources:
           # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
