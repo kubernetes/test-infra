@@ -33,7 +33,7 @@ const (
 type updateClient interface {
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
 	BotUser() (*github.UserData, error)
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 }
 
 type ensureClient interface {
@@ -74,7 +74,7 @@ func updatePRWithQueryTokens(org, repo, title, body, queryTokensString string, g
 		return nil, fmt.Errorf("bot name: %w", err)
 	}
 
-	issues, err := gc.FindIssues(fmt.Sprintf("is:open is:pr archived:false repo:%s/%s author:%s %s", org, repo, me.Login, queryTokensString), "updated", false)
+	issues, err := gc.FindIssuesWithOrg(org, fmt.Sprintf("is:open is:pr archived:false repo:%s/%s author:%s %s", org, repo, me.Login, queryTokensString), "updated", false)
 	if err != nil {
 		return nil, fmt.Errorf("find issues: %w", err)
 	} else if len(issues) == 0 {
