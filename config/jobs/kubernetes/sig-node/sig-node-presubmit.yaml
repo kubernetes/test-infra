@@ -4322,11 +4322,12 @@ presubmits:
           limits:
             cpu: 4
             memory: 6Gi
-  - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra-kubetest2
+  - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra-kubetest2 # experimental alternative to pull-kubernetes-node-e2e-crio-cgrpv1-dra
     cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-e2e-crio-cgrpv1-dra-kubetest2 to run
     always_run: false
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
+    # Don't run automatically while experimental!
+    # run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
     optional: true
     skip_report: false
     skip_branches:
@@ -4426,11 +4427,12 @@ presubmits:
           limits:
             cpu: 4
             memory: 6Gi
-  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra-kubetest2
+  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra-kubetest2 # experimental alternative to pull-kubernetes-node-e2e-crio-cgrpv2-dra
     cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-e2e-crio-cgrpv2-dra-kubetest2 to run
     always_run: false
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
+    # Don't run automatically while experimental!
+    # run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
     optional: true
     skip_report: false
     skip_branches:
