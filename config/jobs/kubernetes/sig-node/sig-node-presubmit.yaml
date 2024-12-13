@@ -3202,7 +3202,7 @@ presubmits:
     always_run: false
     # This covers most of the code related to dynamic resource allocation.
     # Periodic variant: ci-kind-dra
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     # The tests might still be flaky or this job might get triggered accidentally for
     # an unrelated PR.
     optional: true
@@ -3259,7 +3259,7 @@ presubmits:
     always_run: false
     # This covers most of the code related to dynamic resource allocation.
     # Periodic variant: ci-kind-dra-all
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     # The tests might still be flaky or this job might get triggered accidentally for
     # an unrelated PR.
     optional: true
@@ -4281,7 +4281,7 @@ presubmits:
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
     # Periodic variant: ci-node-e2e-crio-cgrpv1-dra-features
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
+    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
     labels:
@@ -4332,7 +4332,7 @@ presubmits:
     # explicitly needs /test pull-kubernetes-node-e2e-crio-cgrpv1-dra-kubetest2 to run
     always_run: false
     # Don't run automatically while experimental!
-    # run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
+    # run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
     skip_branches:
@@ -4389,7 +4389,7 @@ presubmits:
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
     # Periodic variant: ci-node-e2e-cgrpv2-crio-dra
-    # run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
+    # run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
     labels:
@@ -4440,7 +4440,7 @@ presubmits:
     # explicitly needs /test pull-kubernetes-node-e2e-crio-cgrpv2-dra-kubetest2 to run
     always_run: false
     # Don't run automatically while experimental!
-    # run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
+    # run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
     skip_branches:
@@ -4497,8 +4497,7 @@ presubmits:
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
     # Periodic variant: ci-node-e2e-containerd-1-7-dra
-    # run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_test.go
-    optional: true
+    # run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/r    optional: true
     skip_report: false
     labels:
       preset-service-account: "true"
