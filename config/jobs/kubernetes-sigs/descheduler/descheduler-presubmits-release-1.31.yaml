@@ -23,11 +23,11 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 6
-            memory: 4Gi
+            cpu: 8
+            memory: 8Gi
           requests:
-            cpu: 6
-            memory: 4Gi
+            cpu: 8
+            memory: 8Gi
   - name: pull-descheduler-verify-build-release-1-31
     cluster: eks-prow-build-cluster
     annotations:
