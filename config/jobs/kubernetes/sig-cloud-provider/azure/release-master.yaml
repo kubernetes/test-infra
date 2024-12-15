@@ -230,9 +230,6 @@ presubmits:
               kubectl apply -f templates/addons/azurefile-role.yaml &&
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
-          env:
-            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
-              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
           securityContext:
             privileged: true
           resources:
@@ -290,8 +287,6 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
-              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
             - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
@@ -351,8 +346,6 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
-              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
             - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
