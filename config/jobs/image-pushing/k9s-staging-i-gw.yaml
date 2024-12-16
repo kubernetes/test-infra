@@ -1,0 +1,20 @@
+# Source reference:
+# https://github.com/kubernetes/test-infra/blob/master/config/jobs/image-pushing/README.md
+postsubmits:
+  kubernetes-sigs/llm-instance-gateway:
+    - name: post-llm-i-gw-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-gateway-api, sig-k8s-infra-gcb
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
