@@ -162,23 +162,5 @@ dashboards:
     base_options: width=10
 
 - name: sig-node-dynamic-resource-allocation
-  dashboard_tab:
-  - name: pull-kind-dra
-    test_group_name: pull-kubernetes-kind-dra
-    alert_options:
-      alert_mail_to_addresses: patrick.ohly@intel.com
-  - name: pull-node-dra-cgrpv2
-    test_group_name: pull-kubernetes-node-e2e-crio-cgrpv2-dra
-    alert_options:
-      alert_mail_to_addresses: eduard.bartosh@intel.com
-  - name: pull-node-dra-cgrpv1
-    test_group_name: pull-kubernetes-node-e2e-crio-cgrpv1-dra
-    alert_options:
-      alert_mail_to_addresses: eduard.bartosh@intel.com
-  - name: pull-node-dra-containerd-1-7
-    test_group_name: pull-kubernetes-node-e2e-containerd-1-7-dra
-    alert_options:
-      alert_mail_to_addresses: eduard.bartosh@intel.com
-
 - name: sig-node-presubmits
 - name: sig-node-image-pushes
