@@ -290,7 +290,6 @@ presubmits:
           env:
             - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
               value: "true"
-          env:
             - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
