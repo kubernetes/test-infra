@@ -3187,7 +3187,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
-  # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha, soon beta)
+  # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently beta)
   # on a kind cluster with containerd updated to a version with CDI support.
   - name: pull-kubernetes-kind-dra
     cluster: k8s-infra-prow-build
@@ -3226,7 +3226,7 @@ presubmits:
           kind build node-image --image=dra/node:latest . &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
           kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf DynamicResourceAllocation && !Flaky && !Slow'
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
 
         # docker-in-docker needs privileged mode
         securityContext:
@@ -3288,7 +3288,7 @@ presubmits:
           echo "Enabling DRA feature(s): ${features[*]}."
           # Those additional features are not in kind.yaml, but they can be added at the end.
           kind create cluster --retain --config <(cat test/e2e/dra/kind.yaml; for feature in ${features}; do echo "  ${feature}: true"; done) --image dra/node:latest
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf {DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky && !Slow"
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky && !Slow"
 
         # docker-in-docker needs privileged mode
         securityContext:
