@@ -1,0 +1,16 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+options:
+  no_parent_owners: true
+
+reviewers:
+- BenTheElder # lead
+- aojea # lead
+- pohly # lead
+approvers:
+- BenTheElder # lead
+- aojea # lead
+- pohly # lead
+
+labels:
+- sig/testing
