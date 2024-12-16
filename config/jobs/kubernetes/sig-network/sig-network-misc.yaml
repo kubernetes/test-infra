@@ -139,7 +139,6 @@ presubmits:
     - master
     - main
     always_run: false
-    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/.*/ipvs/)'
     optional: true
     decorate: true
     decoration_config:
