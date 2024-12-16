@@ -265,6 +265,54 @@ presubmits:
       testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
       description: Uses kubetest to run e2e Conformance, SIG-Network tests against a cluster using nftables created with cluster/kube-up.sh
 
+  - name: pull-kubernetes-e2e-gci-gce-kube-dns-nodecache
+    cluster: k8s-infra-prow-build
+    branches:
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
+    always_run: false
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 170m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --cluster=
+        - --env=CLUSTER_DNS_CORE_DNS=false
+        - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+        - --env=KUBE_ENABLE_NODE_PROBLEM_DETECTOR=none
+        - --extract=ci/latest
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
+        - --timeout=150m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240515-17c6d50e24-master
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-network-gce
+      testgrid-tab-name: presubmit-network-kubedns, google-gce
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+      description: This presubmit is (as of December 2024) identical to the periodic test ci-kubernetes-e2e-gci-gce-kube-dns-nodecache.
+
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
     cluster: eks-prow-build-cluster
