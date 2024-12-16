@@ -227,8 +227,7 @@ presubmits:
             - bash
             - -c
             - >-
-              kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
               make e2e-test
           securityContext:
             privileged: true
@@ -283,8 +282,7 @@ presubmits:
             - bash
             - -c
             - >-
-              kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
               make e2e-test
           env:
             - name: EXP_MACHINE_POOL # CAPZ config
@@ -342,8 +340,7 @@ presubmits:
             - bash
             - -c
             - >-
-              kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
               make e2e-test
           env:
             - name: WINDOWS # azuredisk-csi-driver config
