@@ -58,7 +58,6 @@ presubmits:
     skip_report: false
     max_concurrency: 8
     optional: true
-    run_if_changed: '^test/'
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
