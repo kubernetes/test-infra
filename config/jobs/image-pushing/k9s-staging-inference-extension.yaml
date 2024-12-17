@@ -1,8 +1,8 @@
 # Source reference:
 # https://github.com/kubernetes/test-infra/blob/master/config/jobs/image-pushing/README.md
 postsubmits:
-  kubernetes-sigs/llm-instance-gateway:
-    - name: post-llm-i-gw-push-images
+  kubernetes-sigs/gateway-api-inference-extension:
+    - name: post-inference-extension-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-gateway-api, sig-k8s-infra-gcb
