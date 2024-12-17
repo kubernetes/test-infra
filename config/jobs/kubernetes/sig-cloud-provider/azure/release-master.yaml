@@ -229,6 +229,9 @@ presubmits:
             - >-
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
               make e2e-test
+          env:
+            - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
+              value: "true"
           securityContext:
             privileged: true
           resources:
@@ -285,6 +288,8 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
               make e2e-test
           env:
+            - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
+              value: "true"
             - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
@@ -343,6 +348,8 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
               make e2e-test
           env:
+            - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
+              value: "true"
             - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
