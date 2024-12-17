@@ -28,7 +28,8 @@ systemd:
       contents: |
         [Unit]
         Description=Label ImageStore
-        After=crio-install.service
+        After=selinux-install.service
+        Before=crio-install.service
 
         [Service]
         Type=oneshot
