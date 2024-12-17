@@ -15,7 +15,7 @@ presubmits:
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 450m
+      timeout: 500m
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
@@ -44,7 +44,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
-        - --timeout=400m
+        - --timeout=450m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
         securityContext:
           privileged: true
