@@ -1,13 +1,15 @@
 dashboard_groups:
-- name: sig-autoscaling
-  dashboard_names:
-    - sig-autoscaling-cluster-autoscaler
-    - sig-autoscaling-hpa
-    - sig-autoscaling-vpa
-    - sig-autoscaling-karpenter
+  - name: sig-autoscaling
+    dashboard_names:
+      - sig-autoscaling-cluster-autoscaler
+      - sig-autoscaling-hpa
+      - sig-autoscaling-vpa
+      - sig-autoscaling-karpenter
+      - sig-autoscaling-addon-resizer
 
 dashboards:
-- name: sig-autoscaling-cluster-autoscaler
-- name: sig-autoscaling-hpa
-- name: sig-autoscaling-vpa
-- name: sig-autoscaling-karpenter
+  - name: sig-autoscaling-cluster-autoscaler
+  - name: sig-autoscaling-hpa
+  - name: sig-autoscaling-vpa
+  - name: sig-autoscaling-karpenter
+  - name: sig-autoscaling-addon-resizer
