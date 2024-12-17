@@ -78,8 +78,8 @@ import (
 	"sync"
 
 	"github.com/clarketm/json"
-	yaml3 "gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/util/sets"
+	yaml3 "sigs.k8s.io/yaml/goyaml.v3"
 )
 
 const (
