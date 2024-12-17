@@ -227,7 +227,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
               make e2e-test
           env:
             - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
@@ -285,7 +285,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
               make e2e-test
           env:
             - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
@@ -345,7 +345,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
               make e2e-test
           env:
             - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
