@@ -24,7 +24,7 @@ import (
 	"strings"
 	"testing"
 
-	yaml3 "gopkg.in/yaml.v3"
+	yaml3 "sigs.k8s.io/yaml/goyaml.v3"
 
 	simplealiases "k8s.io/test-infra/pkg/genyaml/testdata/alias_simple_types"
 	aliases "k8s.io/test-infra/pkg/genyaml/testdata/alias_types"
