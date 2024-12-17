@@ -176,9 +176,13 @@ presubmits:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.23
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 3
