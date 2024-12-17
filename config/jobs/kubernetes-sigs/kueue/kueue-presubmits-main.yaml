@@ -307,6 +307,7 @@ presubmits:
         - make
         - image-local-build
         - importer-image
+        - kueue-viz-image-build
         env:
         - name: GOMAXPROCS
           value: "2"
