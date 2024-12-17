@@ -1,0 +1,31 @@
+presubmits:
+  kubernetes-sigs/gateway-api-inference-extension:
+  - name: pull-gateway-api-inference-extension-test-unit-main
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api-inference-extension
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-gateway-api-inference-extension-test-unit-main
+      description: "Run inference extension unit tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 3
+            memory: 10Gi
+          requests:
+            cpu: 3
+            memory: 10Gi
