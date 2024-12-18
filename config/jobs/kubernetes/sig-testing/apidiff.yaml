@@ -30,7 +30,7 @@ presubmits:
       path_alias: sigs.k8s.io/controller-runtime
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -68,7 +68,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         command:
         - runner.sh
         args:
