@@ -369,7 +369,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
     cluster: $(job_cluster "$repo")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix")
+    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix" "$repo")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -558,7 +558,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests")
     cluster: $(job_cluster "$repo")
     always_run: true
-    optional: $(pull_optional "$tests")
+    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix" "$repo")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
