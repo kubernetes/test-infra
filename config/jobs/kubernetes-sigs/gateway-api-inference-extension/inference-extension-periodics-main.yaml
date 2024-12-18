@@ -8,7 +8,7 @@ periodics:
         base_ref: main
         path_alias: sigs.k8s.io/gateway-api-inference-extension
     annotations:
-      testgrid-dashboards: sig-apps
+      testgrid-dashboards: sig-network-gateway-api
       testgrid-tab-name: periodic-gateway-api-inference-extension-test-unit-main
       description: "Run periodic gateway-api-inference-extension unit tests"
       testgrid-num-columns-recent: '30'
