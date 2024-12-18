@@ -1596,7 +1596,7 @@ presubmits:
         - --
         - --repo-root=.
         - --gcp-zone=us-west1-b
-        - --parallelism=2
+        - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
         - --timeout=3h
