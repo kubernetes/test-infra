@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/gateway-api-inference-extension
     annotations:
-      testgrid-dashboards: sig-apps
+      testgrid-dashboards: sig-network-gateway-api
       testgrid-tab-name: pull-gateway-api-inference-extension-test-unit-main
       description: "Run inference extension unit tests"
     labels:
