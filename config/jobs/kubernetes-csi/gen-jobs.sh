@@ -27,6 +27,7 @@ k8s_versions="
 1.29
 1.30
 1.31
+1.32
 "
 
 # All the deployment versions we're testing.
@@ -37,7 +38,7 @@ deployment_versions="
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.31"
+experimental_k8s_version="1.32"
 
 # The latest stable Kubernetes version for testing alpha jobs
 latest_stable_k8s_version="1.30"
@@ -275,7 +276,11 @@ pull_optional() {
         # Make tests optional until everything is updated.
         echo "true"
     else
-        echo "false"
+	if [ "$repo" == "external-resizer" ] ; then
+	    echo "true"
+	else
+            echo "false"
+	fi
     fi
 }
 
