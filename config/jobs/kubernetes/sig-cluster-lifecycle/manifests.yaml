@@ -21,7 +21,7 @@ periodics:
       - runner.sh
       args:
       - ./tests/e2e/manifests/verify_manifest_lists.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
       resources:
         limits:
           memory: "9000Mi"
