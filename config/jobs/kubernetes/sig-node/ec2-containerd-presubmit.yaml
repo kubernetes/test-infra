@@ -176,7 +176,7 @@ presubmits:
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance.yaml
               - name: SKIP
-                value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]
+                value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
               - name: TEST_ARGS
                 value: '--kubelet-flags="--cgroup-driver=systemd"'
             resources:
@@ -219,7 +219,7 @@ presubmits:
               - name: FOCUS
                 value: \[Serial\]
               - name: SKIP
-                value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]
+                value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
               - name: BUILD_EKS_AMI
                 value: "true"
               - name: IMAGE_CONFIG_DIR
@@ -267,7 +267,7 @@ presubmits:
               - name: FOCUS
                 value: \[Serial\]
               - name: SKIP
-                value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]
+                value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
               - name: USE_DOCKERIZED_BUILD
                 value: "true"
               - name: TARGET_BUILD_ARCH
