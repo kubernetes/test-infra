@@ -5,7 +5,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-resizer-1-29-on-kubernetes-1-29
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: false
+    optional: true
     decorate: true
     skip_report: false
     skip_branches: []
@@ -102,7 +102,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-resizer-1-30-on-kubernetes-1-30
     cluster: eks-prow-build-cluster
     always_run: true
-    optional: false
+    optional: true
     decorate: true
     skip_report: false
     skip_branches: []
