@@ -8,6 +8,9 @@ filters:
     reviewers:
       - sig-contributor-experience-technical-leads
       - cblecker
+      - smg247
+      - danilo-gemoli
+      - droslean
     emeritus_approvers:
       - fejta
       - spiffxp
