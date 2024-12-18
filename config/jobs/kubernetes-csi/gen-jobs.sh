@@ -24,7 +24,6 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.29
 1.30
 1.31
 1.32
@@ -32,9 +31,9 @@ k8s_versions="
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.29
 1.30
 1.31
+1.32
 "
 
 # The experimental version for which jobs are optional.
