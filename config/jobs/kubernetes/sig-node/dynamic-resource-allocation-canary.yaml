@@ -1,8 +1,7 @@
-# This file contains periodic and presubmit jobs which run tests covering
+# This file contains canary periodic and presubmit jobs which run tests covering
 # Dynamic Resource Allocation (DRA).
 #
-# The intent is to make all changes to DRA jobs first for the canary
-# jobs defined in dynamic-resource-allocation-canary.yaml,
+# The intent is to make all changes to DRA jobs first for these canary jobs,
 # then copy the changes into dynamic-resource-allocation.yaml. Unless some
 # experimental changes are being tested, a diff between the two files should
 # be limited to:
@@ -17,12 +16,12 @@ periodics:
 
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently beta)
   # on a kind cluster with containerd updated to a version with CDI support.
-  - name: ci-kind-dra
+  - name: ci-kind-dra-canary
     cluster: eks-prow-build-cluster
-    interval: 6h
+    interval: 1000000h # Run only once on creation and when manually triggered.
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
-      testgrid-tab-name: ci-kind-dra
+      testgrid-tab-name: ci-kind-dra-canary
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: patrick.ohly@intel.com
       fork-per-release: "true"
@@ -68,13 +67,13 @@ periodics:
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha, soon beta)
   # on a kind cluster with containerd updated to a version with CDI support.
   #
-  # Compared to ci-kind-dra, this one enables all DRA-related features.
-  - name: ci-kind-dra-all
+  # Compared to ci-kind-dra-canary, this one enables all DRA-related features.
+  - name: ci-kind-dra-all-canary
     cluster: eks-prow-build-cluster
-    interval: 6h
+    interval: 1000000h # Run only once on creation and when manually triggered.
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
-      testgrid-tab-name: ci-kind-dra-all
+      testgrid-tab-name: ci-kind-dra-all-canary
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: patrick.ohly@intel.com
       fork-per-release: "true"
@@ -123,12 +122,12 @@ periodics:
             memory: 9Gi
 
   # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently beta)
-  - name: ci-node-e2e-cgrpv1-crio-dra
+  - name: ci-node-e2e-cgrpv1-crio-dra-canary
     cluster: k8s-infra-prow-build
-    interval: 6h
+    interval: 1000000h # Run only once on creation and when manually triggered.
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-dynamic-resource-allocation
-      testgrid-tab-name: ci-node-e2e-cgrpv1-crio-dra
+      testgrid-tab-name: ci-node-e2e-cgrpv1-crio-dra-canary
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v1
       testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
       fork-per-release: "true"
@@ -178,13 +177,13 @@ periodics:
             memory: 9Gi
 
   # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently beta)
-  - name: ci-node-e2e-cgrpv2-crio-dra
+  - name: ci-node-e2e-cgrpv2-crio-dra-canary
     cluster: k8s-infra-prow-build
-    interval: 6h
+    interval: 1000000h # Run only once on creation and when manually triggered.
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-dynamic-resource-allocation
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v2
-      testgrid-tab-name: ci-node-e2e-cgrpv2-crio-dra
+      testgrid-tab-name: ci-node-e2e-cgrpv2-crio-dra-canary
       testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
       fork-per-release: "true"
     labels:
@@ -232,13 +231,13 @@ periodics:
             cpu: 2
             memory: 9Gi
 
-  # This job runs the same tests as ci-node-e2e-crio-dra with Containerd 1.7 runtime
-  - name: ci-node-e2e-containerd-1-7-dra
+  # This job runs the same tests as ci-node-e2e-crio-dra-canary with Containerd 1.7 runtime
+  - name: ci-node-e2e-containerd-1-7-dra-canary
     cluster: k8s-infra-prow-build
-    interval: 6h
+    interval: 1000000h # Run only once on creation and when manually triggered.
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
-      testgrid-tab-name: ci-node-e2e-containerd-1-7-dra
+      testgrid-tab-name: ci-node-e2e-containerd-1-7-dra-canary
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd
       testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
       fork-per-release: "true"
@@ -286,19 +285,19 @@ presubmits:
 
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently beta)
   # on a kind cluster with containerd updated to a version with CDI support.
-  - name: pull-kubernetes-kind-dra
+  - name: pull-kubernetes-kind-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits, sig-node-dynamic-resource-allocation
-      testgrid-tab-name: pr-kind-dra
+      testgrid-tab-name: pr-kind-dra-canary
     decorate: true
     path_alias: k8s.io/kubernetes
     # Not relevant for most PRs.
     always_run: false
     # This covers most of the code related to dynamic resource allocation.
-    # Periodic variant: ci-kind-dra
+    # Periodic variant: ci-kind-dra-canary
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     optional: true
     decoration_config:
@@ -340,20 +339,20 @@ presubmits:
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (partly alpha, partly beta)
   # on a kind cluster with containerd updated to a version with CDI support.
   #
-  # Compared to pull-kubernetes-dra, this one enables all DRA-related features.
-  - name: pull-kubernetes-kind-dra-all
+  # Compared to pull-kubernetes-dra-canary, this one enables all DRA-related features.
+  - name: pull-kubernetes-kind-dra-canary-all
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits, sig-node-dynamic-resource-allocation
-      testgrid-tab-name: pr-kind-dra-all
+      testgrid-tab-name: pr-kind-dra-canary-all
     decorate: true
     path_alias: k8s.io/kubernetes
     # Not relevant for most PRs.
     always_run: false
     # This covers most of the code related to dynamic resource allocation.
-    # Periodic variant: ci-kind-dra-all
+    # Periodic variant: ci-kind-dra-canary-all
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     # The tests might still be flaky or this job might get triggered accidentally for
     # an unrelated PR.
@@ -399,14 +398,14 @@ presubmits:
             memory: "9000Mi"
             cpu: 2000m
 
-  - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra
+  - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
-    # Periodic variant: ci-node-e2e-crio-cgrpv1-dra-features
+    # Periodic variant: ci-node-e2e-crio-cgrpv1-dra-features-canary
     run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
@@ -417,7 +416,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits, sig-node-dynamic-resource-allocation
-      testgrid-tab-name: pr-node-kubelet-crio-cgrpv1-dra
+      testgrid-tab-name: pr-node-kubelet-crio-cgrpv1-dra-canary
     decorate: true
     decoration_config:
       timeout: 90m
@@ -454,14 +453,14 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra
+  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
-    # Periodic variant: ci-node-e2e-cgrpv2-crio-dra
+    # Periodic variant: ci-node-e2e-cgrpv2-crio-dra-canary
     # run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
@@ -472,7 +471,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits, sig-node-dynamic-resource-allocation
-      testgrid-tab-name: pr-node-kubelet-crio-cgrpv2-dra
+      testgrid-tab-name: pr-node-kubelet-crio-cgrpv2-dra-canary
     decorate: true
     decoration_config:
       timeout: 90m
@@ -509,14 +508,14 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-1-7-dra
+  - name: pull-kubernetes-node-e2e-containerd-1-7-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
-    # Periodic variant: ci-node-e2e-containerd-1-7-dra
+    # Periodic variant: ci-node-e2e-containerd-1-7-dra-canary
     # run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
@@ -525,7 +524,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-presubmits, sig-node-dynamic-resource-allocation
-      testgrid-tab-name: pr-node-kubelet-containerd-dra
+      testgrid-tab-name: pr-node-kubelet-containerd-dra-canary
     decorate: true
     decoration_config:
       timeout: 90m
