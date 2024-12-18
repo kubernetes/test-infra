@@ -405,7 +405,7 @@ presubmits:
     always_run: false
     # Automatically testing with one container runtime in one configuration is sufficient to detect basic problems in kubelet early.
     # CRI-O was picked because it was solid for testing so far.
-    # Periodic variant: ci-node-e2e-crio-cgrpv1-dra-features-canary
+    # Periodic variant: ci-node-e2e-crio-cgrpv1-dra-canary
     run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
