@@ -24,7 +24,6 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.29
 1.30
 1.31
 1.32
@@ -32,16 +31,16 @@ k8s_versions="
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.29
 1.30
 1.31
+1.32
 "
 
 # The experimental version for which jobs are optional.
 experimental_k8s_version="1.32"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.30"
+latest_stable_k8s_version="1.31"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
 hostpath_driver_version="v1.15.0"
@@ -276,6 +275,7 @@ pull_optional() {
         # Make tests optional until everything is updated.
         echo "true"
     else
+	# remove this once https://github.com/kubernetes/kubernetes/pull/129234 merges
 	if [ "$repo" == "external-resizer" ] ; then
 	    echo "true"
 	else
