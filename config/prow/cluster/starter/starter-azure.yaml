@@ -1298,7 +1298,8 @@ spec:
     spec:
       containers:
       - name: minio
-        image: minio/minio:latest
+        # RELEASE.2022-04-29T01-27-09Z is the last minio release that contains gateway functionality
+        image: minio/minio:RELEASE.2022-04-29T01-27-09Z
         args:
         - gateway
         - azure
