@@ -2,10 +2,10 @@ presubmits:
   kubernetes-sigs/aws-ebs-csi-driver:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -34,10 +34,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-test-helm-chart
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -94,10 +94,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
     spec:
@@ -122,10 +122,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -154,10 +154,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -186,10 +186,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
       - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -218,10 +218,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-eks
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     skip_branches:
       - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -250,10 +250,10 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-kustomize
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
     branches:
       - ^release-.*$
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -282,11 +282,11 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-arm64
     cluster: eks-prow-build-cluster
-    always_run: true
     optional: true
     decorate: true
     skip_branches:
       - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
