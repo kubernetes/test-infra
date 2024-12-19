@@ -13,7 +13,7 @@ dashboards:
 - name: sig-instrumentation-tests
   dashboard_tab:
     - name: gci-gce
-      test_group_name: ci-kubernetes-e2e-gci-gce
+      test_group_name: ci-kubernetes-e2e-gce-cos-master-default
       base_options: include-filter-by-regex=sig-instrumentation
       description: instrumentation gce e2e tests for master branch
     - name: gci-gce-serial
