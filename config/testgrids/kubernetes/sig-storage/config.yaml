@@ -93,7 +93,4 @@ dashboards:
 - name: sig-storage-lib-external-provisioner
 - name: sig-storage-image-build
 - name: sig-storage-container-object-storage-interface
-- name: sig-storage-container-object-storage-interface-api                  # TODO(retired): should we drop this?
-- name: sig-storage-container-object-storage-interface-controller           # TODO(retired): should we drop this?
-- name: sig-storage-container-object-storage-interface-provisioner-sidecar  # TODO(retired): should we drop this?
 - name: sig-storage-cosi-driver-sample
