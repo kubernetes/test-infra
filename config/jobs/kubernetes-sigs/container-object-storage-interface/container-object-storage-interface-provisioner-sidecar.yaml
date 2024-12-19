@@ -1,3 +1,4 @@
+# TODO(retired): should we drop this?
 presubmits:
   kubernetes-sigs/container-object-storage-interface-provisioner-sidecar:
 
