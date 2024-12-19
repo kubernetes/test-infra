@@ -803,7 +803,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 70m
+    timeout: 140m
   spec:
     containers:
     - command:
@@ -813,14 +813,13 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/fast/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
+      - --timeout=120m
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
       resources:
         limits:
