@@ -374,6 +374,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
     cluster: $(job_cluster "$repo")
     always_run: $(pull_alwaysrun "$tests")
+    # TODO: pull_optional can have $repo removed once special case for resizer is removed
     optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix" "$repo")
     decorate: true
     skip_report: false
@@ -563,6 +564,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests")
     cluster: $(job_cluster "$repo")
     always_run: true
+    # TODO: pull_optional can have $repo removed once special case for resizer is removed
     optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix" "$repo")
     decorate: true
     skip_report: false
