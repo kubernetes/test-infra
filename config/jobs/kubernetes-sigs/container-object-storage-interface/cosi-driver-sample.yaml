@@ -1,23 +1,22 @@
-# TODO(retired): should we drop this?
 presubmits:
-  kubernetes-sigs/container-object-storage-interface-controller:
+  kubernetes-sigs/cosi-driver-sample:
 
-  - name: pull-container-object-storage-interface-controller-build
+  - name: pull-cosi-driver-sample-build
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface-controller
+    path_alias: sigs.k8s.io/cosi-driver-sample
     annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface-controller
+      testgrid-dashboards: sig-storage-cosi-driver-sample
       testgrid-tab-name: build
-      description: Build test in container-object-storage-interface-controller repo.
+      description: Build test in cosi-driver-sample repo.
     labels:
       # running a docker-based build requires docker-in-docker (DinD)
       preset-dind-enabled: "true"  # see config/prow/config.yaml - 'presets' section
     spec:
       containers:
       # specified tags are periodically updated in bulk for all prow jobs
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         command:
         - runner.sh
         args:
@@ -35,15 +34,15 @@ presubmits:
             cpu: 2
             memory: 4Gi
 
-  - name: pull-container-object-storage-interface-controller-unit
+  - name: pull-cosi-driver-sample-unit
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface-controller
+    path_alias: sigs.k8s.io/cosi-driver-sample
     annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface-controller
+      testgrid-dashboards: sig-storage-cosi-driver-sample
       testgrid-tab-name: unit
-      description: Unit tests in container-object-storage-interface-controller repo.
+      description: Unit tests in cosi-driver-sample repo.
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:latest
