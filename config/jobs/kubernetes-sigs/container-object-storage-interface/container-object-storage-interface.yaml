@@ -1,14 +1,14 @@
 presubmits:
-  kubernetes-sigs/container-object-storage-interface-api:
-  - name: pull-container-object-storage-interface-api-build
+  kubernetes-sigs/container-object-storage-interface:
+  - name: pull-container-object-storage-interface-build
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface-api
+    path_alias: sigs.k8s.io/container-object-storage-interface
     annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface-api
+      testgrid-dashboards: sig-storage-container-object-storage-interface
       testgrid-tab-name: build
-      description: Build test in container-object-storage-interface-api repo.
+      description: Build test in container-object-storage-interface repo.
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
@@ -24,15 +24,15 @@ presubmits:
             cpu: 2
             memory: 4Gi
 
-  - name: pull-container-object-storage-interface-api-unit
+  - name: pull-container-object-storage-interface-unit
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
-    path_alias: sigs.k8s.io/container-object-storage-interface-api
+    path_alias: sigs.k8s.io/container-object-storage-interface
     annotations:
-      testgrid-dashboards: sig-storage-container-object-storage-interface-api
+      testgrid-dashboards: sig-storage-container-object-storage-interface
       testgrid-tab-name: unit
-      description: Unit tests in container-object-storage-interface-api repo.
+      description: Unit tests in container-object-storage-interface repo.
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
