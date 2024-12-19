@@ -2,7 +2,7 @@ dashboards:
 - name: sig-scheduling
   dashboard_tab:
     - name: gce
-      test_group_name: ci-kubernetes-e2e-gci-gce
+      test_group_name: ci-kubernetes-e2e-gce-cos-master-default
       base_options: include-filter-by-regex=sig-scheduling
       description: scheduling gce e2e tests for master branch
     - name: gce-slow
