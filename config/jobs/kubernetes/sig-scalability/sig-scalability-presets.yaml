@@ -23,7 +23,7 @@ presets:
   # cluster. The annotation label is added to make nodes objects sizes similar
   # to regular cluster nodes.
   - name: KUBEMARK_NODE_OBJECT_SIZE_BYTES
-    value: 15000
+    value: "15000"
   # Increase throughput in Kubemark master components and turn on profiling.
   - name: KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
@@ -42,14 +42,14 @@ presets:
     value: "150"
   # Allow one node to not be ready after cluster creation.
   - name: ALLOWED_NOTREADY_NODES
-    value: 1
+    value: "1"
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   - name: KUBE_MASTER_NODE_LABELS
     value: "node.kubernetes.io/node-exporter-ready=true"
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
-    value: 1000
+    value: "1000"
   - name: LOGROTATE_MAX_SIZE
     value: "5G"
   # Ensure good enough architecture for master machines.
@@ -66,13 +66,13 @@ presets:
   # We deliberately cap it at 1h to avoid spending too much time (e.g. over 5h for 5k node cluster)
   # on dumping logs that in most cases we won't need anyway.
   - name: LOG_DUMP_SSH_TIMEOUT_SECONDS
-    value: 3600
+    value: "3600"
   # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
   - name: KUBE_GCE_PRIVATE_CLUSTER
     value: "true"
   # We create approx. 70 hollow nodes per VM. Allow ~4 connections from each of them.
   - name: KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM
-    value: 300
+    value: "300"
   - name: PROMETHEUS_SCRAPE_ETCD
     value: "true"
   # Disable kubernetes-dashboard
@@ -82,9 +82,9 @@ presets:
   # Setting the threshold to 90 should allow us to catch regressions like
   # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
   - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-    value: 90
+    value: "90"
   - name: CL2_ALLOWED_SLOW_API_CALLS
-    value: 1
+    value: "1"
   # Disable PVs until these are fixed in Kubemark:
   # https://github.com/kubernetes/perf-tests/issues/803
   - name: CL2_ENABLE_PVS
@@ -96,17 +96,17 @@ presets:
   # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
   # of the nodes got logexported successfully, then report a failure.
   - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
-    value: 50
+    value: "50"
   - name: PERF_TESTS_PRINT_COMMIT_HISTORY
-    value: true
+    value: "true"
   - name: DUMP_TO_GCS_ONLY
-    value: true
+    value: "true"
   # Disable konnectivity in kubemark as it doesn't work (see https://github.com/kubernetes/perf-tests/issues/1828)
   # TODO(https://github.com/kubernetes/perf-tests/issues/1828): Use konnectivity in kubemark.
   - name: KUBE_ENABLE_KONNECTIVITY_SERVICE
-    value: false
+    value: "false"
   - name: DEPLOY_GCI_DRIVER
-    value: true
+    value: "true"
   - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
     value: pd.csi.storage.gke.io
 
@@ -197,10 +197,10 @@ presets:
   # We deliberately cap it at 1h to avoid spending too much time (e.g. over 5h for 5k node cluster)
   # on dumping logs that in most cases we won't need anyway.
   - name: LOG_DUMP_SSH_TIMEOUT_SECONDS
-    value: 3600
+    value: "3600"
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
-    value: 1000
+    value: "1000"
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   - name: KUBE_MASTER_NODE_LABELS
@@ -217,9 +217,9 @@ presets:
   # Setting the threshold to 90 should allow us to catch regressions like
   # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
   - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-    value: 90
+    value: "90"
   - name: CL2_ALLOWED_SLOW_API_CALLS
-    value: 1
+    value: "1"
   # Override of the default list of whitelisted resources during addons reconciliation
   # performed by kube-addon-manager. This is the same as the default list in the script
   # k/k/cluster/addons/addon-manager/kube-addons.sh but without core/v1/Pod resource.
@@ -249,15 +249,15 @@ presets:
   # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
   # of the nodes got logexported successfully, then report a failure.
   - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
-    value: 50
+    value: "50"
   - name: PERF_TESTS_PRINT_COMMIT_HISTORY
-    value: true
+    value: "true"
   - name: LOG_DUMP_SAVE_SERVICES
     value: "containerd"
   - name: DUMP_TO_GCS_ONLY
-    value: true
+    value: "true"
   - name: DEPLOY_GCI_DRIVER
-    value: true
+    value: "true"
   - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
     value: pd.csi.storage.gke.io
   - name: KUBE_APISERVER_GODEBUG
@@ -265,7 +265,7 @@ presets:
   - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
     value: "true"
   - name: KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM
-    value: 256
+    value: "256"
 
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.
@@ -319,19 +319,19 @@ presets:
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
   - name: DUMP_TO_GCS_ONLY
-    value: true
+    value: "true"
 
 - labels:
     preset-e2e-scalability-presubmits: "true"
   env:
   - name: PROMETHEUS_SCRAPE_MASTER_KUBELETS
-    value: true
+    value: "true"
 
 - labels:
     preset-e2e-scalability-periodics: "true"
   env:
   - name: PROMETHEUS_SCRAPE_MASTER_KUBELETS
-    value: true
+    value: "true"
 
 - labels:
     preset-e2e-scalability-periodics-master: "true"
