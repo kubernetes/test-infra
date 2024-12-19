@@ -5,6 +5,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-provisioner-1-30-on-kubernetes-1-30
     cluster: eks-prow-build-cluster
     always_run: true
+    # TODO: pull_optional can have external-provisioner removed once special case for resizer is removed
     optional: false
     decorate: true
     skip_report: false
@@ -102,6 +103,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-provisioner-1-31-on-kubernetes-1-31
     cluster: eks-prow-build-cluster
     always_run: true
+    # TODO: pull_optional can have external-provisioner removed once special case for resizer is removed
     optional: false
     decorate: true
     skip_report: false
@@ -199,6 +201,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-provisioner-1-32-on-kubernetes-1-32
     cluster: eks-prow-build-cluster
     always_run: true
+    # TODO: pull_optional can have external-provisioner removed once special case for resizer is removed
     optional: true
     decorate: true
     skip_report: false
@@ -296,6 +299,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-provisioner-alpha-1-31-on-kubernetes-1-31
     cluster: eks-prow-build-cluster
     always_run: false
+    # TODO: pull_optional can have external-provisioner removed once special case for resizer is removed
     optional: true
     decorate: true
     skip_report: false
