@@ -37,13 +37,13 @@ readonly REPOS=(
     kubernetes-sigs/sig-storage-local-static-provisioner
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
-    kubernetes-sigs/container-object-storage-interface-controller
-    kubernetes-sigs/container-object-storage-interface-provisioner-sidecar
+    kubernetes-sigs/container-object-storage-interface
 )
 
 # Repos using "main" branch instead of "master" as default
 readonly REPOS_MAIN_BRANCH=(
     kubernetes-csi/external-snapshot-metadata
+    kubernetes-sigs/container-object-storage-interface
 )
 
 # Repos which should eventually enable cloud image builds but currently
