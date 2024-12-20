@@ -1,10 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
+- carlory
 - neolit123
 - SataQiu
 - pacoxu
 reviewers:
+- carlory
 - fabriziopandini
+- HirazawaUi
 - neolit123
 - SataQiu
 - pacoxu
