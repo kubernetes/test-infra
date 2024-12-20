@@ -3,6 +3,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -35,6 +36,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-test-helm-chart
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -95,6 +97,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-unit
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -123,6 +126,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -155,6 +159,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -187,6 +192,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
       - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -219,6 +225,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test-eks
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     skip_branches:
       - gh-pages
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -251,6 +258,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test-kustomize
     cluster: eks-prow-build-cluster
     decorate: true
+    optional: false
     branches:
       - ^release-.*$
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
