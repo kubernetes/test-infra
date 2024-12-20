@@ -10,7 +10,7 @@ presubmits:
     - master
     - main
     always_run: false
-    run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/proxy)'
     optional: true
     decorate: true
     decoration_config:
