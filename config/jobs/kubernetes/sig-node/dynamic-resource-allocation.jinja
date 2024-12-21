@@ -1,0 +1,113 @@
+{%- if beginning %}{%- if kind == "ci" %}periodics:{%- else %}presubmits:
+  kubernetes/kubernetes:
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-presubmits" %}
+{%- endif %}
+{%- endif %}
+{%- if "crio" in job_name %}
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-cri-o" %}
+{%- endif %}
+{%- if "containerd" in job_name %}
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-containerd" %}
+{%- endif %}
+  - name: {{job_name}}
+    cluster: eks-prow-build-cluster
+    {%- if kind == "ci" %}
+    interval: {{interval}}
+    {%- else %}
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    optional: {{optional}}
+    {%- if run_if_changed %}
+    run_if_changed: {{run_if_changed}}
+    {%- endif %}
+    {%- if skip_report %}
+    skip_report: {{skip_report}}
+    {%- endif %}    
+    {%- endif %}
+    annotations:
+      testgrid-dashboards: {{testgrid_dashboards}}
+      testgrid-tab-name: {{job_name}}
+      description: {{description}}
+      testgrid-alert-email: {{testgrid_alert_email}}
+      {%- if kind != "canary" %}
+      fork-per-release: "true"
+      {%- endif %}
+    decorate: true
+    decoration_config:
+      timeout: {{timeout}}
+    labels:
+      preset-service-account: "true"
+      {%- if use_dind == "true" %}
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      {%- endif %}
+      {%- if job_type == "node" %}
+      preset-k8s-ssh: "{preset-k8s-ssh}"
+      {%- endif %}
+      {%- if kind != "ci" %}
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      {%- endif %}
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    {%- if job_type == "node" %}
+      workdir: true
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    {%- endif %}
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+        command:
+        - runner.sh
+        {%- if job_type == "node" %}
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --deployment=node
+        {%- if inject_ssh_public_key == "true" %}
+        - --env=KUBE_SSH_USER=core
+        {%- endif %}
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint={{container_runtime_endpoint}} --container-runtime-process-name={{container_runtime_process_name}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups={{runtime_cgroups}} --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{{extra_log}}"'
+        - --node-tests=true
+        - --provider=gce
+        - '--test_args=--timeout=1h --label-filter="{{label_filter}}"'
+        - --timeout=65m
+        - --node-args=--image-config-file={{image_config_file}}
+        {%- if inject_ssh_public_key == "true" %}
+        env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
+        - name: GOPATH
+          value: /go
+        {%- endif %}
+        {%- else %}
+        args:
+        - /bin/sh
+        - -xc
+        - >
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test" &&
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
+          kind build node-image --image=dra/node:latest . &&
+          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
+          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=2h30m hack/ginkgo-e2e.sh -ginkgo.label-filter='{{label_filter}}'
+
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        {%- endif %}
+        resources:
+          limits:
+            cpu: 2
+            memory: 9Gi
+          requests:
+            cpu: 2
+            memory: 9Gi
+
