@@ -550,7 +550,7 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-containerd
+    testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-containerd-eviction
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run node-e2e Eviction tests"
