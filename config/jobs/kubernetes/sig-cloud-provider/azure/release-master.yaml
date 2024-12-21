@@ -31,7 +31,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -89,7 +89,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -149,7 +149,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -219,7 +219,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -227,12 +227,11 @@ presubmits:
             - bash
             - -c
             - >-
-              kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
-              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+            - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
+              value: "true"
           securityContext:
             privileged: true
           resources:
@@ -278,7 +277,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -286,12 +285,11 @@ presubmits:
             - bash
             - -c
             - >-
-              kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
-              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+            - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
+              value: "true"
             - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
@@ -339,7 +337,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -347,12 +345,11 @@ presubmits:
             - bash
             - -c
             - >-
-              kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
-              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
+            - name: runInTreeVolumeTestsOnly # azurefile-csi-driver config
+              value: "true"
             - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
@@ -404,7 +401,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh

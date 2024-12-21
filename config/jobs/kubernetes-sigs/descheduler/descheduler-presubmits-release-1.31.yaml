@@ -23,11 +23,11 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 6
-            memory: 4Gi
+            cpu: 8
+            memory: 8Gi
           requests:
-            cpu: 6
-            memory: 4Gi
+            cpu: 8
+            memory: 8Gi
   - name: pull-descheduler-verify-build-release-1-31
     cluster: eks-prow-build-cluster
     annotations:
@@ -99,7 +99,7 @@ presubmits:
     - release-1.31
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -137,7 +137,7 @@ presubmits:
     - release-1.31
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -175,7 +175,7 @@ presubmits:
     - release-1.31
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
