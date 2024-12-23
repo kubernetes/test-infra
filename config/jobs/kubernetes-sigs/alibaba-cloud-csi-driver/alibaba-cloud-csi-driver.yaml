@@ -92,3 +92,59 @@ presubmits:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-unit
       description: Alibaba cloud csi driver unit test
+
+  - name: pull-alibaba-cloud-csi-driver-verify-deps
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(LICENSE|OWNERS)$"
+    optional: true  # TODO: testing
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
+        command:
+        - make
+        args:
+        - check-deps
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-deps
+      description: Alibaba cloud csi driver dependencies are up to date
+
+  - name: pull-alibaba-cloud-csi-driver-verify-helm
+    cluster: k8s-infra-prow-build
+    always_run: false
+    run_if_changed: "^deploy/chart/"
+    optional: true  # TODO: testing
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - check-helm-kind
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-helm
+      description: Alibaba cloud csi driver helm chart are valid
