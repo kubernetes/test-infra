@@ -129,4 +129,7 @@ verify-boilerplate:
 .PHONY: verify-yamllint
 verify-yamllint:
 	hack/make-rules/verify/yamllint.sh
+.PHONY: verify-generated-jobs
+verify-generated-jobs:
+	hack/make-rules/verify/generated-jobs.sh
 #################################################################################
