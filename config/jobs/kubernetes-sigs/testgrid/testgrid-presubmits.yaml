@@ -7,12 +7,17 @@ presubmits:
     spec:
       containers:
       # See https://playwright.dev/docs/ci
-      - image: mcr.microsoft.com/playwright:v1.37.0-focal
+      - image: mcr.microsoft.com/playwright:v1.46.0-noble
         command:
         - bash
         args:
         - -c
-        - cd web && npm install && npm install -g pnpm && pnpm run build && pnpm test
+        - |
+          cd web
+          npm install -g pnpm
+          pnpm install
+          pnpm build
+          pnpm test
         resources:
           requests:
             cpu: 2
