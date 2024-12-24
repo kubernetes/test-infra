@@ -3,15 +3,19 @@ presubmits:
 
   - name: pull-alibaba-cloud-csi-driver-verify-fmt
     cluster: k8s-infra-prow-build
-    always_run: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - make
         args:
         - fmt
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           limits:
             cpu: 2
@@ -26,15 +30,19 @@ presubmits:
 
   - name: pull-alibaba-cloud-csi-driver-verify-lint
     cluster: k8s-infra-prow-build
-    always_run: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - make
         args:
         - lint
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           limits:
             cpu: 2
@@ -49,15 +57,19 @@ presubmits:
 
   - name: pull-alibaba-cloud-csi-driver-verify-vet
     cluster: k8s-infra-prow-build
-    always_run: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - make
         args:
         - vet
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           limits:
             cpu: 2
@@ -72,15 +84,19 @@ presubmits:
 
   - name: pull-alibaba-cloud-csi-driver-verify-unit
     cluster: k8s-infra-prow-build
-    always_run: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
         command:
         - make
         args:
         - test
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           limits:
             cpu: 2
@@ -96,7 +112,7 @@ presubmits:
   - name: pull-alibaba-cloud-csi-driver-verify-deps
     cluster: k8s-infra-prow-build
     always_run: false
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(LICENSE|OWNERS)$"
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
     optional: true  # TODO: testing
     decorate: true
     spec:
@@ -106,6 +122,9 @@ presubmits:
         - make
         args:
         - check-deps
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           limits:
             cpu: 2
@@ -137,6 +156,9 @@ presubmits:
         - check-helm-kind
         securityContext:
           privileged: true
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           limits:
             cpu: 2
