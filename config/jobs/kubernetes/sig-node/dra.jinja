@@ -1,0 +1,129 @@
+{%- if header %}{{header}}
+{%- if file == "ci" %}periodics:
+{%- else %}presubmits:
+  kubernetes/kubernetes:
+{%- endif %}
+{%- endif %}
+{%- if file != "ci" %}
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-presubmits" %}
+{%- endif %}
+{%- if "crio" in job_name %}
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-cri-o" %}
+{%- set runtime = "crio" %}
+{%- endif %}
+{%- if "containerd" in job_name %}
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-containerd" %}
+{%- set runtime = "containerd" %}
+{%- endif %}
+  - name: {{job_name}}
+    cluster: {{cluster}}
+    {%- if file == "ci" %}
+    interval: {{interval}}
+    {%- else %}
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    {%- if run_if_changed and file == "presubmit" %}
+    run_if_changed: {{run_if_changed}}
+    {%- endif %}
+    optional: true
+    {%- if job_type == "node" %}
+    skip_report: false
+    {%- endif %}
+    {%- endif %}
+    labels:
+      preset-service-account: "true"
+      {%- if use_dind == "true" %}
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      {%- endif %}
+      {%- if job_type == "node" %}
+      preset-k8s-ssh: "true"
+      {%- endif %}
+    annotations:
+      testgrid-dashboards: {{testgrid_dashboards}}
+      description: {{description}}
+      testgrid-alert-email: {{testgrid_alert_email}}
+      {%- if file != "canary" %}
+      fork-per-release: "true"
+      {%- endif %}
+    decorate: true
+    decoration_config:
+      timeout: {{timeout}}
+    {%- if file == "ci" %}
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    {%- else %}
+    path_alias: k8s.io/kubernetes
+    {%- endif %}
+    {%- if job_type == "node" %}
+    {%- if file != "ci" %}
+    extra_refs:
+    {%- endif %}
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    {%- endif %}
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - runner.sh
+        {%- if job_type == "node" %}
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --deployment=node
+        {%- if inject_ssh_public_key == "true" %}
+        - --env=KUBE_SSH_USER=core
+        {%- endif %}
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
+        - --node-tests=true
+        - --provider=gce
+        - '--test_args=--timeout=1h --label-filter="{{label_filter}}"'
+        - --timeout=65m
+        - --node-args=--image-config-file={{image_config_file}}
+        {%- if inject_ssh_public_key == "true" %}
+        env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
+        - name: GOPATH
+          value: /go
+        {%- endif %}
+        {%- else %}
+        args:
+        - /bin/bash
+        - -xce
+        - |
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest .
+          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT
+          {%- if all_features %}
+          # Which DRA features exist can change over time.
+          features=( $(grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/') )
+          echo "Enabling DRA feature(s): ${features[*]}."
+          # Those additional features are not in kind.yaml, but they can be added at the end.
+          kind create cluster --retain --config <(cat test/e2e/dra/kind.yaml; for feature in ${features}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky && !Slow"
+          {%- else %}
+          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=2h30m hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky'
+          {%- endif %}
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        {%- endif %}
+        resources:
+          limits:
+            cpu: 2
+            memory: 9Gi
+          requests:
+            cpu: 2
+            memory: 9Gi
+
