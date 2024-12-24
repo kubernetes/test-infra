@@ -207,7 +207,7 @@ cloudProviders:
     args:
     - --check-leaked-resources
     - --provider=gce
-    - --gcp-zone=us-west1-b
+    - --gcp-region=us-central1
 
 images:
   cos1:

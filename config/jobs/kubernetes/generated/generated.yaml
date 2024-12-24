@@ -17,7 +17,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=180m
@@ -59,7 +59,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=120m
@@ -97,7 +97,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=150m
@@ -133,7 +133,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=180m
@@ -169,7 +169,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=660m
@@ -207,7 +207,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=150m
@@ -245,7 +245,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=180m
@@ -287,7 +287,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=120m
@@ -319,7 +319,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=150m
@@ -355,7 +355,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=180m
@@ -391,7 +391,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=660m
@@ -429,7 +429,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=150m
@@ -461,7 +461,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=180m
@@ -502,7 +502,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=120m
@@ -534,7 +534,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=150m
@@ -570,7 +570,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=180m
@@ -606,7 +606,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=660m
@@ -644,7 +644,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=150m
@@ -676,7 +676,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=180m
@@ -717,7 +717,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=120m
@@ -749,7 +749,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=150m
@@ -785,7 +785,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=180m
@@ -821,7 +821,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=660m
@@ -859,7 +859,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=150m

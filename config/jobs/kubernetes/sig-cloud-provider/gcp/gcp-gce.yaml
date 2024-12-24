@@ -45,7 +45,7 @@ presubmits:
         args:
         - --build=quick
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-region=us-central1
         - --ginkgo-parallel=30
         - --provider=gce
         # Panic if anything mutates a shared informer cache
@@ -98,7 +98,7 @@ presubmits:
         args:
         - --build=quick
         - --gcp-node-image=ubuntu
-        - --gcp-zone=us-west1-b
+        - --gcp-region=us-central1
         - --ginkgo-parallel=30
         - --image-family=pipeline-1-29
         - --image-project=ubuntu-os-gke-cloud
@@ -148,7 +148,7 @@ presubmits:
         args:
         - --build=quick
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-region=us-central1
         - --ginkgo-parallel=30
         - --provider=gce
         # Panic if anything mutates a shared informer cache
@@ -203,7 +203,7 @@ presubmits:
         args:
         - --build=quick
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-region=us-central1
         - --ginkgo-parallel=30
         - --provider=gce
         # Panic if anything mutates a shared informer cache
@@ -273,7 +273,7 @@ presubmits:
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
-            - --gcp-zone=us-west1-b
+            - --gcp-region=us-central1
             - --ginkgo-parallel=30
             - --provider=gce
             # Panic if anything mutates a shared informer cache
@@ -351,7 +351,7 @@ presubmits:
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
-            - --gcp-zone=us-west1-b
+            - --gcp-region=us-central1
             - --ginkgo-parallel=30
             - --provider=gce
             # Panic if anything mutates a shared informer cache
@@ -471,7 +471,7 @@ presubmits:
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-region=us-central1
         - --provider=gce
         - --runtime-config=api/all=true
         - --test_args=--ginkgo.focus=\[Feature:(WatchList|InPlacePodVerticalScaling|APIServerTracing|SidecarContainers|StorageVersionAPI|PodPreset|ClusterTrustBundle|ClusterTrustBundleProjection|PodLifecycleSleepAction|RecoverVolumeExpansionFailure)\] --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0|\[KubeUp\] --minStartupPods=8
@@ -535,7 +535,7 @@ presubmits:
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
-            - --gcp-zone=us-west1-b
+            - --gcp-region=us-central1
             - --ginkgo-parallel=1
             - --provider=gce
             - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -711,7 +711,7 @@ presubmits:
             - --gcp-master-image=gci
             - --gcp-node-image=gci
             - --gcp-nodes=4
-            - --gcp-zone=us-west1-b
+            - --gcp-region=us-central1
             - --ginkgo-parallel=30
             - --provider=gce
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -768,7 +768,7 @@ presubmits:
             - --env=KUBE_PROXY_DAEMONSET=true
             - --env=ENABLE_POD_PRIORITY=true
             - --gcp-node-image=gci
-            - --gcp-zone=us-west1-b
+            - --gcp-region=us-central1
             - --ginkgo-parallel=30
             - --provider=gce
             - --runtime-config=api/all=true
@@ -804,7 +804,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -855,7 +855,7 @@ periodics:
           - --gcp-master-image=ubuntu
           - --gcp-node-image=ubuntu
           - --gcp-nodes=4
-          - --gcp-zone=us-west1-b
+          - --gcp-region=us-central1
           - --ginkgo-parallel=30
           - --provider=gce
           - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -898,7 +898,7 @@ periodics:
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --ginkgo-parallel=30
       - --provider=gce
       - --runtime-config=api/all=true
@@ -937,7 +937,7 @@ periodics:
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
@@ -976,7 +976,7 @@ periodics:
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Feature:.+\] --minStartupPods=8
@@ -1012,7 +1012,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
@@ -1046,7 +1046,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
@@ -1086,7 +1086,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       - --timeout=500m
@@ -1124,7 +1124,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --ginkgo-parallel=25
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
@@ -1164,7 +1164,7 @@ periodics:
       - --extract=ci/k8s-beta
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --soak
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
@@ -1201,7 +1201,7 @@ periodics:
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --soak
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
@@ -1238,7 +1238,7 @@ periodics:
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --soak
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
@@ -1275,7 +1275,7 @@ periodics:
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
       - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --provider=gce
       - --soak
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --clean-start=true --minStartupPods=8
