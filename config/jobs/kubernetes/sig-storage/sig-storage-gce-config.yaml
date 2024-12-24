@@ -311,7 +311,6 @@ periodics:
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b

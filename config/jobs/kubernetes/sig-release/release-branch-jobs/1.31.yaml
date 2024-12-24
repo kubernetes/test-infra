@@ -15,7 +15,6 @@ periodics:
     containers:
     - args:
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -97,7 +96,6 @@ periodics:
     - args:
       - --check-leaked-resources
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -322,7 +320,6 @@ periodics:
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
