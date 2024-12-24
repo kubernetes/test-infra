@@ -1,26 +1,28 @@
 # GENERATED FILE - DO NOT EDIT!
 #
 # Instead, modify dra.jinja and run `make generate-jobs`.
-presubmits:
-  kubernetes/kubernetes:
-  - name: pull-kubernetes-kind-dra-canary
+periodics:
+  - name: ci-kind-dra
     cluster: eks-prow-build-cluster
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
+    interval: 6h
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
     decorate: true
     decoration_config:
       timeout: 90m
-    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
@@ -47,24 +49,27 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: pull-kubernetes-kind-dra-all-canary
+  - name: ci-kind-dra-all
     cluster: eks-prow-build-cluster
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
+    interval: 6h
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
     decorate: true
     decoration_config:
       timeout: 90m
-    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
@@ -95,25 +100,26 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra-canary
+  - name: ci-node-e2e-crio-cgrpv1-dra
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
+    interval: 6h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v1
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
     decorate: true
     decoration_config:
       timeout: 90m
-    path_alias: k8s.io/kubernetes
     extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -147,25 +153,26 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra-canary
+  - name: ci-node-e2e-crio-cgrpv2-dra
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
+    interval: 6h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v2
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
     decorate: true
     decoration_config:
       timeout: 90m
-    path_alias: k8s.io/kubernetes
     extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
@@ -199,25 +206,26 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-1-7-dra-canary
+  - name: ci-node-e2e-containerd-1-7-dra
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
+    interval: 6h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
     decorate: true
     decoration_config:
       timeout: 90m
-    path_alias: k8s.io/kubernetes
     extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     - org: kubernetes
       repo: test-infra
       base_ref: master
