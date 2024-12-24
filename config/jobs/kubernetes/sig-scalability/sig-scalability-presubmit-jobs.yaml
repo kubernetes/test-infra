@@ -553,7 +553,6 @@ presubmits:
         # memory usage regression.
         - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
         - --extract=ci/fast/latest-fast
-        - --extract-ci-bucket=k8s-release-dev
         - --gcp-nodes=5000
         - --gcp-project-type=scalability-scale-project
         - --gcp-zone=us-east1-b
