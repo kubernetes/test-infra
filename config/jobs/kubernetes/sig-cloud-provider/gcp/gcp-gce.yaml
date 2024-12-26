@@ -44,7 +44,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --cluster=
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -98,7 +97,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --cluster=
         - --gcp-node-image=ubuntu
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -149,7 +147,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --cluster=
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -205,7 +202,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --cluster=
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -265,7 +261,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --cluster=
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -344,7 +339,6 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --cluster=
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -469,7 +463,6 @@ presubmits:
         args:
         - --ginkgo-parallel=1
         - --build=quick
-        - --cluster=
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
         - --env=KUBE_PROXY_DAEMONSET=true
@@ -530,7 +523,6 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --cluster=
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -713,7 +705,6 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --cluster=
             - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
             - --env=CLOUD_PROVIDER_FLAG=external
             - --env=ENABLE_AUTH_PROVIDER_GCP=true
@@ -1053,7 +1044,6 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --cluster=err-e2e
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b

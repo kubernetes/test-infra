@@ -246,7 +246,7 @@ class E2ETest:
         self.env_filename = os.path.join(output_dir, '%s.env' % job_name)
         self.job_name = job_name
         self.job = job
-        self.common = config['common']
+        self.common = config.get('common')
         self.cloud_providers = config['cloudProviders']
         self.images = config['images']
         self.k8s_versions = config['k8sVersions']

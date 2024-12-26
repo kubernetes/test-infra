@@ -15,7 +15,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-eef92b583b
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -58,7 +57,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-1789b1211d
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -97,7 +95,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-6724261826
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -134,7 +131,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-0eda36b5c4
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -171,7 +167,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-34cf3ed1e3
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -210,7 +205,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-3ec9d97448
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -249,7 +243,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-86ab064463
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -292,7 +285,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-359c739436
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -325,7 +317,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-519f5e2df7
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -362,7 +353,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-c2db0160cf
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -399,7 +389,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-ef6e185752
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -438,7 +427,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-7d3ed76582
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -471,7 +459,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-a8a0b221b9
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -513,7 +500,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-5881f7ab7e
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -546,7 +532,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-df7ff40165
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -583,7 +568,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-c8c4b0ff1c
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -620,7 +604,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-9b5ed62f1f
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -659,7 +642,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-96f446fc82
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -692,7 +674,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-1d30227e33
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -734,7 +715,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-183d8deac8
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -767,7 +747,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-df914a9cd5
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -804,7 +783,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-4b7fa88c7e
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -841,7 +819,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-3154607d16
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
@@ -880,7 +857,6 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-694be857a6
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b

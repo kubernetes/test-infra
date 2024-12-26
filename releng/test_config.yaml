@@ -202,10 +202,6 @@ jobs:
 
 # The following settings are used by cluster e2e tests.
 
-common:
-  args:
-  - --cluster=test-${job_name_hash}
-
 cloudProviders:
   gce:
     args:
