@@ -17,10 +17,6 @@ periodics:
   spec:
     containers:
     - image: golang
-      envFrom:
-      - secretRef:
-          # secret key should be defined as SNYK_TOKEN
-          name: snyk-token
       command:
       - /bin/bash
       args:
