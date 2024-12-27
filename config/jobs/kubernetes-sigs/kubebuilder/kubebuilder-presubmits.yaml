@@ -11,7 +11,7 @@ presubmits:
     - ^feature/plugins-.+$
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - ./test.sh
         resources:
