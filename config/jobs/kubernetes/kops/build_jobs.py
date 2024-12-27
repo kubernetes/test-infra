@@ -1516,6 +1516,7 @@ def generate_upgrades():
     kops28 = 'v1.28.7'
     kops29 = 'v1.29.2'
     kops30 = 'v1.30.3'
+    kops31 = 'v1.31.0-beta.1'
 
     versions_list = [
         #  kops    k8s          kops      k8s
@@ -1526,20 +1527,27 @@ def generate_upgrades():
         ((kops28, 'v1.28.14'), ('1.30', 'v1.29.9')),
         ((kops29, 'v1.29.9'), ('1.30', 'v1.30.5')),
         ((kops30, 'v1.30.4'), ('1.30', 'v1.30.5')),
-        # 1.28 upgrade to latest
+        # kOps 1.28 upgrade to latest
         ((kops28, 'v1.28.0'), ('latest', 'v1.27.0')),
-        # 1.29 upgrade to latest
+        # kOps 1.29 upgrade to latest
         ((kops29, 'v1.26.0'), ('latest', 'v1.27.0')),
         ((kops29, 'v1.27.0'), ('latest', 'v1.28.0')),
         ((kops29, 'v1.28.0'), ('latest', 'v1.29.0')),
         ((kops29, 'v1.29.0'), ('latest', 'v1.30.0')),
-        # 1.30 upgrade to latest
+        # kOps 1.30 upgrade to latest
         ((kops30, 'v1.26.0'), ('latest', 'v1.27.0')),
         ((kops30, 'v1.27.0'), ('latest', 'v1.28.0')),
         ((kops30, 'v1.28.0'), ('latest', 'v1.29.0')),
         ((kops30, 'v1.29.0'), ('latest', 'v1.30.0')),
+        # kOps 1.31 upgrade to latest
+        ((kops31, 'v1.28.0'), ('latest', 'v1.29.0')),
+        ((kops31, 'v1.29.0'), ('latest', 'v1.30.0')),
+        ((kops31, 'v1.30.0'), ('latest', 'v1.31.0')),
+        ((kops31, 'v1.31.0'), ('latest', 'v1.32.0')),
         # we should have an upgrade test for every supported K8s version
-        (('latest', 'v1.30.0'), ('latest', 'latest')),
+        (('latest', 'v1.32.0'), ('latest', 'latest')),
+        (('latest', 'v1.31.0'), ('latest', 'v1.32.0')),
+        (('latest', 'v1.30.0'), ('latest', 'v1.31.0')),
         (('latest', 'v1.29.0'), ('latest', 'v1.30.0')),
         (('latest', 'v1.28.0'), ('latest', 'v1.29.0')),
         (('latest', 'v1.27.0'), ('latest', 'v1.28.0')),
