@@ -414,7 +414,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.30"
             - name: WORKER_MACHINE_COUNT
-              value: "0" # Don't create any linux worker nodes
+              value: "1" # create one linux node
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-e2e-windows-2022-hostprocess
