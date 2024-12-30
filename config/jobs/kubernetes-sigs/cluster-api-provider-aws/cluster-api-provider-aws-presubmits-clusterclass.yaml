@@ -20,7 +20,7 @@ presubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-1.29
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-1.29
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
