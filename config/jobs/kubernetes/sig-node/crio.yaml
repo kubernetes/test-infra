@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -73,7 +73,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -125,7 +125,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -177,7 +177,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -229,7 +229,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -281,7 +281,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -333,7 +333,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -385,7 +385,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -437,7 +437,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -489,7 +489,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -541,7 +541,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -593,7 +593,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -645,7 +645,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -697,7 +697,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -749,7 +749,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

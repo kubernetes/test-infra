@@ -13,7 +13,7 @@ periodics:
       base_ref: main
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
       - runner.sh
       args:
@@ -83,7 +83,7 @@ periodics:
       base_ref: release/1.6
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
       command:
       - runner.sh
       args:
@@ -117,7 +117,7 @@ periodics:
       base_ref: release/1.7
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
           - runner.sh
         args:
@@ -187,7 +187,7 @@ periodics:
       base_ref: release/2.0
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
           - runner.sh
         args:
@@ -258,7 +258,7 @@ periodics:
       base_ref: main
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
         command:
           - runner.sh
         args:
