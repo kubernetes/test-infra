@@ -12,7 +12,7 @@ presubmits:
         testgrid-tab-name: pull-raft-test-arm64
       spec:
         containers:
-          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
             command:
               - runner.sh
             args:

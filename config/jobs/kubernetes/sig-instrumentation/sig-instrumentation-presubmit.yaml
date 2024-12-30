@@ -22,7 +22,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -86,7 +86,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
