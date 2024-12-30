@@ -29,7 +29,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -67,7 +67,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: &id001
         requests:
           cpu: 2000m
@@ -103,7 +103,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -139,7 +139,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -176,7 +176,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -214,7 +214,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: &id002
         requests:
           cpu: 1000m
@@ -257,7 +257,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -295,7 +295,7 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
   cluster: k8s-infra-prow-build
   annotations:
@@ -325,7 +325,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -361,7 +361,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -398,7 +398,7 @@ periodics:
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -436,7 +436,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id002
   cluster: k8s-infra-prow-build
   annotations:
@@ -472,7 +472,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -509,7 +509,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
   cluster: k8s-infra-prow-build
   annotations:
@@ -540,7 +540,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -576,7 +576,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -613,7 +613,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -651,7 +651,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id002
   cluster: k8s-infra-prow-build
   annotations:
@@ -687,7 +687,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -724,7 +724,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
   cluster: k8s-infra-prow-build
   annotations:
@@ -755,7 +755,7 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -791,7 +791,7 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -828,7 +828,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -866,7 +866,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id002
   cluster: k8s-infra-prow-build
   annotations:
