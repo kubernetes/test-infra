@@ -1,31 +1,31 @@
 variants:
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.23.3
+    GO_VERSION: 1.23.4
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
   master:
     CONFIG: master
-    GO_VERSION: 1.23.3
+    GO_VERSION: 1.23.4
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
   '1.32':
     CONFIG: '1.32'
-    GO_VERSION: 1.23.3
+    GO_VERSION: 1.23.4
     K8S_RELEASE: latest-1.32
     BAZEL_VERSION: 3.4.1
   '1.31':
     CONFIG: '1.31'
-    GO_VERSION: 1.22.9
+    GO_VERSION: 1.22.10
     K8S_RELEASE: latest-1.31
     BAZEL_VERSION: 3.4.1
   '1.30':
     CONFIG: '1.30'
-    GO_VERSION: 1.22.9
+    GO_VERSION: 1.22.10
     K8S_RELEASE: latest-1.30
     BAZEL_VERSION: 3.4.1
   '1.29':
     CONFIG: '1.29'
-    GO_VERSION: 1.22.9
+    GO_VERSION: 1.22.10
     K8S_RELEASE: latest-1.29
     BAZEL_VERSION: 3.4.1
