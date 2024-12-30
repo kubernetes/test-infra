@@ -24,7 +24,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - runner.sh
         args:
@@ -91,7 +91,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - runner.sh
         args:
@@ -157,7 +157,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241229-5dc092c636-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - runner.sh
         args:
