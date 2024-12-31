@@ -211,7 +211,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
@@ -433,7 +433,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
@@ -648,7 +648,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
@@ -863,7 +863,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
