@@ -1,5 +1,3 @@
-# Source reference:
-# https://github.com/kubernetes/test-infra/blob/master/config/jobs/image-pushing/README.md
 postsubmits:
   kubernetes-sigs/gateway-api-inference-extension:
     - name: post-inference-extension-push-images
@@ -7,6 +5,11 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-gateway-api, sig-k8s-infra-gcb
       decorate: true
+      branches:
+        - ^main$
+        - ^release-
+        # Build semver tags, too
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
