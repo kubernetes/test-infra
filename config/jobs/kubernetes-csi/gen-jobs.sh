@@ -264,6 +264,7 @@ pull_optional() {
     local tests="$1"
     local kubernetes="$2"
     local deployment_suffix="$3"
+    local repo="$4"
 
     # https://github.com/kubernetes-csi/csi-driver-host-path/pull/282 has not been merged yet,
     # therefore pull jobs which depend on the new deployment flavors have to be optional.
@@ -281,6 +282,16 @@ pull_optional() {
 	else
             echo "false"
 	fi
+    fi
+}
+
+kubernetes_branch_name() {
+    local kubernetes="$1"
+    local repo="$2"
+    if [ "$repo" == "external-resizer" ]; then
+	echo "\"release-${kubernetes}\""
+    else
+	echo "\"${kubernetes}.0\""
     fi
 }
 
@@ -399,7 +410,7 @@ EOF
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "$kubernetes.0"
+          value: $(kubernetes_branch_name "$kubernetes" "$repo")
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
