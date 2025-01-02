@@ -111,6 +111,9 @@ presubmits:
         args:
         - make
         - test
+        - "&"
+        - make
+        - sanity
         resources:
           requests:
             cpu: "2"
