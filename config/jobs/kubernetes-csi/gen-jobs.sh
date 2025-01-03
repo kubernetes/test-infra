@@ -289,6 +289,9 @@ kubernetes_branch_name() {
     local kubernetes="$1"
     local repo="$2"
     if [ "$repo" == "external-resizer" ]; then
+	# Since kubernetes tag from which e2e defaults to v1.xx.0 tags, we need to pull
+	# latest branch to get fixes we need for external-resizer. We will remove this workaround
+	# once we upgrade all sidecars to use a newer TAG.
 	echo "\"release-${kubernetes}\""
     else
 	echo "\"${kubernetes}.0\""
