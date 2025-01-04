@@ -22,8 +22,8 @@ postsubmits:
               - /run.sh
             args:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
-              - --project=k8s-staging-images
-              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --project=k8s-staging-etcd-manager
+              - --scratch-bucket=gs://k8s-staging-etcd-manager-gcb
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
