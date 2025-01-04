@@ -46,7 +46,7 @@ latest_stable_k8s_version="1.31"
 hostpath_driver_version="v1.15.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -264,6 +264,7 @@ pull_optional() {
     local tests="$1"
     local kubernetes="$2"
     local deployment_suffix="$3"
+    local repo="$4"
 
     # https://github.com/kubernetes-csi/csi-driver-host-path/pull/282 has not been merged yet,
     # therefore pull jobs which depend on the new deployment flavors have to be optional.
@@ -281,6 +282,19 @@ pull_optional() {
 	else
             echo "false"
 	fi
+    fi
+}
+
+kubernetes_branch_name() {
+    local kubernetes="$1"
+    local repo="$2"
+    if [ "$repo" == "external-resizer" ]; then
+	# Since kubernetes tag from which e2e defaults to v1.xx.0 tags, we need to pull
+	# latest branch to get fixes we need for external-resizer. We will remove this workaround
+	# once we upgrade all sidecars to use a newer TAG.
+	echo "\"release-${kubernetes}\""
+    else
+	echo "\"${kubernetes}.0\""
     fi
 }
 
@@ -399,7 +413,7 @@ EOF
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "$kubernetes.0"
+          value: $(kubernetes_branch_name "$kubernetes" "$repo")
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX

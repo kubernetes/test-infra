@@ -34,7 +34,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -1847,6 +1847,7 @@ def generate_presubmits_network_plugins():
         'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)',
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
+        'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
     supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
     results = []
@@ -1862,6 +1863,8 @@ def generate_presubmits_network_plugins():
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             k8s_version = 'ci'
+            optional = True
+        if plugin == 'kindnet':
             optional = True
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"

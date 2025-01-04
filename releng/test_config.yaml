@@ -207,7 +207,7 @@ cloudProviders:
     args:
     - --check-leaked-resources
     - --provider=gce
-    - --gcp-zone=us-west1-b
+    - --gcp-region=us-central1
 
 images:
   cos1:
@@ -358,7 +358,7 @@ testSuites:
   slow:
     args:
     - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+    - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]
       --minStartupPods=8
     - --ginkgo-parallel=30
     cluster: k8s-infra-prow-build
@@ -431,25 +431,25 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
   # TODO(1.31): Comment this out when moving 1.31 to stable1.
   # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.32
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-1.32
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.32
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-1.31
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.30
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-1.30
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.30
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.29
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-1.29
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.29
   stable4:
 
 nodeTestSuites:

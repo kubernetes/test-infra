@@ -37,7 +37,7 @@ presubmits:
         - "runner.sh"
         - "env"
         - "./capz/run-capz-e2e.sh"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-1.30
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.30
         name: ""
         resources:
           requests:
