@@ -1,0 +1,115 @@
+---
+periodics:
+- interval: 30m
+  name: ci-kubernetes-e2e-azure-scalability
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 8h
+  path_alias: k8s.io/perf-tests
+  tags:
+  - "perfDashPrefix: azure-100Nodes-master"
+  - "perfDashJobType: performance"
+  - "perfDashBuildsCount: 500"
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-capz-containerd-1-7-latest: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: "master"
+    path_alias: "k8s.io/perf-tests"
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main # TODO: prow-load template is only on main ATM.
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    workdir: true
+  spec:
+    serviceAccountName: azure
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240803-cf1183f2db-master
+      command:
+      - runner.sh
+      - ./scripts/ci-entrypoint.sh
+      args:
+      - bash
+      - -c
+      - >-
+        cd ${GOPATH}/src/k8s.io/perf-tests/ &&
+        ./run-e2e.sh cluster-loader2
+        --nodes=100 \
+        --prometheus-scrape-kubelets=true \
+        --prometheus-scrape-node-exporter \
+        --provider=aks \
+        --testconfig=testing/load/config.yaml \
+        --testconfig=testing/huge-service/config.yaml \
+        --testconfig=testing/access-tokens/config.yaml \
+        --testoverrides=./testing/experiments/enable_restart_count_check.yaml \
+        --testoverrides=./testing/experiments/use_simple_latency_query.yaml \
+        --testoverrides=./testing/overrides/load_throughput.yaml \
+        --v=2
+      securityContext:
+        privileged: true
+      env:
+        # CAPZ variables
+      - name: TEST_K8S
+        value: "true"
+      - name: CLUSTER_TEMPLATE
+        value: "templates/test/ci/cluster-template-prow-load.yaml"
+      - name: NODE_MACHINE_TYPE
+        value: "Standard_D8s_v3"
+      - name: TEST_WINDOWS
+        value: "false"
+      - name: "CONTROL_PLANE_MACHINE_COUNT"
+        value: "3"
+      - name: WINDOWS_WORKER_MACHINE_COUNT
+        value: "0" # Don't create windows workers
+      - name: WORKER_MACHINE_COUNT
+        value: "100"
+      # clusterloader2 variables
+      - name: ENABLE_PROMETHEUS_SERVER
+        value: "true"
+      - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+        value: "true"
+      - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+        value: "6443"
+      - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
+        value: "true"
+      - name: CL2_PROMETHEUS_TOLERATE_MASTER
+        value: "true"
+      # from google cl2
+      - name: CL2_ENABLE_DNS_PROGRAMMING
+        value: "true"
+      - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+        value: "0"
+      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+        value: "true"
+      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+        value: "99.5"
+      # azuredisk variables - required for Prometheus PVC
+      - name: DEPLOY_AZURE_CSI_DRIVER
+        value: "true"
+      - name: AZUREDISK_CSI_DRIVER_VERSION
+        value: "master"
+      - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+        value: "kubernetes.io/azure-disk"
+      - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
+        value: "StandardSSD_LRS"
+      resources:
+        requests:
+          cpu: "2"
+          memory: "9Gi"
+        limits:
+          cpu: "2"
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-scalability-azure
+    testgrid-tab-name: azure-master-scalability-100
+    description: "Run clusterloader2 load test on a 100 node CAPZ cluster"
+    testgrid-num-columns-recent: '30'
