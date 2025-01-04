@@ -170,3 +170,36 @@ presubmits:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-helm
       description: Alibaba cloud csi driver helm chart are valid
+
+  - name: pull-alibaba-cloud-csi-driver-verify-base-image-deps
+    cluster: k8s-infra-prow-build
+    always_run: false
+    run_if_changed: "^(hack/base-image-deps.txt$|build/)"
+    optional: true  # TODO: testing
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241128-8df65c072f-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - check-base-image-deps
+        securityContext:
+          privileged: true
+        env:
+        - name: GOMAXPROCS
+          value: "2"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-base-image-deps
+      description: Alibaba cloud csi driver base image dependencies are up to date
