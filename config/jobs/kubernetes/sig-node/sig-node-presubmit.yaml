@@ -1830,59 +1830,7 @@ presubmits:
             value: "1"
   - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv1
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    annotations:
-      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1
-    always_run: false
-    optional: true
-    skip_report: false
-    max_concurrency: 12
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
-        command:
-          - runner.sh
-          - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --deployment=node
-        - --env=KUBE_SSH_USER=core
-        - --env=KUBE_SSH_KEY_PATH=/etc/ssh-key-secret/ssh-private
-        - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --node-tests=true
-        - --provider=gce
-        # *Manager jobs are skipped because they have corresponding test lanes with the right image
-        # These jobs in serial get partially skipped and are long jobs.
-        - --test_args=--timeout=3h --nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
-        - --timeout=3h
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
-        resources:
-          limits:
-            cpu: 4
-            memory: 12Gi
-          requests:
-            cpu: 4
-            memory: 12Gi
-        env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-  - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv1-kubetest2
-    cluster: k8s-infra-prow-build
-    # explicitly needs /test pull-kubernetes-node-kubelet-serial-crio-cgroupv1-kubetest2 to run
+    # explicitly needs /test pull-kubernetes-node-kubelet-serial-crio-cgroupv1 to run
     always_run: false
     optional: true
     skip_report: false
@@ -1905,7 +1853,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1-kubetest2
+      testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
@@ -1939,59 +1887,7 @@ presubmits:
             value: "1"
   - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv2
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    annotations:
-      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2
-    always_run: false
-    optional: true
-    skip_report: false
-    max_concurrency: 12
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
-        command:
-          - runner.sh
-          - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --deployment=node
-        - --env=KUBE_SSH_USER=core
-        - --env=KUBE_SSH_KEY_PATH=/etc/ssh-key-secret/ssh-private
-        - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --node-tests=true
-        - --provider=gce
-        # *Manager jobs are skipped because they have corresponding test lanes with the right image
-        # These jobs in serial get partially skipped and are long jobs.
-        - --test_args=--timeout=3h --nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[NodeFeature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
-        - --timeout=3h
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
-        resources:
-          limits:
-            cpu: 4
-            memory: 12Gi
-          requests:
-            cpu: 4
-            memory: 12Gi
-        env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-  - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv2-kubetest2
-    cluster: k8s-infra-prow-build
-    # explicitly needs /test pull-kubernetes-node-kubelet-serial-crio-cgroupv2-kubetest2 to run
+    # explicitly needs /test pull-kubernetes-node-kubelet-serial-crio-cgroupv2 to run
     always_run: false
     optional: true
     skip_report: false
@@ -2014,7 +1910,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2-kubetest2
+      testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
