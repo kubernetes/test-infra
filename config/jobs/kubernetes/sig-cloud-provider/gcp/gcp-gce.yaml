@@ -705,7 +705,6 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
             - --env=CLOUD_PROVIDER_FLAG=external
             - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --gcp-master-image=gci
@@ -764,7 +763,7 @@ presubmits:
             - --check-leaked-resources
             - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0
             - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
-            - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+            - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
             - --env=KUBE_PROXY_DAEMONSET=true
             - --env=ENABLE_POD_PRIORITY=true
             - --gcp-node-image=gci
@@ -893,7 +892,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0
       - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
@@ -932,7 +931,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/fast/latest-fast
