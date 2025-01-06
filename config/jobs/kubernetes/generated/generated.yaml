@@ -508,6 +508,7 @@ periodics:
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
@@ -723,6 +724,7 @@ periodics:
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
