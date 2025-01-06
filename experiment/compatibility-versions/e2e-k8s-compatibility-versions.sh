@@ -298,7 +298,7 @@ main() {
   MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
   export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
   export N_MINUS_ONE_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - 1))"
-  export EMULATED_VERSION=$(N_MINUS_ONE_VERSION)
+  export EMULATED_VERSION="${N_MINUS_ONE_VERSION}"
 
   # export the KUBECONFIG to a unique path for testing
   KUBECONFIG="${HOME}/.kube/kind-test-config"
