@@ -33,7 +33,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "release-1.30"
+          value: "1.30.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.30"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -131,7 +131,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "release-1.31"
+          value: "1.31.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.31"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -229,7 +229,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "release-1.32"
+          value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -327,7 +327,7 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "release-1.31"
+          value: "1.31.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.31"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
