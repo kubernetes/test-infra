@@ -812,9 +812,9 @@ presubmits:
         - name: AZURE_LOCATION
           value: "canadacentral"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D64s_v3"
+          value: "Standard_D8s_v3"
         - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D64s_v3"
+          value: "Standard_D8s_v3"
         - name: AZURE_NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
