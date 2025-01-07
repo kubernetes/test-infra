@@ -46,8 +46,6 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
-    args:
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -79,8 +77,6 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
-    args:
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -324,6 +320,7 @@ testSuites:
     - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       --minStartupPods=8
     - --ginkgo-parallel=30
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     cluster: k8s-infra-prow-build
     resources:
       requests:
