@@ -275,12 +275,7 @@ pull_optional() {
         # Make tests optional until everything is updated.
         echo "true"
     else
-	# remove this once https://github.com/kubernetes/kubernetes/pull/129234 merges
-	if [ "$repo" == "external-resizer" ] ; then
-	    echo "true"
-	else
-            echo "false"
-	fi
+        echo "false"
     fi
 }
 
@@ -374,8 +369,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
     cluster: $(job_cluster "$repo")
     always_run: $(pull_alwaysrun "$tests")
-    # TODO: pull_optional can have $repo removed once special case for resizer is removed
-    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix" "$repo")
+    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -564,8 +558,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests")
     cluster: $(job_cluster "$repo")
     always_run: true
-    # TODO: pull_optional can have $repo removed once special case for resizer is removed
-    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix" "$repo")
+    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
