@@ -590,6 +590,9 @@ repo_milestone:
   kubernetes-sigs/node-feature-discovery:
     maintainers_team: node-feature-discovery-maintainers
     maintainers_friendly_name: Node Feature Discovery Maintainers
+  kubernetes/autoscaler:
+    maintainers_team: sig-autoscaling-milestone-maintainers
+    maintainers_friendly_name: Autoscaler milestone maintainers
   kubernetes/community:
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
@@ -1197,6 +1200,10 @@ plugins:
     - welcome
     - wip
     - yuks
+
+  kubernetes/autoscaler:
+    plugins:
+    - milestone
 
   kubernetes/cloud-provider-aws:
     plugins:
