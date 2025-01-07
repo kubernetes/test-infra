@@ -619,7 +619,7 @@ presubmits:
     cluster: k8s-infra-kops-prow-build
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)'
     always_run: false
     optional: false
     skip_report: false
