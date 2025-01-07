@@ -1,6 +1,9 @@
+# GENERATED FILE - DO NOT EDIT!
+#
+# Instead, modify dra.jinja and run `make generate-jobs`.
 presubmits:
   kubernetes/kubernetes:
-  - name: canary-kind-dra
+  - name: pull-kubernetes-kind-dra-canary
     cluster: eks-prow-build-cluster
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -13,30 +16,26 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
-      testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
-        - /bin/sh
+        - /bin/bash
         - -xce
         - |
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest .
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT
-          # Which DRA features exist can change over time.
-          features=( $(grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/') )
-          echo "Enabling DRA feature(s): ${features[*]}."
-          # Those additional features are not in kind.yaml, but they can be added at the end.
-          kind create cluster --retain --config <(cat test/e2e/dra/kind.yaml; for feature in ${features}; do echo "  ${feature}: true"; done) --image dra/node:latest
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky && !Slow"
+          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=2h30m hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky'
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -48,7 +47,7 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: canary-kind-dra-all
+  - name: pull-kubernetes-kind-dra-all-canary
     cluster: eks-prow-build-cluster
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -61,18 +60,18 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
-      testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
-        - /bin/sh
+        - /bin/bash
         - -xce
         - |
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
@@ -96,8 +95,8 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: canary-node-e2e-cgrpv1-crio-dra
-    cluster: eks-prow-build-cluster
+  - name: pull-kubernetes-node-e2e-cgrpv1-crio-dra-canary
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
@@ -106,12 +105,10 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v1
-      testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
     decoration_config:
       timeout: 90m
@@ -123,7 +120,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -150,8 +147,8 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: canary-node-e2e-cgrpv2-crio-dra
-    cluster: eks-prow-build-cluster
+  - name: pull-kubernetes-node-e2e-cgrpv2-crio-dra-canary
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
@@ -160,12 +157,10 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v2
-      testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
     decoration_config:
       timeout: 90m
@@ -177,7 +172,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -204,8 +199,8 @@ presubmits:
             cpu: 2
             memory: 9Gi
 
-  - name: canary-node-e2e-containerd-1-7-dra
-    cluster: eks-prow-build-cluster
+  - name: pull-kubernetes-node-e2e-containerd-1-7-dra-canary
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
@@ -214,12 +209,10 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd
-      testgrid-alert-email: eduard.bartosh@intel.com,patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
     decoration_config:
       timeout: 90m
@@ -231,14 +224,14 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241218-d4b51bc3e8-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
         - --provider=gce
         - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow"'
