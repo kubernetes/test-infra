@@ -17,8 +17,11 @@ presubmits:
         command:
         - runner.sh
         args:
-        - go mod tidy
-        - make test
+        - bash
+        - -c
+        - |
+          go mod tidy
+          make test
         resources:
           requests:
             cpu: "4"
