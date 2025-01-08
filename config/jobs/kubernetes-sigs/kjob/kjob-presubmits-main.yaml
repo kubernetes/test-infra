@@ -8,7 +8,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kjob
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-apps
         testgrid-tab-name: pull-kjob-verify-main
         description: "Run kjob verify checks"
       labels:
@@ -41,7 +41,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kjob
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-apps
         testgrid-tab-name: pull-kjob-test-unit-main
         description: "Run kjob unit tests"
       spec:
@@ -71,7 +71,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kjob
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-apps
         testgrid-tab-name: pull-kjob-test-integration-main
         description: "Run kjob test-integration"
       spec:
@@ -99,7 +99,7 @@ presubmits:
       decorate: true
       path_alias: sigs.k8s.io/kjob
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-apps
         testgrid-tab-name: pull-kjob-test-e2e-main
         description: "Run kjob end to end tests"
       labels:
