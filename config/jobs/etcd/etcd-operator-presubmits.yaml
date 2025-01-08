@@ -29,3 +29,35 @@ presubmits:
           limits:
             cpu: "4"
             memory: "4Gi"
+  - name: pull-etcd-operator-test-e2e
+    optional: true # remove once the job is stable
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-operator-presubmits
+      testgrid-tab-name: pull-etcd-operator-test-e2e
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/kind-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind create cluster
+          make test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
