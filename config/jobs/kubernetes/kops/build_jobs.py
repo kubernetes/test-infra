@@ -1455,7 +1455,7 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kopeio', 'kuberouter']
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
@@ -1849,7 +1849,7 @@ def generate_presubmits_network_plugins():
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
         'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
-    supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
+    supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kindnet'}
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
