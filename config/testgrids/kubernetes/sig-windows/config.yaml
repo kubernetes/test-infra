@@ -7,7 +7,6 @@ dashboard_groups:
     - sig-windows-1.31-release
     - sig-windows-master-release
     - sig-windows-presubmit
-    - sig-windows-gce
     - sig-windows-networking
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
@@ -20,7 +19,6 @@ dashboards:
 - name: sig-windows-1.31-release
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
-- name: sig-windows-gce
 - name: sig-windows-push-images
 - name: sig-windows-experimental
 - name: sig-windows-networking
