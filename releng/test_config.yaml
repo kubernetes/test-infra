@@ -65,7 +65,6 @@ jobs:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    testSuite: alphafeatures-eventedpleg
 
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
@@ -96,7 +95,6 @@ jobs:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    testSuite: alphafeatures-eventedpleg
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:

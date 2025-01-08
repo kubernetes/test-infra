@@ -463,8 +463,7 @@ presubmits:
         args:
         - --ginkgo-parallel=1
         - --build=quick
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
@@ -764,7 +763,7 @@ presubmits:
             - --check-leaked-resources
             - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0
             - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
-            - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+            - --env=KUBE_FEATURE_GATES=AllAlpha=true
             - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
             - --env=KUBE_PROXY_DAEMONSET=true
             - --env=ENABLE_POD_PRIORITY=true
@@ -894,7 +893,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.0
       - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -934,7 +933,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
