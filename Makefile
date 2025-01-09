@@ -50,6 +50,9 @@ clean:
 # update generated code
 #generate:
 #	hack/make-rules/update/generated.sh
+.PHONY: generate-jobs
+generate-jobs:
+	hack/make-rules/update/generated-jobs.sh
 # gofmt
 #gofmt:
 #	hack/make-rules/update/gofmt.sh
@@ -126,4 +129,7 @@ verify-boilerplate:
 .PHONY: verify-yamllint
 verify-yamllint:
 	hack/make-rules/verify/yamllint.sh
+.PHONY: verify-generated-jobs
+verify-generated-jobs:
+	hack/make-rules/verify/generated-jobs.sh
 #################################################################################
