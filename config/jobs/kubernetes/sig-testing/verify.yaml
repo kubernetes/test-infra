@@ -28,8 +28,6 @@ presubmits:
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
-        - name: EXCLUDE_GOLANGCI_LINT
-          value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
           value: master
         - name: REPO_DIR
