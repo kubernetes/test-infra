@@ -1,0 +1,38 @@
+---
+periodics:
+- name: ci-bbolt-robustness-main-arm64
+  cron: "25 9 * * 0" # runs every Sunday at 09:25 UTC, change to daily once the job is stable
+  cluster: k8s-infra-prow-build
+  extra_refs:
+    - org: etcd-io
+      repo: bbolt
+      base_ref: main
+  decorate: true
+  decoration_config:
+    timeout: 210m
+  annotations:
+    testgrid-dashboards: sig-etcd-bbolt-periodics
+    testgrid-tab-name: ci-bbolt-robustness-main-arm64
+  spec:
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            apt-get -o APT::Update::Error-Mode=any update && apt-get --yes install dmsetup xfsprogs
+            ROBUSTNESS_TESTFLAGS="--count 100 --timeout 200m -failfast" make test-robustness
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        # dmflakey needs privileged mode
+        securityContext:
+          privileged: true
+    nodeSelector:
+      kubernetes.io/arch: arm64

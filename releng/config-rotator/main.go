@@ -24,8 +24,8 @@ import (
 	"os"
 	"strings"
 
-	gyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
+	gyaml "sigs.k8s.io/yaml/goyaml.v2"
 
 	"sigs.k8s.io/prow/pkg/config"
 )
@@ -119,6 +119,11 @@ func updateEverything(c *config.JobConfig, old, new string) {
 				}
 			}
 		}
+		for k, v := range p.Annotations {
+			if k == "testgrid-tab-name" || k == "testgrid-dashboards" {
+				p.Annotations[k] = updateString(v, old, new)
+			}
+		}
 		for j := range p.Tags {
 			p.Tags[j] = updateString(p.Tags[j], old, new)
 		}
@@ -141,8 +146,6 @@ func main() {
 
 	// We need to use FutureLineWrap because "fork-per-release-cron" is too long
 	// causing the annotation value to be split into two lines.
-	// We use gopkg.in/yaml here because sigs.k8s.io/yaml doesn't export this
-	// function. sigs.k8s.io/yaml uses gopkg.in/yaml under the hood.
 	gyaml.FutureLineWrap()
 
 	output, err := yaml.Marshal(map[string]interface{}{

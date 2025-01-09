@@ -12,7 +12,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery: check formatting, lint etc."
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - scripts/test-infra/verify.sh
         resources:
@@ -56,7 +56,7 @@ presubmits:
       description: "Build node-feature-discovery binaries"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
+      - image: public.ecr.aws/docker/library/golang:1.22
         command:
         - scripts/test-infra/build.sh
         resources:
@@ -80,7 +80,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         securityContext:
           privileged: true
         command:

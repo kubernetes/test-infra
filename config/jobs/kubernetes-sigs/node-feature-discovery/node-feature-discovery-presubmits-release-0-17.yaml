@@ -1,0 +1,103 @@
+presubmits:
+  kubernetes-sigs/node-feature-discovery:
+  - name: pull-node-feature-discovery-verify-release-0-17
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.17
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-release-0.17
+      description: "Verify source code of node-feature-discovery: check formatting, lint etc."
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.23
+        command:
+        - scripts/test-infra/verify.sh
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nfd-creds
+              key: codecov-token
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+  - name: pull-node-feature-discovery-verify-docs-release-0-17
+    cluster: eks-prow-build-cluster
+    run_if_changed: "^docs/"
+    branches:
+    - ^release-0.17
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-docs-release-0.17
+      description: "Verify documentation sources"
+    spec:
+      containers:
+      - image: ruby:slim
+        command:
+        - scripts/test-infra/mdlint.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-node-feature-discovery-build-release-0-17
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.17
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-release-0.17
+      description: "Build node-feature-discovery binaries"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.23
+        command:
+        - scripts/test-infra/build.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-node-feature-discovery-e2e-test-release-0-17
+    cluster: eks-prow-build-cluster
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.17
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: e2e-test-release-0.17
+      description: "Build image and run e2e-tests"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        # Need privileged mode for dind
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/test-e2e-presubmit.sh
+        resources:
+          limits:
+            cpu: 6
+            memory: 12Gi
+          requests:
+            cpu: 6
+            memory: 12Gi

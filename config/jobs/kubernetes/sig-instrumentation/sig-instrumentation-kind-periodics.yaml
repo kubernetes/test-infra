@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash
@@ -44,17 +44,8 @@ periodics:
       - name: KIND_CLUSTER_LOG_LEVEL
         # Default is 4, but we want to exercise more log calls and get more output.
         value: "6"
-      - name: FEATURE_GATES
-        value: '{"DynamicResourceAllocation":true,"ContextualLogging":true}'
-      - name: RUNTIME_CONFIG
-        value: '{"api/alpha":"true", "api/beta":"true"}'
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: LABEL_FILTER
-      - value: >-
-          (Conformance || Feature: containsAny DynamicResourceAllocation) &&
-          Feature: isSubsetOf DynamicResourceAllocation && !Slow && !Disruptive && !Flaky
+        value: 'Conformance && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker

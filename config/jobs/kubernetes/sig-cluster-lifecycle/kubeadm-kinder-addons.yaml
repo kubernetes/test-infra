@@ -29,12 +29,12 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "upgrade-latest-no-addon-config-maps"
+      - "upgrade-no-addon-config-maps-latest"
       securityContext:
         privileged: true
       resources:

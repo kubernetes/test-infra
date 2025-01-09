@@ -30,7 +30,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -70,7 +70,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -110,7 +110,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -150,7 +150,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -190,7 +190,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -230,7 +230,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -270,7 +270,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -310,7 +310,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -340,7 +340,7 @@ postsubmits:
         grace_period: 15m
       branches:
         # For publishing canary images.
-        - ^master$
+        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -350,7 +350,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -390,7 +390,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -430,7 +430,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -470,7 +470,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -510,7 +510,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -550,7 +550,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -590,7 +590,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -630,7 +630,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -670,7 +670,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -710,7 +710,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -721,8 +721,8 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-  kubernetes-sigs/container-object-storage-interface-controller:
-    - name: post-container-object-storage-interface-controller-push-images
+  kubernetes-sigs/container-object-storage-interface:
+    - name: post-container-object-storage-interface-push-images
       rerun_auth_config:
         github_team_slugs:
           - org: kubernetes
@@ -740,7 +740,7 @@ postsubmits:
         grace_period: 15m
       branches:
         # For publishing canary images.
-        - ^master$
+        - ^main$
         - ^release-
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
@@ -750,47 +750,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
-            command:
-              - /run.sh
-            args:
-              # this is the project GCB will run in, which is the same as the GCR
-              # images are pushed to.
-              - --project=k8s-staging-sig-storage
-              # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-              - --env-passthrough=PULL_BASE_REF
-              - .
-  kubernetes-sigs/container-object-storage-interface-provisioner-sidecar:
-    - name: post-container-object-storage-interface-provisioner-sidecar-push-images
-      rerun_auth_config:
-        github_team_slugs:
-          - org: kubernetes
-            slug: release-managers
-          - org: kubernetes
-            slug: test-infra-admins
-          - org: kubernetes
-            slug: sig-storage-image-build-admins
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
-      decorate: true
-      decoration_config:
-        timeout: 240m
-        grace_period: 15m
-      branches:
-        # For publishing canary images.
-        - ^master$
-        - ^release-
-        # For publishing tagged images. Those will only get built once, i.e.
-        # existing images are not getting overwritten. A new tag must be set to
-        # trigger another image build. Images are only built for tags that follow
-        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
-        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -830,7 +790,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -848,7 +808,7 @@ postsubmits:
 # them periodically. One additional benefit is that build errors show up
 # in the sig-storage-image-build *before* tagging a release.
 #
-# Periodic jobs are currently only specified for the "master" branch
+# Periodic jobs are currently only specified for the default branch
 # which produces the "canary" images. While other branches
 # could produce release-x.y-canary images, we don't use those.
 periodics:
@@ -867,7 +827,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -898,7 +858,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -929,7 +889,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -960,7 +920,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -991,7 +951,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1022,7 +982,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1053,7 +1013,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1084,7 +1044,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1111,18 +1071,18 @@ periodics:
       # the cloud image build.
       - org: kubernetes-csi
         repo: external-snapshot-metadata
-        base_ref: master
+        base_ref: main
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
             # We need to emulate a pull job for the cloud build to work the same
             # way as it usually does.
             - name: PULL_BASE_REF
-              value: master
+              value: main
           args:
             # this is the project GCB will run in, which is the same as the GCR
             # images are pushed to.
@@ -1146,7 +1106,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1177,7 +1137,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1208,7 +1168,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1239,7 +1199,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1270,7 +1230,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1301,7 +1261,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1332,7 +1292,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1363,7 +1323,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1394,7 +1354,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
@@ -1410,7 +1370,7 @@ periodics:
             - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
             - --env-passthrough=PULL_BASE_REF
             - .
-  - name: canary-container-object-storage-interface-controller-push-images
+  - name: canary-container-object-storage-interface-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
       testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
@@ -1420,50 +1380,19 @@ periodics:
       # This also becomes the current directory for run.sh and thus
       # the cloud image build.
       - org: kubernetes-sigs
-        repo: container-object-storage-interface-controller
-        base_ref: master
+        repo: container-object-storage-interface
+        base_ref: main
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:
             # We need to emulate a pull job for the cloud build to work the same
             # way as it usually does.
             - name: PULL_BASE_REF
-              value: master
-          args:
-            # this is the project GCB will run in, which is the same as the GCR
-            # images are pushed to.
-            - --project=k8s-staging-sig-storage
-            # This is the same as above, but with -gcb appended.
-            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-            - --env-passthrough=PULL_BASE_REF
-            - .
-  - name: canary-container-object-storage-interface-provisioner-sidecar-push-images
-    cluster: k8s-infra-prow-build-trusted
-    annotations:
-      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
-    decorate: true
-    interval: 168h # one week
-    extra_refs:
-      # This also becomes the current directory for run.sh and thus
-      # the cloud image build.
-      - org: kubernetes-sigs
-        repo: container-object-storage-interface-provisioner-sidecar
-        base_ref: master
-    spec:
-      serviceAccountName: gcb-builder
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
-          command:
-            - /run.sh
-          env:
-            # We need to emulate a pull job for the cloud build to work the same
-            # way as it usually does.
-            - name: PULL_BASE_REF
-              value: master
+              value: main
           args:
             # this is the project GCB will run in, which is the same as the GCR
             # images are pushed to.

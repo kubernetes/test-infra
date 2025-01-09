@@ -27,7 +27,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - wrapper.sh
@@ -35,8 +35,6 @@ periodics:
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./../test-infra/experiment/compatibility-versions/e2e-k8s-compatibility-versions.sh
       env:
-      - name: EMULATED_VERSION
-        value: "1.31"  # TODO(aaron-prindle) FIXME - hardcoded for now
       - name: SKIP
         value: Alpha|Disruptive|Slow|Flaky|IPv6|LoadBalancer|PodSecurityPolicy|nfs
       - name: PARALLEL

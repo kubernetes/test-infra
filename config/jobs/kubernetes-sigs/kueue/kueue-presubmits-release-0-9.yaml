@@ -1,0 +1,311 @@
+presubmits:
+  kubernetes-sigs/kueue:
+  - name: pull-kueue-test-unit-release-0-9
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-unit-release-0-9
+      description: "Run kueue unit tests"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.23
+        env:
+        - name: GO_TEST_FLAGS
+          value: "-race -count 3"
+        - name: GOMAXPROCS
+          value: "2"
+        command:
+        - make
+        args:
+        - test
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+  - name: pull-kueue-test-integration-release-0-9
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-integration-release-0-9
+      description: "Run kueue test-integration"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.23
+        command:
+        - make
+        args:
+        - test-integration
+        env:
+        - name: GOMAXPROCS
+          value: "6"
+        - name: INTEGRATION_RUN_ALL
+          value: "false"
+        resources:
+          requests:
+            cpu: "6"
+            memory: "9Gi"
+          limits:
+            cpu: "6"
+            memory: "9Gi"
+  - name: pull-kueue-test-e2e-release-0-9-1-29
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-release-0-9-1-29
+      description: "Run kueue end to end tests for Kubernetes 1.29"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.29.4
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - name: pull-kueue-test-e2e-release-0-9-1-30
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-release-0-9-1-30
+      description: "Run kueue end to end tests for Kubernetes 1.30"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.30.0
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - name: pull-kueue-test-e2e-release-0-9-1-31
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-release-0-9-1-31
+      description: "Run kueue end to end tests for Kubernetes 1.31"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.31.0
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
+  - name: pull-kueue-test-multikueue-e2e-release-0-9
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-multikueue-e2e-release-0-9
+      description: "Run multikueue end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.31.2
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-multikueue-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
+  - name: pull-kueue-verify-release-0-9
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-verify-release-0-9
+      description: "Run kueue verify checks"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+          - make
+          - verify
+        env:
+        - name: GOMAXPROCS
+          value: "4"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+  - name: pull-kueue-build-image-release-0-9
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-build-image-release-0-9
+      description: "Build container image of kueue"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - make
+        - image-local-build
+        - importer-image
+        env:
+        - name: GOMAXPROCS
+          value: "2"
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.23
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+  - name: pull-kueue-test-scheduling-perf-release-0-9
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^release-0.9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-scheduling-perf-release-0-9
+      description: "Run kueue test-scheduling-perf"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.23
+        command:
+        - make
+        args:
+        - test-performance-scheduler
+        env:
+        - name: GOMAXPROCS
+          value: "6"
+        resources:
+          requests:
+            cpu: "6"
+            memory: "9Gi"
+          limits:
+            cpu: "6"
+            memory: "9Gi"

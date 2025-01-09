@@ -18,7 +18,8 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-master-scale-correctness
-    testgrid-base-options: 'exclude-filter-by-regex=^(kubetest\.Test|ci-kubernetes-e2e-gce-scale-correctness\.Overall)$'
+    # exclude-filter-by-regex=^(kubetest\.Test|ci-kubernetes-e2e-gce-scale-correctness\.Overall)$
+    testgrid-base-options: 'exclude-filter-by-regex=%5E(kubetest%5C.Test%7Cci-kubernetes-e2e-gce-scale-correctness%5C.Overall)%24'
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     volumes:
@@ -26,7 +27,7 @@ periodics:
       secret:
         secretName: scale-pull-cache-token
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       volumeMounts:
       - name: cache-secret
         readOnly: true
@@ -44,7 +45,6 @@ periodics:
       - --env=CONCURRENT_SERVICE_SYNCS=20 # support 20 LoadBalancer Services in parallel to deal with existing CI load #122286
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
@@ -107,7 +107,7 @@ periodics:
       secret:
         secretName: scale-pull-cache-token
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       volumeMounts:
       - name: cache-secret
         readOnly: true
@@ -127,7 +127,6 @@ periodics:
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       - --gcp-nodes=5000
       - --gcp-project-type=scalability-scale-project
       - --gcp-zone=us-east1-b
@@ -215,7 +214,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -225,7 +224,6 @@ periodics:
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project

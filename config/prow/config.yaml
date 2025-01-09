@@ -7,7 +7,10 @@ plank:
   pod_pending_timeout: 15m
   pod_unscheduled_timeout: 5m
   job_queue_capacities:
+    # limits concurrency for image promoter jobs
     'k8sio-image-promo': 1
+    # limits concurrency for k8s-test-infra-staging project
+    'test-infra-staging-image-push': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h
@@ -331,6 +334,11 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        externaljwt:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         git-sync:
           enforce_admins: true
           restrictions: # only allow admins
@@ -779,14 +787,17 @@ tide:
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
+    kubernetes-sigs/ingate: squash
     kubernetes-sigs/jobset: squash
     kubernetes-sigs/karpenter: squash
     kubernetes-sigs/kernel-module-management: rebase
+    kubernetes-sigs/kjob: squash
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/kueue: squash
     kubernetes-sigs/kui: rebase
+    kubernetes-sigs/gateway-api-inference-extension: squash
     kubernetes-sigs/security-profiles-operator: rebase
     kubernetes-sigs/service-catalog: squash
     kubernetes-sigs/gateway-api: squash

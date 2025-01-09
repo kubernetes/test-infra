@@ -1,0 +1,13 @@
+# See the OWNERS docs: https://www.kubernetes.dev/docs/guide/owners
+
+reviewers:
+- cpanato
+- Gacko
+- strongjz
+- tao12345666333
+
+approvers:
+- cpanato
+- Gacko
+- strongjz
+- tao12345666333

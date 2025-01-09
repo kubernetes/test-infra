@@ -2,13 +2,11 @@ dashboard_groups:
 - name: sig-windows
   dashboard_names:
     - sig-windows-signal
-    - sig-windows-1.28-release
     - sig-windows-1.29-release
     - sig-windows-1.30-release
     - sig-windows-1.31-release
     - sig-windows-master-release
     - sig-windows-presubmit
-    - sig-windows-gce
     - sig-windows-networking
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
@@ -16,17 +14,21 @@ dashboard_groups:
 
 dashboards:
 - name: sig-windows-signal
-- name: sig-windows-1.28-release
 - name: sig-windows-1.29-release
 - name: sig-windows-1.30-release
 - name: sig-windows-1.31-release
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
-- name: sig-windows-gce
 - name: sig-windows-push-images
 - name: sig-windows-experimental
 - name: sig-windows-networking
   dashboard_tab:
+  - name: ltsc2025-containerd-flannel-sdnbridge-master
+    description: Runs Windows (LTSC 2025 with Containerd) E2E tests on master branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
+    test_group_name: k8s-e2e-ltsc2025-containerd-flannel-sdnbridge-master
+  - name: ltsc2025-containerd-flannel-sdnoverlay-master
+    description: Runs Windows (LTSC 2025 with Containerd) E2E tests on master branch K8s clusters and latest Flannel CNI release in overlay network mode.
+    test_group_name: k8s-e2e-ltsc2025-containerd-flannel-sdnoverlay-master
   - name: ltsc2022-containerd-flannel-sdnbridge-master
     description: Runs Windows (LTSC 2022 with Containerd) E2E tests on master branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
     test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-master
@@ -75,6 +77,10 @@ dashboards:
 
 test_groups:
 # Flannel CNI on Windows test groups
+- name: k8s-e2e-ltsc2025-containerd-flannel-sdnbridge-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2025-containerd-flannel-sdnbridge-master
+- name: k8s-e2e-ltsc2025-containerd-flannel-sdnoverlay-master
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2025-containerd-flannel-sdnoverlay-master
 - name: k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-master
   gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-master
 - name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-master

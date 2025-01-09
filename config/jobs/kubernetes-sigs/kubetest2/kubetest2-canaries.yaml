@@ -21,7 +21,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -54,7 +54,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -87,7 +87,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -113,7 +113,7 @@ presubmits:
       testgrid-dashboards: sig-testing-canaries
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -139,7 +139,7 @@ presubmits:
       testgrid-dashboards: sig-testing-canaries
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -176,7 +176,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -226,7 +226,7 @@ presubmits:
       testgrid-dashboards: sig-testing-canaries
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -244,13 +244,18 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/kubetest2
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     labels:
       preset-dind-enabled: "true"
     annotations:
       testgrid-dashboards: sig-testing-canaries
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 4
@@ -261,14 +266,6 @@ presubmits:
         command:
         - runner.sh
         args:
-        - "/bin/bash"
-        - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          make install-all;
-          go install sigs.k8s.io/kind@v0.20.0;
-          kubetest2 kind --up --down --test=exec -- kubectl get all -A
+        - "./kubetest2-kind/ci-tests/buildupdown.sh"
         securityContext:
           privileged: true

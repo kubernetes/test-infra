@@ -1,0 +1,31 @@
+---
+presubmits:
+  etcd-io/raft:
+    - name: pull-raft-test-arm64
+      cluster: k8s-infra-prow-build
+      always_run: true
+      branches:
+        - main
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-etcd-raft-presubmits
+        testgrid-tab-name: pull-raft-test-arm64
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                CGO_ENABLED=1 GOARCH=arm64 PASSES='unit' RACE='true' CPU='4' ./scripts/test.sh -p=2
+            resources:
+              requests:
+                cpu: "4"
+                memory: "4Gi"
+              limits:
+                cpu: "4"
+                memory: "4Gi"
+        nodeSelector:
+          kubernetes.io/arch: arm64

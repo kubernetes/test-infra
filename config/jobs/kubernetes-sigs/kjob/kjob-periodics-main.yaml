@@ -1,0 +1,124 @@
+periodics:
+  - interval: 12h
+    name: periodic-kjob-test-unit-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: periodic-kjob-test-unit-main
+      testgrid-alert-email: kjob-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kjob unit tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kjob
+        base_ref: main
+        path_alias: kubernetes-sigs/kjob
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.23
+          env:
+            - name: GO_TEST_FLAGS
+              value: "-race -count 3"
+            - name: GOMAXPROCS
+              value: "2"
+          command:
+            - make
+          args:
+            - test-unit
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+  - interval: 12h
+    name: periodic-kjob-test-integration-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: periodic-kjob-test-integration-main
+      testgrid-alert-email: kjob-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kjob test-integration"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kjob
+        base_ref: main
+        path_alias: kubernetes-sigs/kjob
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.23
+          command:
+            - make
+          args:
+            - test-integration
+          env:
+            - name: GOMAXPROCS
+              value: "2"
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+  - interval: 12h
+    name: periodic-kjob-test-e2e-main
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: periodic-kjob-test-e2e-main
+      testgrid-alert-email: kjob-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kjob end to end tests for Kubernetes 1.31"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kjob
+        base_ref: main
+        path_alias: kubernetes-sigs/kjob
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.31.2
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"

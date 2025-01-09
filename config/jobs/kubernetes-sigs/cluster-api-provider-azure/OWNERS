@@ -4,12 +4,12 @@ approvers:
 - jackfrancis
 - Jont828
 - mboersma
+- nawazkh
 - nojnhuh
 - willie-yao
 reviewers:
 - jsturtevant
 - marosset
-- nawazkh
 
 labels:
 - sig/cluster-lifecycle

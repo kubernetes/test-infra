@@ -15,8 +15,6 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-ARG OLD_BAZEL_VERSION
-FROM gcr.io/bazel-public/bazel:${OLD_BAZEL_VERSION} as old
 FROM gcr.io/k8s-staging-test-infra/bootstrap:v20241015-f5fd905349
 
 # hint to kubetest that it is in CI
@@ -80,10 +78,6 @@ ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
 COPY images/kubekins-e2e/install-bazel.sh /
 RUN bash /install-bazel.sh
-
-ARG OLD_BAZEL_VERSION
-COPY --from=old \
-    /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
 
 # install kind if a version is provided
 ARG KIND_VERSION

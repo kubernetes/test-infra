@@ -12,7 +12,7 @@ presets:
     preset-capz-containerd-1-7-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.7.18/containerd-1.7.18-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-windows-amd64.tar.gz"
 - labels:
     preset-windows-repo-list: "true"
   env:

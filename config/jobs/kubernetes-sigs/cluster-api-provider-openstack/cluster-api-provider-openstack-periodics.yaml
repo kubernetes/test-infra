@@ -8,7 +8,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 12h
+  interval: 24h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
@@ -17,7 +17,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
@@ -62,7 +62,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 12h
+  interval: 24h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
@@ -71,7 +71,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
@@ -109,7 +109,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 12h
+  interval: 24h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
@@ -117,7 +117,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"

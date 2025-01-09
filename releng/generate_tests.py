@@ -49,7 +49,7 @@ PROW_CONFIG_TEMPLATE = """
       - command:
         args:
         env:
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           requests:
             cpu: 1000m
@@ -246,7 +246,7 @@ class E2ETest:
         self.env_filename = os.path.join(output_dir, '%s.env' % job_name)
         self.job_name = job_name
         self.job = job
-        self.common = config['common']
+        self.common = config.get('common')
         self.cloud_providers = config['cloudProviders']
         self.images = config['images']
         self.k8s_versions = config['k8sVersions']

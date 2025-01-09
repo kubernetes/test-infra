@@ -49,7 +49,7 @@ presubmits:
         - --timeout=120m
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: "4"
@@ -107,7 +107,7 @@ presubmits:
         - --timeout=150m
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: "4"
@@ -163,7 +163,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=150m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: "4"
@@ -212,7 +212,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=240m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: "4"
@@ -262,9 +262,9 @@ presubmits:
               kubetest2 kops -v=6 --cloud-provider=gce --up --down --build --env=KOPS_FEATURE_FLAGS=SELinuxMount \
                 --build-kubernetes=true --target-build-arch=linux/amd64 \
                 --admin-access=0.0.0.0/0 \
-                --kubernetes-feature-gates=SELinuxMount \
+                --kubernetes-feature-gates=SELinuxMount,SELinuxChangePolicy \
                 --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
-                --create-args "--image='rhel-cloud/rhel-9-v20240815' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+                --create-args "--image='rhel-cloud/rhel-9-v20240815' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers='*' --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
                 --test=kops \
                 -- \
                 --ginkgo-args="--debug" \
@@ -273,7 +273,7 @@ presubmits:
                 --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
                 --use-built-binaries=true \
                 --parallel=1 # [Feature:SELinux] tests include serial ones
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           resources:
             limits:
               cpu: 4
@@ -300,8 +300,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.20
-      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.13
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
       - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -311,7 +311,6 @@ periodics:
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
@@ -325,7 +324,7 @@ periodics:
         limits:
           memory: "2000Mi"
           cpu: 4000m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -357,7 +356,7 @@ periodics:
         limits:
           memory: "2000Mi"
           cpu: 4000m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
   annotations:
     testgrid-num-columns-recent: '20'
     testgrid-num-failures-to-alert: '6'

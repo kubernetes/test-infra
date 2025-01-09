@@ -2,17 +2,18 @@ presubmits:
   kubernetes-sigs/aws-ebs-csi-driver:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
@@ -34,17 +35,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-test-helm-chart
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
@@ -74,7 +76,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
@@ -94,15 +96,16 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
@@ -122,17 +125,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
@@ -154,17 +158,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
     - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
         - runner.sh
         args:
@@ -186,17 +191,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
       - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -218,17 +224,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-eks
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     skip_branches:
       - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -250,17 +257,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-kustomize
     cluster: eks-prow-build-cluster
-    always_run: true
     decorate: true
+    optional: false
     branches:
       - ^release-.*$
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -282,18 +290,18 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-arm64
     cluster: eks-prow-build-cluster
-    always_run: true
     optional: true
     decorate: true
     skip_branches:
       - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:

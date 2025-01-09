@@ -7,10 +7,13 @@ postsubmits:
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
         testgrid-num-columns-recent: '3'
       decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -42,13 +45,14 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           args:
             - --project=k8s-staging-kubetest2
             - --scratch-bucket=gs://k8s-staging-kubetest2-gcb
             - --env-passthrough=PULL_BASE_SHA
+            - --with-git-dir
             - --build-dir=.
             - hack/ci/push-binaries/
           env:

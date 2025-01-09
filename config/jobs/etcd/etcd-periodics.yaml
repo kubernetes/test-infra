@@ -16,7 +16,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -84,7 +84,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -114,7 +114,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -159,7 +159,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -204,7 +204,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -249,7 +249,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -294,7 +294,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -339,7 +339,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -367,5 +367,71 @@ periodics:
       # fuse needs privileged mode
       securityContext:
         privileged: true
+    nodeSelector:
+      kubernetes.io/arch: arm64
+
+- name: ci-etcd-integration-1-cpu-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-arm64
+    testgrid-tab-name: ci-etcd-integration-1-cpu-amd64
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make gofail-enable
+        export JUNIT_REPORT_DIR=${ARTIFACTS}
+        GOOS=linux GOARCH=amd64 CPU=1 make test-integration
+      resources:
+        requests:
+          cpu: "2"
+          memory: "3Gi"
+        limits:
+          cpu: "2"
+          memory: "3Gi"
+
+- name: ci-etcd-integration-1-cpu-arm64
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-arm64
+    testgrid-tab-name: ci-etcd-integration-1-cpu-arm64
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make gofail-enable
+        export JUNIT_REPORT_DIR=${ARTIFACTS}
+        GOOS=linux GOARCH=arm64 CPU=1 make test-integration
+      resources:
+        requests:
+          cpu: "2"
+          memory: "3Gi"
+        limits:
+          cpu: "2"
+          memory: "3Gi"
     nodeSelector:
       kubernetes.io/arch: arm64

@@ -12,7 +12,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - make
@@ -50,16 +50,13 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -94,7 +91,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -107,9 +104,6 @@ periodics:
       # tell kind CI script to use ipv6
       - name: "IP_FAMILY"
         value: "ipv6"
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -143,14 +137,11 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       command:
         - wrapper.sh
         - bash
@@ -188,7 +179,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -199,9 +190,6 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
-      # don't retry conformance tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       command:
         - wrapper.sh
         - bash

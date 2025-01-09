@@ -1,0 +1,30 @@
+presubmits:
+  kubernetes-sigs/testgrid:
+  - name: test-testgrid-npm
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: true
+    spec:
+      containers:
+      # See https://playwright.dev/docs/ci
+      - image: mcr.microsoft.com/playwright:v1.46.0-noble
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          cd web
+          npm install -g pnpm
+          pnpm install
+          pnpm build
+          pnpm test
+        resources:
+          requests:
+            cpu: 2
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
+    annotations:
+      description: Unit tests for the new TestGrid UI.
+      testgrid-dashboards: sig-testing-testgrid

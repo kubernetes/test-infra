@@ -5,14 +5,14 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-1.32-blocking
+  - sig-release-1.32-informing
   - sig-release-1.31-blocking
   - sig-release-1.31-informing
   - sig-release-1.30-blocking
   - sig-release-1.30-informing
   - sig-release-1.29-blocking
   - sig-release-1.29-informing
-  - sig-release-1.28-blocking
-  - sig-release-1.28-informing
   - sig-release-releng-blocking
   - sig-release-releng-informing
   - sig-release-releng-presubmits
@@ -27,14 +27,14 @@ dashboard_groups:
 dashboards:
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
+- name: sig-release-1.32-blocking
+- name: sig-release-1.32-informing
 - name: sig-release-1.31-blocking
 - name: sig-release-1.31-informing
 - name: sig-release-1.30-blocking
 - name: sig-release-1.30-informing
 - name: sig-release-1.29-blocking
 - name: sig-release-1.29-informing
-- name: sig-release-1.28-blocking
-- name: sig-release-1.28-informing
 - name: sig-release-releng-blocking
 - name: sig-release-releng-informing
 - name: sig-release-releng-presubmits

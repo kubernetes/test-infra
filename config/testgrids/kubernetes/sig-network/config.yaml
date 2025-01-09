@@ -4,6 +4,7 @@ dashboard_groups:
     - sig-network-dns
     - sig-network-external-dns
     - sig-network-gce
+    - sig-network-ingate
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-gateway-api
@@ -93,6 +94,7 @@ dashboards:
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
+- name: sig-network-ingate
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
 - name: sig-network-gateway-api

@@ -109,7 +109,41 @@ def create_args(kops_channel, networking, extra_flags, kops_image):
         args = f"--image='{kops_image}' {args}"
     return args.strip()
 
+# The pin file contains a list of key=value pairs, that holds images we want to pin.
+# This enables us to use the latest image without fetching them from AWS every time.
+def pinned_file():
+    return 'pinned.list'
+
+# get_pinned returns the pinned value for the given key, or None if the key is not found
+def get_pinned(key):
+    # Read pinned file, which is a list of key=value pairs
+    # If the key is not found, return None
+    # Ignore if the file is not found
+    try:
+        with open(pinned_file(), 'r') as f:
+            s = f.read().strip()
+        for line in s.split('\n'):
+            k, v = line.split('=', 1)
+            if k == key:
+                return v
+        return None
+    except FileNotFoundError:
+        return None
+
+# set_pinned appends a key=value pair to the pinned file
+def set_pinned(key, value):
+    # Append to the pinned file, which is a list of key=value pairs
+    with open(pinned_file(), 'a') as f:
+        f.write(f"{key}={value}\n")
+
+# latest_aws_image returns the latest AWS image for the given owner, name, and arch
+# If the image is pinned, it returns the pinned image
+# Otherwise, it fetches the latest image from AWS and pins it
 def latest_aws_image(owner, name, arch='x86_64'):
+    pin = "aws://images/" + owner + "/" + name + ":" + arch
+    image = get_pinned(pin)
+    if image:
+        return image
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
         Owners=[owner],
@@ -132,7 +166,9 @@ def latest_aws_image(owner, name, arch='x86_64'):
     for image in response['Images']:
         images.append(image['ImageLocation'].replace('amazon', owner))
     images.sort(reverse=True)
-    return images[0]
+    image = images[0]
+    set_pinned(pin, image)
+    return image
 
 distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.1-x86_64'),

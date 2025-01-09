@@ -16,7 +16,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -110,7 +110,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -214,7 +214,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -254,7 +254,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -298,7 +298,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -307,7 +307,7 @@ presubmits:
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
-          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+          value: '{"AllAlpha":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
@@ -347,7 +347,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -382,7 +382,7 @@ presubmits:
   - name: pull-kubernetes-e2e-kind-alpha-beta-features
     cluster: k8s-infra-prow-build
     optional: true
-    always_run: false
+    run_if_changed: ^pkg/features/
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
@@ -395,7 +395,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -443,7 +443,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -475,11 +475,11 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
 periodics:
-- interval: 24h
+- interval: 4h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-features
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-alpha
     description: Uses kubetest to run e2e tests against a latest kubernetes master and alpha features enabled cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -497,7 +497,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash
@@ -527,11 +527,11 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 24h
+- interval: 4h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-beta
     description: Uses kubetest to run e2e tests against a latest kubernetes master and beta features enabled cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -549,7 +549,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash
@@ -579,11 +579,11 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 24h
+- interval: 4h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-features
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-alpha-beta
     description: Uses kubetest to run e2e tests against a latest kubernetes master and all features enabled cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -601,7 +601,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241011-e8871c079d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash
@@ -653,7 +653,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:
@@ -716,7 +716,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241011-e8871c079d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
       command:
       - runner.sh
       args:

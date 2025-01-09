@@ -34,7 +34,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -851,11 +851,10 @@ def generate_misc():
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes'),
 
         # A job to isolate a test failure reported in
-        # https://github.com/kubernetes/kubernetes/issues/123255
-        build_test(name_override="kops-aws-k28-hostname-bug123255",
+        # https://github.com/kubernetes/kubernetes/issues/121018
+        build_test(name_override="kops-aws-hostname-bug121018",
                    cloud="aws",
                    distro="al2023",
-                   k8s_version="1.28",
                    networking="cilium",
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits',
                    runs_per_day=3,
@@ -884,7 +883,45 @@ def generate_misc():
                    #   support SELinux and there are several subvariants of local volumes
                    #   that multiply nr. of tests.
                    # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
-                   #   in v1.30.
+                   #   in v1.32.
+                   # - FeatureGate:SELinuxChangePolicy: the feature gate is alpha / disabled by default
+                   #   in v1.32.
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]|\[FeatureGate:SELinuxChangePolicy\]",
+                   # [Serial] and [Disruptive] are intentionally not skipped, therefore run
+                   # everything as serial.
+                   test_parallelism=1,
+                   # Serial and Disruptive tests can be slow.
+                   test_timeout_minutes=120,
+                   runs_per_day=3),
+
+        # [sig-storage, @jsafrane] A one-off scenario testing SELinuxChangePolicy feature (alpha in v1.32).
+        # and opt-in selinux-warning-controller.
+        # This will need to merge with kops-aws-selinux when SELinuxMount gets enabled by default.
+        build_test(name_override="kops-aws-selinux-changepolicy",
+                   # RHEL8 VM image is enforcing SELinux by default.
+                   cloud="aws",
+                   distro="rhel8",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_channel="alpha",
+                   feature_flags=['SELinuxMount'],
+                   kubernetes_feature_gates="SELinuxChangePolicy",
+                   extra_flags=[
+                       "--set=cluster.spec.containerd.selinuxEnabled=true",
+                       # Run all default controllers ("*") + selinux-warning-controller.
+                       "--set=cluster.spec.kubeControllerManager.controllers=*",
+                       "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"
+                   ],
+                   focus_regex=r"\[Feature:SELinux\]",
+                   # Skip:
+                   # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
+                   #   installed on nodes.
+                   # - Driver: nfs: NFS does not have client tools installed on nodes.
+                   # - Driver: local: this is optimization only, the volume plugin does not
+                   #   support SELinux and there are several subvariants of local volumes
+                   #   that multiply nr. of tests.
+                   # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
+                   #   in v1.32.
                    skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
@@ -893,7 +930,8 @@ def generate_misc():
                    test_timeout_minutes=120,
                    runs_per_day=3),
 
-        # [sig-storage, @jsafrane] A one-off scenario testing SELinuxMount feature (alpha in v1.30).
+        # [sig-storage, @jsafrane] A one-off scenario testing all SELinux related feature gates enabled
+        # and opt-in selinux-warning-controller.
         # This will need to merge with kops-aws-selinux when SELinuxMount gets enabled by default.
         build_test(name_override="kops-aws-selinux-alpha",
                    # RHEL8 VM image is enforcing SELinux by default.
@@ -903,9 +941,12 @@ def generate_misc():
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
-                   kubernetes_feature_gates="SELinuxMount",
+                   kubernetes_feature_gates="SELinuxMount,SELinuxChangePolicy",
                    extra_flags=[
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
+                       # Run all default controllers ("*") + selinux-warning-controller.
+                       "--set=cluster.spec.kubeControllerManager.controllers=*",
+                       "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"
                    ],
                    focus_regex=r"\[Feature:SELinux\]",
                    # Skip:
@@ -925,6 +966,23 @@ def generate_misc():
                    test_timeout_minutes=120,
                    runs_per_day=3),
 
+
+        # [sig-network, @aojea] A job to test SIG Network beta features on Kops to validate "real-world" usage availability.
+        build_test(name_override="kops-aws-sig-network-beta",
+                   cloud="aws",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_version=marker_updown_green("master"),
+                   kops_channel="alpha",
+                   kubernetes_feature_gates="AllBeta",
+                   extra_flags=[
+                       "--set=spec.kubeAPIServer.runtimeConfig=api/all=true",
+                   ],
+                   focus_regex=r"\[sig-network\]",
+                   skip_regex=r"Alpha|LoadBalancer|NetworkPolicy|Disruptive|Flaky|IPv6|PerformanceDNS|SCTP|Ingress|KubeProxy|Traffic.Distribution|Topology.Hints",
+                   test_timeout_minutes=120,
+                   runs_per_day=3,
+                   extra_dashboards=['kops-misc']),
 
         # test kube-up to kops jobs migration
         build_test(name_override="ci-kubernetes-e2e-cos-gce-canary",
@@ -1002,7 +1060,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--set=spec.packages=nfs-utils",
                    ],
@@ -1041,7 +1099,6 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="eks-prow-build-cluster",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1063,7 +1120,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="eks-prow-build-cluster",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
                        "--master-size=r5d.xlarge",
@@ -1090,7 +1146,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
                        "--master-size=r5d.xlarge",
@@ -1117,7 +1173,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    cluster_name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local",
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1179,7 +1235,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="eks-prow-build-cluster",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-size=r5d.xlarge",
                        "--master-size=r5d.xlarge",
@@ -1206,6 +1262,7 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
+                       "--set=cluster.spec.cloudConfig.manageStorageClasses=false",
                        "--image=cos-cloud/cos-105-17412-370-67",
                        "--node-volume-size=100",
                        "--gce-service-account=default",
@@ -1225,7 +1282,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--node-volume-size=100",
                        "--set=spec.packages=nfs-utils",
@@ -1245,7 +1302,7 @@ def generate_misc():
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
-                   build_cluster="k8s-infra-prow-build",
+                   build_cluster="k8s-infra-kops-prow-build",
                    extra_flags=[
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
@@ -1398,7 +1455,7 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kopeio', 'kuberouter']
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
@@ -1431,7 +1488,7 @@ def generate_upgrades():
 
     kops28 = 'v1.28.7'
     kops29 = 'v1.29.2'
-    kops30 = 'v1.30.1'
+    kops30 = 'v1.30.3'
 
     versions_list = [
         #  kops    k8s          kops      k8s
@@ -1505,6 +1562,11 @@ def generate_upgrades():
                        env=env,
                        )
         )
+        # Older kops versions have a conflict between aws-load-balancer-controller and cert-manager
+        # The fix was only backported to 1.30, so we skip many-addons for older upgrades.
+        # Ref: https://github.com/kubernetes/kops/pull/16743
+        if kops_a in (kops28, kops29):
+            continue
         results.append(
             build_test(name_override=job_name + "-many-addons",
                        distro='u2204',
@@ -1572,7 +1634,6 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
-            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
@@ -1583,7 +1644,6 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
-            build_cluster="eks-prow-build-cluster",
             # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
@@ -1732,8 +1792,6 @@ def generate_versions():
             networking='calico',
             extra_dashboards=['kops-versions'],
             runs_per_day=8,
-            # This version marker is only used by the k/k presubmit job
-            publish_version_marker='gs://k8s-staging-kops/kops/releases/markers/master/latest-ci.txt',
         )
     ]
     for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
@@ -1787,10 +1845,11 @@ def generate_presubmits_network_plugins():
         'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
-        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)',
+        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
+        'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
-    supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
+    supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kindnet'}
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
@@ -1804,6 +1863,8 @@ def generate_presubmits_network_plugins():
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             k8s_version = 'ci'
+            optional = True
+        if plugin == 'kindnet':
             optional = True
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"

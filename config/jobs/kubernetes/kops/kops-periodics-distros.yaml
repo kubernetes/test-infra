@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20241007-1893' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20241202-1949' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -109,7 +109,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -160,7 +160,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20241004-1890' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-12-amd64-20241201-1948' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -173,7 +173,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -224,7 +224,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20241002' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20241112' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -237,7 +237,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -288,7 +288,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20241002' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20241112' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -301,7 +301,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -352,7 +352,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240927' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20241120' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -365,7 +365,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -416,7 +416,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20240927' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20241120' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -429,7 +429,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -480,7 +480,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20241001' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20241109' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -493,7 +493,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -544,7 +544,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20241001' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20241109' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -557,7 +557,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -608,7 +608,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20241001.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20241113.1-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -621,7 +621,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -672,7 +672,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.5.20241001.1-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.6.20241121.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -685,7 +685,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -749,7 +749,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -800,7 +800,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-9.4.0_HVM-20240718-x86_64-2-Hourly2-GP3' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-9.4.0_HVM-20241114-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -813,7 +813,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -864,7 +864,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.4-20240523.0.x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='792107900819/Rocky-9-EC2-Base-9.5-20241118.0.x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -877,7 +877,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: rocky
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -928,7 +928,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4054.1.0-hvm' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-4116.1.0-hvm' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -942,7 +942,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       imagePullPolicy: Always
       resources:
         limits:

@@ -10,7 +10,7 @@ postsubmits:
         - main
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
             command:
               - runner.sh
             args:
@@ -41,7 +41,7 @@ postsubmits:
         - release/1.6
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
             command:
               - runner.sh
             args:
@@ -72,7 +72,7 @@ postsubmits:
         - release/1.7
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
             command:
               - runner.sh
             args:
@@ -94,6 +94,37 @@ postsubmits:
         testgrid-tab-name: post-containerd-build-1.7
         description: "builds release/1.7 branch of upstream containerd"
 
+    - name: post-containerd-build-2-0
+      labels:
+        preset-service-account: "true"
+      cluster: k8s-infra-prow-build
+      decorate: true
+      branches:
+        - release/2.0
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+            command:
+              - runner.sh
+            args:
+              - test/build.sh
+            env:
+              - name: DEPLOY_DIR
+                value: release-2.0
+              - name: DEPLOY_BUCKET
+                value: k8s-staging-cri-tools
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-node-containerd,containerd-postsubmits
+        testgrid-tab-name: post-containerd-build-2.0
+        description: "builds release/2.0 branch of upstream containerd"
+
     - name: post-containerd-build-test-images
       labels:
         preset-service-account: "true"
@@ -104,7 +135,7 @@ postsubmits:
         - main
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
             command:
               - runner.sh
             args:

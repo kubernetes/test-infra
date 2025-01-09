@@ -13,7 +13,7 @@ presubmits:
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         resources:
           limits:
             cpu: 2
@@ -62,20 +62,24 @@ presubmits:
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
             - bash
             - -c
             - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
 
               VERSION=$(git describe --dirty --tags --match='v*')
               BUILD_IMAGE=ko.local:${VERSION}
               REGION=${REGION:-"us-east-1"}
 
-              make switch-to-latest-k8s ko-build-local
+              make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
 
               AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
               IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
@@ -141,20 +145,24 @@ presubmits:
     spec:
       serviceAccountName: aws-shared-testing-role
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241015-d4fae900f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
             - bash
             - -c
             - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+
               GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
 
               VERSION=$(git describe --dirty --tags --match='v*')
               BUILD_IMAGE=ko.local:${VERSION}
               REGION=${REGION:-"us-east-1"}
 
-              make switch-to-latest-k8s ko-build-local
+              make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
 
               AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
               IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
