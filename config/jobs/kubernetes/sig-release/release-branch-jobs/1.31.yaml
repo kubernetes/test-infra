@@ -2079,8 +2079,6 @@ presubmits:
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
-        - name: EXCLUDE_GOLANGCI_LINT
-          value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
           value: release-1.31
         - name: REPO_DIR
