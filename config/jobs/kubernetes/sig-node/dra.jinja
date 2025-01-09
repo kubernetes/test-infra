@@ -110,7 +110,7 @@
           echo "Enabling DRA feature(s): ${features[*]}."
           # Those additional features are not in kind.yaml, but they can be added at the end.
           kind create cluster --retain --config <(cat test/e2e/dra/kind.yaml; for feature in ${features}; do echo "  ${feature}: true"; done) --image dra/node:latest
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky && !Slow"
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=1h hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky {%- if file != "ci" %} && !Slow {%- endif %}"
           {%- else %}
           kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=2h30m hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky'
