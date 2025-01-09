@@ -37,13 +37,13 @@ readonly REPOS=(
     kubernetes-sigs/sig-storage-local-static-provisioner
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
-    kubernetes-sigs/container-object-storage-interface-controller
-    kubernetes-sigs/container-object-storage-interface-provisioner-sidecar
+    kubernetes-sigs/container-object-storage-interface
 )
 
 # Repos using "main" branch instead of "master" as default
 readonly REPOS_MAIN_BRANCH=(
     kubernetes-csi/external-snapshot-metadata
+    kubernetes-sigs/container-object-storage-interface
 )
 
 # Repos which should eventually enable cloud image builds but currently
@@ -103,7 +103,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
             command:
               - /run.sh
             args:
@@ -153,7 +153,7 @@ cat >>"${OUTPUT}" <<EOF
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241015-ff9ecc4d73
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
           command:
             - /run.sh
           env:

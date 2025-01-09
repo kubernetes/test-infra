@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION
+ARG GO_VERSION=1.22.9
 
-FROM multiarch/qemu-user-static:7.2.0-1 as qemu-image
+FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
 
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine

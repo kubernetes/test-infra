@@ -465,32 +465,34 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.32
+    master: v1.33
   kubernetes/kubernetes:
-    master: v1.32
+    master: v1.33
     release-1.32: v1.32
     release-1.31: v1.31
     release-1.30: v1.30
     release-1.29: v1.29
   kubernetes/org:
-    main: v1.32
+    main: v1.33
   kubernetes/release:
-    master: v1.32
+    master: v1.33
   kubernetes/sig-release:
-    master: v1.32
+    master: v1.33
   kubernetes/test-infra:
-    master: v1.32
+    master: v1.33
   kubernetes-sigs/kjob:
-    main: v0.1
+    main: v0.2
+    release-0.1: v0.1
   kubernetes-sigs/kueue:
-    main: v0.10
-    release-0.7: v0.7
+    main: v0.11
     release-0.8: v0.8
     release-0.9: v0.9
+    release-0.10: v0.10
   kubernetes/k8s.io:
-    main: v1.32
+    main: v1.33
   kubernetes/kops:
-    master: v1.31
+    master: v1.32
+    release-1.31: v1.31
     release-1.30: v1.30
     release-1.29: v1.29
     release-1.28: v1.28
@@ -507,7 +509,8 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
-    main: v1.9
+    main: v1.10
+    release-1.9: v1.9
     release-1.8: v1.8
     release-1.7: v1.7
     release-1.6: v1.6
@@ -538,7 +541,8 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-vsphere:
-    main: v1.12
+    main: v1.13
+    release-1.12: v1.12
     release-1.11: v1.11
     release-1.10: v1.10
     release-1.9: v1.9

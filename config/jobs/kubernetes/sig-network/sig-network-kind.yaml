@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -73,7 +73,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -132,7 +132,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -169,7 +169,6 @@ presubmits:
     optional: true
     always_run: false
     skip_report: false
-    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/proxy/ipvs/)'
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -185,7 +184,7 @@ presubmits:
         path_alias: "k8s.io/test-infra"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
           command:
             - wrapper.sh
             - bash
@@ -237,7 +236,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
         - wrapper.sh
         - bash
@@ -285,7 +284,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -330,7 +329,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -381,7 +380,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -436,7 +435,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -486,16 +485,13 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      # don't retry network tests
-      - name: GINKGO_TOLERATE_FLAKES
-        value: "n"
       - name: KUBE_PROXY_MODE
         value: "nftables"
       - name: "PARALLEL"
@@ -537,7 +533,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -591,7 +587,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -646,7 +642,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -692,7 +688,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -747,7 +743,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash
@@ -797,7 +793,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -849,7 +845,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
         - wrapper.sh
         - bash
@@ -898,7 +894,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-kind
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash
@@ -957,7 +953,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241128-8df65c072f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
       command:
       - wrapper.sh
       - bash

@@ -32,14 +32,12 @@
 prow_ignored:
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31"
       interval: "3h"
       upgradesInterval: "24h"
-      kubernetesVersionManagement: "v1.28.9"
-      kubebuilderEnvtestKubernetesVersion: "1.28.3"
+      kubernetesVersionManagement: "v1.29.10"
+      kubebuilderEnvtestKubernetesVersion: "1.29.5"
       upgrades:
-      - from: "1.26"
-        to: "1.27"
       - from: "1.27"
         to: "1.28"
       - from: "1.28"
@@ -50,8 +48,10 @@ prow_ignored:
         to: "1.31"
       - from: "1.31"
         to: "1.32"
+      - from: "1.32"
+        to: "1.33"
     release-1.9:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.28.9"
@@ -70,7 +70,7 @@ prow_ignored:
       - from: "1.31"
         to: "1.32"
     release-1.8:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.30"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.30"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.27.13"
@@ -89,7 +89,7 @@ prow_ignored:
       - from: "1.30"
         to: "1.31"
     release-1.7:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.29"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.29"
       interval: "4h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.26.15"
@@ -155,4 +155,8 @@ prow_ignored:
     "1.32":
       etcd: "3.5.15-0"
       coreDNS: "v1.11.3"
-      k8sRelease: "ci/latest-1.32"
+      k8sRelease: "stable-1.32"
+    "1.33":
+      etcd: "3.5.16-0"
+      coreDNS: "v1.11.3"
+      k8sRelease: "ci/latest-1.33"

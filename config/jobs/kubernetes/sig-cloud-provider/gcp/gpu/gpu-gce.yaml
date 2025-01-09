@@ -43,7 +43,6 @@ periodics:
       args:
       - --check-leaked-resources
       - --extract=ci/fast/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
       # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
       # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
       - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
@@ -56,7 +55,7 @@ periodics:
       - --timeout=180m
       # TODO: drop this once it's in the defaults
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         limits:
           cpu: 1

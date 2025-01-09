@@ -138,7 +138,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.29.4
@@ -184,7 +184,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.30.0
@@ -230,7 +230,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.0
@@ -252,4 +252,51 @@ periodics:
               memory: "10Gi"
             limits:
               cpu: "7"
+              memory: "10Gi"
+
+  - interval: 12h
+    name: periodic-kueue-test-multikueue-e2e-release-0-9
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-multikueue-e2e-release-0-9
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic multikueue end to end tests on release 0.9"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: release-0.9
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.31.2
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-multikueue-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
               memory: "10Gi"

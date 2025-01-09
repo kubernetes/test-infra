@@ -26,8 +26,11 @@ presets:
   env:
   - name: WINDOWS_SERVER_VERSION
     value: "windows-2022"
-  - name: IMAGE_VERSION
-    value: "130.2.20240612" # windows july 2024 patches break networking
+- labels:
+    preset-capz-windows-2025: "true"
+  env:
+  - name: GALLERY_IMAGE_NAME
+    value: "capi-win-2025-containerd"
 - labels:
     preset-capz-serial-slow: "true"
   env:
@@ -103,7 +106,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "env"
@@ -158,7 +161,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "env"
@@ -214,7 +217,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -266,7 +269,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "env"
@@ -318,7 +321,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "env"
@@ -379,7 +382,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "env"
@@ -405,7 +408,7 @@ periodics:
     testgrid-alert-email: sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-master-windows-nodelogquery
-- name: ci-kubernetes-e2e-capz-master-windows-annual-channel
+- name: ci-kubernetes-e2e-capz-master-windows-2025
   cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
@@ -414,10 +417,10 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
     preset-capz-windows-common: "true"
+    preset-capz-windows-2025: "true"
     preset-capz-containerd-1-7-latest: "true"
-    preset-capz-windows-2022: "true" # although it is not WS 2022, the tooling and container images treat it like WS2022
+    preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -437,25 +440,23 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
+          # current recommendations are at least 1Gi /core
           requests:
             cpu: 2
             memory: "9Gi"
           limits:
             cpu: 2
             memory: "9Gi"
-        env:
-          - name: TEMPLATE
-            value: "shared-image-gallery-ci.yaml" #contains latest Annual Channel image
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
-    testgrid-tab-name: capz-windows-master-annual-channel
+    testgrid-tab-name: capz-windows-master-2025

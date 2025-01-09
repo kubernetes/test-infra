@@ -34,7 +34,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -883,7 +883,45 @@ def generate_misc():
                    #   support SELinux and there are several subvariants of local volumes
                    #   that multiply nr. of tests.
                    # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
-                   #   in v1.30.
+                   #   in v1.32.
+                   # - FeatureGate:SELinuxChangePolicy: the feature gate is alpha / disabled by default
+                   #   in v1.32.
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]|\[FeatureGate:SELinuxChangePolicy\]",
+                   # [Serial] and [Disruptive] are intentionally not skipped, therefore run
+                   # everything as serial.
+                   test_parallelism=1,
+                   # Serial and Disruptive tests can be slow.
+                   test_timeout_minutes=120,
+                   runs_per_day=3),
+
+        # [sig-storage, @jsafrane] A one-off scenario testing SELinuxChangePolicy feature (alpha in v1.32).
+        # and opt-in selinux-warning-controller.
+        # This will need to merge with kops-aws-selinux when SELinuxMount gets enabled by default.
+        build_test(name_override="kops-aws-selinux-changepolicy",
+                   # RHEL8 VM image is enforcing SELinux by default.
+                   cloud="aws",
+                   distro="rhel8",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_channel="alpha",
+                   feature_flags=['SELinuxMount'],
+                   kubernetes_feature_gates="SELinuxChangePolicy",
+                   extra_flags=[
+                       "--set=cluster.spec.containerd.selinuxEnabled=true",
+                       # Run all default controllers ("*") + selinux-warning-controller.
+                       "--set=cluster.spec.kubeControllerManager.controllers=*",
+                       "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"
+                   ],
+                   focus_regex=r"\[Feature:SELinux\]",
+                   # Skip:
+                   # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
+                   #   installed on nodes.
+                   # - Driver: nfs: NFS does not have client tools installed on nodes.
+                   # - Driver: local: this is optimization only, the volume plugin does not
+                   #   support SELinux and there are several subvariants of local volumes
+                   #   that multiply nr. of tests.
+                   # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
+                   #   in v1.32.
                    skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
@@ -892,7 +930,8 @@ def generate_misc():
                    test_timeout_minutes=120,
                    runs_per_day=3),
 
-        # [sig-storage, @jsafrane] A one-off scenario testing SELinuxMount feature (alpha in v1.30).
+        # [sig-storage, @jsafrane] A one-off scenario testing all SELinux related feature gates enabled
+        # and opt-in selinux-warning-controller.
         # This will need to merge with kops-aws-selinux when SELinuxMount gets enabled by default.
         build_test(name_override="kops-aws-selinux-alpha",
                    # RHEL8 VM image is enforcing SELinux by default.
@@ -902,9 +941,12 @@ def generate_misc():
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
-                   kubernetes_feature_gates="SELinuxMount",
+                   kubernetes_feature_gates="SELinuxMount,SELinuxChangePolicy",
                    extra_flags=[
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
+                       # Run all default controllers ("*") + selinux-warning-controller.
+                       "--set=cluster.spec.kubeControllerManager.controllers=*",
+                       "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"
                    ],
                    focus_regex=r"\[Feature:SELinux\]",
                    # Skip:
@@ -1413,7 +1455,7 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kopeio', 'kuberouter']
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
@@ -1803,10 +1845,11 @@ def generate_presubmits_network_plugins():
         'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
-        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)',
+        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
+        'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
-    supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
+    supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kindnet'}
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
@@ -1820,6 +1863,8 @@ def generate_presubmits_network_plugins():
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             k8s_version = 'ci'
+            optional = True
+        if plugin == 'kindnet':
             optional = True
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"

@@ -17,7 +17,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -50,7 +50,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -63,7 +63,7 @@ periodics:
       # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
       # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
       - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-        value: "1.28.3"
+        value: "1.29.5"
       resources:
         requests:
           cpu: 7300m
@@ -100,7 +100,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -149,7 +149,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -166,7 +166,7 @@ periodics:
       # Please also make sure to refer a version where a kindest/node image exists
       # for (see https://github.com/kubernetes-sigs/kind/releases/)
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "v1.28.9"
+        value: "v1.29.10"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -207,7 +207,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -253,7 +253,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -300,7 +300,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-1.31
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -311,15 +311,15 @@ periodics:
           - name: GINKGO_SKIP
             value: "\\[Conformance\\]"
           - name: KUBERNETES_VERSION_MANAGEMENT
-            value: ci/latest-1.32
+            value: ci/latest-1.33
           - name: KUBERNETES_VERSION
-            value: ci/latest-1.32
+            value: ci/latest-1.33
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: stable-1.31
+            value: stable-1.32
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: ci/latest-1.32
+            value: ci/latest-1.33
           - name: ETCD_VERSION_UPGRADE_TO
-            value: 3.5.15-0
+            value: 3.5.16-0
           - name: COREDNS_VERSION_UPGRADE_TO
             value: v1.11.3
         # we need privileged mode in order to do docker in docker

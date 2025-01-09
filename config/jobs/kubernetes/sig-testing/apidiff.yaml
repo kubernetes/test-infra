@@ -30,23 +30,52 @@ presubmits:
       path_alias: sigs.k8s.io/controller-runtime
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         imagePullPolicy: Always
         command:
         - runner.sh
         args:
         - /bin/sh
         - -c
-        # PULL_BASE_SHA is the revision on the target branch that the
-        # PR gets merged into. What we want instead is the revision at
-        # which the PR branch diverged from the target branch.
-        # We get that from "git merge-base".
-        #
+        # Base and target are detected automatically by the script based on Prow variables.
         # -b can be used more than once.
-        - "./hack/apidiff.sh -r $(git merge-base ${PULL_BASE_SHA} ${PULL_PULL_SHA}) -t ${PULL_PULL_SHA} -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
-        env:
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
+        - "./hack/apidiff.sh -b ${GOPATH}/src/sigs.k8s.io/controller-runtime"
+        resources:
+          # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
+          limits:
+            cpu: 2
+            memory: 12Gi
+          requests:
+            cpu: 2
+            memory: 12Gi
+
+  - name: pull-kubernetes-apidiff-client-go
+    cluster: eks-prow-build-cluster
+    # A job which automatically runs for changes in client-go or the generated code
+    # to have visibility on the changes that will impact the external projects
+    # that are using the Kubernetes golang clients
+    run_if_changed: '((^staging\/src\/k8s.io\/client-go)|(^staging\/src\/k8s.io\/code-generator\/examples))/.*\.go'
+    optional: true
+    decorate: true
+    annotations:
+      # The apidiff.sh script uses the latest revision of apidiff.
+      # There is no guarantee that this will continue to work for
+      # older branches, so let's not even create per-release
+      # copies of this job.
+      fork-per-release: "false"
+      testgrid-dashboards: sig-testing-misc
+      testgrid-create-test-group: 'true'
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - -c
+        # Base and target are detected automatically by the script based on Prow variables.
+        - "./hack/apidiff.sh ./staging/src/k8s.io/code-generator/examples ./staging/src/k8s.io/client-go"
         resources:
           # Memory limits are derived from pull-kubernetes-verify, with less CPUs.
           limits:

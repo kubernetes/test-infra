@@ -37,7 +37,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -82,7 +82,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -132,7 +132,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -190,7 +190,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -242,7 +242,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -303,7 +303,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -355,7 +355,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -364,7 +364,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
             - name: USE_DOCKERIZED_BUILD
               value: "true"
             - name: TARGET_BUILD_ARCH
@@ -408,7 +408,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -421,7 +421,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance.yaml
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
             - name: TEST_ARGS
               value: '--kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd"'
           resources:
@@ -455,7 +455,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -464,7 +464,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: IMAGE_CONFIG_DIR
@@ -504,7 +504,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -513,7 +513,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_ARCH
@@ -561,7 +561,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -570,7 +570,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_OS
@@ -612,7 +612,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
           command:
             - runner.sh
           args:
@@ -621,7 +621,7 @@ periodics:
             - name: FOCUS
               value: \[Serial\]
             - name: SKIP
-              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+              value: \[Flaky\]|\[Benchmark\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
             - name: BUILD_EKS_AMI
               value: "true"
             - name: BUILD_EKS_AMI_OS

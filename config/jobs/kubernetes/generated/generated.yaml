@@ -15,23 +15,20 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-eef92b583b
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
-      - --env=ENABLE_AUTH_PROVIDER_GCP=true
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -59,19 +56,17 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-1789b1211d
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: &id001
         requests:
           cpu: 2000m
@@ -99,17 +94,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-6724261826
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -137,17 +130,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-0eda36b5c4
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -175,18 +166,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-34cf3ed1e3
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -215,18 +204,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-3ec9d97448
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.32
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: &id002
         requests:
           cpu: 1000m
@@ -255,23 +242,20 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-86ab064463
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
-      - --env=ENABLE_AUTH_PROVIDER_GCP=true
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -299,19 +283,17 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-359c739436
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
   cluster: k8s-infra-prow-build
   annotations:
@@ -333,17 +315,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-519f5e2df7
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -371,17 +351,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-c2db0160cf
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -409,18 +387,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-ef6e185752
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --ginkgo-parallel=1
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -449,18 +425,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-7d3ed76582
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.31
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id002
   cluster: k8s-infra-prow-build
   annotations:
@@ -483,13 +457,11 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-a8a0b221b9
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -498,7 +470,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -526,18 +498,17 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-5881f7ab7e
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
   cluster: k8s-infra-prow-build
   annotations:
@@ -560,17 +531,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-df7ff40165
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -598,17 +567,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-c8c4b0ff1c
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -636,18 +603,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-9b5ed62f1f
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -676,18 +641,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-96f446fc82
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.30
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id002
   cluster: k8s-infra-prow-build
   annotations:
@@ -710,13 +673,11 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-1d30227e33
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
@@ -725,7 +686,7 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0 --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -753,18 +714,17 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-183d8deac8
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
+      - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id001
   cluster: k8s-infra-prow-build
   annotations:
@@ -787,17 +747,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-df914a9cd5
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -825,17 +783,15 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-4b7fa88c7e
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -863,18 +819,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-3154607d16
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources:
         requests:
           cpu: 1000m
@@ -903,18 +857,16 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=test-694be857a6
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-region=us-central1
       - --gcp-node-image=gci
       - --extract=ci/latest-1.29
-      - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       resources: *id002
   cluster: k8s-infra-prow-build
   annotations:

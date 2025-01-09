@@ -27,8 +27,8 @@ import (
 	"strings"
 	"text/template"
 
-	gyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
+	gyaml "sigs.k8s.io/yaml/goyaml.v2"
 
 	v1 "k8s.io/api/core/v1"
 	prowapi "sigs.k8s.io/prow/pkg/apis/prowjobs/v1"
@@ -487,8 +487,6 @@ func main() {
 
 	// We need to use FutureLineWrap because "fork-per-release-cron" is too long
 	// causing the annotation value to be split into two lines.
-	// We use gopkg.in/yaml here because sigs.k8s.io/yaml doesn't export this
-	// function. sigs.k8s.io/yaml uses gopkg.in/yaml under the hood.
 	gyaml.FutureLineWrap()
 
 	output, err := yaml.Marshal(map[string]interface{}{

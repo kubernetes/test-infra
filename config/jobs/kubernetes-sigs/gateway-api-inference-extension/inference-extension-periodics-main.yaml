@@ -1,0 +1,35 @@
+periodics:
+  - interval: 12h
+    name: periodic-gateway-api-inference-extension-test-unit-main
+    cluster: eks-prow-build-cluster
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: gateway-api-inference-extension
+        base_ref: main
+        path_alias: sigs.k8s.io/gateway-api-inference-extension
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: periodic-gateway-api-inference-extension-test-unit-main
+      description: "Run periodic gateway-api-inference-extension unit tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 3
+            memory: 10Gi
+          requests:
+            cpu: 3
+            memory: 10Gi
