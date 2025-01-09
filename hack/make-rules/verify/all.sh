@@ -92,6 +92,12 @@ if [[ "${VERIFY_GO_DEPS:-true}" == "true" ]]; then
   hack/make-rules/verify/go-deps.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_GENERATED_JOBS:-true}" == "true" ]]; then
+  name="generated jobs"
+  echo "verifying $name"
+  hack/make-rules/verify/generated-jobs.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${#FAILED[@]}" == 0 ]]; then
