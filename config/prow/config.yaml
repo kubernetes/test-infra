@@ -204,6 +204,7 @@ slack_reporter_configs:
     report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
 
 branch-protection:
+  allow_disabled_job_policies: true
   orgs:
     kubernetes:
       protect: true
