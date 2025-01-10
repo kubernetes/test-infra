@@ -1802,6 +1802,8 @@ presubmits:
         env:
         - name: GO_VERSION
           value: 1.22.5
+        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+          value: auto
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
         name: ""
         resources:
@@ -1979,6 +1981,8 @@ presubmits:
         env:
         - name: GO_VERSION
           value: 1.22.5
+        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+          value: auto
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31
         name: ""
         resources:
