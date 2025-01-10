@@ -65,6 +65,7 @@ jobs:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
@@ -95,6 +96,7 @@ jobs:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
@@ -124,6 +126,7 @@ jobs:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
   # stable3
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
@@ -153,6 +156,7 @@ jobs:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
   # stable4
   # ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
@@ -277,7 +281,6 @@ testSuites:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
-    - --env=ENABLE_AUTH_PROVIDER_GCP=true
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
