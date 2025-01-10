@@ -75,12 +75,9 @@ periodics:
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
-      - name: E2E_ARGS
-        value: "-kubetest.use-ci-artifacts"
       command:
       - "runner.sh"
       - "./scripts/ci-conformance.sh"
-      - "--use-ci-artifacts"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
