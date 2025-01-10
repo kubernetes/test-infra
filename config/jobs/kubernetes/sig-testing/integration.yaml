@@ -61,6 +61,8 @@ presubmits:
         env:
         - name: GO_VERSION
           value: ""
+        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+          value: auto
         args:
         - ./hack/jenkins/test-dockerized.sh
         # docker-in-docker needs privileged mode
