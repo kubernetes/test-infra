@@ -601,6 +601,72 @@ presubmits:
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess
       description: "Run E2E tests on a capz Windows 2022 Host-Process cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-e2e-capz-windows-2025-hostprocess
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-capz-windows-2025: "true"
+      preset-capz-containerd-1-7-latest: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.17
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.30
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 4
+              memory: 8Gi
+          env:
+            - name: WINDOWS # azurefile-csi-driver config
+              value: "true"
+            - name: TEST_WINDOWS # CAPZ config
+              value: "true"
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
+              value: "windows-2022"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: DISABLE_ZONE # azurefile-csi-driver config
+              value: "true"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.30"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
+      testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2025-hostprocess
+      description: "Run E2E tests on a capz Windows 2025 Host-Process cluster for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz
     cluster: eks-prow-build-cluster
     decorate: true
