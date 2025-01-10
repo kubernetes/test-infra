@@ -609,7 +609,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-      preset-capz-windows-common: "true"
       preset-capz-windows-2025: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-azure-community: "true"
