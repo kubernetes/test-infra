@@ -15,8 +15,6 @@
 import os
 import zlib
 
-import boto3 # pylint: disable=import-error
-
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
 # and ideally linked to a bug, and removed once the bug is fixed
@@ -147,6 +145,9 @@ def latest_aws_image(owner, name, arch='x86_64'):
     image = get_pinned(pin)
     if image:
         return image
+
+    import boto3 # pylint: disable=import-error, import-outside-toplevel
+
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
         Owners=[owner],
