@@ -1372,7 +1372,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.30', '1.29']:
+    for version in ['1.32', '1.31', '1.30', '1.29']:
         results.append(
             build_test(
                 cloud='aws',
@@ -1381,6 +1381,10 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
+                distro="u2404",
+                extra_flags=["--zones=eu-central-1a",
+                             "--node-size=t3.large",
+                             "--master-size=t3.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
                 extra_dashboards=['kops-conformance'],
@@ -1836,7 +1840,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.30', '1.29']:
+    for version in ['master', '1.31', '1.30', '1.29']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -2181,6 +2185,15 @@ def generate_presubmits_e2e():
             ],
         ),
 
+        presubmit_test(
+            branch='release-1.31',
+            k8s_version='1.31',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-cilium-1-31',
+            networking='cilium',
+            tab_name='e2e-1-31',
+            always_run=True,
+        ),
         presubmit_test(
             branch='release-1.30',
             k8s_version='1.30',
