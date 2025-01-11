@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import zlib
-
-import boto3 # pylint: disable=import-error
 
 # We support rapid focus on a few tests of high concern
 # This should be used for temporary tests we are evaluating,
@@ -24,6 +23,8 @@ run_hourly = [
 
 run_daily = [
 ]
+
+script_dir = os.path.dirname(os.path.realpath(__file__))
 
 def simple_hash(s):
     # & 0xffffffff avoids python2/python3 compatibility
@@ -112,7 +113,7 @@ def create_args(kops_channel, networking, extra_flags, kops_image):
 # The pin file contains a list of key=value pairs, that holds images we want to pin.
 # This enables us to use the latest image without fetching them from AWS every time.
 def pinned_file():
-    return 'pinned.list'
+    return os.path.join(script_dir, 'pinned.list')
 
 # get_pinned returns the pinned value for the given key, or None if the key is not found
 def get_pinned(key):
@@ -144,6 +145,9 @@ def latest_aws_image(owner, name, arch='x86_64'):
     image = get_pinned(pin)
     if image:
         return image
+
+    import boto3 # pylint: disable=import-error, import-outside-toplevel
+
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
         Owners=[owner],
