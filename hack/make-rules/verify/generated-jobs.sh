@@ -24,3 +24,7 @@ hack/run-in-python-container.sh \
 echo "Verifying generated jobs"
 hack/run-in-python-container.sh \
     python3 hack/generate-jobs.py config/jobs/**/*.generate.conf --verify
+
+echo "Verifying generated kOps jobs"
+hack/run-in-python-container.sh \
+    python3 config/jobs/kubernetes/kops/build_jobs.py --verify
