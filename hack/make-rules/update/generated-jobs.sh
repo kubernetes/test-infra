@@ -24,3 +24,7 @@ hack/run-in-python-container.sh \
 echo "Generate jobs"
 hack/run-in-python-container.sh \
     python3 hack/generate-jobs.py config/jobs/kubernetes/sig-node/*.conf
+
+echo "Generate kOps jobs"
+hack/run-in-python-container.sh \
+    python3 config/jobs/kubernetes/kops/build_jobs.py
