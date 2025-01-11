@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import zlib
 
 import boto3 # pylint: disable=import-error
@@ -24,6 +25,8 @@ run_hourly = [
 
 run_daily = [
 ]
+
+script_dir = os.path.dirname(os.path.realpath(__file__))
 
 def simple_hash(s):
     # & 0xffffffff avoids python2/python3 compatibility
@@ -112,7 +115,7 @@ def create_args(kops_channel, networking, extra_flags, kops_image):
 # The pin file contains a list of key=value pairs, that holds images we want to pin.
 # This enables us to use the latest image without fetching them from AWS every time.
 def pinned_file():
-    return 'pinned.list'
+    return os.path.join(script_dir, 'pinned.list')
 
 # get_pinned returns the pinned value for the given key, or None if the key is not found
 def get_pinned(key):

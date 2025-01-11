@@ -16,6 +16,7 @@
 import hashlib
 import math
 import json
+import os
 import re
 import yaml
 import jinja2 # pylint: disable=import-error
@@ -28,6 +29,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
     distros_ssh_user,
     k8s_version_info,
     should_skip_newer_k8s,
+    script_dir,
 )
 
 # These are job tab names of unsupported grid combinations
@@ -36,7 +38,7 @@ skip_jobs = [
 
 image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master"
 
-loader = jinja2.FileSystemLoader(searchpath="./templates")
+loader = jinja2.FileSystemLoader(searchpath=os.path.join(script_dir, "templates"))
 
 # A helper function to construct the URLs to our marker files
 def marker_updown_green(kops_version):
