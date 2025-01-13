@@ -1909,6 +1909,7 @@ def generate_presubmits_network_plugins():
         'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
     supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kindnet'}
+    supports_gce = {'calico', 'cilium', 'kindnet'}
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
@@ -1944,6 +1945,21 @@ def generate_presubmits_network_plugins():
                 optional=optional,
             )
         )
+        if plugin in supports_gce:
+            results.append(
+                presubmit_test(
+                    cloud='gce',
+                    k8s_version=k8s_version,
+                    kops_channel='alpha',
+                    name=f"pull-kops-e2e-gce-cni-{plugin}",
+                    networking=networking_arg,
+                    extra_flags=[
+                        f"--gce-service-account=default" # Workaround for test-infra#24747
+                    ],
+                    run_if_changed=run_if_changed,
+                    optional=optional,
+                )
+            )
         if plugin in supports_ipv6:
             optional = True
             if plugin == 'amazonvpc':
