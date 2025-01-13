@@ -104,3 +104,28 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-benchmark
       testgrid-num-columns-recent: '30'
+  - name: pull-structured-merge-diff-apidiff
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    optional: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - bash
+        - -c
+        - ./hack/apidiff.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-apidiff
