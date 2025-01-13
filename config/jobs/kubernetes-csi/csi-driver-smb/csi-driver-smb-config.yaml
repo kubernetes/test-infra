@@ -359,7 +359,7 @@ presubmits:
   - name: pull-csi-driver-smb-e2e-windows-2022-hostprocess
     cluster: eks-prow-build-cluster
     decorate: true
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: github.com/kubernetes-csi/csi-driver-smb
     labels:
       preset-dind-enabled: "true"
@@ -414,7 +414,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.30"
             - name: WORKER_MACHINE_COUNT
-              value: "1" # create one linux node
+              value: "0" # create one linux node
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-e2e-windows-2022-hostprocess
