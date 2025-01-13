@@ -759,7 +759,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)'
     always_run: false
-    optional: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"

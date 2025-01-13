@@ -1802,6 +1802,38 @@ def generate_presubmits_scale():
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
             }
+        ),
+        presubmit_test(
+            name='presubmit-kops-gce-small-scale-kindnet-using-cl2',
+            scenario='scalability',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='gce',
+            cloud="gce",
+            always_run=False,
+            artifacts='$(ARTIFACTS)',
+            test_timeout_minutes=450,
+            env={
+                'CNI_PLUGIN': "kindnet",
+                'KUBE_PROXY_MODE': 'nftables',
+                'KUBE_NODE_COUNT': "100",
+                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
+                'CONTROL_PLANE_COUNT': "1",
+                'CONTROL_PLANE_SIZE': "c3-standard-88",
+                'CL2_LOAD_TEST_THROUGHPUT': "50",
+                'CL2_DELETE_TEST_THROUGHPUT': "50",
+                'CL2_RATE_LIMIT_POD_CREATION': "false",
+                'NODE_MODE': "master",
+                'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
+                'CL2_ENABLE_DNS_PROGRAMMING': "true",
+                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
+                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
+                'CL2_ALLOWED_SLOW_API_CALLS': "1",
+                'ENABLE_PROMETHEUS_SERVER': "true",
+                'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
+                'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
+                'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
+                'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
+            }
         )
     ]
     return results
@@ -1890,8 +1922,6 @@ def generate_presubmits_network_plugins():
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             k8s_version = 'ci'
-            optional = True
-        if plugin == 'kindnet':
             optional = True
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"
