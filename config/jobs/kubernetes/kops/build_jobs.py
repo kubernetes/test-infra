@@ -1923,8 +1923,6 @@ def generate_presubmits_network_plugins():
             networking_arg = 'kube-router'
             k8s_version = 'ci'
             optional = True
-        if plugin == 'kindnet':
-            optional = True
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"
             node_size = "r6g.xlarge"
