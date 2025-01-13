@@ -1,10 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- lavalamp
-- apelisse
-- jennybuckley
+- jpbetz
+- yongruilin
 approvers:
-- lavalamp
+- jpbetz
+emeritus_approvers:
 - apelisse
+- lavalamp
 - jennybuckley
