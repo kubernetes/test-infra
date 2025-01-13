@@ -1957,7 +1957,7 @@ def generate_presubmits_network_plugins():
                         f"--gce-service-account=default" # Workaround for test-infra#24747
                     ],
                     run_if_changed=run_if_changed,
-                    optional=optional,
+                    optional=True,
                 )
             )
         if plugin in supports_ipv6:
