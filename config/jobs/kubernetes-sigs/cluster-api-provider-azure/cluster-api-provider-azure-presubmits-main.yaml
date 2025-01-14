@@ -771,10 +771,10 @@ presubmits:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: Jont828
+    - org: kubernetes
       repo: perf-tests
-      base_ref: "cl2-namespace-fix"
-      path_alias: "k8s.io/perf-tests"
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
       containers:
@@ -786,7 +786,6 @@ presubmits:
         - bash
         - -c
         - >-
-          sleep 300 &&
           cd ${GOPATH}/src/k8s.io/perf-tests/ &&
           ./run-e2e.sh cluster-loader2
           --nodes=100 \
