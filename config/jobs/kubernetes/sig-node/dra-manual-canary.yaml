@@ -15,7 +15,7 @@ presubmits:
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind, using a 15min timeout
     decorate: true
     decoration_config:
-      timeout: 15 # artificially low to test timeout handling
+      timeout: 15m # artificially low to test timeout handling
     path_alias: k8s.io/kubernetes
     spec:
       containers:
