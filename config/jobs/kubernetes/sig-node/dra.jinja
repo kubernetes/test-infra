@@ -49,7 +49,11 @@
       {%- endif %}
     decorate: true
     decoration_config:
+    {%- if file == "canary" %}
+      timeout: 25m # artificially low to test timeout handling, needs to be reverted
+    {%- else %}
       timeout: {{timeout}}
+    {%- endif %}
     {%- if file == "ci" %}
     extra_refs:
     - org: kubernetes
@@ -104,6 +108,24 @@
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind build node-image --image=dra/node:latest .
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT
+{%- if file == "canary" %}
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          {%- if all_features %}
+          # Which DRA features exist can change over time.
+          features=( $(grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/') )
+          echo "Enabling DRA feature(s): ${features[*]}."
+          # Those additional features are not in kind.yaml, but they can be added at the end.
+          kind create cluster --retain --config <(cat test/e2e/dra/kind.yaml; for feature in ${features}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features}; do echo , ${feature}; done)} && !Flaky {%- if file != "ci" %} && !Slow {%- endif %}" &
+          {%- else %}
+          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky' &
+          {%- endif %}
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+{%- else %}
           {%- if all_features %}
           # Which DRA features exist can change over time.
           features=( $(grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/') )
@@ -115,6 +137,7 @@
           kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} GINKGO_TIMEOUT=2h30m hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky'
           {%- endif %}
+{%- endif %}
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
