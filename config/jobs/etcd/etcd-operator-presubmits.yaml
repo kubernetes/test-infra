@@ -31,11 +31,14 @@ presubmits:
             memory: "4Gi"
   - name: pull-etcd-operator-test-e2e
     optional: true # remove once the job is stable
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     always_run: true
     branches:
     - main
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-etcd-operator-presubmits
       testgrid-tab-name: pull-etcd-operator-test-e2e
