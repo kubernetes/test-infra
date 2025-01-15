@@ -43,7 +43,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
         command:
-        - runner.sh
+        - wrapper.sh
         args:
         - bash
         - -c
