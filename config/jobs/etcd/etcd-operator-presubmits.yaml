@@ -48,7 +48,7 @@ presubmits:
         - bash
         - -c
         - |
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/kind-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           kind create cluster
           make test-e2e
         # docker-in-docker needs privileged mode
