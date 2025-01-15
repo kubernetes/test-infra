@@ -84,7 +84,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
       - --timeout=180m
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
@@ -103,7 +103,7 @@ periodics:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-    description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
+    description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv2-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -136,7 +136,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[NodeFeature:NodeSwap\]"
+      - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:NodeSwap\]"
       - --timeout=180m
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
@@ -155,7 +155,7 @@ periodics:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv2-node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-    description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v2"
+    description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v2"
 - name: ci-crio-cgroupv1-node-e2e-flaky
   cluster: k8s-infra-prow-build
   interval: 2h
@@ -207,7 +207,7 @@ periodics:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-flaky
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-    description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
+    description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv1-node-e2e-unlabelled
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -240,7 +240,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
@@ -259,7 +259,7 @@ periodics:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-unlabelled
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
+    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - name: ci-crio-cgroupv2-node-e2e-unlabelled
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -292,7 +292,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
@@ -311,7 +311,7 @@ periodics:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-cgroupv2-node-e2e-unlabelled
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
+    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - name: ci-crio-cgroupv1-node-e2e-eviction
   cluster: k8s-infra-prow-build
   interval: 4h30m
@@ -344,7 +344,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]" --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Feature:Eviction\]" --timeout=300m
       - --timeout=300m
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
       env:
@@ -396,7 +396,7 @@ periodics:
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]" --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Feature:Eviction\]" --timeout=300m
       - --timeout=300m
       - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
       env:
