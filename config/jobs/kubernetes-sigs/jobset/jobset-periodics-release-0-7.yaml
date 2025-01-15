@@ -207,7 +207,7 @@ periodics:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241128-8df65c072f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.32.0
