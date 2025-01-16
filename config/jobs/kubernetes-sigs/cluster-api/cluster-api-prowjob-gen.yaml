@@ -32,7 +32,7 @@
 prow_ignored:
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.31"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-1.32"
       interval: "3h"
       upgradesInterval: "24h"
       kubernetesVersionManagement: "v1.29.10"
