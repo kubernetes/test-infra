@@ -1,12 +1,12 @@
 presubmits:
   kubernetes-sigs/controller-runtime:
-  - name: pull-controller-runtime-test
+  - name: pull-controller-runtime-test-release-0-20
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/controller-runtime
     branches:
-    - ^main$
+    - ^release-0.20$
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.23
@@ -21,15 +21,15 @@ presubmits:
             memory: 14Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-runtime-main
-  - name: pull-controller-runtime-apidiff
+      testgrid-tab-name: controller-runtime-release-0.20
+  - name: pull-controller-runtime-apidiff-release-0-20
     cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/controller-runtime
     branches:
-    - ^main$
+    - ^release-0.20$
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.23
@@ -44,4 +44,4 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: controller-runtime-main-apidiff
+      testgrid-tab-name: controller-runtime-release-0.20-apidiff
