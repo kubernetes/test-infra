@@ -163,3 +163,102 @@ periodics:
         limits:
           cpu: 2
           memory: 6Gi
+
+
+- name: ci-kubernetes-kops-gce-small-scale-kindnet-using-cl2
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  tags:
+    - "perfDashPrefix: kindnet-100Nodes-master"
+    - "perfDashJobType: performance"
+    - "perfDashBuildsCount: 500"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  max_concurrency: 1
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  path_alias: k8s.io/kops
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  spec:
+    serviceAccountName: k8s-kops-test
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private
+      - name: KUBE_SSH_USER
+        value: prow
+      - name: GOPATH
+        value: /home/prow/go
+      - name: ARTIFACTS
+        value: $(ARTIFACTS)
+      - name: CNI_PLUGIN
+        value: "kindnet"
+      - name: KUBE_PROXY_MODE
+        value: "nftables"
+      - name: KUBE_NODE_COUNT
+        value: "100"
+      - name: CONTROL_PLANE_COUNT
+        value: "1"
+      - name: CONTROL_PLANE_SIZE
+        value: "c3-standard-88"
+      - name: CL2_LOAD_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_DELETE_TEST_THROUGHPUT
+        value: "50"
+      - name: CL2_RATE_LIMIT_POD_CREATION
+        value: "false"
+      - name: NODE_MODE
+        value: "master"
+      - name: PROMETHEUS_SCRAPE_KUBE_PROXY
+        value: "true"
+      - name: CL2_ENABLE_DNS_PROGRAMMING
+        value: "true"
+      - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+        value: "true"
+      - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+        value: "99.5"
+      - name: PROMETHEUS_PVC_STORAGE_CLASS
+        value: "ssd-csi"
+      - name: CL2_NETWORK_LATENCY_THRESHOLD
+        value: "0.5s"
+      - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
+        value: "true"
+      - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD
+        value: "20s"
+      - name: CLOUD_PROVIDER
+        value: "gce"
+      resources:
+        requests:
+          cpu: "6"
+          memory: "16Gi"
+        limits:
+          cpu: "6"
+          memory: "16Gi"
+  annotations:
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com
+    testgrid-num-failures-to-alert: '2'
+    test.kops.k8s.io/cloud: gce
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: kindnet
+    testgrid-dashboards: sig-cluster-lifecycle-kops, sig-scalability-experiments
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: ci-kubernetes-kops-gce-small-scale-kindnet-using-cl2
