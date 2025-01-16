@@ -13,6 +13,7 @@ dashboard_groups:
   - sig-etcd-bbolt-presubmits
   - sig-etcd-bbolt-periodics
   - sig-etcd-operator-presubmits
+  - sig-etcd-operator-postsubmits
 
 dashboards:
   - name: sig-etcd-amd64
@@ -106,3 +107,4 @@ dashboards:
   - name: sig-etcd-bbolt-presubmits
   - name: sig-etcd-bbolt-periodics
   - name: sig-etcd-operator-presubmits
+  - name: sig-etcd-operator-postsubmits
