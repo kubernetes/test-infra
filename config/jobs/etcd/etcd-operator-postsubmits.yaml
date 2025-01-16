@@ -1,0 +1,27 @@
+---
+postsubmits:
+  etcd-io/etcd-operator:
+  - name: post-etcd-operator-lint
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-operator-postsubmits
+      testgrid-tab-name: post-etcd-operator-lint
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - make lint
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
