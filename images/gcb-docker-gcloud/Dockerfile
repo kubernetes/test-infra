@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.22.9
+ARG GO_VERSION=1.23.4
 
 FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
 
