@@ -925,6 +925,11 @@ function main() {
   fi
 
   dump_logs
+  
+  if [[ "${DUMP_ONLY_MASTER_LOGS:-}" == "true" ]]; then
+    echo 'Skipping dumping of more node info'
+    return
+  fi
   dump_node_info
 
   if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
