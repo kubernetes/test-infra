@@ -61,6 +61,8 @@ external-snapshotter
 external-snapshot-metadata
 livenessprobe
 node-driver-registrar
+lib-volume-populator
+volume-data-source-validator
 "
 
 # All kubernetes-csi repos for which want to define pull tests for
@@ -94,8 +96,6 @@ csi-driver-iscsi
 csi-driver-nvmf
 csi-driver-nfs
 csi-proxy
-lib-volume-populator
-volume-data-source-validator
 "
 
 # No Prow support in them yet.
