@@ -17,6 +17,8 @@ dashboard_groups:
     - sig-storage-image-build
     - sig-storage-container-object-storage-interface
     - sig-storage-cosi-driver-sample
+    - sig-storage-csi-lib-volume-populator
+    - sig-storage-csi-volume-data-source-validator
 
 dashboards:
 - name: sig-storage-kubernetes
@@ -93,3 +95,5 @@ dashboards:
 - name: sig-storage-image-build
 - name: sig-storage-container-object-storage-interface
 - name: sig-storage-cosi-driver-sample
+- name: sig-storage-csi-lib-volume-populator
+- name: sig-storage-csi-volume-data-source-validator
