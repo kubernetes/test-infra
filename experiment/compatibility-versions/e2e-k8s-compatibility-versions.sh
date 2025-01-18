@@ -296,9 +296,10 @@ main() {
   # Get current and n-1 version numbers
   MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
   MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
+  export VERSION_DELTA=${VERSION_DELTA:-1}
   export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
-  export N_MINUS_ONE_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - 1))"
-  export EMULATED_VERSION="${N_MINUS_ONE_VERSION}"
+  export PREV_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - VERSION_DELTA))"
+  export EMULATED_VERSION="${PREV_VERSION}"
 
   # export the KUBECONFIG to a unique path for testing
   KUBECONFIG="${HOME}/.kube/kind-test-config"
