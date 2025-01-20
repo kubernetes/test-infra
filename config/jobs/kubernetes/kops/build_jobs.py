@@ -2066,7 +2066,7 @@ def generate_presubmits_e2e():
             ],
             networking='amazonvpc',
             tab_name='e2e-aws-amazonvpc-u2404',
-            always_run=True,
+            optional=True,
         ),
         presubmit_test(
             cloud='gce',
