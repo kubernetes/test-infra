@@ -15,7 +15,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kjob
-        base_ref: release-0-1
+        base_ref: release-0.1
         path_alias: kubernetes-sigs/kjob
     decorate: true
     decoration_config:
@@ -55,7 +55,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kjob
-        base_ref: release-0-1
+        base_ref: release-0.1
         path_alias: kubernetes-sigs/kjob
     decorate: true
     decoration_config:
@@ -93,7 +93,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kjob
-        base_ref: release-0-1
+        base_ref: release-0.1
         path_alias: kubernetes-sigs/kjob
     decorate: true
     decoration_config:
