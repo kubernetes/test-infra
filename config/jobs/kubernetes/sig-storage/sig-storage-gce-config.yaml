@@ -205,7 +205,6 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --build=quick
-        - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
