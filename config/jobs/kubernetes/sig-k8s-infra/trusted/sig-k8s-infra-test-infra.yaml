@@ -37,7 +37,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/configurator:v20250111-82546285df
+      - image: gcr.io/k8s-staging-test-infra/configurator:v20250121-a6327e92ae
         command:
         - configurator
         args:
