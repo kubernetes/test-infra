@@ -15,7 +15,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
             securityContext:
               privileged: true
             command:
@@ -106,7 +106,7 @@ presubmits:
         preset-dind-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
             env:
               - name: E2E_KIND_VERSION
                 value: kindest/node:v1.31.2
