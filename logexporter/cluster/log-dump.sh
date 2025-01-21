@@ -825,6 +825,11 @@ function dump_nodes_with_logexporter() {
 # Writes node information that's available through the gcloud and kubectl API
 # surfaces to a nodes/ subdirectory of $report_dir.
 function dump_node_info() {
+  if [[ "${SKIP_DUMP_NODE_INFO:-}" == "true" ]]; then
+    echo 'Skipping dumping of node info'
+    return
+  fi
+
   nodes_dir="${report_dir}/nodes"
   mkdir -p "${nodes_dir}"
 
