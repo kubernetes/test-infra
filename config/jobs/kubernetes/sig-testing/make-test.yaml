@@ -21,7 +21,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -57,7 +57,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -134,7 +134,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-go-canary
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -174,7 +174,7 @@ periodics:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
