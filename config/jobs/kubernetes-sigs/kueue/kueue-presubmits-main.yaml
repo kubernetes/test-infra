@@ -55,11 +55,11 @@ presubmits:
           value: "false"
         resources:
           requests:
-            cpu: "6"
-            memory: "9Gi"
+            cpu: "7"
+            memory: "10Gi"
           limits:
-            cpu: "6"
-            memory: "9Gi"
+            cpu: "7"
+            memory: "10Gi"
   - name: pull-kueue-test-e2e-main-1-29
     cluster: eks-prow-build-cluster
     branches:
