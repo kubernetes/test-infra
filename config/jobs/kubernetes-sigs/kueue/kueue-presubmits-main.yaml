@@ -50,7 +50,7 @@ presubmits:
         - test-integration
         env:
         - name: GOMAXPROCS
-          value: "6"
+          value: "7"
         - name: INTEGRATION_RUN_ALL
           value: "false"
         resources:
