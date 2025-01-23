@@ -58,10 +58,8 @@ presubmits:
     optional: true
     decorate: true
     annotations:
-      # The apidiff.sh script uses the latest revision of apidiff.
-      # There is no guarantee that this will continue to work for
-      # older branches, so let's not even create per-release
-      # copies of this job.
+      # The script runs for all branches. The behavior of hack/apidiff.sh must be the same
+      # for all branches. If that changes, the job will have to be forked.
       fork-per-release: "false"
       testgrid-dashboards: sig-testing-misc
       testgrid-create-test-group: 'true'
