@@ -60,6 +60,36 @@ presubmits:
           limits:
             cpu: "7"
             memory: "10Gi"
+  - name: pull-kueue-test-multikueue-integration-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-multikueue-integration-main
+      description: "Run kueue test-multikueue-integration"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.23
+        command:
+        - make
+        args:
+        - test-multikueue-integration
+        env:
+        - name: GOMAXPROCS
+          value: "7"
+        - name: INTEGRATION_RUN_ALL
+          value: "false"
+        resources:
+          requests:
+            cpu: "7"
+            memory: "10Gi"
+          limits:
+            cpu: "7"
+            memory: "10Gi"
   - name: pull-kueue-test-e2e-main-1-29
     cluster: eks-prow-build-cluster
     branches:
