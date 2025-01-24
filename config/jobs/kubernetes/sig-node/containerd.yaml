@@ -254,7 +254,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.25
+    base_ref: master
     path_alias: k8s.io/kubernetes
     workdir: true
   - org: containerd
@@ -267,7 +267,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -356,7 +356,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.25
+    base_ref: master
     path_alias: k8s.io/kubernetes
     workdir: true
   - org: containerd
@@ -369,7 +369,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20231113-7213ea5323-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
