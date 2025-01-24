@@ -762,8 +762,8 @@ periodics:
             --container-runtime-pid-file=
             --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true
             --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service
-            --kubelet-cgroups=/system.slice/kubelet.service
-            --feature-gates=EventedPLEG=true" --extra-log="{\"name\":
+            --kubelet-cgroups=/system.slice/kubelet.service"
+            --feature-gates=EventedPLEG=true --extra-log="{\"name\":
             \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
