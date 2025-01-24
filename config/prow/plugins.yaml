@@ -332,9 +332,7 @@ blockades:
   - kubernetes/client-go
   blockregexps:
   - .*
-  exceptionregexps:
-  - ^README\.md$
-  explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 - repos:
   - kubernetes/k8s.io
   blockregexps:
