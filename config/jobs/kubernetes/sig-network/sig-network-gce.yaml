@@ -295,7 +295,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
-        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
         - --timeout=150m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
         resources:
