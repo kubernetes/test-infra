@@ -1017,3 +1017,72 @@ periodics:
         limits:
           cpu: 2
           memory: 6Gi
+
+- interval: 2h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-benchmark-list
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: gce-benchmark-list
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=gce-scale-cluster
+      - --extract=ci/latest
+      - --gcp-master-size=n2-standard-32
+      - --gcp-node-size=e2-standard-32
+      - --gcp-node-image=gci
+      - --gcp-nodes=1
+      - --gcp-project-type=scalability-scale-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --metadata-sources=cl2-metadata.json
+      - --env=KUBE_GCE_PRIVATE_CLUSTER=false
+      - --env=CL2_LIST_CONFIG_MAP_BYTES=100000
+      - --env=CL2_LIST_CONFIG_MAP_NUMBER=10000
+      - --env=CL2_LIST_BENCHMARK_PODS=10
+      - --env=CL2_LIST_BENCHMARK_POD_CPU=2000
+      - --env=CL2_LIST_BENCHMARK_POD_MEMORY=4096
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+      - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
+      - --test-cmd-args=--testconfig=testing/list/config.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=60m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 3
+          memory: "8Gi"
+        limits:
+          cpu: 3
+          memory: "8Gi"
