@@ -10,7 +10,6 @@ dashboard_groups:
     - sig-windows-networking
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
-    - sig-windows-experimental
 
 dashboards:
 - name: sig-windows-signal
@@ -20,7 +19,6 @@ dashboards:
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-push-images
-- name: sig-windows-experimental
 - name: sig-windows-networking
   dashboard_tab:
   - name: ltsc2025-containerd-flannel-sdnbridge-master
