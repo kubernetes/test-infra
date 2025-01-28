@@ -11,6 +11,8 @@ test_groups:
   name: 4.19-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.19-periodics-e2e-aws-ovn
   name: 4.19-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.19-periodics-e2e-aws-multi
+  name: 4.19-aws-multi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.19-periodics-e2e-aks
   name: 4.19-aks
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.19-periodics-e2e-azure-aks-ovn-conformance
@@ -35,6 +37,8 @@ test_groups:
   name: 4.18-aws-ovn-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-ovn
   name: 4.18-aws-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aws-multi
+  name: 4.18-aws-multi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-aks
   name: 4.18-aks
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.18-periodics-e2e-azure-aks-ovn-conformance
@@ -139,6 +143,12 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.19-aws-ovn
+  - name: 4.19-aws-multi
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.19-aws-multi
   - name: 4.19-aks
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
@@ -211,6 +221,12 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: 4.18-aws-ovn
+  - name: 4.18-aws-multi
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: 4.18-aws-multi
   - name: 4.18-aks
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
