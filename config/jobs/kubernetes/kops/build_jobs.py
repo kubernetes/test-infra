@@ -913,6 +913,8 @@ def generate_misc():
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
+                   # there is no "--node-os-distro=rhel", "custom" is as close as we can get here.
+                   test_args="--master-os-distro=custom --node-os-distro=custom",
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
                    runs_per_day=3),
@@ -949,6 +951,8 @@ def generate_misc():
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
+                   # there is no "--node-os-distro=rhel", "custom" is as close as we can get here.
+                   test_args="--master-os-distro=custom --node-os-distro=custom",
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
                    runs_per_day=3),
@@ -985,6 +989,8 @@ def generate_misc():
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
+                   # there is no "--node-os-distro=rhel", "custom" is as close as we can get here.
+                   test_args="--master-os-distro=custom --node-os-distro=custom",
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
                    runs_per_day=3),
