@@ -1021,6 +1021,9 @@ periodics:
 - interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-benchmark-list
+  tags:
+    - "perfDashPrefix: benchmark list"
+    - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -1049,7 +1052,7 @@ periodics:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=gce-scale-cluster
+      - --cluster=benchmark-list
       - --extract=ci/latest
       - --gcp-master-size=n2-standard-32
       - --gcp-node-size=e2-standard-32
