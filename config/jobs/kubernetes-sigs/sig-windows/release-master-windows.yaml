@@ -128,6 +128,58 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master
+- name: ci-kubernetes-e2e-capz-master-windows-containerd2
+  cluster: eks-prow-build-cluster
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-capz-windows-common: "true"
+    preset-capz-windows-2022: "true"
+    preset-capz-containerd-2-0-latest: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: false
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    serviceAccountName: azure
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
+        command:
+          - "runner.sh"
+          - "env"
+          - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
+          - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          # current recommendations are at least 1Gi /core
+          requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-master-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-master-containerd2
 - name: ci-kubernetes-e2e-capz-master-windows-serial-slow
   cluster: eks-prow-build-cluster
   interval: 24h
@@ -410,7 +462,7 @@ periodics:
     testgrid-tab-name: capz-master-windows-nodelogquery
 - name: ci-kubernetes-e2e-capz-master-windows-2025
   cluster: eks-prow-build-cluster
-  interval: 12h
+  interval: 48h
   decorate: true
   decoration_config:
     timeout: 4h
