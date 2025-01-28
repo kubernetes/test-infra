@@ -267,6 +267,7 @@ presubmits:
                 --test=kops \
                 -- \
                 --ginkgo-args="--debug" \
+                --test-args="--master-os-distro=custom --node-os-distro=custom" \
                 --timeout=120m \
                 --focus-regex="\[Feature:SELinux\]" \
                 --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
