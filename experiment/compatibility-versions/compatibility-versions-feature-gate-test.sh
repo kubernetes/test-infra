@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2024 The Kubernetes Authors.
+# Copyright 2025 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,27 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# hack script for running a kind e2e
+# hack script for running kind clusters, fetching kube-apiserver metrics, and validating feature gates
 # must be run with a kubernetes checkout in $PWD (IE from the checkout)
-# Usage: SKIP="ginkgo skip regex" FOCUS="ginkgo focus regex" kind-e2e.sh
+# Usage: compatibility-versions-feature-gate-test.sh
 
-set -o errexit -o nounset -o xtrace
+set -o errexit -o nounset -o pipefail
+set -o xtrace
 
 # Settings:
-# SKIP: ginkgo skip regex
-# FOCUS: ginkgo focus regex
-# LABEL_FILTER: ginkgo label query for selecting tests (see "Spec Labels" in https://onsi.github.io/ginkgo/#filtering-specs)
-#
-# The default is to focus on conformance tests. Serial tests get skipped when
-# parallel testing is enabled. Using LABEL_FILTER instead of combining SKIP and
-# FOCUS is recommended (more expressive, easier to read than regexp).
-#
 # GA_ONLY: true  - limit to GA APIs/features as much as possible
 #          false - (default) APIs and features left at defaults
+
 # FEATURE_GATES:
 #          JSON or YAML encoding of a string/bool map: {"FeatureGateA": true, "FeatureGateB": false}
 #          Enables or disables feature gates in the entire cluster.
 #          Cannot be used when GA_ONLY=true.
+
 # RUNTIME_CONFIG:
 #          JSON or YAML encoding of a string/string (!) map: {"apia.example.com/v1alpha1": "true", "apib.example.com/v1beta1": "false"}
 #          Enables API groups in the apiserver via --runtime-config.
@@ -50,7 +45,7 @@ cleanup() {
     kind "export" logs "${ARTIFACTS}" || true
     kind delete cluster || true
   fi
-  rm -f _output/bin/e2e.test || true
+  rm -f _output/bin/kubectl || true
   # remove our tempdir, this needs to be last, or it will prevent kind delete
   if [ -n "${TMP_DIR:-}" ]; then
     rm -rf "${TMP_DIR:?}"
@@ -61,24 +56,16 @@ cleanup() {
 # setup signal handlers
 # shellcheck disable=SC2317 # this is not unreachable code
 signal_handler() {
-  if [ -n "${GINKGO_PID:-}" ]; then
-    kill -TERM "$GINKGO_PID" || true
-  fi
   cleanup
 }
 trap signal_handler INT TERM
 
-# build kubernetes / node image, e2e binaries
+# build kubernetes / node image, kubectl binary
 build() {
   # build the node image w/ kubernetes
   kind build node-image -v 1
-  # Ginkgo v1 is used by Kubernetes 1.24 and earlier, fallback if v2 is not available.
-  GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
-  if [ ! -d "$GINKGO_SRC_DIR" ]; then
-      GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/ginkgo"
-  fi
-  # make sure we have e2e requirements
-  make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
+  # make sure we have kubectl
+  make all WHAT="cmd/kubectl"
 
   # Ensure the built kubectl is used instead of system
   export PATH="${PWD}/_output/bin:$PATH"
@@ -109,7 +96,7 @@ create_cluster() {
   controllerManager_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\""
   apiServer_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\""
   kubelet_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\""
- 
+
   if [ -n "$CLUSTER_LOG_FORMAT" ]; then
       check_structured_log_support "CLUSTER_LOG_FORMAT"
       scheduler_extra_args="${scheduler_extra_args}
@@ -169,8 +156,6 @@ networking:
   dnsSearch: []
 nodes:
 - role: control-plane
-- role: worker
-- role: worker
 featureGates: ${feature_gates}
 runtimeConfig: ${runtime_config}
 kubeadmConfigPatches:
@@ -201,10 +186,7 @@ ${kubelet_extra_args}
     kubeletExtraArgs:
 ${kubelet_extra_args}
 EOF
-  # NOTE: must match the number of workers above
-  NUM_NODES=2
-  # actually create the cluster
-  # TODO(BenTheElder): settle on verbosity for this script
+
   KIND_CREATE_ATTEMPTED=true
   kind create cluster \
     --image=kindest/node:latest \
@@ -221,118 +203,57 @@ EOF
     --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--v='"${KIND_CLUSTER_LOG_LEVEL}"'" }]'
 }
 
-# run e2es with ginkgo-e2e.sh
-run_tests() {
-  # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
-  # 1. k8s CI doesn´t offer IPv6 connectivity, so CoreDNS should be configured
-  # to work in an offline environment:
-  # https://github.com/coredns/coredns/issues/2494#issuecomment-457215452
-  # 2. k8s CI adds following domains to resolv.conf search field:
-  # c.k8s-prow-builds.internal google.internal.
-  # CoreDNS should handle those domains and answer with NXDOMAIN instead of SERVFAIL
-  # otherwise pods stops trying to resolve the domain.
-  if [ "${IP_FAMILY:-ipv4}" = "ipv6" ]; then
-    # Get the current config
-    original_coredns=$(kubectl get -oyaml -n=kube-system configmap/coredns)
-    echo "Original CoreDNS config:"
-    echo "${original_coredns}"
-    # Patch it
-    fixed_coredns=$(
-      printf '%s' "${original_coredns}" | sed \
-        -e 's/^.*kubernetes cluster\.local/& internal/' \
-        -e '/^.*upstream$/d' \
-        -e '/^.*fallthrough.*$/d' \
-        -e '/^.*forward . \/etc\/resolv.conf$/d' \
-        -e '/^.*loop$/d' \
-    )
-    echo "Patched CoreDNS config:"
-    echo "${fixed_coredns}"
-    printf '%s' "${fixed_coredns}" | kubectl apply -f -
-  fi
-
-  # ginkgo regexes and label filter
-  SKIP="${SKIP:-}"
-  FOCUS="${FOCUS:-}"
-  LABEL_FILTER="${LABEL_FILTER:-}"
-  if [ -z "${FOCUS}" ] && [ -z "${LABEL_FILTER}" ]; then
-    FOCUS="\\[Conformance\\]"
-  fi
-  # if we set PARALLEL=true, skip serial tests set --ginkgo-parallel
-  if [ "${PARALLEL:-false}" = "true" ]; then
-    export GINKGO_PARALLEL=y
-    if [ -z "${SKIP}" ]; then
-      SKIP="\\[Serial\\]"
-    else
-      SKIP="\\[Serial\\]|${SKIP}"
-    fi
-  fi
-
-  # setting this env prevents ginkgo e2e from trying to run provider setup
-  export KUBERNETES_CONFORMANCE_TEST='y'
-  # setting these is required to make RuntimeClass tests work ... :/
-  export KUBE_CONTAINER_RUNTIME=remote
-  export KUBE_CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
-  export KUBE_CONTAINER_RUNTIME_NAME=containerd
-  # ginkgo can take forever to exit, so we run it in the background and save the
-  # PID, bash will not run traps while waiting on a process, but it will while
-  # running a builtin like `wait`, saving the PID also allows us to forward the
-  # interrupt
-  ./hack/ginkgo-e2e.sh \
-    '--provider=skeleton' "--num-nodes=${NUM_NODES}" \
-    "--ginkgo.focus=${FOCUS}" "--ginkgo.skip=${SKIP}" "--ginkgo.label-filter=${LABEL_FILTER}" \
-    "--report-dir=${ARTIFACTS}" '--disable-log-dump=true' &
-  GINKGO_PID=$!
-  wait "$GINKGO_PID"
+fetch_metrics() {
+  local output_file="$1"
+  echo "Fetching metrics to ${output_file}..."
+  kubectl get --raw /metrics > "${output_file}"
 }
 
-main() {
-  # create temp dir and setup cleanup
-  TMP_DIR=$(mktemp -d)
 
-  # ensure artifacts (results) directory exists when not in CI
+main() {
+  TMP_DIR=$(mktemp -d)
   export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
   mkdir -p "${ARTIFACTS}"
 
-  # Get current and n-1 version numbers
-  MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
-  MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
-  export VERSION_DELTA=${VERSION_DELTA:-1}
-  export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
-  export PREV_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - VERSION_DELTA))"
-  export EMULATED_VERSION="${PREV_VERSION}"
+  export EMULATED_VERSION=$(get_latest_release_version)
+  export PREV_VERSIONED_FEATURE_LIST=${PREV_VERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/versioned_feature_list.yaml"}
+  export UNVERSIONED_FEATURE_LIST=${UNVERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/unversioned_feature_list.yaml"}
 
-  # export the KUBECONFIG to a unique path for testing
-  KUBECONFIG="${HOME}/.kube/kind-test-config"
-  export KUBECONFIG
-  echo "exported KUBECONFIG=${KUBECONFIG}"
+  # Create and validate previous cluster
+  git clone --filter=blob:none --single-branch --branch "release-${EMULATED_VERSION}" https://github.com/kubernetes/kubernetes.git "release-${EMULATED_VERSION}"
 
-  # debug kind version
-  kind version
-
-  # build kubernetes
+  # Build current version
   build
-  # in CI attempt to release some memory after building
-  if [ -n "${KUBETEST_IN_DOCKER:-}" ]; then
-    sync || true
-    echo 1 > /proc/sys/vm/drop_caches || true
+
+  # Create and validate latest cluster
+  KUBECONFIG="${HOME}/.kube/kind-test-config-latest"
+  export KUBECONFIG
+  create_cluster
+  LATEST_METRICS="${ARTIFACTS}/latest_metrics.txt"
+  fetch_metrics "${LATEST_METRICS}"
+  LATEST_RESULTS="${ARTIFACTS}/latest_results.txt"
+
+  VALIDATE_SCRIPT="${VALIDATE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/validate-compatibility-versions-feature-gates.sh}"
+  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${LATEST_METRICS}" "${PREV_VERSIONED_FEATURE_LIST}" "${UNVERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
+
+  # Report results
+  echo "=== Latest Cluster (${EMULATED_VERSION}) Validation ==="
+  cat "${LATEST_RESULTS}"
+
+  if grep -q "FAIL" "${LATEST_RESULTS}"; then
+    echo "Validation failures detected"
+    exit 1
   fi
 
-  # create the cluster and run tests
-  res=0
-  create_cluster || res=$?
+  cleanup
+}
 
-  # Clone the previous versions Kubernetes release branch
-  # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
-  export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
-  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_BRANCH}"
-
-  # enter the release branch and run tests
-  pushd "${PREV_RELEASE_BRANCH}"
-  run_tests || res=$?
-  popd
-
-  cleanup || res=$?
-  exit $res
+get_latest_release_version() {
+  git ls-remote --heads https://github.com/kubernetes/kubernetes.git | \
+    grep -o 'release-[0-9]\+\.[0-9]\+' | \
+    sort -t. -k1,1n -k2,2n | \
+    tail -n1 | \
+    cut -d- -f2
 }
 
 main
