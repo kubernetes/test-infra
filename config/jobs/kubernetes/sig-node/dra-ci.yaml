@@ -10,7 +10,7 @@ periodics:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-master-informing
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
@@ -117,7 +117,7 @@ periodics:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v1
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
@@ -170,7 +170,7 @@ periodics:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v2
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
@@ -223,7 +223,7 @@ periodics:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
