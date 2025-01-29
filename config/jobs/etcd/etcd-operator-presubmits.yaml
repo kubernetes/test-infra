@@ -2,7 +2,6 @@
 presubmits:
   etcd-io/etcd-operator:
   - name: pull-etcd-operator-test
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -30,7 +29,6 @@ presubmits:
             cpu: "4"
             memory: "4Gi"
   - name: pull-etcd-operator-test-e2e
-    optional: true # remove once the job is stable
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
@@ -65,7 +63,6 @@ presubmits:
             cpu: "4"
             memory: "4Gi"
   - name: pull-etcd-operator-lint
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
