@@ -1,6 +1,65 @@
 ---
 postsubmits:
   etcd-io/etcd-operator:
+  - name: post-etcd-operator-test
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-operator-postsubmits
+      testgrid-tab-name: post-etcd-operator-test
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          go mod tidy
+          make test
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+  - name: post-etcd-operator-test-e2e
+    cluster: k8s-infra-prow-build
+    branches:
+    - main
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-etcd-operator-postsubmits
+      testgrid-tab-name: post-etcd-operator-test-e2e
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
+        command:
+        - wrapper.sh
+        args:
+        - bash
+        - -c
+        - |
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind create cluster
+          make test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
   - name: post-etcd-operator-lint
     cluster: eks-prow-build-cluster
     branches:
