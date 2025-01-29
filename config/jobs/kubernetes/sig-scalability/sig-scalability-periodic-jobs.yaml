@@ -1023,7 +1023,7 @@ periodics:
   name: ci-kubernetes-benchmark-list
   tags:
     - "perfDashPrefix: benchmark list"
-    - "perfDashJobType: performance"
+    - "perfDashJobType: benchmarkList"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
