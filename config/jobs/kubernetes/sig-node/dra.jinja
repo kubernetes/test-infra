@@ -15,6 +15,9 @@
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-containerd" %}
 {%- set runtime = "containerd" %}
 {%- endif %}
+{%- if file == "ci" and not all_features %}
+{%- set testgrid_dashboards = testgrid_dashboards + ", sig-release-master-informing" %}
+{%- endif %}
   - name: {{job_name}}
     cluster: {{cluster}}
     {%- if file == "ci" %}
@@ -71,7 +74,7 @@
     {%- endif %}
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241230-3006692a6f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
         command:
         - runner.sh
         {%- if job_type == "node" %}
