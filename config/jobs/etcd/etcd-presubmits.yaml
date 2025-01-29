@@ -579,7 +579,7 @@ presubmits:
   - name: pull-etcd-release-tests
     optional: true # remove once the job is stable
     cluster: k8s-infra-prow-build
-    always_run: true
+    always_run: false # set it to true once the job works
     branches:
       - main
     decorate: true
