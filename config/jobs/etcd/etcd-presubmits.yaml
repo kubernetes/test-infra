@@ -612,8 +612,7 @@ presubmits:
             # Add the origin remote as the remote is unnamed in the prow infra.
             git remote add origin https://github.com/etcd-io/etcd.git
             DRY_RUN=true ./scripts/release.sh --no-upload --no-docker-push --no-gh-release --in-place 3.6.99
-            # Skip testing images to narrow down failure
-            # VERSION=3.6.99 ./scripts/test_images.sh
+            VERSION=3.6.99 ./scripts/test_images.sh
         resources:
           requests:
             cpu: "4"
