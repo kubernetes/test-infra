@@ -16,7 +16,6 @@ periodics:
     clone_uri: https://go.googlesource.com/go
   - org: kubernetes
     repo: kubernetes
-    base_sha: 9f01cd7b28fdbc8a1ceb9ec371fd817551659ee5 # head of master branch as of 2024-09-05
     base_ref: master
     path_alias: k8s.io/kubernetes
   - org: kubernetes
@@ -25,7 +24,6 @@ periodics:
     path_alias: k8s.io/perf-tests
   - org: kubernetes
     repo: release
-    base_sha: 75a8e7ef8b22fe41525d28c1818384aab795f145 # head of master branch as of 2024-09-05
     base_ref: master
     path_alias: k8s.io/release
   annotations:
