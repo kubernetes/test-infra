@@ -33,7 +33,10 @@ func Test_ForbidYmlExtension(t *testing.T) {
 	for _, path := range exemptPaths {
 		exempt[filepath.Join(configPath, path)] = true
 	}
-	err := filepath.Walk(configPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(configPath, func(path string, info os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		if _, ok := exempt[path]; ok {
 			return filepath.SkipDir
 		}

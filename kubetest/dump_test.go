@@ -268,7 +268,7 @@ func Test_logDumperNode_dump(t *testing.T) {
 	}
 
 	actual := []string{}
-	err = filepath.Walk(tmpdir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.WalkDir(tmpdir, func(path string, info os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
