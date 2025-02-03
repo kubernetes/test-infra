@@ -133,22 +133,24 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --deployment=node
-        - --env=KUBE_SSH_USER=core
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --node-tests=true
-        - --provider=gce
-        - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow"'
-        - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
+        - --parallelism=1
+        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
         - name: GOPATH
           value: /go
+        - name: KUBE_SSH_USER
+          value: core
         resources:
           limits:
             cpu: 2
@@ -185,22 +187,24 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --deployment=node
-        - --env=KUBE_SSH_USER=core
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --node-tests=true
-        - --provider=gce
-        - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow"'
-        - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
+        - --parallelism=1
+        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
         - name: GOPATH
           value: /go
+        - name: KUBE_SSH_USER
+          value: core
         resources:
           limits:
             cpu: 2
@@ -237,16 +241,17 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --deployment=node
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --node-tests=true
-        - --provider=gce
-        - '--test_args=--timeout=1h --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow"'
-        - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
+        - --parallelism=1
+        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
         resources:
           limits:
             cpu: 2
