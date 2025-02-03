@@ -188,7 +188,6 @@ periodics:
     testgrid-tab-name: capi-e2e-mink8s-release-1-8
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
-
 - name: periodic-cluster-api-e2e-conformance-release-1-8
   cluster: eks-prow-build-cluster
   interval: 4h

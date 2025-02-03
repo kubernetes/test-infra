@@ -339,7 +339,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
       testgrid-tab-name: capi-pr-e2e-release-1-9-1-31-1-32
-
   - name: pull-cluster-api-e2e-conformance-release-1-9
     cluster: eks-prow-build-cluster
     labels:
