@@ -78,7 +78,6 @@
         command:
         - runner.sh
         {%- if job_type == "node" %}
-        {%- if file == "canary" %}
         args:
         - kubetest2
         - noop
@@ -100,28 +99,6 @@
           value: /go
         - name: KUBE_SSH_USER
           value: core
-        {%- endif %}
-        {%- else %}
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --deployment=node
-        {%- if inject_ssh_public_key == "true" %}
-        - --env=KUBE_SSH_USER=core
-        {%- endif %}
-        - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicResourceAllocation=true --service-feature-gates=DynamicResourceAllocation=true --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
-        - --node-tests=true
-        - --provider=gce
-        - '--test_args=--timeout=1h --label-filter="{{label_filter}}"'
-        - --timeout=65m
-        - --node-args=--image-config-file={{image_config_file}}
-        {%- if inject_ssh_public_key == "true" %}
-        env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-        - name: GOPATH
-          value: /go
-        {%- endif %}
         {%- endif %}
         {%- else %}
         args:
