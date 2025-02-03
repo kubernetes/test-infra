@@ -7,7 +7,7 @@ postsubmits:
         testgrid-tab-name: post-website-push-image-k8s-website-hugo
       decorate: true
       run_if_changed: >-
-        ^(Dockerfile|Makefile|netlify\.toml|\.dockerignore|cloudbuild\.yaml)$
+        ^(Dockerfile|Makefile|netlify\.toml|\.dockerignore|cloudbuild\.yaml|package\.json|package-lock\.json)$
       branches:
         - ^main$
       spec:
