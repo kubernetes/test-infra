@@ -175,6 +175,9 @@ presubmits:
           value: "true"
         - name: GINKGO_SKIP
           value: "\\[Conformance\\]"
+        # Ensure required kind images get built.
+        - name: KIND_BUILD_IMAGES
+          value: "KUBERNETES_VERSION,KUBERNETES_VERSION_LATEST_CI,KUBERNETES_VERSION_UPGRADE_TO,KUBERNETES_VERSION_UPGRADE_FROM"
         # This value determines the minimum Kubernetes
         # supported version for Cluster API management cluster
         # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
@@ -223,6 +226,9 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "\\[PR-Blocking\\]"
+          # Ensure required kind images get built.
+          - name: KIND_BUILD_IMAGES
+            value: "KUBERNETES_VERSION"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -309,6 +315,9 @@ presubmits:
             value: "true"
           - name: GINKGO_SKIP
             value: "\\[Conformance\\]"
+          # Ensure required kind images get built.
+          - name: KIND_BUILD_IMAGES
+            value: "KUBERNETES_VERSION,KUBERNETES_VERSION_LATEST_CI,KUBERNETES_VERSION_UPGRADE_TO,KUBERNETES_VERSION_UPGRADE_FROM"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -400,6 +409,9 @@ presubmits:
         env:
         - name: GINKGO_FOCUS
           value: "\\[Conformance\\] \\[K8s-Install\\]"
+        # Ensure required kind images get built.
+        - name: KIND_BUILD_IMAGES
+          value: "KUBERNETES_VERSION"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -440,6 +452,9 @@ presubmits:
         env:
         - name: GINKGO_FOCUS
           value: "\\[Conformance\\] \\[K8s-Install-ci-latest\\]"
+        # Ensure required kind images get built.
+        - name: KIND_BUILD_IMAGES
+          value: "KUBERNETES_VERSION_LATEST_CI"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
