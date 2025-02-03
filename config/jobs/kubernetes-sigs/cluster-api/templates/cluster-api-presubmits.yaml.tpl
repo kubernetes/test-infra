@@ -242,49 +242,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
-{{- if eq $.branch "release-1.5" }}
-  - name: pull-cluster-api-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    decorate: true
-    decoration_config:
-      timeout: 180m
-    optional: true
-    branches:
-      # The script this job runs is not in all branches.
-      - ^{{ $.branch }}$
-    path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
-    spec:
-      containers:
-      - image: {{ $.config.TestImage }}
-        args:
-        - runner.sh
-        - "./scripts/ci-e2e.sh"
-        env:
-        - name: GINKGO_FOCUS
-          value: "\\[PR-Informing\\]"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 3000m
-            memory: 8Gi
-          limits:
-            cpu: 3000m
-            memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
-      testgrid-tab-name: capi-pr-e2e-informing-{{ ReplaceAll $.branch "." "-" }}
-{{- end }}
   - name: pull-cluster-api-e2e-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
@@ -381,7 +338,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
-{{ if eq $.branch "release-1.5" "release-1.6" | not }}
   - name: pull-cluster-api-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:
@@ -468,7 +424,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
-{{ end -}}
 {{ if eq $.branch "main" }}
   - name: pull-cluster-api-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
