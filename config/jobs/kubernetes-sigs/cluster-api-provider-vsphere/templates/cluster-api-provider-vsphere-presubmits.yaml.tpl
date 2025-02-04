@@ -254,6 +254,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
+    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
+    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
     decoration_config:
       timeout: 180m
