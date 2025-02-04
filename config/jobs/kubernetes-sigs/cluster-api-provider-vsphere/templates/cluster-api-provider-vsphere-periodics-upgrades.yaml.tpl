@@ -5,11 +5,6 @@
 {{/* Run govmomi at 00:00 UTC, supervisor at 03:00 UTC */ -}}
 {{ $cron := "'0 0 * * *'" -}}
 {{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
-{{/* e2e upgrade has been introduced in release-1.9 */ -}}
-{{/* e2e upgrade in supervisor mode has been introduced in release-1.10 */ -}}
-{{ $skipInBranch := list "release-1.7" "release-1.8" -}}
-{{ if eq $mode "supervisor" }}{{ $skipInBranch = list "release-1.7" "release-1.8" "release-1.9" }}{{ end -}}
-{{ if has $.branch $skipInBranch | not -}}
 {{ if eq $i 0 -}}
 periodics:
 {{ end -}}
@@ -67,6 +62,5 @@ periodics:
     testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
-{{ end -}}
 {{ end -}}
 {{ end -}}
