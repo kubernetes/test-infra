@@ -27,7 +27,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250205-f1f3519e6b-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - wrapper.sh
@@ -85,7 +85,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20241230-3006692a6f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250205-f1f3519e6b-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - wrapper.sh
