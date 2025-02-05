@@ -1,34 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- bart0sh
-- bobbypage
-- ConnorDoyle
-- derekwaynecarr
-- dims
-- endocrimes
-- klueska
-- pacoxu
-- tallclair
-- sjenning
-- SergeyKanzhelev
+- sig-node-test-reviewers
 approvers:
-- Random-Liu
-- yujuhong
-- tallclair
-- derekwaynecarr
-- ConnorDoyle
-- klueska
-- dchen1107
-- dims
-- sjenning
-- mrunalp
-- SergeyKanzhelev
-- endocrimes
-- kannon92
-emeritus_approvers:
-- yguo0905
-- dashpole
-- ehashman
+- sig-node-leads
+- sig-node-test-approvers
 labels:
 - sig/node
