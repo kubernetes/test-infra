@@ -203,3 +203,30 @@ presubmits:
       testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
       testgrid-tab-name: pr-verify-base-image-deps
       description: Alibaba cloud csi driver base image dependencies are up to date
+
+  - name: pull-alibaba-cloud-csi-driver-verify-typos
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_if_only_changed: "^\\.github/$"
+    decorate: true
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20241230-3006692a6f-master
+        command:
+        - make
+        args:
+        - check-code-typos
+        env:
+        - name: GOMAXPROCS
+          value: "2"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+      testgrid-tab-name: pr-verify-typos
+      description: Verifies the source codes that may have typo errors
