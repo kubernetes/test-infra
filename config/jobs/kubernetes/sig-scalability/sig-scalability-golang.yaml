@@ -53,10 +53,10 @@ periodics:
           memory: "16Gi"
 
 - interval: 24h
-  name: ci-golang-tip-k8s-1-23
+  name: ci-golang-tip-k8s-1-32
   cluster: k8s-infra-prow-build
   tags:
-  - "perfDashPrefix: golang-tip-k8s-1-23"
+  - "perfDashPrefix: golang-tip-k8s-1-32"
   - "perfDashJobType: performance"
   - "perfDashBuildsCount: 500"
   labels:
@@ -80,7 +80,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
     testgrid-num-failures-to-alert: "3"
-    testgrid-tab-name: golang-tip-k8s-1-23
+    testgrid-tab-name: golang-tip-k8s-1-32
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-master
@@ -94,7 +94,7 @@ periodics:
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
-      - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.23.txt
+      - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.32.txt
       - --gcp-master-size=n2-standard-4
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
