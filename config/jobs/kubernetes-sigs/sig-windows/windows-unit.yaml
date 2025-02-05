@@ -29,6 +29,9 @@ periodics:
           limits:
             cpu: 2
             memory: "5Gi"
+        env:
+          - name: VM_SIZE
+            value: Standard_D8as_v4
   annotations:
 #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-signal
