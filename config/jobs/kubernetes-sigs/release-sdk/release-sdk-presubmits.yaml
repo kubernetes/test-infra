@@ -15,6 +15,9 @@ presubmits:
         - run
         - mage.go
         - Test
+        env:
+        - name: GOTOOLCHAIN
+          value: auto
         resources:
           limits:
             cpu: 4
@@ -45,6 +48,9 @@ presubmits:
         - run
         - mage.go
         - IntegrationTest
+        env:
+        - name: GOTOOLCHAIN
+          value: auto
         # docker-in-docker needs privileged mode
         resources:
           limits:
@@ -75,6 +81,9 @@ presubmits:
         - run
         - mage.go
         - Verify
+        env:
+        - name: GOTOOLCHAIN
+          value: auto
         resources:
           limits:
             cpu: 4
