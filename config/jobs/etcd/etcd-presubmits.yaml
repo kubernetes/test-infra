@@ -6,6 +6,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -31,6 +32,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -59,6 +61,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -89,6 +92,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -117,6 +121,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -153,6 +158,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -180,6 +186,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -209,6 +216,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -237,6 +245,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -267,6 +276,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -298,6 +308,7 @@ presubmits:
     branches:
     - main
     - release-3.5
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -330,6 +341,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -361,6 +373,7 @@ presubmits:
     branches:
     - main
     - release-3.5
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -393,6 +406,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -424,6 +438,7 @@ presubmits:
     branches:
     - main
     - release-3.5
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -487,6 +502,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.6
     decorate: true
     decoration_config:
       timeout: 60m
@@ -533,6 +549,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.6
     decorate: true
     decoration_config:
       timeout: 60m
@@ -581,6 +598,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.6
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -629,6 +647,7 @@ presubmits:
     always_run: true
     branches:
       - main
+      - release-3.6
     decorate: true
     decoration_config:
       timeout: 60m
@@ -659,6 +678,7 @@ presubmits:
     always_run: false # remove once the job works
     branches:
       - main
+      - release-3.6
     decorate: true
     decoration_config:
       timeout: 60m
