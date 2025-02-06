@@ -6,6 +6,7 @@ presubmits:
       always_run: true
       branches:
         - main
+        - release-1.4
       decorate: true
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
@@ -34,6 +35,7 @@ presubmits:
       always_run: true
       branches:
         - main
+        - release-1.4
       decorate: true
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
@@ -62,6 +64,7 @@ presubmits:
       always_run: true
       branches:
         - main
+        - release-1.4
       decorate: true
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
@@ -90,6 +93,7 @@ presubmits:
       always_run: false
       branches:
         - main
+        - release-1.4
       decorate: true
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
@@ -119,6 +123,7 @@ presubmits:
       always_run: false
       branches:
         - main
+        - release-1.4
       decorate: true
       decoration_config:
         timeout: 40m
