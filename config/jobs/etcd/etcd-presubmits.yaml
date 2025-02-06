@@ -652,3 +652,38 @@ presubmits:
           limits:
             cpu: "4"
             memory: "4Gi"
+
+  - name: pull-etcd-fuzzing-v3rpc
+    optional: true # remove once the job is stable
+    cluster: eks-prow-build-cluster
+    always_run: false # remove once the job works
+    branches:
+      - main
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-fuzzing-v3rpc
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250205-f1f3519e6b-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            return_code=0
+            CPU=4 make fuzz || return_code=$?
+            if [ "${return_code}" != 0 ]; then
+              zip -r "${ARTIFACTS}/results.zip" ./server/etcdserver/api/v3rpc/testdata/fuzz
+            fi
+            exit $return_code
+        resources:
+          requests:
+            cpu: "6"
+            memory: "4Gi"
+          limits:
+            cpu: "6"
+            memory: "4Gi"
