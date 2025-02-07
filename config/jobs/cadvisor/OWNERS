@@ -5,6 +5,8 @@ reviewers:
 - SergeyKanzhelev
 - bobbypage
 approvers:
+- sig-node-leads
+- sig-node-test-approvers
 - dashpole
 - SergeyKanzhelev
 - bobbypage

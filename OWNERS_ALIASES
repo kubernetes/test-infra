@@ -22,7 +22,8 @@ aliases:
     - deads2k
     - fedebongio
     - jpbetz
-  sig-apps-leads:
+    - sttts
+    sig-apps-leads:
     - janetkuo
     - kow3ns
     - soltysh
@@ -38,18 +39,16 @@ aliases:
     - ritazh
   sig-autoscaling-leads:
     - gjtempleton
-    - mwielgus
+    - maciekpytel
   sig-cli-leads:
-    - KnVerey
+    - ardaguclu
     - eddiezane
-    - seans3
+    - mpuckett159
     - soltysh
   sig-cloud-provider-leads:
-    - andrewsykim
     - bridgetkromhout
     - cheftako
     - elmiko
-    - nckturner
   sig-cluster-lifecycle-leads:
     - fabriziopandini
     - justinsb
@@ -59,43 +58,56 @@ aliases:
     - MadhavJivrajani
     - Priyankasaggu11929
     - kaslin
+    - mfahlandt
     - palnabarun
   sig-contributor-experience-technical-leads:
     - MadhavJivrajani
     - Priyankasaggu11929
   sig-docs-leads:
     - divya-mohan0209
-    - jimangel
-    - kbhawkey
-    - onlydole
-    - sftim
+    - katcosgrove
+    - natalisucks
+    - reylejano
+    - salaxander
+    - tengqm
+  sig-etcd-leads:
+    - ahrtr
+    - jmhbnz
+    - serathius
+    - wenjiaswe
   sig-instrumentation-leads:
     - dashpole
     - dgrisonnet
-    - ehashman
-    - logicalhan
+    - rexagod
+    - richabanker
   sig-k8s-infra-leads:
+    - BenTheElder
     - ameukam
     - dims
     - upodroid
-    - bentheelder
+    - xmudrii
   sig-multicluster-leads:
     - jeremyot
-    - pmorie
+    - skitt
   sig-network-leads:
-    - caseydavenport
-    - dcbw
+    - aojea
+    - danwinship
+    - mikezappa87
+    - shaneutt
     - thockin
   sig-node-leads:
+    - SergeyKanzhelev
     - dchen1107
     - derekwaynecarr
+    - haircommander
+    - mrunalp
   sig-release-leads:
+    - Verolop
     - cpanato
     - jeremyrickard
     - justaugustus
     - puerco
     - saschagrunert
-    - Verolop
   sig-scalability-leads:
     - marseel
     - shyamjvs
@@ -106,10 +118,8 @@ aliases:
     - alculquicondor
   sig-security-leads:
     - IanColdwater
+    - cailyn-codes
     - tabbysable
-  sig-service-catalog-leads:
-    - jberkhahn
-    - jhvhs
   sig-storage-leads:
     - jsafrane
     - msau42
@@ -120,8 +130,10 @@ aliases:
     - alvaroaleman
     - aojea
     - cjwagner
+    - jbpratt
     - michelle192837
     - pohly
+    - xmcqueen
   sig-ui-leads:
     - floreks
     - maciaszczykm
@@ -132,38 +144,40 @@ aliases:
     - jsturtevant
     - knabben
     - marosset
-  wg-api-expression-leads:
-    - apelisse
-    - kwiesmueller
+  wg-batch-leads:
+    - kannon92
+    - mwielgus
+    - soltysh
+    - swatisehgal
   wg-data-protection-leads:
     - xing-yang
     - yuxiangqian
-  wg-iot-edge-leads:
-    - cantbewong
-    - cindyxing
-    - dejanb
-  wg-multitenancy-leads:
-    - srampal
-    - tashimi
+  wg-device-management-leads:
+    - johnbelamaric
+    - klueska
+    - pohly
+  wg-etcd-operator-leads:
+    - ahrtr
+    - hakman
+    - jberkus
+    - jmhbnz
+    - justinsb
+  wg-lts-leads:
+    - jeremyrickard
+    - liggitt
+    - micahhausler
   wg-policy-leads:
     - JimBugwadia
-    - rficcaglia
-  wg-reliability-leads:
-    - deads2k
-    - stevekuznetsov
-    - wojtek-t
+    - poonam-lamba
+    - sudermanjr
+  wg-serving-leads:
+    - ArangoGutierrez
+    - Jeffwan
+    - SergeyKanzhelev
+    - terrytangyuan
   wg-structured-logging-leads:
+    - mengjiao-liu
     - pohly
-    - serathius
-  ug-big-data-leads:
-    - erikerlandson
-    - foxish
-    - liyinan926
-  ug-vmware-users-leads:
-    - brysonshepherd
-    - cantbewong
-    - mylesagray
-    - phenixblue
   committee-code-of-conduct:
     - AnaMMedina21
     - endocrimes
@@ -171,21 +185,22 @@ aliases:
     - jeremyrickard
     - salaxander
   committee-security-response:
+    - SaranBalaji90
     - cjcullen
+    - cji
+    - enj
     - joelsmith
-    - lukehinds
     - micahhausler
-    - swamymsft
+    - ritazh
     - tabbysable
-    - tallclair
   committee-steering:
-    - bentheelder
-    - cblecker
+    - BenTheElder
+    - aojea
     - justaugustus
-    - mrbobbytables
-    - parispittman
-    - palnabarun
-    - tpepper
+    - pacoxu
+    - pohly
+    - saschagrunert
+    - soltysh
 ## BEGIN CUSTOM CONTENT
   provider-aws:
     - justinsb
@@ -206,6 +221,37 @@ aliases:
   provider-vmware:
     - cantbewong
     - frapposelli
+  sig-node-test-reviewers:
+    - bart0sh
+    - bobbypage
+    - ConnorDoyle
+    - dims
+    - derekwaynecarr
+    - endocrimes
+    - klueska
+    - pacoxu
+    - tallclair
+    - sjenning
+    - SergeyKanzhelev
+    - kannon92
+  sig-node-test-approvers:
+    - Random-Liu
+    - yujuhong
+    - tallclair
+    - derekwaynecarr
+    - ConnorDoyle
+    - klueska
+    - dchen1107
+    - dims
+    - sjenning
+    - mrunalp
+    - SergeyKanzhelev
+    - endocrimes
+    - kannon92
+  # - emeritus
+  # - yguo0905
+  # - dashpole
+  # - ehashman
 ## END CUSTOM CONTENT
 
   # Modified from https://kubernetes.io/releases/release-managers/#release-managers
