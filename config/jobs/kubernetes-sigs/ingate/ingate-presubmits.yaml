@@ -1,12 +1,13 @@
 presubmits:
   kubernetes-sigs/ingate:
-    - name: pull-ingate-boilerplate
+    # InGate: Boilerplate
+    - name: pre-ingate-boilerplate
+      annotations:
+        testgrid-dashboards: sig-network-ingate
+        testgrid-tab-name: boilerplate
+      run_if_changed: ^(Dockerfile|Makefile)|\.(go|py|sh|yaml)$
       cluster: k8s-infra-prow-build
       decorate: true
-      optional: false
-      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS|OWNERS_ALIAS|SECURITY_CONTACTS)$|^(site|charts)/"
-      decoration_config:
-        timeout: 10m
       path_alias: sigs.k8s.io/ingate
       spec:
         containers:
@@ -14,14 +15,11 @@ presubmits:
             command:
               - runner.sh
             args:
-              - ./hack/verify-boilerplate.sh
+              - hack/verify-boilerplate.sh
             resources:
-              limits:
-                cpu: 1
-                memory: 4Gi
               requests:
                 cpu: 1
                 memory: 4Gi
-      annotations:
-        testgrid-dashboards: sig-network-ingate
-        testgrid-tab-name: boilerplate
+              limits:
+                cpu: 1
+                memory: 4Gi
