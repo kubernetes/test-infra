@@ -5,6 +5,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -28,6 +29,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -63,6 +65,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
@@ -89,6 +92,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -116,6 +120,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -145,6 +150,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -172,6 +178,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -200,6 +207,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -229,6 +237,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -256,6 +265,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
@@ -285,6 +295,7 @@ postsubmits:
     cluster: k8s-infra-prow-build
     branches:
     - main
+    - release-3.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
