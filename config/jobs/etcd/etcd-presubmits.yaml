@@ -656,7 +656,7 @@ presubmits:
   - name: pull-etcd-fuzzing-v3rpc
     optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
-    always_run: false # remove once the job works
+    always_run: true
     branches:
       - main
     decorate: true
