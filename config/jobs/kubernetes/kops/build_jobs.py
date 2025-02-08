@@ -1488,14 +1488,12 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
+    plugins = ['amazon-vpc', 'calico', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
         k8s_version = 'stable'
         distro = 'u2404'
-        if plugin in ['canal', 'flannel']:
-            k8s_version = '1.27'
         if plugin in ['kuberouter']:
             k8s_version = 'ci'
         if plugin in ['cilium-eni', 'amazon-vpc']:
@@ -1915,13 +1913,10 @@ def generate_presubmits_network_plugins():
     plugins = {
         'amazonvpc': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)',
         'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)',
-        'canal': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/)',
         'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
-        'flannel-u2004': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
-        'flannel-u2204': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
         'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
@@ -1935,17 +1930,7 @@ def generate_presubmits_network_plugins():
         node_size = "t4g.large"
         optional = False
         distro = 'u2404arm64'
-        if plugin == 'canal':
-            k8s_version = '1.27'
         if plugin == 'flannel':
-            optional = True
-        if plugin == 'flannel-u2004':
-            networking_arg = 'flannel'
-            distro = 'u2004arm64'
-            optional = True
-        if plugin == 'flannel-u2204':
-            networking_arg = 'flannel'
-            distro = 'u2204arm64'
             optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
