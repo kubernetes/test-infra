@@ -174,6 +174,7 @@ ${scheduler_extra_args}
   ---
   kind: InitConfiguration
   nodeRegistration:
+    imagePullSerial: false
     kubeletExtraArgs:
 ${kubelet_extra_args}
   ---
@@ -186,6 +187,11 @@ ${kubelet_extra_args}
   detectLocalMode: ${KUBE_PROXY_DETECT_LOCAL_MODE:-ClusterCIDR}
   detectLocal:
     interfaceNamePrefix: veth # used only with detectLocalMode "InterfaceNamePrefix"
+  ---
+  kind: KubeletConfiguration
+  apiVersion: kubelet.config.k8s.io/v1beta1
+  serializeImagePulls: false
+  maxParallelImagePulls: 5
 EOF
   # NOTE: must match the number of workers above
   NUM_NODES=2

@@ -101,7 +101,9 @@ create_cluster() {
       apiServer_extra_args="${apiServer_extra_args}
       \"logging-format\": \"${CLUSTER_LOG_FORMAT}\""
   fi
-  kubelet_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\""
+  kubelet_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\"
+      \""
+  "
   KUBELET_LOG_FORMAT=${KUBELET_LOG_FORMAT:-$CLUSTER_LOG_FORMAT}
   if [ -n "$KUBELET_LOG_FORMAT" ]; then
       check_structured_log_support "KUBECTL_LOG_FORMAT"
@@ -159,6 +161,11 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-a"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
 - role: worker
   kubeadmConfigPatches:
   - |
@@ -166,6 +173,11 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-a"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
 - role: worker
   kubeadmConfigPatches:
   - |
@@ -173,6 +185,11 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-b"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
 - role: worker
   kubeadmConfigPatches:
   - |
@@ -180,6 +197,11 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-b"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
 - role: worker
   kubeadmConfigPatches:
   - |
@@ -187,6 +209,11 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-c"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
 - role: worker
   kubeadmConfigPatches:
   - |
@@ -194,6 +221,11 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-c"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
 EOF
   # NOTE: must match the number of workers above
   NUM_NODES=6

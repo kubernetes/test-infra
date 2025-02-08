@@ -178,13 +178,21 @@ ${scheduler_extra_args}
   ---
   kind: InitConfiguration
   nodeRegistration:
+    imagePullSerial: false
     kubeletExtraArgs:
+      serializeImagePulls: false
+      maxParallelImagePulls: 5
 ${kubelet_extra_args}
   ---
   kind: JoinConfiguration
   nodeRegistration:
     kubeletExtraArgs:
 ${kubelet_extra_args}
+  ---
+  kind: KubeletConfiguration
+  apiVersion: kubelet.config.k8s.io/v1beta1
+  serializeImagePulls: false
+  maxParallelImagePulls: 5
 EOF
   # NOTE: must match the number of workers above
   NUM_NODES=2
