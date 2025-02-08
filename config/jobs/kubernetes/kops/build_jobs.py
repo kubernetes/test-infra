@@ -1920,6 +1920,8 @@ def generate_presubmits_network_plugins():
         'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
         'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
+        'flannel-u2004': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
+        'flannel-u2204': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
         'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
     }
@@ -1933,8 +1935,18 @@ def generate_presubmits_network_plugins():
         node_size = "t4g.large"
         optional = False
         distro = 'u2404arm64'
-        if plugin in ['canal', 'flannel']:
+        if plugin == 'canal':
             k8s_version = '1.27'
+        if plugin == 'flannel':
+            optional = True
+        if plugin == 'flannel-u2004':
+            networking_arg = 'flannel'
+            distro = 'u2004arm64'
+            optional = True
+        if plugin == 'flannel-u2204':
+            networking_arg = 'flannel'
+            distro = 'u2204arm64'
+            optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             k8s_version = 'ci'
