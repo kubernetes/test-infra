@@ -13,16 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# script adapted from - https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+
 set -e
 set -o pipefail
 
 build_docker(){
   build/run.sh make all WHAT="cmd/kubectl cmd/kubelet" 1> /dev/null
   make quick-release-images 1> /dev/null
-}
-
-build_bazel(){
-  bazel build //cmd/kubectl:kubectl //cmd/kubelet:kubelet //build:docker-artifacts
 }
 
 update_kubelet() {
@@ -70,7 +68,7 @@ update_control_plane(){
 
 usage()
 {
-    echo "usage: kind_upgrade.sh [-n|--name <cluster_name>] [--cni <cni_image>] [-b|--build-mode docker|bazel]"
+    echo "usage: kind_upgrade.sh [-n|--name <cluster_name>] [--cni <cni_image>]"
     echo "                       [--no-kproxy]  [--no-control-plane]  [--no-kubelet]"
     echo ""
 }
@@ -85,14 +83,6 @@ parse_args()
             --cni-image )	           	shift
                                           	CNI_IMAGE=$1
                                           	;;
-            -b | --build-mode )			shift
-                                                if [ "$1" != "docker" ] && [ "$1" != "bazel" ]; then
-                                                    echo "Invalid build mode: $1"
-                                                    usage
-                                                    exit 1
-                                                fi
-                                                BUILD_MODE=$1
-                                                ;;
             --no-kproxy )                   	UPDATE_KUBE_PROXY=false
                                                 ;;
             --no-kubelet )                   	UPDATE_KUBELET=false
@@ -137,15 +127,9 @@ CONTROL_PLANE_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep control)
 WORKER_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep worker)
 
 # Main
-if [[ "$BUILD_MODE" == "docker" ]]; then
-  build_docker
-  IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
-  KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
-else
-  build_bazel
-  IMAGES_PATH="${KUBE_ROOT}/bazel-kubernetes/bazel-out/k8-fastbuild/bin/build"
-  KUBELET_BINARY=$(find ${KUBE_ROOT}/bazel-kubernetes/ -type f -name kubelet)
-fi
+build_docker
+IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
+KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane
