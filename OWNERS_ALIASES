@@ -235,6 +235,7 @@ aliases:
     - SergeyKanzhelev
     - kannon92
   sig-node-test-approvers:
+    - bart0sh
     - Random-Liu
     - yujuhong
     - tallclair
