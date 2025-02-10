@@ -1058,7 +1058,7 @@ periodics:
       - --gcp-node-size=e2-standard-32
       - --gcp-node-image=gci
       - --gcp-nodes=1
-      - --gcp-project-type=scalability-scale-project
+      - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
