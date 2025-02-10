@@ -16,8 +16,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -40,8 +40,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -64,8 +64,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -88,8 +88,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -112,8 +112,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -136,8 +136,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -160,8 +160,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -184,8 +184,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
@@ -208,8 +208,8 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
