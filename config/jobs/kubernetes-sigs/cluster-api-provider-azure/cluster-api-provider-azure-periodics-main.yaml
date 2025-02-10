@@ -411,13 +411,13 @@ periodics:
       - name: AZURE_LOCATION
         value: "northeurope"
       - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-        value: "Standard_D8s_v3"
+        value: "Standard_D4s_v3"
       - name: CONTROL_PLANE_MACHINE_TYPE
-        value: "Standard_D8s_v3"
+        value: "Standard_D4s_v3"
       - name: AZURE_NODE_MACHINE_TYPE
-        value: "Standard_D8s_v3"
+        value: "Standard_D2s_v3"
       - name: NODE_MACHINE_TYPE
-        value: "Standard_D8s_v3"
+        value: "Standard_D2s_v3"
       - name: TEST_WINDOWS
         value: "false"
       - name: "CONTROL_PLANE_MACHINE_COUNT"
