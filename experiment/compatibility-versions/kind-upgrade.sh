@@ -34,26 +34,6 @@ update_kubelet() {
  done
 }
 
-update_kube_proxy() {
-  for n in $NODES; do
-   kind load image-archive ${IMAGES_PATH}/kube-proxy.tar --name ${CLUSTER_NAME}
-  done
-  # RollingUpdate
-  kubectl set image ds/kube-proxy kube-proxy=${DOCKER_REGISTRY}/kube-proxy-amd64:${DOCKER_TAG} -n kube-system
-  kubectl rollout status ds/kube-proxy -n kube-system -w
-  echo "Updated kube-proxy"
-}
-
-update_cni() {
-  for n in $NODES; do
-   kind load image-archive ${CNI_IMAGE} --name ${CLUSTER_NAME}
-  done
-  # RollingUpdate
-  kubectl set image ds/kindnet kindnet-cni=${CNI_IMAGE} -n kube-system
-  kubectl rollout status ds/kindnet -n kube-system -w
-  echo "Updated kindnet"
-}
-
 update_control_plane(){
   # TODO allow to configure node and control plane components
   for n in $CONTROL_PLANE_NODES; do
@@ -68,8 +48,8 @@ update_control_plane(){
 
 usage()
 {
-    echo "usage: kind_upgrade.sh [-n|--name <cluster_name>] [--cni <cni_image>]"
-    echo "                       [--no-kproxy]  [--no-control-plane]  [--no-kubelet]"
+    echo "usage: kind_upgrade.sh [-n|--name <cluster_name>]"
+    echo "                       [--no-control-plane]  [--no-kubelet]"
     echo ""
 }
 
@@ -80,11 +60,6 @@ parse_args()
             -n | --name )			shift
                                           	CLUSTER_NAME=$1
                                           	;;
-            --cni-image )	           	shift
-                                          	CNI_IMAGE=$1
-                                          	;;
-            --no-kproxy )                   	UPDATE_KUBE_PROXY=false
-                                                ;;
             --no-kubelet )                   	UPDATE_KUBELET=false
                                                 ;;
             --no-control-plane )               	UPDATE_CONTROL_PLANE=false
@@ -117,7 +92,7 @@ KUBE_ROOT="."
 source "${KUBE_ROOT}/hack/lib/version.sh"
 kube::version::get_version_vars
 DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
-DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-k8s.gcr.io}
+DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
 export GOFLAGS="-tags=providerless"
 export KUBE_BUILD_CONFORMANCE=n
 
@@ -137,15 +112,6 @@ fi
 
 if [[ "$UPDATE_KUBELET" == "true" ]]; then
   update_kubelet
-fi
-
-if [[ "$UPDATE_KUBE_PROXY" == "true" ]]; then
-  update_kube_proxy
-fi
-
-# If CNI_IMAGE set update the CNI  
-if [[ ! -z ${CNI_IMAGE} ]]; then
-  update_cni
 fi
 
 if kubectl get nodes | grep NoReady; then

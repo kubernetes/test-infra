@@ -68,15 +68,10 @@ signal_handler() {
 }
 trap signal_handler INT TERM
 
-# build kubernetes / node image, e2e binaries
+# build kubectl, kubernetes e2e test binaries, and ginkgo
 build() {
-  # build the node image w/ kubernetes  (NOT USED FOR INITIAL CLUSTER, but for upgrade)
-
-  # Ginkgo v1 is used by Kubernetes 1.24 and earlier, fallback if v2 is not available.
   GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
-  if [ ! -d "$GINKGO_SRC_DIR" ]; then
-      GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/ginkgo"
-  fi
+
   # make sure we have e2e requirements
   make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
 
@@ -283,7 +278,7 @@ run_tests() {
 }
 
 upgrade_cluster_components() {
-  # upgrade cluster components excluding kube-proxy and kubelet
+  # upgrade cluster components excluding the kubelet
 
   # Get the retry attempts, defaulting to 5 if not set
   RETRY_ATTEMPTS="${RETRY_ATTEMPTS:-5}"
@@ -291,12 +286,12 @@ upgrade_cluster_components() {
   local attempt=1
   local success=false
 
-  echo "Attempt $attempt of $RETRY_ATTEMPTS to upgrade cluster..."
-  bash -x "${UPGRADE_SCRIPT}" --no-kproxy --no-kubelet | tee "${ARTIFACTS}/upgrade-output-1.txt"
-  bash -x "${UPGRADE_SCRIPT}" --no-kproxy --no-kubelet | tee "${ARTIFACTS}/upgrade-output-2.txt"
+  bash -x "${UPGRADE_SCRIPT}" --no-kubelet | tee "${ARTIFACTS}/upgrade-output-1.txt"
+  bash -x "${UPGRADE_SCRIPT}" --no-kubelet | tee "${ARTIFACTS}/upgrade-output-2.txt"
   # Run the script twice, is necessary for fully updating the binaries
 
   while [ "$attempt" -le "$RETRY_ATTEMPTS" ]; do
+    echo "Attempt $attempt of $RETRY_ATTEMPTS to upgrade cluster..."
     # Check if kubectl version reports the current version
     kind export kubeconfig --name kind
     if kubectl version | grep "Server Version:"| grep -q "$CURRENT_VERSION"; then
