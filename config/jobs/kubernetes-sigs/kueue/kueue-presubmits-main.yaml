@@ -318,6 +318,44 @@ presubmits:
             limits:
               cpu: "7"
               memory: "10Gi"
+  - name: pull-kueue-test-customconfigs-e2e-main
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-customconfigs-e2e-main
+      description: "Run customconfigs end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250205-f1f3519e6b-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.31.1
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.23
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-customconfigs
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
   - name: pull-kueue-verify-main
     cluster: eks-prow-build-cluster
     branches:
