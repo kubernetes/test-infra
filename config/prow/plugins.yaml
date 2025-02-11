@@ -1989,3 +1989,21 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  etcd-io/bbolt:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+  - name: needs-rebase
+    events:
+      - issue_comment
+      - pull_request
+  etcd-io/raft:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+  - name: needs-rebase
+    events:
+      - issue_comment
+      - pull_request
