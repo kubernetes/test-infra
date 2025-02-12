@@ -13,7 +13,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -68,7 +68,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.29.4
@@ -104,7 +104,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.30.0
@@ -139,7 +139,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.0
@@ -174,7 +174,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.32.0
@@ -211,7 +211,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         command:
         - runner.sh
         args:

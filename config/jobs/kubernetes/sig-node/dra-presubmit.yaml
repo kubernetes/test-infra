@@ -25,7 +25,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         command:
         - runner.sh
         args:
@@ -76,7 +76,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         command:
         - runner.sh
         args:
@@ -136,7 +136,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -189,7 +189,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -242,7 +242,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250208-8993a34739-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
