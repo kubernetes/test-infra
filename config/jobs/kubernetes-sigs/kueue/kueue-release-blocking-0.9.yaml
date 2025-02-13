@@ -255,11 +255,11 @@ periodics:
               memory: "10Gi"
 
   - interval: 12h
-    name: periodic-kueue-test-multikueue-e2e-release-0-9
+    name: periodic-kueue-test-e2e-multikueue-release-0-9
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-multikueue-e2e-release-0-9
+      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-release-0-9
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic multikueue end to end tests on release 0.9"

@@ -254,11 +254,11 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-multikueue-e2e-release-0-10
+    name: periodic-kueue-test-e2e-multikueue-release-0-10
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-multikueue-e2e-release-0-10
+      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-release-0-10
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic multikueue end to end tests"
@@ -300,11 +300,11 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-tas-e2e-release-0-10
+    name: periodic-kueue-test-e2e-tas-release-0-10
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-tas-e2e-release-0-10
+      testgrid-tab-name: periodic-kueue-test-e2e-tas-release-0-10
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic tas end to end tests"
