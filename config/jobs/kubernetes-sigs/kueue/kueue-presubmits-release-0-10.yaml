@@ -174,7 +174,7 @@ presubmits:
             limits:
               cpu: "7"
               memory: "10Gi"
-  - name: pull-kueue-test-multikueue-e2e-release-0-10
+  - name: pull-kueue-test-e2e-multikueue-release-0-10
     cluster: eks-prow-build-cluster
     branches:
       - ^release-0.10
@@ -183,7 +183,7 @@ presubmits:
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-multikueue-e2e-release-0-10
+      testgrid-tab-name: pull-kueue-test-e2e-multikueue-release-0-10
       description: "Run multikueue end to end tests"
     labels:
       preset-dind-enabled: "true"
@@ -212,7 +212,7 @@ presubmits:
             limits:
               cpu: "10"
               memory: "10Gi"
-  - name: pull-kueue-test-tas-e2e-release-0-10
+  - name: pull-kueue-test-e2e-tas-release-0-10
     cluster: eks-prow-build-cluster
     branches:
       - ^release-0.10
@@ -221,7 +221,7 @@ presubmits:
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-tas-e2e-release-0-10
+      testgrid-tab-name: pull-kueue-test-e2e-tas-release-0-10
       description: "Run tas end to end tests"
     labels:
       preset-dind-enabled: "true"
