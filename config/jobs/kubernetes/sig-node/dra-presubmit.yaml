@@ -32,15 +32,28 @@ presubmits:
         - /bin/bash
         - -xce
         - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest .
-          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.label-filter='Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky' &
+          # Additional features are not in kind.yaml, but they can be added at the end.
+          kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -83,19 +96,30 @@ presubmits:
         - /bin/bash
         - -xce
         - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          # Which DRA features exist can change over time.
+          features=( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
+          : "Enabling DRA feature(s): ${features[*]}."
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest .
-          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # Which DRA features exist can change over time.
-          features=( $(grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/') )
-          echo "Enabling DRA feature(s): ${features[*]}."
-          # Those additional features are not in kind.yaml, but they can be added at the end.
-          kind create cluster --retain --config <(cat test/e2e/dra/kind.yaml; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
-          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" &
+          # Additional features are not in kind.yaml, but they can be added at the end.
+          kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
