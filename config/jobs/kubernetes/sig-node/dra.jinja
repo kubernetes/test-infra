@@ -21,7 +21,7 @@
   - name: {{job_name}}
     cluster: {{cluster}}
     {%- if file == "ci" %}
-    interval: {{interval}}
+    interval: 6h
     {%- else %}
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -49,6 +49,9 @@
       testgrid-alert-email: {{testgrid_alert_email}}
       {%- if file != "canary" and ( not all_features or file == "presubmit" ) %}
       fork-per-release: "true"
+      {%- if file == "ci" %}
+      fork-per-release-periodic-interval: 24h
+      {%- endif %}
       {%- endif %}
     decorate: true
     decoration_config:
