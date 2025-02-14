@@ -39,8 +39,50 @@ periodics:
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-unit-master
 presubmits:
-  kubernetes-sigs/windows-testing:
+  kubernetes/kubernetes:
     - name: pull-kubernetes-unit-windows-master
+      always_run: false
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-azure-community: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: windows-testing
+          base_ref: master
+          path_alias: sigs.k8s.io/windows-testing
+          workdir: true
+      path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
+            command:
+              - "runner.sh"
+              - "./scripts/ci-k8s-unit-test.sh"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: "5Gi"
+              limits:
+                cpu: 2
+                memory: "5Gi"
+            env:
+              - name: VM_LOCATION
+                value: uksouth
+              - name: VM_SIZE
+                value: Standard_D8as_v5
+      annotations:
+        testgrid-dashboards: sig-windows-presubmit
+        testgrid-tab-name: pr-kubernetes-unit-windows-master
+  kubernetes-sigs/windows-testing:
+    - name: pull-kubernetes-unit-windows
       always_run: false
       cluster: eks-prow-build-cluster
       decorate: true
