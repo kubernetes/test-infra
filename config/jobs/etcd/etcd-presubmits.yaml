@@ -642,7 +642,6 @@ presubmits:
           privileged: true
 
   - name: pull-etcd-contrib-mixin
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -673,7 +672,6 @@ presubmits:
             memory: "4Gi"
 
   - name: pull-etcd-fuzzing-v3rpc
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
