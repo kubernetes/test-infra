@@ -84,7 +84,6 @@ periodics:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       description: Runs E2E tests for Dynamic Resource Allocation alpha and beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-      fork-per-release: "true"
     decorate: true
     decoration_config:
       timeout: 90m

@@ -47,7 +47,7 @@
       testgrid-dashboards: {{testgrid_dashboards}}
       description: {{description}}
       testgrid-alert-email: {{testgrid_alert_email}}
-      {%- if file != "canary" %}
+      {%- if file != "canary" and ( not all_features or file == "presubmit" ) %}
       fork-per-release: "true"
       {%- endif %}
     decorate: true
