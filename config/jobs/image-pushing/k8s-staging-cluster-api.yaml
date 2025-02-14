@@ -32,6 +32,9 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
 
   kubernetes-sigs/cluster-api-provider-vsphere:
     - name: post-cluster-api-provider-vsphere-push-images
@@ -437,6 +440,8 @@ periodics:
         # way as it usually does.
             - name: PULL_BASE_REF
               value: main
+            - name: LOG_TO_STDOUT
+              value: "y"
     annotations:
     # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
