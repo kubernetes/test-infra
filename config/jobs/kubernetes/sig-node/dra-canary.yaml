@@ -30,19 +30,17 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          # This turns the canary pull job into a test for a ci job because it ignores the checked out source code!
-          cd /tmp # Remove me, just for testing with blank slate.
           set -o pipefail
-          revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
-          # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
-          # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
-          hash=${revision/*+/}
-          kind_yaml=$(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+          # A presubmit job uses the checked out and merged source code.
+          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
           features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest "https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
@@ -53,7 +51,7 @@ presubmits:
               kind delete cluster
           }
           trap atexit EXIT
-          KUBECONFIG=${HOME}/.kube/config kubernetes/test/bin/ginkgo run --nodes=8 --output-dir="${ARTIFACTS}" --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" kubernetes/test/bin/e2e.test -- -provider=local -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -94,22 +92,19 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          # This turns the canary pull job into a test for a ci job because it ignores the checked out source code!
-          cd /tmp # Remove me, just for testing with blank slate.
           set -o pipefail
-          revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
-          # Report what was tested.
-          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
-          # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
-          hash=${revision/*+/}
-          kind_yaml=$(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+          # A presubmit job uses the checked out and merged source code.
+          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
           # Which DRA features exist can change over time.
-          features=( $( curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA' | sed 's/.*"\(.*\)"/\1/' ) )
+          features=( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
           : "Enabling DRA feature(s): ${features[*]}."
-          curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          kind build node-image --image=dra/node:latest "https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
@@ -120,7 +115,7 @@ presubmits:
               kind delete cluster
           }
           trap atexit EXIT
-          KUBECONFIG=${HOME}/.kube/config kubernetes/test/bin/ginkgo run --nodes=8 --output-dir="${ARTIFACTS}" --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" kubernetes/test/bin/e2e.test -- -provider=local -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
