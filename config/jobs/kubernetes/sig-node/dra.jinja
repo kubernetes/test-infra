@@ -122,7 +122,7 @@
           {%- endif %}
           {%- if all_features %}
           # Which DRA features exist can change over time.
-          features=( {%- if file == "ci" %} $( curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA' {% else %} grep '"DRA' pkg/features/kube_features.go {%- endif %} | sed 's/.*"\(.*\)"/\1/' ) )
+          features=( $( {%- if file == "ci" %} curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA' {% else %} grep '"DRA' pkg/features/kube_features.go {%- endif %} | sed 's/.*"\(.*\)"/\1/' ) )
           : "Enabling DRA feature(s): ${features[*]}."
           {%- else %}
           features=( )

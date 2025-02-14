@@ -97,7 +97,7 @@ presubmits:
           kind_yaml=$(cat test/e2e/dra/kind.yaml)
           kind_node_source=.
           # Which DRA features exist can change over time.
-          features=( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
+          features=( $( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
           : "Enabling DRA feature(s): ${features[*]}."
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
           ginkgo=_output/bin/ginkgo
