@@ -833,3 +833,34 @@ presubmits:
             memory: "4Gi"
       nodeSelector:
         kubernetes.io/arch: arm64
+
+  - name: pull-etcd-coverage-report
+    optional: true # remove once the job is stable
+    cluster: eks-prow-build-cluster
+    always_run: false # set to true once the job works
+    branches:
+      - main
+      - release-3.6
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-coverage-report
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250205-f1f3519e6b-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            make upload-coverage-report
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
