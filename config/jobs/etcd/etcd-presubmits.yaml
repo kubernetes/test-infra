@@ -642,7 +642,6 @@ presubmits:
           privileged: true
 
   - name: pull-etcd-contrib-mixin
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -673,7 +672,6 @@ presubmits:
             memory: "4Gi"
 
   - name: pull-etcd-fuzzing-v3rpc
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -711,7 +709,7 @@ presubmits:
   - name: pull-etcd-grpcproxy-integration-amd64
     optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
-    always_run: false # set to true once the job works
+    always_run: true
     branches:
       - main
       - release-3.6
@@ -742,7 +740,7 @@ presubmits:
   - name: pull-etcd-grpcproxy-e2e-amd64
     optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
-    always_run: false # set to true once the job works
+    always_run: true
     branches:
       - main
       - release-3.6
@@ -773,7 +771,7 @@ presubmits:
   - name: pull-etcd-grpcproxy-integration-arm64
     optional: true # remove once the job is stable
     cluster: k8s-infra-prow-build
-    always_run: false # set to true once the job works
+    always_run: true
     branches:
       - main
       - release-3.6
@@ -806,7 +804,7 @@ presubmits:
   - name: pull-etcd-grpcproxy-e2e-arm64
     optional: true # remove once the job is stable
     cluster: k8s-infra-prow-build
-    always_run: false # set to true once the job works
+    always_run: true
     branches:
       - main
       - release-3.6
