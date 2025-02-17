@@ -44,6 +44,13 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # Inject ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
+              # Add kubeadmConfigPatches list before node list, there is none at the moment.
+              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
+          fi
+          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
           # Additional features are not in kind.yaml, but they can be added at the end.
           kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
           atexit () {
@@ -60,10 +67,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
 
   - name: pull-kubernetes-kind-dra-all-canary
     cluster: eks-prow-build-cluster
@@ -108,6 +115,13 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # Inject ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
+              # Add kubeadmConfigPatches list before node list, there is none at the moment.
+              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
+          fi
+          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
           # Additional features are not in kind.yaml, but they can be added at the end.
           kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
           atexit () {
@@ -124,10 +138,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
 
   - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra-canary
     cluster: k8s-infra-prow-build
@@ -180,10 +194,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
 
   - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra-canary
     cluster: k8s-infra-prow-build
@@ -236,10 +250,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
 
   - name: pull-kubernetes-node-e2e-containerd-1-7-dra-canary
     cluster: k8s-infra-prow-build
@@ -285,7 +299,7 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 9Gi
+            memory: 6Gi
