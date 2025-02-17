@@ -140,6 +140,15 @@
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          {%- if file == "canary" %}
+          # Inject ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
+              # Add kubeadmConfigPatches list before node list, there is none at the moment.
+              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
+          fi
+          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
+          {%- endif %}
           # Additional features are not in kind.yaml, but they can be added at the end.
           kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
           atexit () {
