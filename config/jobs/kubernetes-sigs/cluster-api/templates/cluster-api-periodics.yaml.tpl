@@ -345,6 +345,9 @@ periodics:
           - name: GINKGO_LABEL_FILTER
             value: "!Conformance"
 {{- end }}
+          # Ensure required kind images get built.
+          - name: KIND_BUILD_IMAGES
+            value: "KUBERNETES_VERSION_LATEST_CI"
           - name: KUBERNETES_VERSION_MANAGEMENT
             value: {{ index (index $.versions ((last $.config.Upgrades).To)) "k8sRelease" }}
           - name: KUBERNETES_VERSION
