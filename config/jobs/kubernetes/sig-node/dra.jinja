@@ -53,19 +53,17 @@
     decorate: true
     decoration_config:
       timeout: {{timeout}}
-    {%- if file == "ci" %}
+    {%- if file != "ci" %}
+    path_alias: k8s.io/kubernetes
+    {%- endif %}
+    {%- if job_type == "node" %}
     extra_refs:
+    {%- if file == "ci" %}
     - org: kubernetes
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
       workdir: true
-    {%- else %}
-    path_alias: k8s.io/kubernetes
-    {%- endif %}
-    {%- if job_type == "node" %}
-    {%- if file != "ci" %}
-    extra_refs:
     {%- endif %}
     - org: kubernetes
       repo: test-infra
