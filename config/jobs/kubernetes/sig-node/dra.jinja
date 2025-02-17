@@ -155,10 +155,19 @@
           privileged: true
         {%- endif %}
         resources:
+          {%- if file == "canary" %}
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+          {%- else %}
           limits:
             cpu: 2
             memory: 9Gi
           requests:
             cpu: 2
             memory: 9Gi
+          {%- endif %}
 
