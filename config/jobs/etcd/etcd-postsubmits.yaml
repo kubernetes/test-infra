@@ -180,6 +180,8 @@ postsubmits:
     - main
     - release-3.6
     decorate: true
+    decoration_config:
+      timeout: 60m
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
       testgrid-tab-name: post-etcd-e2e-amd64
@@ -209,6 +211,8 @@ postsubmits:
     - main
     - release-3.6
     decorate: true
+    decoration_config:
+      timeout: 60m
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
       testgrid-tab-name: post-etcd-e2e-arm64
@@ -239,6 +243,8 @@ postsubmits:
     - main
     - release-3.6
     decorate: true
+    decoration_config:
+      timeout: 60m
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
       testgrid-tab-name: post-etcd-e2e-386
