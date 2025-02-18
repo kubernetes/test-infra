@@ -493,6 +493,56 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-main
+  - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts-dra
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    run_if_changed: 'test\/e2e\/conformance_test.go|templates\/test|^scripts\/|conformance.mk'
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    branches:
+    - ^main$
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250121-4aed057712-1.29
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+            - name: CONFORMANCE_FLAVOR
+              value: conformance-ci-artifacts-dra
+            - name: KUBETEST_CONF_PATH
+              value: ${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-dra-ginkgo-v2.yaml
+            - name: KUBERNETES_VERSION
+              value: latest
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-conformance-k8s-ci-dra-main
   - name: pull-cluster-api-provider-azure-apidiff
     cluster: k8s-infra-prow-build
     decorate: true
