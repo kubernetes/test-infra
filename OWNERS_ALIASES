@@ -1,5 +1,6 @@
 aliases:
   # business hours oncall for prow etc (https://go.k8s.io/oncall)
+  test-empty-alias:
   test-infra-oncall:
   - airbornepony
   - chases2
