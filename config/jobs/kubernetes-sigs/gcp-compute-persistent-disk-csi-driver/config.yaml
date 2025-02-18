@@ -23,10 +23,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: "8Gi"
+            memory: "10Gi"
           requests:
             cpu: 2
-            memory: "8Gi"
+            memory: "10Gi"
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
