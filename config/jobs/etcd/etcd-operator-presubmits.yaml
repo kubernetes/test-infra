@@ -49,8 +49,6 @@ presubmits:
         - bash
         - -c
         - |
-          # We can't remove the line below for now, because the e2e test needs the kind binary present
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
           make test-e2e
         # docker-in-docker needs privileged mode
         securityContext:
