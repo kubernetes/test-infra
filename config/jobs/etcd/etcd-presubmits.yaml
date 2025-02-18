@@ -837,7 +837,7 @@ presubmits:
   - name: pull-etcd-coverage-report
     optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
-    always_run: false # set to true once the job works
+    always_run: true
     branches:
       - main
       - release-3.6
