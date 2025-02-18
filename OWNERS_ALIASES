@@ -1,13 +1,6 @@
 aliases:
   # business hours oncall for prow etc (https://go.k8s.io/oncall)
-  test-empty-alias:
   test-infra-oncall:
-  - airbornepony
-  - chases2
-  - cjwagner
-  - michelle192837
-  - mpherman2
-  - timwangmusic
 
 
   sig-k8s-infra-oncall:
