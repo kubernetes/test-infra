@@ -1,0 +1,234 @@
+periodics:
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-1.32-informing
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kind-dra-1-32
+  spec:
+    containers:
+    - args:
+      - /bin/bash
+      - -xce
+      - |
+        set -o pipefail
+        # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+        revision=$(curl --fail --silent --show-error --location ${CI_URL}/${LATEST_TXT})
+        # Report what was tested.
+        echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+        # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+        hash=${revision/*+/}
+        kind_yaml=$(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+        kind_node_source="${CI_URL}/$revision/kubernetes-server-linux-amd64.tar.gz"
+        features=( )
+        curl --fail --silent --show-error --location "${CI_URL}/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+        ginkgo=kubernetes/test/bin/ginkgo
+        e2e_test=kubernetes/test/bin/e2e.test
+        # The latest kind is assumed to work also for older release branches, should this job get forked.
+        curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+        kind build node-image --image=dra/node:latest "${kind_node_source}"
+        GINKGO_E2E_PID=
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+        # Inject ClusterConfiguration which causes etcd to use /tmp
+        # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+        if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
+            # Add kubeadmConfigPatches list before node list, there is none at the moment.
+            kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
+        fi
+        kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
+        # Additional features are not in kind.yaml, but they can be added at the end.
+        kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+        atexit () {
+            kind export logs "${ARTIFACTS}/kind"
+            kind delete cluster
+        }
+        trap atexit EXIT
+        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+        GINKGO_E2E_PID=$!
+        wait "${GINKGO_E2E_PID}"
+      command:
+      - runner.sh
+      env:
+      - name: LATEST_TXT
+        value: latest-1.32.txt
+      - name: CI_URL
+        value: https://dl.k8s.io/ci
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-1.32
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-1.32-informing
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  extra_refs:
+  - base_ref: release-1.32
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+    workdir: true
+  - base_ref: master
+    org: kubernetes
+    path_alias: k8s.io/test-infra
+    repo: test-infra
+  interval: 24h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-node-e2e-crio-cgrpv1-dra-1-32
+  spec:
+    containers:
+    - args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-zone=us-west1-b
+      - --parallelism=1
+      - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+      - --timeout=60m
+      - --skip-regex=
+      - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-serial.yaml
+      command:
+      - runner.sh
+      env:
+      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+        value: "1"
+      - name: GOPATH
+        value: /go
+      - name: KUBE_SSH_USER
+        value: core
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-1.32
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-1.32-informing
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  extra_refs:
+  - base_ref: release-1.32
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+    workdir: true
+  - base_ref: master
+    org: kubernetes
+    path_alias: k8s.io/test-infra
+    repo: test-infra
+  interval: 24h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-node-e2e-crio-cgrpv2-dra-1-32
+  spec:
+    containers:
+    - args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-zone=us-west1-b
+      - --parallelism=1
+      - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+      - --timeout=60m
+      - --skip-regex=
+      - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
+      command:
+      - runner.sh
+      env:
+      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+        value: "1"
+      - name: GOPATH
+        value: /go
+      - name: KUBE_SSH_USER
+        value: core
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-1.32
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-1.32-informing
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  extra_refs:
+  - base_ref: release-1.32
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+    workdir: true
+  - base_ref: master
+    org: kubernetes
+    path_alias: k8s.io/test-infra
+    repo: test-infra
+  interval: 24h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-node-e2e-containerd-1-7-dra-1-32
+  spec:
+    containers:
+    - args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-zone=us-west1-b
+      - --parallelism=1
+      - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+      - --timeout=60m
+      - --skip-regex=
+      - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
+      command:
+      - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-1.32
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+postsubmits: {}
+presubmits: {}
