@@ -311,7 +311,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/alpha":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
-          value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf Alpha"
+          value: "!Slow && !Disruptive && !Flaky && Feature: containsAny Alpha"
         - name: SKIP
           value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
@@ -359,7 +359,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
         - name: LABEL_FILTER
-          value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf Beta"
+          value: "!Slow && !Disruptive && !Flaky && Feature: containsAny Beta"
         - name: SKIP
           value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
@@ -408,7 +408,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
-          value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf { Alpha, Beta }"
+          value: "!Slow && !Disruptive && !Flaky && Feature: containsAny { Alpha, Beta }"
         - name: SKIP
           value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
         - name: PARALLEL
@@ -509,7 +509,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/alpha":"true", "api/ga":"true"}'
       - name: LABEL_FILTER
-        value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf Alpha"
+        value: "!Slow && !Disruptive && !Flaky && Feature: containsAny Alpha"
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
@@ -561,7 +561,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/beta":"true", "api/ga":"true"}'
       - name: LABEL_FILTER
-        value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf { Beta }"
+        value: "!Slow && !Disruptive && !Flaky && Feature: containsAny { Beta }"
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
@@ -613,7 +613,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
       - name: LABEL_FILTER
-        value: "!Slow && !Disruptive && !Flaky && Feature: isSubsetOf { Alpha, Beta }"
+        value: "!Slow && !Disruptive && !Flaky && Feature: containsAny { Alpha, Beta }"
       - name: SKIP
         value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
