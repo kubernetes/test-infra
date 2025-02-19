@@ -283,7 +283,7 @@ periodics:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
-      description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd
+      description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd 1.7
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
