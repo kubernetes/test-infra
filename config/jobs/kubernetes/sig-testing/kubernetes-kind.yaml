@@ -284,6 +284,11 @@ presubmits:
 
   - name: pull-kubernetes-e2e-kind-alpha-features
     cluster: k8s-infra-prow-build
+    annotations:
+      description: Runs tests with no special requirements other than alpha feature gates in a KinD cluster where alpha feature gates and APIs are enabled.
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
     optional: true
     always_run: false
     decorate: true
@@ -326,13 +331,14 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
 
   - name: pull-kubernetes-e2e-kind-beta-features
     cluster: k8s-infra-prow-build
+    annotations:
+      description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
     optional: true
     always_run: false
     decorate: true
@@ -374,12 +380,13 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
+
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features
     annotations:
+      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
-
-  - name: pull-kubernetes-e2e-kind-alpha-beta-features
     cluster: k8s-infra-prow-build
     optional: true
     run_if_changed: ^pkg/features/
@@ -423,10 +430,7 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
+
   - name: pull-kubernetes-e2e-kind-evented-pleg
     cluster: k8s-infra-prow-build
     optional: true
@@ -481,7 +485,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-alpha
-    description: Uses kubetest to run e2e tests against a latest kubernetes master and alpha features enabled cluster created with sigs.k8s.io/kind
+    description: Runs tests with no special requirements other than alpha feature gates in a KinD cluster where alpha feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
     testgrid-num-columns-recent: '6'
   labels:
@@ -533,7 +537,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-beta
-    description: Uses kubetest to run e2e tests against a latest kubernetes master and beta features enabled cluster created with sigs.k8s.io/kind
+    description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
     testgrid-num-columns-recent: '6'
   labels:
@@ -585,7 +589,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-kind, sig-release-master-informing
     testgrid-tab-name: kind-master-alpha-beta
-    description: Uses kubetest to run e2e tests against a latest kubernetes master and all features enabled cluster created with sigs.k8s.io/kind
+    description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
     testgrid-num-columns-recent: '6'
   labels:
