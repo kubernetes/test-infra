@@ -16,6 +16,10 @@ periodics:
       preset-azure-community: "true"
     extra_refs:
     - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    - org: kubernetes-sigs
       repo: cloud-provider-azure
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
@@ -38,6 +42,7 @@ periodics:
         - bash
         - -c
         - >-
+          sleep 300 &&
           cd ${GOPATH}/src/k8s.io/perf-tests/ &&
           ./run-e2e.sh cluster-loader2
           --nodes=100 \
