@@ -1517,22 +1517,17 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops28 = 'v1.28.7'
     kops29 = 'v1.29.2'
     kops30 = 'v1.30.3'
-    kops31 = 'v1.31.0-beta.1'
+    kops31 = 'v1.31.0'
 
     versions_list = [
         #  kops    k8s          kops      k8s
         # 1.29 release branch
-        ((kops28, 'v1.28.14'), ('1.29', 'v1.29.9')),
         ((kops29, 'v1.29.8'), ('1.29', 'v1.29.9')),
         # 1.30 release branch
-        ((kops28, 'v1.28.14'), ('1.30', 'v1.29.9')),
         ((kops29, 'v1.29.9'), ('1.30', 'v1.30.5')),
         ((kops30, 'v1.30.4'), ('1.30', 'v1.30.5')),
-        # kOps 1.28 upgrade to latest
-        ((kops28, 'v1.28.0'), ('latest', 'v1.27.0')),
         # kOps 1.29 upgrade to latest
         ((kops29, 'v1.26.0'), ('latest', 'v1.27.0')),
         ((kops29, 'v1.27.0'), ('latest', 'v1.28.0')),
@@ -1604,7 +1599,7 @@ def generate_upgrades():
         # Older kops versions have a conflict between aws-load-balancer-controller and cert-manager
         # The fix was only backported to 1.30, so we skip many-addons for older upgrades.
         # Ref: https://github.com/kubernetes/kops/pull/16743
-        if kops_a in (kops28, kops29):
+        if kops_a in (kops29):
             continue
         results.append(
             build_test(name_override=job_name + "-many-addons",
@@ -1619,50 +1614,6 @@ def generate_upgrades():
                        env=addonsenv,
                        )
         )
-
-    # One-off upgrade test: from kops-128 -> latest with k8s.local, with calico
-    # Exit criteria: Remove when https://github.com/kubernetes/kops/issues/16276 is fixed
-    results.append(
-        build_test(name_override='kops-aws-upgrade-bug16276-calico',
-                   cluster_name='bug16276-calico.k8s.local',
-                   distro='u2404',
-                   networking='calico',
-                   k8s_version='stable',
-                   kops_channel='alpha',
-                   extra_dashboards=['kops-upgrades'],
-                   runs_per_day=3,
-                   test_timeout_minutes=120,
-                   scenario='upgrade-ab',
-                   env={
-                       'KOPS_VERSION_A': kops28,
-                       'K8S_VERSION_A': 'v1.28.0',
-                       'KOPS_VERSION_B': 'latest',
-                       'K8S_VERSION_B': 'v1.28.0',
-                   },
-                   )
-    )
-
-    # One-off upgrade test: from kops-128 -> latest with k8s.local, with cilium
-    # Exit criteria: Remove when https://github.com/kubernetes/kops/issues/16276 is fixed
-    results.append(
-        build_test(name_override='kops-aws-upgrade-bug16276-cilium',
-                   cluster_name='bug16276-cilium.k8s.local',
-                   distro='u2204',
-                   networking='cilium',
-                   k8s_version='stable',
-                   kops_channel='alpha',
-                   extra_dashboards=['kops-upgrades'],
-                   runs_per_day=3,
-                   test_timeout_minutes=120,
-                   scenario='upgrade-ab',
-                   env={
-                       'KOPS_VERSION_A': kops28,
-                       'K8S_VERSION_A': 'v1.28.0',
-                       'KOPS_VERSION_B': 'latest',
-                       'K8S_VERSION_B': 'v1.28.0',
-                   },
-                   )
-    )
     return results
 
 ###############################
