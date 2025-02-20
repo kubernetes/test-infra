@@ -1,0 +1,29 @@
+postsubmits:
+  kubernetes-sigs/dra-example-driver:
+    - name: post-dra-example-driver-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-k8s-infra-gcb
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: dra-example-driver-admins
+          - org: kubernetes-sigs
+            slug: dra-example-driver-maintainers
