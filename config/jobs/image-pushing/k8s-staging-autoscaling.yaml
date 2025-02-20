@@ -5,6 +5,8 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-autoscaling-addon-resizer, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 180m
       branches:
         - ^addon-resizer-release-1.8$
       spec:
