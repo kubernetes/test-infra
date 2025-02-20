@@ -856,7 +856,10 @@ presubmits:
           - bash
           - -c
           - |
+            return_code=0
+            make test-coverage || return_code=$?
             make upload-coverage-report
+            exit $return_code
         resources:
           requests:
             cpu: "4"
