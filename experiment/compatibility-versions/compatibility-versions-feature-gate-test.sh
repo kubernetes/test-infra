@@ -215,9 +215,15 @@ main() {
   export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
   mkdir -p "${ARTIFACTS}"
 
+  # Get current and n-1 version numbers
+  MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
+  MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
+  export VERSION_DELTA=${VERSION_DELTA:-1}
+  export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
   export EMULATED_VERSION=$(get_latest_release_version)
+  export VERSIONED_FEATURE_LIST=${VERSIONED_FEATURE_LIST:-"test/featuregates_linter/test_data/versioned_feature_list.yaml"}
   export PREV_VERSIONED_FEATURE_LIST=${PREV_VERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/versioned_feature_list.yaml"}
-  export UNVERSIONED_FEATURE_LIST=${UNVERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/unversioned_feature_list.yaml"}
+  export PREV_UNVERSIONED_FEATURE_LIST=${PREV_UNVERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/unversioned_feature_list.yaml"}
 
   # Create and validate previous cluster
   git clone --filter=blob:none --single-branch --branch "release-${EMULATED_VERSION}" https://github.com/kubernetes/kubernetes.git "release-${EMULATED_VERSION}"
@@ -234,7 +240,7 @@ main() {
   LATEST_RESULTS="${ARTIFACTS}/latest_results.txt"
 
   VALIDATE_SCRIPT="${VALIDATE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/validate-compatibility-versions-feature-gates.sh}"
-  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${LATEST_METRICS}" "${PREV_VERSIONED_FEATURE_LIST}" "${UNVERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
+  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${CURRENT_VERSION}" "${LATEST_METRICS}" "${VERSIONED_FEATURE_LIST}" "${PREV_VERSIONED_FEATURE_LIST}" "${PREV_UNVERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
 
   # Report results
   echo "=== Latest Cluster (${EMULATED_VERSION}) Validation ==="
