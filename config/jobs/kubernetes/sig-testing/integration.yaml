@@ -38,6 +38,82 @@ presubmits:
           requests:
             cpu: 8
             memory: 20Gi
+  - name: pull-kubernetes-integration-canary
+    cluster: eks-prow-build-cluster
+    always_run: false # Only for canary!
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "false" # Only for canary!
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-canaries # Only for canary!
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
+        command:
+        - runner.sh
+        env:
+        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+          value: "8"
+        - name: KUBE_TIMEOUT
+          value: "-timeout=1h30m"
+        args:
+        - ./hack/jenkins/integration-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 20Gi
+          requests:
+            cpu: 8
+            memory: 20Gi
+  - name: pull-kubernetes-cmd-canary
+    cluster: eks-prow-build-cluster
+    always_run: false # Only for canary!
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "false" # Only for canary!
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-canaries # Only for canary!
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-master
+        command:
+        - runner.sh
+        env:
+        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+          value: "8"
+        - name: KUBE_TIMEOUT
+          value: "-timeout=1h30m"
+        args:
+        - ./hack/jenkins/cmd-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 20Gi
+          requests:
+            cpu: 8
+            memory: 20Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
