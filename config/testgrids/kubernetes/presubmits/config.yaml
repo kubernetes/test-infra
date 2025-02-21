@@ -33,6 +33,12 @@ dashboards:
   - name: pull-kubernetes-node-e2e-containerd
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: width=10
+  - name: pull-kubernetes-cmd
+    test_group_name: pull-kubernetes-cmd
+    base_options: width=10
+  - name: pull-kubernetes-cmd-go-compatibility
+    test_group_name: pull-kubernetes-cmd-go-compatibility
+    base_options: width=10
   - name: pull-kubernetes-integration
     test_group_name: pull-kubernetes-integration
     base_options: width=10
