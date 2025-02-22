@@ -17,8 +17,9 @@ involved are listed in [/OWNERS]. We are most responsive on our slack channel
 We also have three other slack channels:
 
 - [#testing-ops]: for [prow.k8s.io] and other test-infra ops.
-- [#prow]: for discussions related to the use or development of [`prow`](/prow)
-- [#testgrid]: for discussions related to the use of development of [`testgrid`](https://github.com/GoogleCloudPlatform/testgrid)
+- [#prow]: for discussions related to the use or development of [`prow`](https://github.com/kubernetes-sigs/prow)
+- [#hydrophone]: for discussions related to the use or development of [`hydrophone`](https://github.com/kubernetes-sigs/hydrophone)
+- [#testgrid]: for discussions related to the use or development of [`testgrid`](https://github.com/kubernetes-sigs/testgrid)
 
 ## Workflow
 
@@ -130,6 +131,7 @@ has test coverage in a variety of environments. For more info please see
 [help-wanted-docs]: https://www.kubernetes.dev/docs/guide/help-wanted/
 
 [#prow]: https://kubernetes.slack.com/messages/prow
+[#hydrophone]: https://kubernetes.slack.com/messages/hydrophone
 [#testgrid]: https://kubernetes.slack.com/messages/testgrid
 [#testing-ops]: https://kubernetes.slack.com/messages/testing-ops
 
