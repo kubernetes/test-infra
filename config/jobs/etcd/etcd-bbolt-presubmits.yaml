@@ -8,6 +8,8 @@ presubmits:
         - main
         - release-1.4
       decorate: true
+      decoration_config:
+        timeout: 60m
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
         testgrid-tab-name: pull-bbolt-test-1-cpu-arm64
@@ -37,6 +39,8 @@ presubmits:
         - main
         - release-1.4
       decorate: true
+      decoration_config:
+        timeout: 60m
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
         testgrid-tab-name: pull-bbolt-test-2-cpu-arm64
@@ -66,6 +70,8 @@ presubmits:
         - main
         - release-1.4
       decorate: true
+      decoration_config:
+        timeout: 60m
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
         testgrid-tab-name: pull-bbolt-test-4-cpu-arm64
@@ -95,6 +101,8 @@ presubmits:
         - main
         - release-1.4
       decorate: true
+      decoration_config:
+        timeout: 60m
       annotations:
         testgrid-dashboards: sig-etcd-bbolt-presubmits
         testgrid-tab-name: pull-bbolt-test-4-cpu-race-arm64
