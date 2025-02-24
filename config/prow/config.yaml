@@ -363,9 +363,11 @@ branch-protection:
             contexts:
             - tests-e2e-scenarios-bare-metal
             - build-linux-amd64
+            - build-linux-arm64
             - build-macos-amd64
             - build-windows-amd64
-            - verify
+            - verify-amd64
+            - verify-arm64
         kubelet:
           restrictions:
             users: []
