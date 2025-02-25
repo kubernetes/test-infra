@@ -558,6 +558,9 @@ branch-protection:
               protect: true
             kubetest2-aks:
               protect: true
+        cve-feed-osv:
+          exclude:
+            - "^vulns-" # don't protect branches created by CVE feed github action
         descheduler:
           branches:
             gh-pages:
