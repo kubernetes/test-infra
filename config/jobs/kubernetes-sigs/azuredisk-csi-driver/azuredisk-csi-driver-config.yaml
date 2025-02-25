@@ -1,3 +1,67 @@
+periodics:
+- name: ci-azuredisk-csi-driver-e2e-capz-windows
+  cluster: eks-prow-build-cluster
+  interval: 72h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    serviceAccountName: azure
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250205-f1f3519e6b-master
+        command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+        args:
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+            make e2e-test
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        env:
+          - name: WINDOWS # azuredisk-csi-driver config
+            value: "true"
+          - name: TEST_WINDOWS # CAPZ config
+            value: "true"
+          - name: WINDOWS_SERVER_VERSION # CAPZ config
+            value: "windows-2022"
+          - name: NODE_MACHINE_TYPE # CAPZ config
+            value: "Standard_D4s_v3"
+          - name: DISABLE_ZONE # azuredisk-csi-driver config
+            value: "true"
+          - name: KUBERNETES_VERSION # CAPZ config
+            value: "latest"
+          - name: WORKER_MACHINE_COUNT # CAPZ config
+            value: "0" # Don't create any linux worker nodes
+  annotations:
+    testgrid-dashboards: provider-azure-azuredisk-csi-driver
+    testgrid-tab-name: pci-azuredisk-csi-driver-e2e-capz-windows
+    description: "Run E2E tests on a capz Windows 2022 cluster for Azure Disk CSI driver."
+    testgrid-num-columns-recent: '30'
 presubmits:
   kubernetes-sigs/azuredisk-csi-driver:
   - name: pull-azuredisk-csi-driver-verify
