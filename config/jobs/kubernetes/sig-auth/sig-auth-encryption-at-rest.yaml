@@ -40,11 +40,11 @@ presubmits:
         - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 12Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 12Gi
 
 periodics:
 - interval: 6h
@@ -81,8 +81,8 @@ periodics:
       - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
       resources:
         limits:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 12Gi
         requests:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 12Gi
