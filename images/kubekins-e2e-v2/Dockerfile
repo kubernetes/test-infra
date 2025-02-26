@@ -66,11 +66,13 @@ ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud
 RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
-    /google-cloud-sdk/install.sh \
-    --disable-installation-options \
-    --bash-completion=false \
-    --path-update=false \
-    --usage-reporting=false && \
+    if [ "${TARGETARCH}" != "ppc64le" ]; then \
+        /google-cloud-sdk/install.sh \
+        --disable-installation-options \
+        --bash-completion=false \
+        --path-update=false \
+        --usage-reporting=false; \
+    fi && \
     gcloud components install alpha beta && \
     gcloud info | tee /workspace/gcloud-info.txt
 
@@ -128,11 +130,13 @@ RUN mkdir /docker-graph
 # The invocation at the end is to prevent download failures downloads as in the bug.
 # TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.
 ARG CFSSL_VERSION
-RUN wget -q -O cfssl "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
+RUN if [ "${TARGETARCH}" != "ppc64le" ]; then \
+    wget -q -O cfssl "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
     wget -q -O cfssljson "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssljson_${CFSSL_VERSION}_linux_${TARGETARCH}" && \
     chmod +x cfssl cfssljson && \
     mv cfssl cfssljson /usr/local/bin && \
-    cfssl version
+    cfssl version; \
+    fi
 
 # replace kubectl with one from K8S_RELEASE
 ARG K8S_RELEASE=latest
@@ -156,7 +160,7 @@ RUN wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_
 
 # install kind if a version is provided
 ARG KIND_VERSION
-RUN if [ -n "${KIND_VERSION}" ]; then \
+RUN if [[ ${TARGETARCH} != "ppc64le" && -n "${KIND_VERSION}" ]] ; then \
     wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-${TARGETARCH} && \
     chmod +x /usr/local/bin/kind; \
     fi
