@@ -1817,7 +1817,7 @@ def generate_versions():
             runs_per_day=8,
         )
     ]
-    for version in ['1.29', '1.28', '1.27', '1.26', '1.25']:
+    for version in ['1.32', '1.31', '1.30', '1.29', '1.28', '1.27']:
         results.append(
             build_test(
                 cloud='aws',
