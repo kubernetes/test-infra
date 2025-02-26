@@ -24,6 +24,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-test-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs unit tests for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-build-v1beta1
     cluster: eks-prow-build-cluster
     always_run: true
@@ -48,9 +49,11 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-build-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Builds the project to ensure there are no compilation errors for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-e2e-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
     optional: false
     decorate: true
     skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
@@ -88,9 +91,11 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Executes end-to-end tests for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-apiversion-upgrade-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
     optional: false
     decorate: true
     skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|Makefile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
@@ -171,9 +176,11 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-optional-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs optional end-to-end tests for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-e2e-aks-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
     optional: false
     decorate: true
     decoration_config:
@@ -213,6 +220,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-aks-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Tests integration with Azure Kubernetes Service (AKS) for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-capi-e2e-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -256,6 +264,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-capi-e2e-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs Cluster API end-to-end tests for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-verify-v1beta1
     cluster: eks-prow-build-cluster
     always_run: true
@@ -287,6 +296,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-verify-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Verifies code quality and style for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-conformance-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -324,6 +334,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Validates conformance for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-apidiff-v1beta1
     cluster: k8s-infra-prow-build
     decorate: true
@@ -351,9 +362,12 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-v1beta1
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Checks for API differences in the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-ci-entrypoint-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
     optional: false
     decorate: true
     skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
@@ -435,6 +449,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-k8s-ci-v1beta1
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs conformance tests with CI artifacts for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-e2e-workload-upgrade-v1beta1
     cluster: eks-prow-build-cluster
     labels:
@@ -477,3 +493,5 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-upgrade-v1beta1
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Tests workload cluster upgrades for the v1beta1 release branch.
