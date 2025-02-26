@@ -456,6 +456,9 @@ presubmits:
           value: "true"
         - name: GINKGO_LABEL_FILTER
           value: "!Conformance"
+        # Ensure required kind images get built.
+        - name: KIND_BUILD_IMAGES
+          value: "KUBERNETES_VERSION_LATEST_CI"
         - name: KUBERNETES_VERSION_MANAGEMENT
           value: ci/latest-1.33
         - name: KUBERNETES_VERSION
