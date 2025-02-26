@@ -332,11 +332,14 @@ presubmits:
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "standard"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: GINKGO_ARGS  # cloud-provider-azure config
           value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
+        # TODO(mainred): remove template with static version
+        - name: CLUSTER_TEMPLATE  # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/453dee707edb7a016440c5277107a17523b9c60f/templates/test/ci/cluster-template-prow-ci-version.yaml
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
