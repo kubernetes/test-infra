@@ -4,7 +4,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 48h
+  minimum_interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -36,13 +36,13 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on a stable k8s version with latest cluster-api-provider-azure
+    description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-main
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 48h
+  minimum_interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -82,14 +82,14 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-k8s-ci-main
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-dra-main
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 2h # TODO: increase this to 48h when we're confident it's stable
+  minimum_interval: 4h # TODO: increase this to 48h when we're confident it's stable
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -142,7 +142,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 48h
+  minimum_interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -179,12 +179,13 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-capi-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Runs Cluster API E2E tests on latest cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-apiversion-upgrade-main
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 48h
+  minimum_interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -223,7 +224,7 @@ periodics:
     description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
 - name: periodic-cluster-api-provider-azure-coverage
   cluster: eks-prow-build-cluster
-  interval: 12h
+  minimum_interval: 12h
   decorate: true
   path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   extra_refs:
@@ -267,7 +268,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 48h
+  minimum_interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -304,12 +305,13 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Runs workload cluster creation E2E tests on latest cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-e2e-aks-main
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 48h
+  minimum_interval: 48h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -346,12 +348,13 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-e2e-aks-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Runs managed Kubernetes E2E tests on latest cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-100-nodes
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 24h
+  minimum_interval: 24h
   path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   labels:
     preset-dind-enabled: "true"
@@ -448,3 +451,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-100-nodes-k8s-master
+    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Runs scalability tests with 100 nodes on latest cluster-api-provider-azure

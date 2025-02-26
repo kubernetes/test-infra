@@ -40,10 +40,13 @@ presubmits:
           requests:
             cpu: 6
             memory: 16Gi
+    decoration_config:
+      timeout: 2h
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-test-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs unit tests and generates code coverage reports for the main branch.
   - name: pull-cluster-api-provider-azure-build
     cluster: eks-prow-build-cluster
     always_run: true
@@ -64,10 +67,13 @@ presubmits:
           requests:
             cpu: 6
             memory: 8Gi
+    decoration_config:
+      timeout: 1h
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-build-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Builds the project to ensure there are no compilation errors on the main branch.
   - name: pull-cluster-api-provider-azure-e2e
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -104,10 +110,13 @@ presubmits:
         securityContext:
           privileged: true
       serviceAccountName: azure
+    decoration_config:
+      timeout: 4h
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Executes end-to-end tests to validate the functionality of the main branch.
   - name: pull-cluster-api-provider-azure-e2e-optional
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -150,6 +159,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-optional-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs optional end-to-end tests that are not required for every PR.
   - name: pull-cluster-api-provider-azure-e2e-aks
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -192,6 +202,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-aks-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Tests the integration with Azure Kubernetes Service (AKS) for the main branch.
   - name: pull-cluster-api-provider-azure-capi-e2e
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -235,6 +246,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-capi-e2e-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs Cluster API end-to-end tests to ensure compatibility with the main branch.
   - name: pull-cluster-api-provider-azure-verify
     cluster: eks-prow-build-cluster
     always_run: true
@@ -743,6 +755,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-custom-k8s-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Validates conformance with a custom Kubernetes build on the main branch.
   - name: pull-cluster-api-provider-azure-windows-custom-builds
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -798,6 +812,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-windows-containerd-upstream-custom-k8s-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Tests Windows support with custom builds on the main branch.
   - name: pull-cluster-api-provider-azure-load-test-custom-builds
     cluster: eks-prow-build-cluster
     decorate: true
@@ -898,6 +914,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-scalability-100-node-k8s-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Conducts load testing with custom builds to assess scalability on the main branch.
   - name: pull-cluster-api-provider-azure-apiserver-ilb
     cluster: eks-prow-build-cluster
     labels:
@@ -938,4 +956,5 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apiserver-ilb-main
-      description: This job creates a vanilla CAPZ cluster with an ILB for the API server and verifies that the cluster is functional.
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Verifies the functionality of a cluster with an internal load balancer for the API server.
