@@ -5,7 +5,7 @@ steps:
     - build
     - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - --build-arg=IMAGE_ARG=us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --platform=linux/amd64,linux/arm64
+    - --platform=linux/amd64,linux/arm64,linux/ppc64le
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=GO_VERSION=$_GO_VERSION
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
