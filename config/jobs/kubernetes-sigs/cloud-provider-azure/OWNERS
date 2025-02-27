@@ -4,9 +4,8 @@ reviewers:
 - andyzhangx
 - brendandburns
 - feiskyer
-- karataliu
 - khenidak
-- lzhecheng
+- mainred
 - MartinForReal
 - nilo19
 
@@ -14,9 +13,8 @@ approvers:
 - andyzhangx
 - brendandburns
 - feiskyer
-- karataliu
 - khenidak
-- lzhecheng
+- mainred
 - MartinForReal
 - nilo19
 
