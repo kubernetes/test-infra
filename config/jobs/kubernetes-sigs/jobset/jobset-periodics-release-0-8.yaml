@@ -1,17 +1,15 @@
-# There is a bad naming for the branch so jobset 0.6 is actually 6.0.
-# This is not the case for all other release branches.
 periodics:
   - interval: 12h
-    name: periodic-jobset-test-unit-release-0-6
+    name: periodic-jobset-test-unit-release-0-8
     cluster: eks-prow-build-cluster
     extra_refs:
       - org: kubernetes-sigs
         repo: jobset
-        base_ref: release-6.0
+        base_ref: release-0.8
         path_alias: sigs.k8s.io/jobset
     annotations:
       testgrid-dashboards: sig-apps
-      testgrid-tab-name: periodic-jobset-test-unit-release-0-6
+      testgrid-tab-name: periodic-jobset-test-unit-release-0-8
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic jobset unit tests"
       testgrid-num-columns-recent: '30'
@@ -40,18 +38,18 @@ periodics:
             cpu: 3
             memory: 10Gi
   - interval: 12h
-    name: periodic-jobset-test-integration-release-0-6
+    name: periodic-jobset-test-integration-release-0-8
     cluster: eks-prow-build-cluster
     extra_refs:
       - org: kubernetes-sigs
         repo: jobset
-        base_ref: release-6.0
+        base_ref: release-0.8
         path_alias: sigs.k8s.io/jobset
     annotations:
       testgrid-dashboards: sig-apps
-      testgrid-tab-name: periodic-jobset-test-integration-release-0-6
+      testgrid-tab-name: periodic-jobset-test-integration-release-0-8
       testgrid-num-failures-to-alert: '1'
-      description: "Run periodic jobset integration tests for release 0.6"
+      description: "Run periodic jobset integration tests for release 0.8"
       testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
