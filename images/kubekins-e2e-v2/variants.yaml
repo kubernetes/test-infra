@@ -1,12 +1,12 @@
 variants:
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.23.6
+    GO_VERSION: 1.24.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
   master:
     CONFIG: master
-    GO_VERSION: 1.23.6
+    GO_VERSION: 1.24.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
   '1.32':
