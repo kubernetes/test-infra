@@ -707,7 +707,6 @@ presubmits:
             memory: "4Gi"
 
   - name: pull-etcd-grpcproxy-integration-amd64
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -738,7 +737,6 @@ presubmits:
             memory: "4Gi"
 
   - name: pull-etcd-grpcproxy-e2e-amd64
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -769,7 +767,6 @@ presubmits:
             memory: "4Gi"
 
   - name: pull-etcd-grpcproxy-integration-arm64
-    optional: true # remove once the job is stable
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
@@ -802,7 +799,6 @@ presubmits:
         kubernetes.io/arch: arm64
 
   - name: pull-etcd-grpcproxy-e2e-arm64
-    optional: true # remove once the job is stable
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
