@@ -626,6 +626,8 @@ periodics:
         label:triage/accepted
         -label:priority/important-soon
         -label:priority/critical-urgent
+        -label:"help wanted"
+        -label:lifecycle/frozen
         is:issue
       - --updated=8760h
       - --token=/etc/github-token/token
@@ -674,6 +676,8 @@ periodics:
         -repo:kubernetes/steering
         label:triage/accepted
         label:priority/important-soon
+        -label:"help wanted"
+        -label:lifecycle/frozen
         is:issue
       - --updated=2160h
       - --token=/etc/github-token/token
@@ -724,6 +728,8 @@ periodics:
         -repo:kubernetes/steering
         label:triage/accepted
         label:priority/critical-urgent
+        -label:"help wanted"
+        -label:lifecycle/frozen
         is:issue
       - --updated=720h
       - --token=/etc/github-token/token
