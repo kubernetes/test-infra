@@ -3,12 +3,16 @@
 reviewers:
 - adelina-t
 - andyzhangx
+- AnishShah
 - feiskyer
+- mauriciopoppe
 - sig-windows-leads
 approvers:
 - adelina-t
 - andyzhangx
+- AnishShah
 - feiskyer
+- mauriciopoppe
 - sig-windows-leads
 emeritus_approvers:
 - benmoss
