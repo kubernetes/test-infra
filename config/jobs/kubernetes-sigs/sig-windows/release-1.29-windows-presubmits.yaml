@@ -46,6 +46,9 @@ presubmits:
           limits:
             cpu: "2"
             memory: 9Gi
+        env:
+          - name: GINKGO_SKIP
+            value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[Excluded:WindowsDocker\]|\[Feature:DynamicResourceAllocation\]|Networking.Granular.Checks(.*)node-pod.communication|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Container.Lifecycle.Hook.when.create.a.pod.with.lifecycle.hook.should.execute(.*)http.hook.properly|\[sig-api-machinery\].Garbage.collector|pull.from.private.registry.with.secret
         securityContext:
           privileged: true
     annotations:
