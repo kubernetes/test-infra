@@ -61,7 +61,7 @@ periodics:
         value: latest-1.32.txt
       - name: CI_URL
         value: https://dl.k8s.io/ci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250212-16f67660c2-1.32
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.32
       name: ""
       resources:
         limits:
