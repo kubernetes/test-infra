@@ -13,16 +13,16 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-community: "true"
   extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      workdir: false
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     serviceAccountName: azure
     containers:
