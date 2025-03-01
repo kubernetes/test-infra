@@ -831,7 +831,6 @@ presubmits:
         kubernetes.io/arch: arm64
 
   - name: pull-etcd-coverage-report
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
