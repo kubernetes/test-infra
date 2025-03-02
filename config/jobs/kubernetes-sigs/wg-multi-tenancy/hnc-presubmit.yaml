@@ -10,7 +10,7 @@ presubmits:
     run_if_changed: ".*"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.21
         command:
         - ./hack/ci-test.sh
         resources:
