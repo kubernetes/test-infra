@@ -329,8 +329,8 @@ periodics:
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
-      - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
+      - --env=SCHEDULER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx

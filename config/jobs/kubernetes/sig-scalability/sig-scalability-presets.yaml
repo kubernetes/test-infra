@@ -158,7 +158,7 @@ presets:
   - name: APISERVER_TEST_ARGS
     value: "--profiling --contention-profiling"
   - name: CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   - name: KUBELET_TEST_ARGS
     value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
   - name: NODE_KUBELET_TEST_ARGS
@@ -171,7 +171,7 @@ presets:
     # FeatureGate added in #110268 v1.26
     value: "--profiling --metrics-bind-address=0.0.0.0"
   - name: SCHEDULER_TEST_ARGS
-    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
@@ -296,7 +296,7 @@ presets:
   - name: ETCD_EXTRA_ARGS
     value: "--enable-pprof"
   - name: CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Bump max pods per node in Kubelet, because there are more than 10
   # system pods in 1-node cluster.
   - name: MAX_PODS_PER_NODE
@@ -306,7 +306,7 @@ presets:
   - name: KUBEPROXY_TEST_ARGS
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
-    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
