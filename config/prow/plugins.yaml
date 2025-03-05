@@ -491,6 +491,9 @@ milestone_applier:
     release-0.8: v0.8
     release-0.9: v0.9
     release-0.10: v0.10
+  kubernetes-sigs/jobset:
+    main: v0.9
+    release-0.8: v0.8
   kubernetes/k8s.io:
     main: v1.33
   kubernetes/kops:
@@ -1503,6 +1506,12 @@ plugins:
     - milestonestatus
     - release-note
 
+  kubernetes-sigs/jobset:
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+
   kubernetes-sigs/kustomize:
     plugins:
     - require-matching-label
@@ -1894,6 +1903,12 @@ external_plugins:
         - pull_request
       endpoint: http://cherrypicker
   kubernetes-sigs/kueue:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/jobset:
   - name: cherrypicker
     events:
     - issue_comment
