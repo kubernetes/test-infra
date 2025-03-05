@@ -730,6 +730,7 @@ periodics:
     testgrid-tab-name: node-kubelet-containerd-standalone-mode
     description: "Runs kubelet in standalone mode"
 
+# DEPRECATED: This job is being replaced by ci-kubernetes-node-kubelet-serial-resource-managers
 - name: ci-kubernetes-node-kubelet-serial-topology-manager
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -778,6 +779,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
+# DEPRECATED: This job is being replaced by ci-kubernetes-node-kubelet-serial-resource-managers
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -826,6 +828,7 @@ periodics:
             cpu: 4
             memory: 6Gi
 
+# DEPRECATED: This job is being replaced by ci-kubernetes-node-kubelet-serial-resource-managers
 - name: ci-kubernetes-node-kubelet-serial-memory-manager
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -862,6 +865,54 @@ periodics:
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --skip="" --focus="\[Feature:MemoryManager\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
+- name: ci-kubernetes-node-kubelet-serial-resource-managers
+  interval: 4h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-resource-managers
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 240m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
+          - '--node-test-args=--feature-gates=RequiresNUMA=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]"
           - --timeout=180m
         env:
           - name: GOPATH
