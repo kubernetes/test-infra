@@ -356,6 +356,8 @@ func TestHandleDirectory(t *testing.T) {
 	<div style="padding: 1em">
 		You can download this directory by running the following <a href="https://cloud.google.com/storage/docs/gsutil">gsutil</a> command:
 		<pre>gsutil -m cp -r gs://test-bucket/pr-logs/12345/ .</pre>
+		Or using the <a href="https://cloud.google.com/sdk/docs/install">gcloud storage</a> command:
+		<pre>gcloud storage cp -r gs://test-bucket/pr-logs/12345/ .</pre>
 	</div>
 </details>
 </body></html>`,

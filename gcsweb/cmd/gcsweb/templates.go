@@ -116,6 +116,8 @@ const tmplContentFooterText = `</ul>
 	<div style="padding: 1em">
 		You can download this directory by running the following <a href="https://cloud.google.com/storage/docs/gsutil">gsutil</a> command:
 		<pre>gsutil -m cp -r gs://{{.ProwPath.FullPath}}/ .</pre>
+		Or using the <a href="https://cloud.google.com/sdk/docs/install">gcloud storage</a> command:
+		<pre>gcloud storage cp -r gs://{{.ProwPath.FullPath}}/ .</pre>
 	</div>
 </details>
 {{- end }}
