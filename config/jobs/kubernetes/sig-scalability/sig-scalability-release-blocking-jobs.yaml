@@ -45,7 +45,7 @@ periodics:
       - --env=CONCURRENT_SERVICE_SYNCS=20 # support 20 LoadBalancer Services in parallel to deal with existing CI load #122286
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
       - --extract=ci/fast/latest-fast
-      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
       - --gcp-master-image=gci
@@ -135,7 +135,7 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=50
       - --env=CL2_RATE_LIMIT_POD_CREATION=false
-      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      - --env=KUBE_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100
       # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
