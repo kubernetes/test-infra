@@ -271,7 +271,7 @@ testSuites:
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking
+    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
       --minStartupPods=8
     cluster: k8s-infra-prow-build
@@ -284,7 +284,7 @@ testSuites:
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking
+    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
       --minStartupPods=8
     cluster: k8s-infra-prow-build

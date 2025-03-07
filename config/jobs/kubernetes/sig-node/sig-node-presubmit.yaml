@@ -917,7 +917,7 @@ presubmits:
                --test-package-url=https://dl.k8s.io/ \
                --test-package-dir=ci/fast \
                --test-package-marker=latest-fast.txt \
-               --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|ClusterTrustBundle|ClusterTrustBundleProjection)\]|Networking" \
+               --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
                --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
                --parallel=25
           env:
