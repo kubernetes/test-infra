@@ -293,6 +293,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: 0052cc
+      description: "Indicates features requiring NUMA architecture support"
+      name: RequiresNUMA
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: f7c6c7
       description: Categorizes issue or PR as related to a flaky test.
       name: kind/flake
