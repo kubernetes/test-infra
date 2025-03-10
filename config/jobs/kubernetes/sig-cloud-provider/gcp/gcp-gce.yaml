@@ -463,7 +463,7 @@ presubmits:
         args:
         - --ginkgo-parallel=1
         - --build=quick
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,ClusterTrustBundle=true,ClusterTrustBundleProjection=true,EventedPLEG=false
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
@@ -933,7 +933,7 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,ClusterTrustBundle=true,ClusterTrustBundleProjection=true,EventedPLEG=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
