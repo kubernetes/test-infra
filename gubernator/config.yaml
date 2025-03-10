@@ -29,7 +29,6 @@ jobs:
   - pull-kubernetes-conformance-kind-ga-only-parallel
   - pull-kubernetes-dependencies
   - pull-kubernetes-e2e-ec2
-  - pull-kubernetes-e2e-ec2-conformance
   - pull-kubernetes-e2e-gce
   - pull-kubernetes-e2e-kind
   - pull-kubernetes-e2e-kind-ipv6
