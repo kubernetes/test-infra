@@ -210,7 +210,7 @@ presubmits:
         - runner.sh
         - make
         - test-build-tags
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241014-ae08510d04-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
         securityContext:
           privileged: true
         resources:
