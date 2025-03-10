@@ -1335,11 +1335,6 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to code in /ghproxy
-        name: area/ghproxy
-        target: both
-        addedBy: label
-      - color: 0052cc
         description: Issues or PRs related to GitHub Management subproject
         name: area/github-management
         target: both
@@ -1385,148 +1380,8 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to prow's branchprotector component
-        name: area/prow/branchprotector
-        target: both
-        addedBy: label
-      - color: 0052cc
         description: Updates to the k8s prow cluster
         name: area/prow/bump
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's clonerefs component
-        name: area/prow/clonerefs
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's crier component
-        name: area/prow/crier
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's config-bootstrapper utility
-        name: area/prow/config-bootstrapper
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's deck component
-        name: area/prow/deck
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's entrypoint component
-        name: area/prow/entrypoint
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's gcsupload component
-        name: area/prow/gcsupload
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's gerrit component
-        name: area/prow/gerrit
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's hook component
-        name: area/prow/hook
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's horologium component
-        name: area/prow/horologium
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's initupload component
-        name: area/prow/initupload
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's jenkins-operator component
-        name: area/prow/jenkins-operator
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's knative-build controller component
-        name: area/prow/knative-build
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's mkpj component
-        name: area/prow/mkpj
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's mkpod component
-        name: area/prow/mkpod
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's peribolos component
-        name: area/prow/peribolos
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's phony component
-        name: area/prow/phony
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's plank component
-        name: area/prow/plank
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's plugins for the hook component
-        name: area/prow/plugins
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's pubsub reporter component
-        name: area/prow/pubsub
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's sidecar component
-        name: area/prow/sidecar
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's sinker component
-        name: area/prow/sinker
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's splice component
-        name: area/prow/splice
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to reconciling status when jobs change
-        name: area/prow/status-reconciler
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's spyglass UI
-        name: area/prow/spyglass
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's tide component
-        name: area/prow/tide
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's tot component
-        name: area/prow/tot
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to prow's pod-utilities component
-        name: area/prow/pod-utilities
         target: both
         addedBy: label
       - color: 0052cc
@@ -2205,6 +2060,128 @@ repos:
         name: area/release-eng
         previously:
           - name: area/release-infra
+        target: both
+        addedBy: label
+  kubernetes-sigs/prow:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to prow's branchprotector component
+        name: area/branchprotector
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's crier component
+        name: area/crier
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's deck component
+        name: area/deck
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's gangway component
+        name: area/gangway
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's gerrit component
+        name: area/gerrit
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's ghproxy component
+        name: area/ghproxy
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's hook component
+        name: area/hook
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's horologium component
+        name: area/horologium
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's jenkins-operator component
+        name: area/jenkins-operator
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's moonraker component
+        name: area/moonraker
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's peribolos component
+        name: area/peribolos
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's plugins for the hook component
+        name: area/plugins
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's clonerefs component
+        name: area/podutils/clonerefs
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's entrypoint component
+        name: area/podutils/entrypoint
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's gcsupload component
+        name: area/podutils/gcsupload
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's initupload component
+        name: area/podutils/initupload
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's sidecar component
+        name: area/podutils/sidecar
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's controller manager component
+        name: area/prowcm
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's pubsub reporter component
+        name: area/pubsub
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's sinker component
+        name: area/sinker
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to reconciling status when jobs change
+        name: area/status-reconciler
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's spyglass UI
+        name: area/spyglass
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's tide component
+        name: area/tide
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's pod-utilities component
+        name: area/pod-utilities
         target: both
         addedBy: label
   kubernetes-sigs/contributor-tweets:

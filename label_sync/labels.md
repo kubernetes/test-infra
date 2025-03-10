@@ -24,6 +24,7 @@
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/kubespray, only for PRs](#labels-that-apply-to-kubernetes-sigskubespray-only-for-prs)
 - [Labels that apply to kubernetes-sigs/promo-tools, for both issues and PRs](#labels-that-apply-to-kubernetes-sigspromo-tools-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/prow, for both issues and PRs](#labels-that-apply-to-kubernetes-sigsprow-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/dns, only for issues](#labels-that-apply-to-kubernetesdns-only-for-issues)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
@@ -360,6 +361,35 @@ larger set of contributors to apply/remove them.
 | <a id="area/artifacts" href="#area/artifacts">`area/artifacts`</a> | Issues or PRs related to the hosting of release artifacts for subprojects| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 
+## Labels that apply to kubernetes-sigs/prow, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/branchprotector" href="#area/branchprotector">`area/branchprotector`</a> | Issues or PRs related to prow's branchprotector component| label | |
+| <a id="area/crier" href="#area/crier">`area/crier`</a> | Issues or PRs related to prow's crier component| label | |
+| <a id="area/deck" href="#area/deck">`area/deck`</a> | Issues or PRs related to prow's deck component| label | |
+| <a id="area/gangway" href="#area/gangway">`area/gangway`</a> | Issues or PRs related to prow's gangway component| label | |
+| <a id="area/gerrit" href="#area/gerrit">`area/gerrit`</a> | Issues or PRs related to prow's gerrit component| label | |
+| <a id="area/ghproxy" href="#area/ghproxy">`area/ghproxy`</a> | Issues or PRs related to prow's ghproxy component| label | |
+| <a id="area/hook" href="#area/hook">`area/hook`</a> | Issues or PRs related to prow's hook component| label | |
+| <a id="area/horologium" href="#area/horologium">`area/horologium`</a> | Issues or PRs related to prow's horologium component| label | |
+| <a id="area/jenkins-operator" href="#area/jenkins-operator">`area/jenkins-operator`</a> | Issues or PRs related to prow's jenkins-operator component| label | |
+| <a id="area/moonraker" href="#area/moonraker">`area/moonraker`</a> | Issues or PRs related to prow's moonraker component| label | |
+| <a id="area/peribolos" href="#area/peribolos">`area/peribolos`</a> | Issues or PRs related to prow's peribolos component| label | |
+| <a id="area/plugins" href="#area/plugins">`area/plugins`</a> | Issues or PRs related to prow's plugins for the hook component| label | |
+| <a id="area/pod-utilities" href="#area/pod-utilities">`area/pod-utilities`</a> | Issues or PRs related to prow's pod-utilities component| label | |
+| <a id="area/podutils/clonerefs" href="#area/podutils/clonerefs">`area/podutils/clonerefs`</a> | Issues or PRs related to prow's clonerefs component| label | |
+| <a id="area/podutils/entrypoint" href="#area/podutils/entrypoint">`area/podutils/entrypoint`</a> | Issues or PRs related to prow's entrypoint component| label | |
+| <a id="area/podutils/gcsupload" href="#area/podutils/gcsupload">`area/podutils/gcsupload`</a> | Issues or PRs related to prow's gcsupload component| label | |
+| <a id="area/podutils/initupload" href="#area/podutils/initupload">`area/podutils/initupload`</a> | Issues or PRs related to prow's initupload component| label | |
+| <a id="area/podutils/sidecar" href="#area/podutils/sidecar">`area/podutils/sidecar`</a> | Issues or PRs related to prow's sidecar component| label | |
+| <a id="area/prowcm" href="#area/prowcm">`area/prowcm`</a> | Issues or PRs related to prow's controller manager component| label | |
+| <a id="area/pubsub" href="#area/pubsub">`area/pubsub`</a> | Issues or PRs related to prow's pubsub reporter component| label | |
+| <a id="area/sinker" href="#area/sinker">`area/sinker`</a> | Issues or PRs related to prow's sinker component| label | |
+| <a id="area/spyglass" href="#area/spyglass">`area/spyglass`</a> | Issues or PRs related to prow's spyglass UI| label | |
+| <a id="area/status-reconciler" href="#area/status-reconciler">`area/status-reconciler`</a> | Issues or PRs related to reconciling status when jobs change| label | |
+| <a id="area/tide" href="#area/tide">`area/tide`</a> | Issues or PRs related to prow's tide component| label | |
+
 ## Labels that apply to kubernetes/community, for both issues and PRs
 
 | Name | Description | Added By | Prow Plugin |
@@ -540,7 +570,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
 | <a id="area/e2e-test-framework" href="#area/e2e-test-framework">`area/e2e-test-framework`</a> | Issues or PRs related to refactoring the kubernetes e2e test framework| label | |
 | <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| label | |
-| <a id="area/ghproxy" href="#area/ghproxy">`area/ghproxy`</a> | Issues or PRs related to code in /ghproxy| label | |
 | <a id="area/github-management" href="#area/github-management">`area/github-management`</a> | Issues or PRs related to GitHub Management subproject| label | |
 | <a id="area/gopherage" href="#area/gopherage">`area/gopherage`</a> | Issues or PRs related to code in /gopherage| humans | |
 | <a id="area/greenhouse" href="#area/greenhouse">`area/greenhouse`</a> | Issues or PRs related to code in /greenhouse (our remote bazel cache)| label | |
@@ -550,35 +579,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/mungegithub" href="#area/mungegithub">`area/mungegithub`</a> | Issues or PRs related to code in /mungegithub| label | |
 | <a id="area/planter" href="#area/planter">`area/planter`</a> | Issues or PRs related to code in /planter| label | |
 | <a id="area/prow" href="#area/prow">`area/prow`</a> | Issues or PRs related to prow| label | |
-| <a id="area/prow/branchprotector" href="#area/prow/branchprotector">`area/prow/branchprotector`</a> | Issues or PRs related to prow's branchprotector component| label | |
 | <a id="area/prow/bump" href="#area/prow/bump">`area/prow/bump`</a> | Updates to the k8s prow cluster| label | |
-| <a id="area/prow/clonerefs" href="#area/prow/clonerefs">`area/prow/clonerefs`</a> | Issues or PRs related to prow's clonerefs component| label | |
-| <a id="area/prow/config-bootstrapper" href="#area/prow/config-bootstrapper">`area/prow/config-bootstrapper`</a> | Issues or PRs related to prow's config-bootstrapper utility| label | |
-| <a id="area/prow/crier" href="#area/prow/crier">`area/prow/crier`</a> | Issues or PRs related to prow's crier component| label | |
-| <a id="area/prow/deck" href="#area/prow/deck">`area/prow/deck`</a> | Issues or PRs related to prow's deck component| label | |
-| <a id="area/prow/entrypoint" href="#area/prow/entrypoint">`area/prow/entrypoint`</a> | Issues or PRs related to prow's entrypoint component| label | |
-| <a id="area/prow/gcsupload" href="#area/prow/gcsupload">`area/prow/gcsupload`</a> | Issues or PRs related to prow's gcsupload component| label | |
-| <a id="area/prow/gerrit" href="#area/prow/gerrit">`area/prow/gerrit`</a> | Issues or PRs related to prow's gerrit component| label | |
-| <a id="area/prow/hook" href="#area/prow/hook">`area/prow/hook`</a> | Issues or PRs related to prow's hook component| label | |
-| <a id="area/prow/horologium" href="#area/prow/horologium">`area/prow/horologium`</a> | Issues or PRs related to prow's horologium component| label | |
-| <a id="area/prow/initupload" href="#area/prow/initupload">`area/prow/initupload`</a> | Issues or PRs related to prow's initupload component| label | |
-| <a id="area/prow/jenkins-operator" href="#area/prow/jenkins-operator">`area/prow/jenkins-operator`</a> | Issues or PRs related to prow's jenkins-operator component| label | |
-| <a id="area/prow/knative-build" href="#area/prow/knative-build">`area/prow/knative-build`</a> | Issues or PRs related to prow's knative-build controller component| label | |
-| <a id="area/prow/mkpj" href="#area/prow/mkpj">`area/prow/mkpj`</a> | Issues or PRs related to prow's mkpj component| label | |
-| <a id="area/prow/mkpod" href="#area/prow/mkpod">`area/prow/mkpod`</a> | Issues or PRs related to prow's mkpod component| label | |
-| <a id="area/prow/peribolos" href="#area/prow/peribolos">`area/prow/peribolos`</a> | Issues or PRs related to prow's peribolos component| label | |
-| <a id="area/prow/phony" href="#area/prow/phony">`area/prow/phony`</a> | Issues or PRs related to prow's phony component| label | |
-| <a id="area/prow/plank" href="#area/prow/plank">`area/prow/plank`</a> | Issues or PRs related to prow's plank component| label | |
-| <a id="area/prow/plugins" href="#area/prow/plugins">`area/prow/plugins`</a> | Issues or PRs related to prow's plugins for the hook component| label | |
-| <a id="area/prow/pod-utilities" href="#area/prow/pod-utilities">`area/prow/pod-utilities`</a> | Issues or PRs related to prow's pod-utilities component| label | |
-| <a id="area/prow/pubsub" href="#area/prow/pubsub">`area/prow/pubsub`</a> | Issues or PRs related to prow's pubsub reporter component| label | |
-| <a id="area/prow/sidecar" href="#area/prow/sidecar">`area/prow/sidecar`</a> | Issues or PRs related to prow's sidecar component| label | |
-| <a id="area/prow/sinker" href="#area/prow/sinker">`area/prow/sinker`</a> | Issues or PRs related to prow's sinker component| label | |
-| <a id="area/prow/splice" href="#area/prow/splice">`area/prow/splice`</a> | Issues or PRs related to prow's splice component| label | |
-| <a id="area/prow/spyglass" href="#area/prow/spyglass">`area/prow/spyglass`</a> | Issues or PRs related to prow's spyglass UI| label | |
-| <a id="area/prow/status-reconciler" href="#area/prow/status-reconciler">`area/prow/status-reconciler`</a> | Issues or PRs related to reconciling status when jobs change| label | |
-| <a id="area/prow/tide" href="#area/prow/tide">`area/prow/tide`</a> | Issues or PRs related to prow's tide component| label | |
-| <a id="area/prow/tot" href="#area/prow/tot">`area/prow/tot`</a> | Issues or PRs related to prow's tot component| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 | <a id="area/robots" href="#area/robots">`area/robots`</a> | Issues or PRs related to code in /robots| label | |
 | <a id="kind/oncall-hotlist" href="#kind/oncall-hotlist">`kind/oncall-hotlist`</a> | Categorizes issue or PR as tracked by test-infra oncall.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
