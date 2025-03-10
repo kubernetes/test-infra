@@ -27,14 +27,13 @@ presubmits:
           command:
             - make
             - test
-          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7.2
+              memory: "43Gi"
             requests:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7.2
+              memory: "43Gi"
   - name: pull-kubernetes-unit-go-compatibility
     annotations:
       fork-per-release: "true"
@@ -183,8 +182,8 @@ periodics:
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7.2
+              memory: "43Gi"
             requests:
-              cpu: 4
-              memory: "36Gi"
+              cpu: 7.2
+              memory: "43Gi"
