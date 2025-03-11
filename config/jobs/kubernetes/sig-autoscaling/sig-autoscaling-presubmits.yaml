@@ -208,8 +208,10 @@ presubmits:
       containers:
       - command:
         - runner.sh
+        args:
         - make
-        - -C cluster-autoscaler
+        - -C
+        - cluster-autoscaler
         - test-build-tags
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
         securityContext:
