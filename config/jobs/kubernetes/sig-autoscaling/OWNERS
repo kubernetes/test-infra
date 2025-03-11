@@ -3,12 +3,20 @@
 reviewers:
 - mwielgus
 - maciekpytel
-- bskiba
 - kwiesmueller
 - voelzmo
+- gjtempleton
+- towca
+- raywainman
+- jackfrancis
 approvers:
 - mwielgus
 - maciekpytel
-- bskiba
 - kwiesmueller
 - voelzmo
+- gjtempleton
+- towca
+- raywainman
+- jackfrancis
+emeritus_approvers:
+- bskiba
