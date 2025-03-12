@@ -286,11 +286,13 @@ presubmits:
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           resources:
             limits:
-              cpu: 4
-              memory: "14Gi"
+              cpu: 7.2
+              # NOTE: we don't need this much memory, but we're using ~all of the cores anyhow
+              # and this isn't even 2 GB / core ...
+              memory: "20Gi"
             requests:
-              cpu: 4
-              memory: "14Gi"
+              cpu: 7.2
+              memory: "20Gi"
           securityContext:
             privileged: true
 
