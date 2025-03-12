@@ -1,7 +1,7 @@
 periodics:
 - name: ci-kubernetes-unit-windows-master
   cluster: eks-prow-build-cluster
-  interval: 12h
+  interval: 3h
   decorate: true
   decoration_config:
     timeout: 4h
