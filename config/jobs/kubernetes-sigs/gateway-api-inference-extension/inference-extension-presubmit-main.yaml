@@ -29,6 +29,37 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
+  kubernetes-sigs/gateway-api-inference-extension:
+  - name: pull-gateway-api-inference-extension-test-e2e-main
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api-inference-extension
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: pull-gateway-api-inference-extension-test-e2e-main
+      description: "Run inference extension e2e tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - E2E_MANIFEST_PATH=config/manifests/vllm/cpu-deployment.yaml
+        - make
+        - test-e2e
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 40
+            memory: 40Gi
+          requests:
+            cpu: 40
+            memory: 40Gi
   - name: pull-gateway-api-inference-extension-verify-main
     cluster: eks-prow-build-cluster
     branches:
