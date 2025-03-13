@@ -33,3 +33,38 @@ periodics:
           requests:
             cpu: 3
             memory: 10Gi
+  - interval: 12h
+    name: periodic-gateway-api-inference-extension-test-e2e-main
+    cluster: eks-prow-build-cluster
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: gateway-api-inference-extension
+        base_ref: main
+        path_alias: sigs.k8s.io/gateway-api-inference-extension
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: periodic-gateway-api-inference-extension-test-e2e-main
+      description: "Run periodic gateway-api-inference-extension e2e tests"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - E2E_MANIFEST_PATH=config/manifests/vllm/cpu-deployment.yaml
+        - make
+        - test-e2e
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 40
+            memory: 40Gi
+          requests:
+            cpu: 40
+            memory: 40Gi

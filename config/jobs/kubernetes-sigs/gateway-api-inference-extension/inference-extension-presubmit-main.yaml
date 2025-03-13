@@ -29,7 +29,6 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
-  kubernetes-sigs/gateway-api-inference-extension:
   - name: pull-gateway-api-inference-extension-test-e2e-main
     cluster: eks-prow-build-cluster
     always_run: true
