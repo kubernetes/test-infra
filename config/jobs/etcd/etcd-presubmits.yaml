@@ -859,3 +859,33 @@ presubmits:
           limits:
             cpu: "4"
             memory: "4Gi"
+
+  - name: pull-etcd-markdown-lint
+    optional: true
+    cluster: eks-prow-build-cluster
+    always_run: false
+    run_if_changed: '.*\.md$'
+    branches:
+      - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-markdown-lint
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/node:22
+        command:
+          - /bin/bash
+        args:
+          - -c
+          - |
+            apt-get update && apt-get install -y gawk
+            npm install -g markdownlint-cli2
+            make markdown-diff-lint
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
