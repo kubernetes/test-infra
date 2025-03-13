@@ -13,7 +13,7 @@ presubmits:
       description: "Run kueue unit tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
+      - image: public.ecr.aws/docker/library/golang:1.24
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -43,7 +43,7 @@ presubmits:
       description: "Run kueue test-integration"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
+      - image: public.ecr.aws/docker/library/golang:1.24
         command:
         - make
         args:
@@ -73,7 +73,7 @@ presubmits:
       description: "Run kueue test-multikueue-integration"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
+      - image: public.ecr.aws/docker/library/golang:1.24
         command:
         - make
         args:
@@ -110,7 +110,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.29.4
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -148,7 +148,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.30.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -186,7 +186,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -224,7 +224,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.32.0
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -262,7 +262,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.2
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -300,7 +300,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.1
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -338,7 +338,7 @@ presubmits:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.31.1
             - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.23
+              value: public.ecr.aws/docker/library/golang:1.24
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -418,7 +418,7 @@ presubmits:
         - name: GOMAXPROCS
           value: "2"
         - name: BUILDER_IMAGE
-          value: public.ecr.aws/docker/library/golang:1.23
+          value: public.ecr.aws/docker/library/golang:1.24
         resources:
           requests:
             cpu: "2"
@@ -439,7 +439,7 @@ presubmits:
       description: "Run kueue test-scheduling-perf"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
+      - image: public.ecr.aws/docker/library/golang:1.24
         command:
         - make
         args:
