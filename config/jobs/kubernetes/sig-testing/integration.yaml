@@ -22,8 +22,6 @@ presubmits:
         command:
         - runner.sh
         env:
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "8"
         - name: KUBE_TIMEOUT
           value: "-timeout=1h30m"
         args:
@@ -60,8 +58,6 @@ presubmits:
         command:
         - runner.sh
         env:
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "8"
         - name: KUBE_TIMEOUT
           value: "-timeout=1h30m"
         args:
