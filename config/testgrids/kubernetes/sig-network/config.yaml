@@ -1,6 +1,7 @@
 dashboard_groups:
 - name: sig-network
   dashboard_names:
+    - sig-network-blixt
     - sig-network-dns
     - sig-network-external-dns
     - sig-network-gce
@@ -17,6 +18,7 @@ dashboard_groups:
     - sig-network-nat64
 
 dashboards:
+- name: sig-network-blixt
 - name: sig-network-dns
 - name: sig-network-external-dns
 - name: sig-network-gce
