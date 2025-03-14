@@ -209,6 +209,18 @@ fetch_metrics() {
   kubectl get --raw /metrics > "${output_file}"
 }
 
+# Helper function to check if a file exists and return an alternative path if it doesn't
+check_file_path() {
+  local current_path="$1"
+  local alternative_path="$2"
+  
+  if [ -f "$current_path" ]; then
+    echo "$current_path"
+  else
+    echo "File not found at $current_path, trying alternative path: $alternative_path" >&2
+    echo "$alternative_path"
+  fi
+}
 
 main() {
   TMP_DIR=$(mktemp -d)
@@ -221,6 +233,8 @@ main() {
   export VERSION_DELTA=${VERSION_DELTA:-1}
   export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
   export EMULATED_VERSION=$(get_latest_release_version)
+  
+  # Set original paths with fallbacks
   export VERSIONED_FEATURE_LIST=${VERSIONED_FEATURE_LIST:-"test/featuregates_linter/test_data/versioned_feature_list.yaml"}
   export PREV_VERSIONED_FEATURE_LIST=${PREV_VERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/versioned_feature_list.yaml"}
   export PREV_UNVERSIONED_FEATURE_LIST=${PREV_UNVERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/unversioned_feature_list.yaml"}
@@ -238,6 +252,31 @@ main() {
   LATEST_METRICS="${ARTIFACTS}/latest_metrics.txt"
   fetch_metrics "${LATEST_METRICS}"
   LATEST_RESULTS="${ARTIFACTS}/latest_results.txt"
+  
+  # Check if files exist at the current paths and update if needed with alternative paths
+  if [ ! -f "$VERSIONED_FEATURE_LIST" ]; then
+    alt_path="test/compatibility_lifecycle/reference/versioned_feature_list.yaml"
+    if [ -f "$alt_path" ]; then
+      export VERSIONED_FEATURE_LIST="$alt_path"
+      echo "Using alternative path for VERSIONED_FEATURE_LIST: $alt_path"
+    fi
+  fi
+
+  if [ ! -f "$PREV_VERSIONED_FEATURE_LIST" ]; then
+    alt_path="release-${EMULATED_VERSION}/test/compatibility_lifecycle/reference/versioned_feature_list.yaml"
+    if [ -f "$alt_path" ]; then
+      export PREV_VERSIONED_FEATURE_LIST="$alt_path"
+      echo "Using alternative path for PREV_VERSIONED_FEATURE_LIST: $alt_path"
+    fi
+  fi
+
+  if [ ! -f "$PREV_UNVERSIONED_FEATURE_LIST" ]; then
+    alt_path="release-${EMULATED_VERSION}/test/compatibility_lifecycle/reference/unversioned_feature_list.yaml"
+    if [ -f "$alt_path" ]; then
+      export PREV_UNVERSIONED_FEATURE_LIST="$alt_path"
+      echo "Using alternative path for PREV_UNVERSIONED_FEATURE_LIST: $alt_path"
+    fi
+  fi
 
   VALIDATE_SCRIPT="${VALIDATE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/validate-compatibility-versions-feature-gates.sh}"
   "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${CURRENT_VERSION}" "${LATEST_METRICS}" "${VERSIONED_FEATURE_LIST}" "${PREV_VERSIONED_FEATURE_LIST}" "${PREV_UNVERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
