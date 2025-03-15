@@ -19,13 +19,11 @@ targetVersion: "latest"
 prefixes:
   - name: "Prow"
     prefix: "us-docker.pkg.dev/k8s-infra-prow/images/"
-    refConfigFile: "config/prow/cluster/deck_deployment.yaml"
-    repo: "https://github.com/kubernetes/test-infra"
+    repo: "https://github.com/kubernetes-sigs/prow"
     summarise: true
     consistentImages: true
   - name: "Boskos"
     prefix: "gcr.io/k8s-staging-boskos/"
-    refConfigFile: "config/prow/cluster/build/boskos.yaml"
     repo: "https://github.com/kubernetes-sigs/boskos"
     summarise: false
     consistentImages: true
