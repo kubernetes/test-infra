@@ -510,7 +510,7 @@ presubmits:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
         - --deployment=node
         - --gcp-zone=us-central1-b
-        - '--node-test-args=--feature-gates=AllAlpha=true,ImageVolume=true,EventedPLEG=false --service-feature-gates=ProcMountType=true,UserNamespacesSupport=true,ImageVolume=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+        - '--node-test-args=--feature-gates=AllAlpha=true,ImageVolume=true,EventedPLEG=false --service-feature-gates=ProcMountType=true,UserNamespacesSupport=true,ImageVolume=true,ResourceHealthStatus=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[Feature:.+\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
