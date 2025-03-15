@@ -35,6 +35,40 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: arm64
 
+- name: ci-etcd-e2e-ppc64le
+  interval: 4h
+  cluster: k8s-infra-ppc64le-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-ppc64le
+    testgrid-tab-name: ci-etcd-e2e-ppc64le
+  spec:
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            set -euo pipefail
+            VERBOSE=1 GOOS=linux GOARCH=ppc64le CPU=4 EXPECT_DEBUG=true make test-e2e-release
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+    nodeSelector:
+      kubernetes.io/arch: ppc64le
+
 - name: ci-etcd-e2e-amd64
   interval: 4h
   cluster: eks-prow-build-cluster
