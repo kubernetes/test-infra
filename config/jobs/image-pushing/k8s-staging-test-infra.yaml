@@ -11,7 +11,7 @@ postsubmits:
         testgrid-tab-name: bazelbuild
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
-        description: builds and pushes the image builder's own image
+        description: builds and pushes the bazelbuild image
       decorate: true
       branches:
       - ^master$
@@ -37,7 +37,7 @@ postsubmits:
         testgrid-tab-name: benchmarkjunit
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
-        description: builds and pushes the image builder's own image
+        description: builds and pushes the benchmarkjunit image
       decorate: true
       branches:
       - ^master$
@@ -113,7 +113,7 @@ postsubmits:
         testgrid-tab-name: gcb-docker-gcloud
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
-        description: builds and pushes the image builder's own image
+        description: builds and pushes the gcb-docker-gcloud image
       decorate: true
       branches:
       - ^master$
