@@ -579,6 +579,10 @@ branch-protection:
         hydrophone:
           exclude:
             - "^dependencies/" # don't protect branches created by github action that updates dependencies
+        ingate:
+          branches:
+            gh-pages:
+              protect: false
         kernel-module-management:
           required_status_checks:
             contexts:
