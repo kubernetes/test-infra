@@ -53,6 +53,7 @@ presubmits:
         # Panic if data inconsistency is detected
         - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+        - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
@@ -156,6 +157,7 @@ presubmits:
         # Panic if data inconsistency is detected
         - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+        - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
@@ -211,6 +213,7 @@ presubmits:
         # Panic if data inconsistency is detected
         - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+        - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
         env:
@@ -281,6 +284,7 @@ presubmits:
             # Panic if data inconsistency is detected
             - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
             - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+            - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
@@ -361,6 +365,7 @@ presubmits:
             # Panic if data inconsistency is detected
             - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
             - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+            - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
@@ -471,6 +476,7 @@ presubmits:
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
+        - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --gcp-node-image=gci
         - --gcp-region=us-central1
