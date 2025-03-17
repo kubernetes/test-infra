@@ -321,3 +321,34 @@ presubmits:
       testgrid-tab-name: pull-external-test-arm64
       description: kubernetes/kubernetes external test on pull request with arm64 nodes and image
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-image-test
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: true
+    skip_report: true
+    skip_branches:
+    - gh-pages
+    run_if_changed: "^hack/|^Dockerfile|^Makefile"
+    labels:
+      preset-service-account: "true"
+      preset-aws-credential-aws-shared-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-image
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: pull-ebs-image-test
+      description: aws ebs csi driver image test on pull request
+      testgrid-num-columns-recent: '30'
