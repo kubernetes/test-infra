@@ -174,6 +174,7 @@ kubeadmConfigPatches:
     extraArgs:
 ${apiServer_extra_args}
       "emulated-version": "${EMULATED_VERSION}"
+      "emulation-forward-compatible": true
   controllerManager:
     extraArgs:
 ${controllerManager_extra_args}
