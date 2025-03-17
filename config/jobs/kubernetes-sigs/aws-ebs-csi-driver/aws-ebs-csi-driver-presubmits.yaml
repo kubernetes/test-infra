@@ -332,6 +332,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-credential-aws-shared-testing: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
