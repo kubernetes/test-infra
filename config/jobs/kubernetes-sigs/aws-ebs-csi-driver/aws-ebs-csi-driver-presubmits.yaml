@@ -339,7 +339,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - test-image
+        - test-images
         resources:
           requests:
             cpu: "2"
