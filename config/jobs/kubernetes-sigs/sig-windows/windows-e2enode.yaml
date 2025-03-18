@@ -33,6 +33,11 @@ presubmits:
                 value: uksouth
               - name: VM_SIZE
                 value: Standard_D8as_v5
+              - name: CONTAINERD_VERSION
+                value: 1.7.16
+              - name: GINKGO_FOCUS
+                value: (\[sig-windows\]|\[Feature:Windows\])
+              
       annotations:
         testgrid-dashboards: sig-windows-presubmit
         testgrid-tab-name: pr-windows-e2e-node-master
