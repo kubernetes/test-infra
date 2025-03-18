@@ -278,6 +278,7 @@ lgtm:
 - repos:
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/controller-tools
+  - kubernetes-sigs/multicluster-runtime
   review_acts_as_lgtm: true
   store_tree_hash: true
 
@@ -572,6 +573,9 @@ repo_milestone:
   kubernetes-sigs/controller-runtime:
     maintainers_team: controller-runtime-maintainers
     maintainers_friendly_name: Controller Runtime Maintainers
+  kubernetes-sigs/multicluster-runtime:
+    maintainers_team: multicluster-runtime-maintainers
+    maintainers_friendly_name: Multicluster Runtime Maintainers
   kubernetes-sigs/cluster-api:
     maintainers_team: cluster-api-maintainers
     maintainers_friendly_name: Cluster API Maintainers
@@ -1513,6 +1517,10 @@ plugins:
     plugins:
     - milestone
 
+  kubernetes-sigs/multicluster-runtime:
+    plugins:
+    - milestone
+
   kubernetes-sigs/cluster-api:
     plugins:
     - milestone
@@ -1847,6 +1855,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/controller-runtime:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/multicluster-runtime:
   - name: cherrypicker
     events:
     - issue_comment
