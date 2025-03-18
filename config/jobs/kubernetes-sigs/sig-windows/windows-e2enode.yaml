@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes-sigs/windows-testing:
+    - name: pull-kubernetes-e2enode-windows
+      always_run: false
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-azure-community: "true"
+      path_alias: sigs.k8s.io/windows-testing
+      run_if_changed: '^scripts\/.*'
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+            command:
+              - "runner.sh"
+              - "./scripts/ci-k8s-e2e-node-test.sh"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: "5Gi"
+              limits:
+                cpu: 2
+                memory: "5Gi"
+            env:
+              - name: VM_LOCATION
+                value: uksouth
+              - name: VM_SIZE
+                value: Standard_D8as_v5
+      annotations:
+        testgrid-dashboards: sig-windows-presubmit
+        testgrid-tab-name: pr-windows-e2e-node-master
