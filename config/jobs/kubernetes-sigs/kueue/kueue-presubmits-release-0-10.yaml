@@ -93,10 +93,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-release-0-10-1-30
     cluster: eks-prow-build-cluster
@@ -131,10 +131,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-release-0-10-1-31
     cluster: eks-prow-build-cluster
@@ -169,10 +169,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-multikueue-release-0-10
     cluster: eks-prow-build-cluster
