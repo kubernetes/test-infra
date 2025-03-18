@@ -88,6 +88,29 @@ check_structured_log_support() {
 	esac
 }
 
+# Function to check if version is greater than or equal to the target
+version_gte() {
+  local version=$1
+  local target=$2
+  
+  # Extract major and minor versions
+  local version_major version_minor
+  version_major=$(echo "$version" | cut -d. -f1)
+  version_minor=$(echo "$version" | cut -d. -f2)
+  
+  local target_major target_minor
+  target_major=$(echo "$target" | cut -d. -f1)
+  target_minor=$(echo "$target" | cut -d. -f2)
+  
+  # Compare major version first, then minor
+  if [ "$version_major" -gt "$target_major" ]; then
+    return 0
+  elif [ "$version_major" -eq "$target_major" ] && [ "$version_minor" -ge "$target_minor" ]; then
+    return 0
+  fi
+  return 1
+}
+
 # up a cluster with kind
 create_cluster() {
   # Default Log level for all components in test clusters
@@ -148,6 +171,12 @@ create_cluster() {
     ;;
   esac
 
+  # Conditionally include the emulation-forward-compatible flag based on version
+  emulation_forward_compatible=""
+  if version_gte "${PREV_VERSION}" "1.33"; then
+    emulation_forward_compatible="      \"emulation-forward-compatible\": \"true\""
+  fi
+
   # create the config file
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 # config for 1 control plane node and 2 workers (necessary for conformance)
@@ -173,8 +202,8 @@ kubeadmConfigPatches:
   apiServer:
     extraArgs:
 ${apiServer_extra_args}
-      "emulated-version": "${EMULATED_VERSION}"
-      "emulation-forward-compatible": "true"
+      "emulated-version": "${EMULATED_VERSION}"${emulation_forward_compatible:+
+$emulation_forward_compatible}
   controllerManager:
     extraArgs:
 ${controllerManager_extra_args}
