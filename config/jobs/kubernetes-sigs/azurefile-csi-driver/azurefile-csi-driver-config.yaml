@@ -170,7 +170,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration
@@ -196,7 +196,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.31
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -229,7 +229,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.31.4"
             - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
@@ -294,7 +294,7 @@ presubmits:
               memory: 8Gi
           env:
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
             - name: EXTERNAL_E2E_TEST_SMB
               value: "true"
     annotations:
@@ -349,7 +349,7 @@ presubmits:
               memory: 8Gi
           env:
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
             - name: EXTERNAL_E2E_TEST_NFS
               value: "true"
     annotations:
@@ -407,7 +407,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -432,7 +432,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.31
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -469,7 +469,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.31.4"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -529,7 +529,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -554,7 +554,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -593,7 +593,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.32.0"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -659,7 +659,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -686,7 +686,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.29
+        base_ref: release-1.30
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -715,7 +715,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.29"
+              value: "v1.30.2"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz
