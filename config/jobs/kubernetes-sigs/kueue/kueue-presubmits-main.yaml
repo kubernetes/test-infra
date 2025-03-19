@@ -313,10 +313,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-customconfigs-main
     cluster: eks-prow-build-cluster
