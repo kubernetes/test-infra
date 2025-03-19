@@ -120,7 +120,7 @@ periodics:
       testgrid-days-of-results: '1'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-master-blocking
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-team@kubernetes.io
     decorate: true
     cluster: k8s-infra-prow-build
     extra_refs:
