@@ -41,7 +41,7 @@ presubmits:
       description: "Run lws integration tests"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
+      - image: public.ecr.aws/docker/library/golang:1.24
         command:
         - make
         args:
@@ -159,7 +159,7 @@ presubmits:
       description: "Run lws verify checks"
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.23
+      - image: public.ecr.aws/docker/library/golang:1.24
         command:
         - make
         args:
