@@ -98,6 +98,7 @@ systemd:
               bash -s -- -t $CRIO_COMMIT'
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crio.conf
+        ExecStartPre=mv /etc/cni/net.d/10-crio-bridge.conflist.disabled /etc/cni/net.d/10-crio-bridge.conflist
         ExecStart=systemctl enable --now crio.service
         Restart=on-failure
 
