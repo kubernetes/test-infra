@@ -444,7 +444,7 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-periodics, sig-etcd-arm64
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-amd64
     testgrid-tab-name: ci-etcd-integration-1-cpu-amd64
   spec:
     containers:
@@ -772,7 +772,7 @@ periodics:
       repo: etcd
       base_ref: release-3.6
   annotations:
-    testgrid-dashboards: sig-etcd-periodics, sig-etcd-arm64
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-amd64
     testgrid-tab-name: ci-etcd-integration-1-cpu-release36-amd64
   spec:
     containers:
