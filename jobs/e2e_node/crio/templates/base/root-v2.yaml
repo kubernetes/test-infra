@@ -41,6 +41,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: tools-install.service
       enabled: true
       contents: |
@@ -60,6 +61,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: selinux-install.service
       enabled: true
       contents: |
@@ -78,6 +80,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: crio-install.service
       enabled: true
       contents: |
@@ -103,6 +106,7 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
     - name: authorized-key.service
       enabled: true
       contents: |
