@@ -599,7 +599,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -662,7 +662,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -725,7 +725,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -788,7 +788,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -851,7 +851,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -914,7 +914,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -977,7 +977,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -1040,7 +1040,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -1103,7 +1103,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kubenet" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --test=kops \
@@ -1166,7 +1166,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -1230,7 +1230,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -1294,7 +1294,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -1358,7 +1358,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -1422,7 +1422,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -1486,7 +1486,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -1550,7 +1550,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -1614,7 +1614,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -1678,7 +1678,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=kubenet" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --validation-wait=20m \
@@ -4010,7 +4010,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -4073,7 +4073,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -4136,7 +4136,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -4199,7 +4199,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -4262,7 +4262,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -4325,7 +4325,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -4388,7 +4388,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -4451,7 +4451,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -4514,7 +4514,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --test=kops \
@@ -4577,7 +4577,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -4641,7 +4641,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -4705,7 +4705,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -4769,7 +4769,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -4833,7 +4833,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -4897,7 +4897,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -4961,7 +4961,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -5025,7 +5025,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -5089,7 +5089,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --validation-wait=20m \
@@ -7421,7 +7421,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -7484,7 +7484,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -7547,7 +7547,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -7610,7 +7610,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -7673,7 +7673,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -7736,7 +7736,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -7799,7 +7799,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -7862,7 +7862,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -7925,7 +7925,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --test=kops \
@@ -7988,7 +7988,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -8052,7 +8052,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -8116,7 +8116,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -8180,7 +8180,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -8244,7 +8244,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -8308,7 +8308,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -8372,7 +8372,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -8436,7 +8436,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -8500,7 +8500,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --validation-wait=20m \
@@ -10832,7 +10832,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -10895,7 +10895,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -10958,7 +10958,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -11021,7 +11021,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -11084,7 +11084,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -11147,7 +11147,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -11210,7 +11210,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -11273,7 +11273,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -11336,7 +11336,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --test=kops \
@@ -11399,7 +11399,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -11463,7 +11463,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -11527,7 +11527,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -11591,7 +11591,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -11655,7 +11655,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -11719,7 +11719,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -11783,7 +11783,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -11847,7 +11847,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -11911,7 +11911,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --validation-wait=20m \
@@ -14252,7 +14252,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -14316,7 +14316,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -14380,7 +14380,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -14444,7 +14444,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -14508,7 +14508,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -14572,7 +14572,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -14636,7 +14636,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -14700,7 +14700,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -14764,7 +14764,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --test=kops \
@@ -14828,7 +14828,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -14893,7 +14893,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -14958,7 +14958,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --validation-wait=20m \
@@ -15023,7 +15023,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -15088,7 +15088,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -15153,7 +15153,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --validation-wait=20m \
@@ -15218,7 +15218,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -15283,7 +15283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --validation-wait=20m \
@@ -15348,7 +15348,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --validation-wait=20m \
@@ -17708,7 +17708,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -17771,7 +17771,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -17834,7 +17834,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -17897,7 +17897,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -17960,7 +17960,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.30/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -18023,7 +18023,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.30.txt \
           --test=kops \
@@ -18086,7 +18086,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -18149,7 +18149,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
           --test=kops \
@@ -18212,7 +18212,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=kopeio" \
+          --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
           --test=kops \

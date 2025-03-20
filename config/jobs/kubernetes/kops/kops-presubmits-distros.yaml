@@ -169,7 +169,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-12-amd64-20250210-2019' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -839,7 +839,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='309956199498/RHEL-9.5.0_HVM-20250128-x86_64-0-Hourly2-GP3' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='309956199498/RHEL-9.5.0_HVM-20250313-x86_64-0-Hourly2-GP3' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -973,7 +973,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='075585003325/Flatcar-beta-4186.1.1-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='075585003325/Flatcar-beta-4230.1.0-hvm' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
