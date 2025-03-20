@@ -453,3 +453,111 @@ periodics:
     testgrid-tab-name: capz-periodic-100-nodes-k8s-master
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
     description: Runs scalability tests with 100 nodes on latest cluster-api-provider-azure
+- name: periodic-cluster-api-provider-azure-windows-with-ci-artifacts-main
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  minimum_interval: 72h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+  spec:
+    serviceAccountName: azure
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.29
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-conformance.sh
+        env:
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
+          - name: WINDOWS
+            value: "true"
+          - name: WINDOWS_FLAVOR
+            value: "containerd"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+          - name: CONFORMANCE_NODES
+            value: "4"
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2019"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capz-periodic-upstream-k8s-ci-windows-containerd-main
+    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Runs cluster-api-provider-azure-windows-with-ci-artifacts periodic job # expect failures in this job as it pulls latest k8s version
+- name: periodic-cluster-api-provider-azure-windows-custom-builds-main
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  minimum_interval: 72h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-community: "true"
+  extra_refs:
+  - base_ref: main
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    repo: cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: azure
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.29
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-conformance.sh
+        env:
+          - name: TEST_K8S
+            value: "true"
+          - name: WINDOWS
+            value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+          - name: CONFORMANCE_NODES
+            value: "4"
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2019"
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capz-periodic-windows-containerd-upstream-custom-k8s-main
+    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    description: Tests Windows support with custom builds on the main branch. # expect failures in this job as it pulls latest k8s version
