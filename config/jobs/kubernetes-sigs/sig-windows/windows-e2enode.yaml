@@ -31,8 +31,6 @@ presubmits:
             env:
               - name: VM_LOCATION
                 value: northeurope
-              - name: VM_SIZE
-                value: Standard_D8as_v5
       annotations:
         testgrid-dashboards: sig-windows-presubmit
         testgrid-tab-name: pr-windows-e2e-node-master
