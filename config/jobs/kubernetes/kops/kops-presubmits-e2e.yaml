@@ -2536,9 +2536,9 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-boskos
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--master-size=c8g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: presubmit-kops-aws-boskos-kubetest2
-    cluster: k8s-infra-kops-prow-build
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: false
@@ -2567,7 +2567,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250305' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250305' --channel=alpha --networking=cilium --master-size=c8g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
             --boskos-resource-type=aws-account \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -2575,6 +2575,8 @@ presubmits:
             -- \
             --test-args="-test.timeout=60m" \
             --test-package-marker=stable.txt \
+            --focus-regex="\[Conformance\]|\[NodeConformance\]" \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]" \
             --parallel=25
         securityContext:
           privileged: true
@@ -2594,12 +2596,12 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
-      test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+      test.kops.k8s.io/distro: u2404arm64
+      test.kops.k8s.io/extra_flags: --master-size=c8g.xlarge --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
-      testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+      testgrid-dashboards: kops-misc, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-boskos-kubetest2
 
