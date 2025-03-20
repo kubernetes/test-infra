@@ -50,7 +50,7 @@ def generate_one(path: pathlib.Path, verify: bool) -> typing.List[str]:
     Generate job configuration files from one template.
     Return list of errors.
     """
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(inline_comment_prefixes=["#"])
     config.read_file(path.open())
 
     template_name = config.get("DEFAULT", "template")
@@ -58,8 +58,10 @@ def generate_one(path: pathlib.Path, verify: bool) -> typing.List[str]:
     errors = []
     with template_path.open() as inp:
         template = jinja2.Template(inp.read(), lstrip_blocks=True)
-        pairs = config.get("DEFAULT", "files").split(",")
-        for name, job in (pair.split(":") for pair in pairs):
+        jobs = dict(
+            item.split(":") for item in config.get("DEFAULT", "files").split(",")
+        )
+        for name, job in jobs.items():
             tmp = tempfile.NamedTemporaryFile(
                 "w",
                 prefix=f"{template_name}.",
@@ -71,6 +73,22 @@ def generate_one(path: pathlib.Path, verify: bool) -> typing.List[str]:
                     f"Instead, modify {template_name} and run `make generate-jobs`.\n"
                 )
                 for section in config.sections():
+                    # generate job types if they're mentioned in
+                    # the `generate` section key or if the key is not set
+                    gen = config[section].get("generate")
+                    if gen is not None:
+                        gen_jobs = gen.split(",")
+                        # validate job types mentioned in the `generate` section key
+                        for gen_job in gen_jobs:
+                            if gen_job and gen_job not in jobs:
+                                errors.append(
+                                    f"Can't generate {name} job {section}: "
+                                    f"unknown job type: {gen_job}"
+                                )
+                        # skip job types not mentioned in the `generate` section key
+                        if name not in gen_jobs:
+                            continue
+
                     tmp.write(
                         template.render(
                             config[section],
