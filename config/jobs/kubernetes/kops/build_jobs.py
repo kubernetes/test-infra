@@ -2380,8 +2380,16 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name='presubmit-kops-aws-boskos-kubetest2',
+            build_cluster="eks-prow-build-cluster",
             always_run=False,
             use_boskos=True,
+            distro="u2404arm64",
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Flaky\]',
+            extra_flags=[
+                "--master-size=c8g.xlarge",
+            ],
+            extra_dashboards=["kops-misc"],
         ),
 
         presubmit_test(
