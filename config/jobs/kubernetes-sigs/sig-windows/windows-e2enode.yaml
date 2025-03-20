@@ -30,7 +30,7 @@ presubmits:
                 memory: "5Gi"
             env:
               - name: VM_LOCATION
-                value: uksouth
+                value: northeurope
               - name: VM_SIZE
                 value: Standard_D8as_v5
       annotations:
