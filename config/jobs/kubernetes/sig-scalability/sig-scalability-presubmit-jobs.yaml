@@ -421,6 +421,8 @@ presubmits:
           limits:
             cpu: 6
             memory: "16Gi"
+        securityContext:
+          privileged: true
   kubernetes/perf-tests:
   - name: pull-perf-tests-benchmark-kube-dns
     cluster: k8s-infra-prow-build
