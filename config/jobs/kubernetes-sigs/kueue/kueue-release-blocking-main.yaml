@@ -141,7 +141,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.29.4
+              value: kindest/node:v1.29.14
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -187,7 +187,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.30.0
+              value: kindest/node:v1.30.10
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -233,7 +233,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.0
+              value: kindest/node:v1.31.6
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -279,7 +279,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.32.0
+              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -325,7 +325,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.2
+              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -371,7 +371,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.1
+              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -417,7 +417,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.1
+              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
@@ -463,7 +463,7 @@ periodics:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.1
+              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.24
           command:
