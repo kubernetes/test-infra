@@ -315,7 +315,7 @@ presubmits:
         securityContext:
           privileged: true
   # Fork of ci-kubernetes-e2e-gce-scale-performance
-  - name: ci-kubernetes-e2e-gce-scale-performance-manual
+  - name: pull-kubernetes-e2e-gce-scale-performance-manual
     cluster: k8s-infra-prow-build
     always_run: false
     max_concurrency: 1
@@ -328,9 +328,9 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-periodics: "true"
-      preset-e2e-scalability-periodics-master: "true"
+      preset-e2e-scalability-presubmits: "true"
     decoration_config:
       timeout: 450m
     extra_refs:
@@ -338,9 +338,13 @@ presubmits:
       repo: perf-tests
       base_ref: master
       path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     annotations:
       testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: ci-kubernetes-e2e-gce-scale-performance-manual
+      testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
     spec:
       volumes:
       - name: cache-secret
@@ -361,12 +365,13 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --build=quick
         - --cluster=gce-scale-cluster
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
         # TODO(mborsz): Adjust or remove this change once we understand coredns
         # memory usage regression.
         - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-        - --extract=ci/fast/latest-fast
+        - --extract=local
         - --gcp-nodes=5000
         - --gcp-project-type=scalability-scale-project
         - --gcp-zone=us-east1-b
