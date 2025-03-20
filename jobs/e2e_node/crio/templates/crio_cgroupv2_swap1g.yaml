@@ -87,8 +87,8 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="SCRIPT_COMMIT=e8c1f1f9493bef6ecc069d573891f7ef3dda5882"
-        Environment="CRIO_COMMIT=f97ec692ad1c28ab0fe787b0407b023a90bd2869"
+        Environment="SCRIPT_COMMIT=0083f3f8aa9e4368292c6fc4879e56f615e46585"
+        Environment="CRIO_COMMIT=bdcf72ff47866e1377cf1ba5372c7fc53ed9de99"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
         ExecStartPre=mount -o remount,rw /dev/sda4 /usr
@@ -98,6 +98,7 @@ systemd:
               bash -s -- -t $CRIO_COMMIT'
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crio.conf
+        ExecStartPre=mv /etc/cni/net.d/10-crio-bridge.conflist.disabled /etc/cni/net.d/10-crio-bridge.conflist
         ExecStart=systemctl enable --now crio.service
         Restart=on-failure
 
