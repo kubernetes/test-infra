@@ -366,7 +366,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/latest
       - --timeout=240m
-      - --test_args=--ginkgo.focus=\[Feature:HPA\]
+      - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
         --minStartupPods=8
       - --ginkgo-parallel=1
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
@@ -382,3 +382,41 @@ periodics:
     # TODO: add to release blocking dashboards once run is successful
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gce-cos-autoscaling-hpa-cpu
+- interval: 30m
+  name: ci-kubernetes-e2e-autoscaling-hpa-cpu-alpha-beta
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 260m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --gcp-node-image=gci
+      - --extract=ci/latest
+      - --timeout=240m
+      - --env=KUBE_FEATURE_GATES=HPAConfigurableTolerance=true
+      - --test_args=--ginkgo.focus=\[Feature:HPAConfigurableTolerance\]
+        --minStartupPods=8
+      - --ginkgo-parallel=1
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
+
+  annotations:
+    # TODO: add to release blocking dashboards once run is successful
+    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-tab-name: gce-cos-autoscaling-hpa-cpu-alpha-beta

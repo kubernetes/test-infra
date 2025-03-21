@@ -88,7 +88,53 @@ presubmits:
         - --provider=gce
         - --gcp-zone=us-west1-b
         - --gcp-node-image=gci
-        - --test_args=--ginkgo.focus=\[Feature:HPA\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\] --minStartupPods=8
+        - --ginkgo-parallel=1
+        - --timeout=300m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
+  - name: pull-kubernetes-e2e-autoscaling-hpa-cpu-alpha-beta
+    cluster: k8s-infra-prow-build
+    annotations:
+      testgrid-dashboards: sig-autoscaling-hpa
+      testgrid-tab-name: gci-gce-autoscaling-hpa-cpu-alpha-beta-pull
+    # TODO: set `optional: false` once tests not flaky
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 310m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --check-leaked-resources
+        - --provider=gce
+        - --gcp-zone=us-west1-b
+        - --gcp-node-image=gci
+        - --env=KUBE_FEATURE_GATES=HPAConfigurableTolerance=true
+        - --test_args=--ginkgo.focus=\[Feature:HPAConfigurableTolerance\] --minStartupPods=8
         - --ginkgo-parallel=1
         - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
