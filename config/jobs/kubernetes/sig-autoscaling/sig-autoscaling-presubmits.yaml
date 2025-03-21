@@ -204,6 +204,7 @@ presubmits:
       testgrid-tab-name: autoscaling-vpa-full-presubmits
     optional: true
     decorate: true
+    always_run: false  # Temporary until tests using GCR are fixed (https://github.com/kubernetes/autoscaler/issues/7946)
     decoration_config:
       timeout: 120m
     run_if_changed: '^vertical-pod-autoscaler\/'
