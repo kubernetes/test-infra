@@ -1,0 +1,14 @@
+
+reviewers:
+- mkumatag
+- Prajyot-Parab
+- Rajalakshmi-Girish
+- kishen-v
+approvers:
+- mkumatag
+- Prajyot-Parab
+- Rajalakshmi-Girish
+- kishen-v
+labels:
+- sig/cloud-provider
+- area/provider/ppc64le
