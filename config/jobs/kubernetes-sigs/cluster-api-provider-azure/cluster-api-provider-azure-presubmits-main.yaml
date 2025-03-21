@@ -393,7 +393,7 @@ presubmits:
             - name: E2E_ARGS
               value: "-kubetest.use-ci-artifacts"
             - name: IP_FAMILY
-              value: "IPv6"
+              value: "ipv6"
           securityContext:
             privileged: true
           resources:
