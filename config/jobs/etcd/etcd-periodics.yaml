@@ -143,7 +143,7 @@ periodics:
       repo: etcd
       base_ref: main
   annotations:
-    testgrid-dashboards: sig-etcd-periodics
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-ppc64le
     testgrid-tab-name: ci-etcd-unit-test-ppc64le
   spec:
     containers:
@@ -601,7 +601,7 @@ periodics:
       base_ref: main
   decorate: true
   annotations:
-    testgrid-dashboards: sig-etcd-periodics
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-ppc64le
     testgrid-tab-name: ci-etcd-integration-2-cpu-ppc64le
   spec:
     containers:
@@ -699,7 +699,7 @@ periodics:
       base_ref: main
   decorate: true
   annotations:
-    testgrid-dashboards: sig-etcd-periodics
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-ppc64le
     testgrid-tab-name: ci-etcd-integration-4-cpu-ppc64le
   spec:
     containers:
