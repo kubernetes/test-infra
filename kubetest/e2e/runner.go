@@ -223,7 +223,7 @@ func (t *GinkgoTester) findBinary(name string) (string, error) {
 	}
 
 	if bazelBinExists {
-		err := filepath.Walk(bazelBin, func(path string, info os.FileInfo, err error) error {
+		err := filepath.WalkDir(bazelBin, func(path string, info os.DirEntry, err error) error {
 			if err != nil {
 				return fmt.Errorf("error from walk: %w", err)
 			}
