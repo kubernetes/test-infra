@@ -1,0 +1,34 @@
+periodics:
+  - name: ci-kubernetes-unit-ppc64le
+    interval: 1h
+    cluster: k8s-infra-ppc64le-prow-build
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: ibm-k8s-unit-tests-ppc64le
+      testgrid-tab-name: ci-kubernetes-unit-ppc64le
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsGroup: 2010
+        runAsUser: 2001
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250227-3a13bdd784-master
+          command:
+            - make
+            - test
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 6
+              memory: "28Gi"
+            limits:
+              cpu: 6
+              memory: "28Gi"
