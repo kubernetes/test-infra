@@ -12,7 +12,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-master-informing
       description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
       fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
@@ -166,7 +166,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v1
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
       fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
@@ -225,7 +225,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v2
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
       fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
@@ -284,7 +284,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd 1.7
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
       fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
@@ -336,7 +336,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
       description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd 2.0
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
       fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
