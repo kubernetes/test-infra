@@ -117,8 +117,8 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "7"
-              memory: "10Gi"
+              cpu: "4"
+              memory: "4Gi"
             limits:
-              cpu: "7"
-              memory: "10Gi"
+              cpu: "4"
+              memory: "4Gi"
