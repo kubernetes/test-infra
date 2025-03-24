@@ -476,7 +476,7 @@ presubmits:
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "v1.30.2"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
