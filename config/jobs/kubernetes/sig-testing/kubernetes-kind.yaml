@@ -47,6 +47,8 @@ presubmits:
       fork-per-release: "true"
 
 
+  # NOTE: changes should generally be synced to pull-kind-e2e-kubernetes-canary
+  # in the kind repo
   - name: pull-kubernetes-e2e-kind-canary
     cluster: k8s-infra-prow-build
     optional: true
@@ -80,11 +82,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 4
-            memory: 9Gi
+            cpu: 7
+            memory: 9000Mi
           requests:
-            cpu: 4
-            memory: 9Gi
+            cpu: 7
+            memory: 9000Mi
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
