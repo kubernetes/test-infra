@@ -207,7 +207,7 @@ presubmits:
     always_run: false  # Temporary until tests using GCR are fixed (https://github.com/kubernetes/autoscaler/issues/7946)
     decoration_config:
       timeout: 120m
-    run_if_changed: '^vertical-pod-autoscaler\/'
+    run_if_changed: '^vertical-pod-autoscaler\/(?!enhancements\/).*'
     path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"
