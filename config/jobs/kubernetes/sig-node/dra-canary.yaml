@@ -327,6 +327,9 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    - org: containerd
+      repo: containerd
+      base_ref: release/2.0
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
