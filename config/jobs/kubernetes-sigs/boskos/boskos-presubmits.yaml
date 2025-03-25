@@ -18,10 +18,10 @@ presubmits:
             resources:
               requests:
                 cpu: 4000m
-                memory: 4Gi
+                memory: 5Gi
               limits:
                 cpu: 4000m
-                memory: 4Gi
+                memory: 5Gi
       annotations:
         testgrid-dashboards: sig-testing-boskos
         testgrid-tab-name: pull-build-test-verify
