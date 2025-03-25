@@ -482,7 +482,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-features
   annotations:
-    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
     testgrid-tab-name: kind-master-alpha
     description: Runs tests with no special requirements other than alpha feature gates in a KinD cluster where alpha feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -536,7 +536,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
-    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
     testgrid-tab-name: kind-master-beta
     description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
@@ -588,7 +588,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-features
   annotations:
-    testgrid-dashboards: sig-testing-kind, sig-release-master-informing
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
     testgrid-tab-name: kind-master-alpha-beta
     description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
