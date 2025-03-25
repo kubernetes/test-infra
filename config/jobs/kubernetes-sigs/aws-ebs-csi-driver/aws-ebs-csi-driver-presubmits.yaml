@@ -256,40 +256,6 @@ presubmits:
       testgrid-tab-name: pull-external-test
       description: kubernetes/kubernetes external test on pull request
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-ebs-csi-driver-external-test-a1
-    cluster: eks-prow-build-cluster
-    decorate: true
-    optional: true
-    skip_report: true
-    branches:
-      - ^release-.*$
-    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-aws-credential-aws-shared-testing: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
-          command:
-            - runner.sh
-          args:
-            - make
-            - test-e2e-external-a1
-          securityContext:
-            privileged: true
-          resources:
-            limits:
-              cpu: "2"
-              memory: "4Gi"
-            requests:
-              cpu: "2"
-              memory: "4Gi"
-    annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
-      testgrid-tab-name: pull-external-test-a1
-      description: kubernetes/kubernetes external test on pull requests on release branch for a1compat image
-      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-fips
     cluster: eks-prow-build-cluster
     decorate: true
