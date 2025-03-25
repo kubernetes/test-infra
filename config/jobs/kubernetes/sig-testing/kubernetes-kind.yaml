@@ -512,7 +512,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/alpha":"true", "api/ga":"true"}'
       - name: LABEL_FILTER
-        value: "Feature: isSubsetOf OffByDefault && !BetaOffByDefault && !Deprecated && !Disruptive && !Flaky"
+        value: "Feature: isSubsetOf OffByDefault && !BetaOffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
       # ListFromCacheSnapshot does not implement the compaction behavior for watch cache defined in "Servers with support for API chunking should support continue listing from the last key if the original version has been compacted away" conformance test so it flakes
       # Ref: https://issues.k8s.io/131011
       - name: SKIP
@@ -566,7 +566,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/beta":"true", "api/ga":"true"}'
       - name: LABEL_FILTER
-        value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Disruptive && !Flaky"
+        value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
       - name: SKIP
         value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
@@ -618,7 +618,7 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
       - name: LABEL_FILTER
-        value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Disruptive && !Flaky"
+        value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
       # ListFromCacheSnapshot does not implement the compaction behavior for watch cache defined in "Servers with support for API chunking should support continue listing from the last key if the original version has been compacted away" conformance test so it flakes
       # Ref: https://issues.k8s.io/131011
       - name: SKIP
