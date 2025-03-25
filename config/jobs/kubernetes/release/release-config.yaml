@@ -25,7 +25,6 @@ presubmits:
         - --build=quick
         - --cluster=
         - --down=false
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
