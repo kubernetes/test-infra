@@ -73,6 +73,11 @@
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    {%- if "containerd-2-0" in job_name %}
+    - org: containerd
+      repo: containerd
+      base_ref: release/2.0
+    {%- endif %}
     {%- endif %}
     spec:
       containers:
