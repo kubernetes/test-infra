@@ -1492,10 +1492,17 @@ def generate_network_plugins():
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
         k8s_version = 'stable'
         distro = 'u2404'
+        extra_flags = ['--node-size=t3.large']
         if plugin in ['kuberouter']:
             k8s_version = 'ci'
         if plugin in ['cilium-eni', 'amazon-vpc']:
             distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
+        if plugin in ['amazon-vpc']:
+            extra_flags += [
+                "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
+                "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
+                "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
+            ]
         results.append(
             build_test(
                 distro=distro,
@@ -1503,7 +1510,7 @@ def generate_network_plugins():
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
-                extra_flags=['--node-size=t3.large'],
+                extra_flags=extra_flags,
                 extra_dashboards=['kops-network-plugins'],
                 runs_per_day=3,
             )
