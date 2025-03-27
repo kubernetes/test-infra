@@ -25,16 +25,16 @@ fi
 
 # Change the following configurations to adapt the resulting ignitions files.
 declare -A CONFIGURATIONS=(
-    ["crio_cgroupv1"]="root cgroupv1 criu-enabled"
-    ["crio_cgroupv1_eventedpleg"]="root cgroupv1 eventedpleg"
-    ["crio_cgroupv1_hugepages"]="root cgroupv1 hugepages"
-    ["crio_cgroupv2"]="root"
-    ["crio_cgroupv2_drop_infra_ctr"]="drop-infra-ctr"
-    ["crio_cgroupv2_swap1g"]="root swap-1G"
-    ["crio_cgroupv2_imagefs"]="root imagefs"
-    ["crio_cgroupv2_splitfs"]="root splitfs"
-    ["crio_cgroupv2_hugepages"]="root hugepages"
-    ["crio_cgroupv2_userns"]="root userns crun-enabled"
+    ["crio_cgroupv1"]="root env cgroupv1 criu-enabled"
+    ["crio_cgroupv1_eventedpleg"]="root env cgroupv1 eventedpleg"
+    ["crio_cgroupv1_hugepages"]="root env cgroupv1 hugepages"
+    ["crio_cgroupv2"]="root env"
+    ["crio_cgroupv2_drop_infra_ctr"]="root env drop-infra-ctr"
+    ["crio_cgroupv2_swap1g"]="root env swap-1G"
+    ["crio_cgroupv2_imagefs"]="root env imagefs"
+    ["crio_cgroupv2_splitfs"]="root env splitfs"
+    ["crio_cgroupv2_hugepages"]="root env hugepages"
+    ["crio_cgroupv2_userns"]="root env userns crun-enabled"
 )
 
 CONTAINER_RUNTIME=$(which podman 2>/dev/null) ||
