@@ -43,11 +43,9 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 - [`gcsweb`](/gcsweb) is a UI we use to display test artifacts stored in public GCS buckets
 - [`ghproxy`](/ghproxy) is a GitHub-aware reverse proxy cache to help keep our GitHub API token usage within rate limits
 - [`gopherage`](/gopherage) is a tool for manipulating Go coverage files
-- [`greenhouse`](/greenhouse) is a shared bazel cache we use to ensure faster build and test presubmit jobs
 - [`label_sync`](/label_sync) creates, updates and migrates GitHub labels across orgs and repos based on `labels.yaml` file
 - [`kettle`](/kettle) extracts test results from GCS and puts them into bigquery
 - [`kubetest`](/kubetest) is how our CI creates and e2e tests kubernetes clusters
-- [`maintenance/migratestatus`](/maintenance/migratestatus) is used to migrate or retire GitHub status contexts on PRs across orgs and repos
 - [`metrics`](/metrics) runs queries against bigquery to generate metrics based on test results
 - [`robots/commenter`](/robots/commenter) is used by some of our jobs to comment on GitHub issues
 
