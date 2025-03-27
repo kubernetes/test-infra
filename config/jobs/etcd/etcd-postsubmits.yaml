@@ -322,3 +322,32 @@ postsubmits:
             memory: "3Gi"
       nodeSelector:
         kubernetes.io/arch: arm64
+
+  - name: post-etcd-coverage-report
+    cluster: eks-prow-build-cluster
+    branches:
+    - main
+    - release-3.6
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    annotations:
+      testgrid-dashboards: sig-etcd-postsubmits
+      testgrid-tab-name: post-etcd-coverage-report
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            make upload-coverage-report
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
