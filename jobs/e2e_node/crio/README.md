@@ -61,3 +61,9 @@ gcloud compute instances create \
 
 Accessing the virtual machine should be now possible by using the external IP of
 the instance.
+
+# Change CRI-O versions
+
+To change the version of CRI-O being used for a single ignition file, just copy
+[env.yaml](./templates/base/env.yaml) and adapt
+[`./templates/generate`](./templates/generate) accordingly.

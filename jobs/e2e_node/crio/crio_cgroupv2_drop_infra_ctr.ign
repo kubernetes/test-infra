@@ -26,10 +26,10 @@
         "mode": 420
       },
       {
-        "path": "/etc/crio/crio.conf.d/20-crio-drop-infra-ctr.conf",
+        "path": "/etc/crio/crio.conf.d/20-crio.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/7SP0UrFMAyG7/MUY/duT3CeREbpaXN6Im0y0kT07aVuIiiIIF6Vhv/P9+UxKclCLRbcoFPhaK4YdqmUXqfLNK9oaR2h9ZgtT114BjiK6mzUcIMqJVR8xjo6Ga9eZsgqeyC+aQzJdLpMpo6Q8Ra9WjirI6/O6evKj7cvSZ03OL9hj3Z/9/Kua6UrvuDpN3IzNGEy0Z9ywu37CZ+8YfMb3mH9d55ht4d75FxR/4P7FgAA//9Pq5nE4wEAAA=="
+          "source": "data:;base64,H4sIAAAAAAAC/7SP0UrFMAyG7/MUY/duT3CeREbp6bIukiYjTUXfXuomgoII4lVp+P98Xx6TkU5UYsYFKmWJ3gzDoUzpdbgN44ye5h6az9n0VFVGgLNoTZwKLsCaA+Mzcu+seG95hNX0CCSbxZDchtuwRa4IK26xsYer2wvWJH3d+fHWKVmTBa5vOKLv72Kt2sx0xxe8BHtuhKJCrvZTTqV8v+GT121+wzut/85zrP6wR1kZ7T+4bwEAAP//V7kNseQBAAA="
         },
         "mode": 420
       },
@@ -45,6 +45,22 @@
         "path": "/etc/ssh-key-secret/ssh-public",
         "contents": {
           "source": "data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA=="
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/systemd/system.conf.d/10-env.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5BManager%5D%0ADefaultEnvironment%3D%22CRIO_SCRIPT_COMMIT%3D0083f3f8aa9e4368292c6fc4879e56f615e46585%22%0ADefaultEnvironment%3D%22CRIO_COMMIT%3Dbdcf72ff47866e1377cf1ba5372c7fc53ed9de99%22%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/crio/crio.conf.d/30-crio-drop-infra-ctr.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,%5Bcrio.runtime%5D%0Adrop_infra_ctr%20%3D%20true%0A"
         },
         "mode": 420
       }
@@ -68,7 +84,7 @@
         "name": "selinux-install.service"
       },
       {
-        "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nEnvironment=\"SCRIPT_COMMIT=52aa3c2a31ccc9623962e9e338b6585267d6f3f4\"\nEnvironment=\"CRIO_COMMIT=1c04ca9768e535cf22017da6e6cee620bb3a6431\"\n\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=mount -o remount,rw /dev/sda4 /usr\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/packaging/$SCRIPT_COMMIT/get |\\\n      bash -s -- -t $CRIO_COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crio.conf\nExecStart=systemctl enable --now crio.service\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=mount -o remount,rw /dev/sda4 /usr\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/packaging/$CRIO_SCRIPT_COMMIT/get |\\\n      bash -s -- -t $CRIO_COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crio.conf\nExecStartPre=mv /etc/cni/net.d/10-crio-bridge.conflist.disabled /etc/cni/net.d/10-crio-bridge.conflist\nExecStart=systemctl enable --now crio.service\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "crio-install.service"
       },
