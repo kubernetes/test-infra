@@ -667,14 +667,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
+    name: periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
+    test_group_name: periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -694,14 +694,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
+    name: periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
+    test_group_name: periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1508,10 +1508,10 @@ test_groups:
   name: periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.18-lp-interop-mtc-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.18-lp-interop-mtc-interop-aws-fips
   name: periodic-ci-mtc-qe-mtc-e2e-qev2-master-mtc1.8-ocp4.18-lp-interop-mtc-interop-aws-fips
-- gcs_prefix: test-platform-results/logs/periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
-  name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
-  name: periodic-ci-oadp-qe-oadp-qe-automation-main-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
+  name: periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
+  name: periodic-ci-oadp-qe-oadp-qe-automation-oadp-1.4-oadp1.4-ocp4.18-lp-interop-oadp-interop-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-knative-serverless-operator-main-ocp4.18-lp-interop-operator-e2e-interop-aws-ocp418
   name: periodic-ci-openshift-knative-serverless-operator-main-ocp4.18-lp-interop-operator-e2e-interop-aws-ocp418
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-knative-serverless-operator-main-ocp4.18-lp-interop-operator-e2e-interop-aws-ocp418-fips
