@@ -111,13 +111,7 @@ dashboards:
       test_group_name: cloud-provider-inspur-e2e-conformance-release-v1.18
 
 - name: conformance-hack-local-up-cluster
-
-# ppc64le dashboard
 - name: conformance-ppc64le
-  dashboard_tab:
-    - name: Periodic ppc64le conformance test on local cluster with containerd as runtime
-      test_group_name: ppc64le-conformance-containerd
-      description: Runs conformance tests against latest version of kubernetes with containerd as runtime on local ppc64le cluster"
 
 # Gardener Conformance Dashboard
 - name: conformance-gardener
