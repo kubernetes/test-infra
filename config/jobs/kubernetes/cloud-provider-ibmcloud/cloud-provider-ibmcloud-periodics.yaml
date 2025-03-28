@@ -1,3 +1,21 @@
+presets:
+- labels:
+    preset-ibmcloud-cred: "true"
+  volumeMounts:
+    - mountPath: /etc/secret-volume
+      name: prow-job-ssh-private-key
+      readOnly: true
+  env:
+    - name: TF_VAR_powervs_api_key
+      valueFrom:
+        secretKeyRef:
+          name: prow-job-api-key
+          key: key
+  volumes:
+    - name: prow-job-ssh-private-key
+      secret:
+        defaultMode: 256
+        secretName: prow-job-ssh-private-key
 periodics:
   - name: ci-kubernetes-unit-ppc64le
     interval: 1h
@@ -32,3 +50,103 @@ periodics:
             limits:
               cpu: 6
               memory: "28Gi"
+
+  - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
+    interval: 3h
+    cluster: k8s-infra-ppc64le-prow-build
+    labels:
+      preset-ibmcloud-cred: "true"
+    decorate: true
+    decoration_config:
+      timeout: 220m
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM powervs
+      testgrid-dashboards: ibm-k8s-conformance-ppc64le, conformance-ppc64le
+      testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250227-3a13bdd784-master
+          securityContext:
+            privileged: true
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: "USER"
+              value: "ci-kubernetes-ppc64le-conformance-latest-kubetest2"
+          resources:
+            requests:
+              cpu: 4
+              memory: "14Gi"
+            limits:
+              cpu: 4
+              memory: "14Gi"
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+              set -o xtrace
+
+              export PATH=$GOPATH/bin:$PATH
+              export GO111MODULE=on
+              RESOURCE_TYPE="powervs"
+              #Call to boskos to checkout resource
+              source "./hack/boskos.sh"
+
+              #Setup of kubetest2 tf deployer and ginkgo tester
+              make install-deployer-tf
+              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
+
+              #Install ansible required to bring up k8s cluster on infra
+              apt-get update && apt-get install -y ansible
+
+              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
+
+              TIMESTAMP=$(date +%s)
+
+              set +o errexit
+              set -o xtrace
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                --powervs-ssh-key k8s-pvs-sshkey \
+                --ssh-private-key /etc/secret-volume/ssh-privatekey \
+                --build-version $K8S_BUILD_VERSION \
+                --release-marker $K8S_BUILD_VERSION \
+                --cluster-name config1-$TIMESTAMP \
+                --workers-count 2 \
+                --up --auto-approve --retry-on-tf-failure 3 \
+                --break-kubetest-on-upfail true \
+                --powervs-memory 32 \
+                --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='\[Conformance\]' --skip-regex='\[Serial\]'; rc1=$?
+
+              export KUBECONFIG="$(pwd)/config1-$TIMESTAMP/kubeconfig"
+              export ARTIFACTS=$ARTIFACTS/serial_tests_artifacts
+              #Run Serial Conformance tests
+              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                --ignore-cluster-dir true \
+                --cluster-name config1-$TIMESTAMP \
+                --down --auto-approve --ignore-destroy-errors \
+                --test=ginkgo -- \
+                --test-package-dir ci \
+                --test-package-version $K8S_BUILD_VERSION --focus-regex='\[Serial\].*\[Conformance\]'; rc2=$?
+
+              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+
+              if [ $rc1 != 0 ]; then
+                  echo "ERROR: Non Serial k8s Conformance tests exited with code: $rc1"
+                  exit $rc1
+              elif [ $rc2 != 0 ]; then
+                  echo "ERROR: Serial k8s Conformance tests exited with code: $rc2"
+                  exit $rc2
+              fi
