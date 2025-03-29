@@ -1345,11 +1345,6 @@ repos:
         target: both
         addedBy: humans
       - color: 0052cc
-        description: Issues or PRs related to code in /greenhouse (our remote bazel cache)
-        name: area/greenhouse
-        target: both
-        addedBy: label
-      - color: 0052cc
         description: Issues or PRs related to code in /gubernator
         name: area/gubernator
         target: both

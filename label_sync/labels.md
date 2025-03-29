@@ -572,7 +572,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| label | |
 | <a id="area/github-management" href="#area/github-management">`area/github-management`</a> | Issues or PRs related to GitHub Management subproject| label | |
 | <a id="area/gopherage" href="#area/gopherage">`area/gopherage`</a> | Issues or PRs related to code in /gopherage| humans | |
-| <a id="area/greenhouse" href="#area/greenhouse">`area/greenhouse`</a> | Issues or PRs related to code in /greenhouse (our remote bazel cache)| label | |
 | <a id="area/gubernator" href="#area/gubernator">`area/gubernator`</a> | Issues or PRs related to code in /gubernator| label | |
 | <a id="area/kind" href="#area/kind">`area/kind`</a> | Issues or PRs related to code in /kind| label | |
 | <a id="area/label_sync" href="#area/label_sync">`area/label_sync`</a> | Issues or PRs related to code in /label_sync| label | |

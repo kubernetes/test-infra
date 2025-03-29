@@ -17,7 +17,6 @@ Prow is composed of a service cluster, and one or more build clusters
 
 Each build cluster may have additional components deployed:
 - **boskos**: responsible for managing pools of GCP projects
-- **greenhouse**: implements a remote bazel cache
 - **ghproxy**: reverse proxy HTTP cache optimized for use with the GitHub API
 - **kubernetes-external-secrets**: updates Kubernetes Secrets with values from 
   external secret stores such as Google Secret Manager
@@ -45,7 +44,7 @@ in separate GCP organizations:
 - Kubernetes manifests live in /config/prow/cluster
 - Owner access given to Google employees in test-infra-oncall
 - Viewer access given to Google employees
-- Additional components: boskos, greenhouse
+- Additional components: boskos
 - Logs available via Google Cloud Logging
 
 ### test-infra-trusted
@@ -62,7 +61,7 @@ in separate GCP organizations:
 - Owner access given to k8s-infra-prow-oncall@kubernetes.io
 - Viewer access given to k8s-infra-prow-viewers@kubernetes.io
 - Kubernetes API access restricted to internal networks, must use google cloud shell
-- Additional components: boskos, greenhouse, kubernetes-external-secrets
+- Additional components: boskos, kubernetes-external-secrets
 - [k8s-infra-prow-build dashboard](https://console.cloud.google.com/monitoring/dashboards/custom/10925237040785467832?project=k8s-infra-prow-build&timeDomain=1d)
 - [k8s-infra-prow-build logs](https://console.cloud.google.com/logs/query?project=k8s-infra-prow-build)
 
