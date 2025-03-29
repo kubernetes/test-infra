@@ -118,7 +118,7 @@ periodics:
               kubetest2 tf --powervs-image-name CentOS-Stream-9 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-pvs-sshkey \
+                --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --build-version $K8S_BUILD_VERSION \
                 --release-marker $K8S_BUILD_VERSION \
