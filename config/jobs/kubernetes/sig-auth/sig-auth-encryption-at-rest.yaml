@@ -66,6 +66,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   annotations:
     testgrid-dashboards: sig-auth-encryption-at-rest, sig-release-master-informing
+    testgrid-alert-email: release-team@kubernetes.io
     description: Runs conformance tests on a cluster with KMS encryption enabled at periodic intervals
   spec:
     containers:
