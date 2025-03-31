@@ -597,6 +597,8 @@ branch-protection:
             gh-pages:
               protect: false
         kubespray:
+          exclude:
+            - "^component_hash_update/" # don't protect PR branches from the checksums updater
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
