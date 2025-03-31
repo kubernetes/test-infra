@@ -586,6 +586,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
     decorate: true
+    run_if_changed: 'go.mod|templates\/test|^scripts\/|test\/e2e|Makefile'
     optional: true
     always_run: false
     decoration_config:

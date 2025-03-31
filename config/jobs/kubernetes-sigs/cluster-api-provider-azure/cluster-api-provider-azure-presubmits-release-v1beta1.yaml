@@ -460,6 +460,7 @@ presubmits:
     always_run: false
     optional: false
     decorate: true
+    run_if_changed: 'go.mod|templates\/test|^scripts\/|test\/e2e|Makefile'
     decoration_config:
       timeout: 4h
     branches:
