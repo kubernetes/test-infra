@@ -361,7 +361,6 @@ branch-protection:
         kops:
           required_status_checks:
             contexts:
-            - tests-e2e-scenarios-bare-metal
             - build-linux-amd64
             - build-linux-arm64
             - build-macos-amd64
