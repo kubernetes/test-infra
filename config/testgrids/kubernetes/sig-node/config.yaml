@@ -8,6 +8,7 @@ dashboard_groups:
     - sig-node-dynamic-resource-allocation
     - sig-node-presubmits
     - sig-node-ec2
+    - sig-node-ppc64le
     # These dashboards are for out-of-tree SIG Node projects
     - sig-node-cadvisor
     - sig-node-cri-tools
