@@ -10,10 +10,6 @@ dashboards:
 - name: ibm-k8s-unit-tests-ppc64le
 - name: ibm-k8s-conformance-ppc64le
 - name: ibm-k8s-e2e-node-ppc64le
-  dashboard_tab:
-    - name: periodic-k8s-e2e-node-ppc64le
-      description: k8s e2e node tests on ibm ppc64le architecture
-      test_group_name: k8s-e2e-node
 - name: ibm-etcd-tests-ppc64le
   dashboard_tab:
     - name: periodic-etcd-tests-ppc64le
@@ -22,7 +18,5 @@ dashboards:
 
 
 test_groups:
-- name: k8s-e2e-node
-  gcs_prefix:  ppc64le-kubernetes/logs/periodic-kubernetes-containerd-e2e-node-tests-ppc64le
 - name: ppc64le-etcd-tests
   gcs_prefix: ppc64le-kubernetes/logs/periodic-etcd-test-ppc64le
