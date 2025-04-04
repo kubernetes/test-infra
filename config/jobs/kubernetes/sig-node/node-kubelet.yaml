@@ -734,7 +734,7 @@ periodics:
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
-    testgrid-dashboards: sig-node-kubelet
+    testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
   labels:
     preset-service-account: "true"
@@ -782,7 +782,7 @@ periodics:
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
-    testgrid-dashboards: sig-node-kubelet
+    testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
   labels:
     preset-service-account: "true"
@@ -830,7 +830,7 @@ periodics:
   interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
-    testgrid-dashboards: sig-node-kubelet
+    testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: kubelet-serial-gce-e2e-memory-manager
   labels:
     preset-service-account: "true"
