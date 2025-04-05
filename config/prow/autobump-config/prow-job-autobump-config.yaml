@@ -22,6 +22,7 @@ extraFiles:
   - "config/jobs/kubernetes/kops/build_jobs.py"
   - "config/jobs/kubernetes-csi/gen-jobs.sh"
   - "config/jobs/README.md"
+  - "config/prow/config.yaml"
   - "releng/generate_tests.py"
   - "releng/test_config.yaml"
   - "images/kubekins-e2e/Dockerfile"
@@ -50,5 +51,10 @@ prefixes:
   - name: "k8s-staging-apisnoop-apisnoop"
     prefix: "gcr.io/k8s-staging-apisnoop/"
     repo: "https://github.com/kubernetes-sigs/apisnoop"
+    summarise: false
+    consistentImages: false
+  - name: "Prow images"
+    prefix: "us-docker.pkg.dev/k8s-infra-prow/images/"
+    repo: "https://github.com/kubernetes-sigs/prow"
     summarise: false
     consistentImages: false
