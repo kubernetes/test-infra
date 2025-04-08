@@ -21,7 +21,7 @@ periodics:
     testgrid-tab-name: capz-windows-1.30
   decorate: true
   decoration_config:
-    timeout: 8h0m0s
+    timeout: 4h0m0s
   extra_refs:
   - base_ref: release-1.16
     org: kubernetes-sigs
@@ -36,7 +36,7 @@ periodics:
     org: kubernetes-sigs
     path_alias: sigs.k8s.io/cloud-provider-azure
     repo: cloud-provider-azure
-  interval: 3h
+  interval: 24h
   labels:
     preset-azure-community: "true"
     preset-capz-containerd-1-7-latest: "true"
