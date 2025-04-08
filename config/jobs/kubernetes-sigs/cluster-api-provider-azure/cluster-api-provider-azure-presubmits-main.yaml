@@ -959,7 +959,7 @@ presubmits:
           ./run-e2e.sh cluster-loader2
           --nodes=100 \
           --provider=aks \
-          --testconfig=testing/load/config.yaml \
+          --testconfig=${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/clusterloader2/testing/load/config.yaml \
           --testconfig=testing/huge-service/config.yaml \
           --testconfig=testing/access-tokens/config.yaml \
           --testoverrides=./testing/experiments/enable_restart_count_check.yaml \
