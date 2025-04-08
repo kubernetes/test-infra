@@ -150,3 +150,81 @@ periodics:
                   echo "ERROR: Serial k8s Conformance tests exited with code: $rc2"
                   exit $rc2
               fi
+  - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
+    interval: 6h
+    cluster: k8s-infra-ppc64le-prow-build
+    labels:
+      preset-ibmcloud-cred: "true"
+    decorate: true
+    decoration_config:
+      timeout: 220m
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs e2e-node tests using kubetest2 on IBM powervs
+      testgrid-dashboards: ibm-k8s-e2e-node-ppc64le, sig-node-ppc64le
+      testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250227-3a13bdd784-master
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: "USER"
+              value: "ci-kubernetes-ppc64le-e2e-node-latest-kubetest2"
+          resources:
+            requests:
+              cpu: 2
+              memory: 10Gi
+            limits:
+              cpu: 2
+              memory: 10Gi
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+              set -o xtrace
+
+              export PATH=$GOPATH/bin:$PATH
+              export GO111MODULE=on
+              RESOURCE_TYPE="powervs"
+              source "./hack/boskos.sh"
+
+              make install-deployer-tf
+
+              apt-get update && apt-get install -y ansible
+
+              TIMESTAMP=$(date +%s)
+              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
+
+              set +o errexit
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                --powervs-ssh-key k8s-prow-sshkey \
+                --ssh-private-key /etc/secret-volume/ssh-privatekey \
+                --cluster-name config2-$TIMESTAMP \
+                --up --set-kubeconfig=false --auto-approve \
+                --build-version $K8S_BUILD_VERSION --retry-on-tf-failure 3 \
+                --break-kubetest-on-upfail true --powervs-memory 32 \
+                --playbook k8s-node-remote.yml
+              EXTERNAL_IP=`grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' $(pwd)/config3-$TIMESTAMP/hosts`
+              # Skipping test due to https://github.com/kubernetes/kubernetes/issues/131132 and
+              # Related to https://github.com/kubernetes/kubernetes/issues/124791
+              kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
+                "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop|when.querying.\/metrics\/cadvisor' && /make-test-e2e-node.sh"; \
+                rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
+              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                --ignore-cluster-dir true \
+                --cluster-name config2-$TIMESTAMP \
+                --down --auto-approve --ignore-destroy-errors
+              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+              [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
