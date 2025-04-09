@@ -1703,6 +1703,11 @@ plugins:
     plugins:
     - milestone
     - milestonestatus
+    - require-matching-label
+
+  kubernetes-sigs/secrets-store-sync-controller:
+    plugins:
+    - require-matching-label
 
   kubernetes-sigs/custom-metrics-apiserver:
     plugins:
