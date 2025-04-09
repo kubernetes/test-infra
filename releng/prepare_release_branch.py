@@ -71,7 +71,7 @@ def check_version(branch_path):
         if re.match(r'^\d+\.\d+$', x):
             numbers.append(list(map(int, x.split('.'))))
         else:
-            print(f"Skipped invalid basename: '{x}'")  # Log skipped files
+            print(f"Skipped invalid basename: '{x}'")
 
     numbers = sorted(numbers)
 
@@ -81,10 +81,9 @@ def check_version(branch_path):
     # Check if versions are sequential
     lowest = numbers[0]
     for i, num in enumerate(numbers):
-        expected_version = lowest[1] + i  # Calculate the expected minor version
+        expected_version = lowest[1] + i
         if num[1] != expected_version:
-            print(f"Non-sequential branch found: Expected 1.{expected_version}, but got 1.{num[1]}")
-            raise ToolError("Branches are not sequential.")
+            raise ToolError(f"Branches are not sequential. Found: {num}, Expected: {expected_version}.")
 
     print(f"Valid version numbers found: {numbers}")
     return numbers[-1]
