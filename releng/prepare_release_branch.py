@@ -82,9 +82,9 @@ def check_version(branch_path):
     # Check if versions are sequential
     lowest = numbers[0]
     for i, num in enumerate(numbers):
-        expect_ver= lowest[1] + i
+        expect_ver = lowest[1] + i
         if num[1] != expect_ver:
-            raise ToolError(f"Branches not sequential. Found: {num}, Expected: {expect_ver}.")
+            raise ToolError(f"Branches not sequential. Found {num} expected {expect_ver}.")
 
     print(f"Valid version numbers found: {numbers}")
     return numbers[-1]
