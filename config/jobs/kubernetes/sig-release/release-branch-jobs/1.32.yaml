@@ -2329,6 +2329,11 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 1h30m0s
+    extra_refs:
+    - base_ref: release-1.32
+      org: kubernetes
+      path_alias: k8s.io/kubernetes
+      repo: kubernetes
     interval: 24h
     labels:
       preset-dind-enabled: "true"
