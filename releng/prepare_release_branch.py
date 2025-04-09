@@ -65,11 +65,28 @@ def check_version(branch_path):
     if not has_correct_amount_of_configs(branch_path):
         raise ToolError("Incorrect release config count. Cannot continue.")
     basenames = [os.path.splitext(os.path.basename(x))[0] for x in files]
-    numbers = sorted([list(map(int, x.split('.'))) for x in basenames])
+    numbers = []
+    for x in basenames:
+        # Matching only x.y.yaml file names
+        if re.match(r'^\d+\.\d+$', x):
+            numbers.append(list(map(int, x.split('.'))))
+        else:
+            print(f"Skipped invalid basename: '{x}'")  # Log skipped files
+
+    numbers = sorted(numbers)
+
+    if not numbers:
+        raise ToolError(f"No valid version numbers found. Check config {branch_path} for valid files.")
+
+    # Check if versions are sequential
     lowest = numbers[0]
     for i, num in enumerate(numbers):
-        if num[1] != lowest[1] + i:
+        expected_version = lowest[1] + i  # Calculate the expected minor version
+        if num[1] != expected_version:
+            print(f"Non-sequential branch found: Expected 1.{expected_version}, but got 1.{num[1]}")
             raise ToolError("Branches are not sequential.")
+
+    print(f"Valid version numbers found: {numbers}")
     return numbers[-1]
 
 
