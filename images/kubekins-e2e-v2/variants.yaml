@@ -9,6 +9,11 @@ variants:
     GO_VERSION: 1.24.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
+  '1.33':
+    CONFIG: '1.33'
+    GO_VERSION: 1.24.0
+    K8S_RELEASE: latest-1.33
+    BAZEL_VERSION: 3.4.1
   '1.32':
     CONFIG: '1.32'
     GO_VERSION: 1.23.6
