@@ -264,8 +264,8 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 2
-            memory: 6Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 2
-            memory: 6Gi
+            cpu: 4
+            memory: 8Gi
