@@ -316,11 +316,7 @@ presubmits:
         - ./hack/e2e.sh
         env:
         - name: GINKGO_FOCUS
-{{- if eq $.branch "release-1.7" "release-1.8" }}
-          value: "{{ $modeFocus }}\\[Conformance\\]"
-{{- else }}
           value: "{{ $modeFocus }}\\[Conformance\\] \\[K8s-Install\\]"
-{{- end }}
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
