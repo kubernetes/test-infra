@@ -71,7 +71,8 @@ def check_version(branch_path):
         if re.match(r'^\d+\.\d+$', x):
             numbers.append(list(map(int, x.split('.'))))
         else:
-            print(f"Skipped invalid basename: '{x}'")
+            print(f"Warning: skipped invalid basename: '{x}' in {branch_path}."
+                  "Correct the file name to match x.y.yaml or move its jobs under another config.")
 
     numbers = sorted(numbers)
 
