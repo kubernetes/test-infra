@@ -208,7 +208,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
-      timeout: 2h # allow plenty of time for a serial conformance run
+      timeout: 2h20m # allow plenty of time for a serial conformance run
       grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
