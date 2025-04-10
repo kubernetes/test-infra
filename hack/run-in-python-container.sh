@@ -22,9 +22,17 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${REPO_ROOT}"
 
-PY_IMAGE='python:3.9-slim-buster'
+# Use ARM version of Python image when on ARM architecture
+if [[ "$(uname -m)" == "arm64" ]]; then
+  PY_IMAGE='python:3.9-slim-buster'
+  PLATFORM_FLAG="--platform=linux/arm64"
+else
+  PY_IMAGE='python:3.9-slim-buster'
+  PLATFORM_FLAG=""
+fi
 
 docker run \
+    ${PLATFORM_FLAG} \
     --rm -i \
     -e HOME=/tmp \
     -e PYTHONPATH='' \
@@ -32,3 +40,4 @@ docker run \
     --security-opt="label=disable" \
     "${PY_IMAGE}" \
     bash -c 'source ./hack/make-rules/py-test/activate-python_venv.sh && $0 $@' "$@"
+    

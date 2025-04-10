@@ -35,8 +35,11 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
-  # TODO(1.31): Comment this out when moving 1.31 to stable1
-  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
+
+  # ATTN: RELEASE MANAGERS
+  # ENSURE THE ARGUMENTS FOLLOW THE ROTATION AS STABLE 1 IS SHIFTED TO STABLE 2 AND SO ON.
+  # ROTATE 1->2, 2->3, 3->4, etc.
+
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -51,7 +54,8 @@ jobs:
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     args:
-    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8  
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
+      --minStartupPods=8
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
@@ -82,7 +86,8 @@ jobs:
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     args:
-    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8  
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
+      --minStartupPods=8
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
@@ -111,8 +116,10 @@ jobs:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
+    args:
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
+      --minStartupPods=8
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
@@ -159,44 +166,34 @@ jobs:
     testSuite: alphafeatures-eventedpleg
 
   # stable4
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-default:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseInforming: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseInforming: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  #   testSuite: alphafeatures-no-ccm
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
-  #   interval: 24h
-  #   args:
-  #   - --env=KUBE_PROXY_DAEMONSET=true
-  #   - --env=ENABLE_POD_PRIORITY=true
-  #   # Panic if anything mutates a shared informer cache
-  #   - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-  #   - --runtime-config=api/beta=true
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
 # The following settings are used by cluster e2e tests.
 
@@ -236,30 +233,36 @@ images:
     args:
     - --gcp-node-image=gci
 
+# ATTN: RELEASE MANAGERS
+# STARTING WITH BETA, UPDATE EACH VERSION
+# n+1 to ensure coverage
+# add a stable 4 if needed
+
 k8sVersions:
   dev:
     args:
     - --extract=ci/latest
     version: master
-  # TODO(1.31): Comment this out when moving 1.31 to stable1.
-  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
   beta:
+    args:
+    - --extract=ci/latest-1.33
+    version: '1.33'
+  stable1:
     args:
     - --extract=ci/latest-1.32
     version: '1.32'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.31
     version: '1.31'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.30
     version: '1.30'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.29
     version: '1.29'
-  stable4:
 
 testSuites:
   alphafeatures:
@@ -430,25 +433,36 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
-  # TODO(1.31): Comment this out when moving 1.31 to stable1.
-  # TODO(1.32): Uncomment this when adding jobs for release-1.32 branch.
+
+# ATTN: RELEASE MANAGERS
+# There must be a stable[#] group for EACH release
+# If adding a release candidate, it is considered stable1 which then shuffles all other stable versions down
+# stable4 may or may not be commented out depending on where in the release cycle we are
+# Either: remove the args from under stable4 (if only 3 releases)
+# Or: add the args starting with beta through stable4 (if 4 stable releases / updating rc).
+#
+# tip: gcloud container images list-tags gcr.io/k8s-staging-test-infra/kubekins-e2e --filter="tags:*1.33" --format="table[box](tags)"
+
   beta:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.33
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
+  stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.32
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.32
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.31
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.30
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.30
-  stable3:
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.29
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.29
-  stable4:
 
 nodeTestSuites:
   default:

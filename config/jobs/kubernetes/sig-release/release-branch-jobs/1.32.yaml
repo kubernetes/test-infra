@@ -75,14 +75,14 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
+    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.32-blocking, google-gce
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.32
   cluster: k8s-infra-prow-build
-  cron: 0 0-23/2 * * *
+  cron: 0 3-23/6 * * *
   decorate: true
   decoration_config:
     timeout: 5h0m0s
@@ -118,7 +118,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -132,7 +132,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -196,7 +196,7 @@ periodics:
       - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-beta
+      - --extra-version-markers=k8s-stable1
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -210,13 +210,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 7 * * *, 0 13 * * *, 0 17 * * *, 0 21 * * *
+    fork-per-release-cron: 0 13 * * *, 0 17 * * *, 0 21 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.32-500
   cluster: k8s-infra-prow-build
-  cron: 0 3 * * *
+  cron: 0 7 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -287,13 +287,13 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.32'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
+    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.32-blocking, sig-scalability-gce
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.32-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 */6 * * *
+  cron: 0 0/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -368,7 +368,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.32-blocking
     testgrid-tab-name: integration-1.32
@@ -440,7 +440,7 @@ periodics:
       runAsGroup: 2010
       runAsUser: 2001
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.32-blocking
     testgrid-tab-name: verify-1.32
@@ -484,7 +484,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.32-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -498,7 +498,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -529,7 +529,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.32-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -543,7 +543,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -575,6 +575,79 @@ periodics:
         requests:
           cpu: "7"
           memory: 9Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-1.32-informing
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kind-dra-1-32
+  spec:
+    containers:
+    - args:
+      - /bin/bash
+      - -xce
+      - |
+        set -o pipefail
+        # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+        revision=$(curl --fail --silent --show-error --location ${CI_URL}/${LATEST_TXT})
+        # Report what was tested.
+        echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+        # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+        hash=${revision/*+/}
+        kind_yaml=$(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+        kind_node_source="${CI_URL}/$revision/kubernetes-server-linux-amd64.tar.gz"
+        features=( )
+        curl --fail --silent --show-error --location "${CI_URL}/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+        ginkgo=kubernetes/test/bin/ginkgo
+        e2e_test=kubernetes/test/bin/e2e.test
+        # The latest kind is assumed to work also for older release branches, should this job get forked.
+        curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+        kind build node-image --image=dra/node:latest "${kind_node_source}"
+        GINKGO_E2E_PID=
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+        # Inject ClusterConfiguration which causes etcd to use /tmp
+        # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+        if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
+            # Add kubeadmConfigPatches list before node list, there is none at the moment.
+            kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
+        fi
+        kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
+        # Additional features are not in kind.yaml, but they can be added at the end.
+        kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+        atexit () {
+            kind export logs "${ARTIFACTS}/kind"
+            kind delete cluster
+        }
+        trap atexit EXIT
+        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Alpha, Beta, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+        GINKGO_E2E_PID=$!
+        wait "${GINKGO_E2E_PID}"
+      command:
+      - runner.sh
+      env:
+      - name: LATEST_TXT
+        value: latest-1.32.txt
+      - name: CI_URL
+        value: https://dl.k8s.io/ci
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.32
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
       securityContext:
         privileged: true
 postsubmits: {}
