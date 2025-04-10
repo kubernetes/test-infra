@@ -143,7 +143,7 @@ def go_version_kubernetes_master():
     resp = requests.get(
         'https://raw.githubusercontent.com/kubernetes/kubernetes/master/.go-version')
     resp.raise_for_status()
-    data = resp.content.decode("utf-8")
+    data = resp.content.decode("utf-8").strip()
     return data
 
 def main():
