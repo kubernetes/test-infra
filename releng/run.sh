@@ -22,7 +22,8 @@ if [[ "${GOARCH:-}" == "" ]]; then
   HOST_ARCH=$(go env GOARCH)
 fi
 
-# Always build for Linux, but use native architecture
+# Since the compiled tools are mounted into a Linux container, it's more important to get the ARCH right
+# defaulting to Linux to avoids dynamically building for Darwin which breaks exec'ing in the container at later stages
 TARGET_OS="linux"
 TARGET_ARCH=${TARGET_ARCH:-$HOST_ARCH}
 
