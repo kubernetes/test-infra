@@ -17,6 +17,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Auto-detect architecture
+if [[ "${GOARCH:-}" == "" ]]; then
+  HOST_ARCH=$(go env GOARCH)
+fi
+
+# Always build for Linux, but use native architecture
+TARGET_OS="linux"
+TARGET_ARCH=${TARGET_ARCH:-$HOST_ARCH}
+
+echo "Building tools for OS: ${TARGET_OS}, Architecture: ${TARGET_ARCH}"
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${REPO_ROOT}"
 source hack/build/setup-go.sh
@@ -25,7 +36,7 @@ BIN_DIR="_bin"
 CMD_ARGS=""
 
 for tool in config-rotator config-forker; do
-    GOOS=linux GOARCH=amd64 go build -o "${BIN_DIR}/${tool}" "${REPO_ROOT}/releng/${tool}"
+    GOOS=${TARGET_OS} GOARCH=${TARGET_ARCH} go build -o "${BIN_DIR}/${tool}" "${REPO_ROOT}/releng/${tool}"
     CMD_ARGS+="${BIN_DIR}/${tool} "
 done
 
