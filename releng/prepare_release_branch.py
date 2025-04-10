@@ -72,12 +72,13 @@ def check_version(branch_path):
             numbers.append(list(map(int, x.split('.'))))
         else:
             print(f"Warning: skipped invalid basename: '{x}' in {branch_path}."
-                  "Correct the file name to match x.y.yaml or move its jobs under another config.")
+                  "Correct the file name to match x.y.yaml or move its jobs in another config.")
 
     numbers = sorted(numbers)
 
     if not numbers:
-        raise ToolError(f"No valid version numbers found. Check config {branch_path} for valid files.")
+        raise ToolError("No valid version numbers found. "
+                        f"Check config {branch_path} for valid files.")
 
     # Check if versions are sequential
     lowest = numbers[0]
