@@ -1066,6 +1066,23 @@ presets:
       hostPath:
         path: /sys/fs/cgroup
         type: Directory
+- labels:
+    preset-ibmcloud-cred: "true"
+  volumeMounts:
+    - mountPath: /etc/secret-volume
+      name: prow-job-ssh-private-key
+      readOnly: true
+  env:
+    - name: TF_VAR_powervs_api_key
+      valueFrom:
+        secretKeyRef:
+          name: prow-job-api-key
+          key: key
+  volumes:
+    - name: prow-job-ssh-private-key
+      secret:
+        defaultMode: 256
+        secretName: prow-job-ssh-private-key
 # enable GOPROXY by default
 - env:
   - name: GOPROXY
