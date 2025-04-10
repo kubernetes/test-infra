@@ -77,7 +77,7 @@ func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
-		`^gke-?(default|channel-(rapid|regular|stable)(?:-((?:[0-9]-)?latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
+		`^gke-?(default|channel-(rapid|regular|stable|extended)(?:-((?:[0-9]-)?latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
 		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                                              gci,
 		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                                         gciCi,
 		`^ci/(.+)$`:                   ci,
