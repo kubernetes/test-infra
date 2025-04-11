@@ -531,6 +531,11 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
 
 - interval: 4h
   cluster: k8s-infra-prow-build
@@ -583,6 +588,11 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
 
 - interval: 4h
   cluster: k8s-infra-prow-build
@@ -637,6 +647,11 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
 - interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-rootless
