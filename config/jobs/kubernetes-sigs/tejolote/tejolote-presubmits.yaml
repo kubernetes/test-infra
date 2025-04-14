@@ -17,11 +17,11 @@ presubmits:
         - Test
         resources:
           requests:
-            cpu: 2
-            memory: 2Gi
+            cpu: 6
+            memory: 8Gi
           limits:
-            cpu: 2
-            memory: 2Gi
+            cpu: 6
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: tejolote-test
@@ -44,11 +44,11 @@ presubmits:
         - Verify
         resources:
           requests:
-            cpu: 2
-            memory: 2Gi
+            cpu: 6
+            memory: 8Gi
           limits:
-            cpu: 2
-            memory: 2Gi
+            cpu: 6
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: tejolote-verify
