@@ -24,7 +24,7 @@ postsubmits:
     - name: post-autoscaler-push-vpa-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-autoscaling-vpa, sig-k8s-infra-gcb
+        testgrid-dashboards: sig-autoscaling-vpa-images, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
