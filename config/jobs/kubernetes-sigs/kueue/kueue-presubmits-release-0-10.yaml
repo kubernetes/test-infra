@@ -79,8 +79,6 @@ presubmits:
           env:
             - name: E2E_K8S_VERSION
               value: "1.30"
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.30.10
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.23
           command:
@@ -119,8 +117,6 @@ presubmits:
           env:
             - name: E2E_K8S_VERSION
               value: "1.31"
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.6
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.23
           command:
@@ -159,8 +155,6 @@ presubmits:
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.23
           command:
@@ -199,8 +193,6 @@ presubmits:
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.32.3
             - name: BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang:1.23
           command:
