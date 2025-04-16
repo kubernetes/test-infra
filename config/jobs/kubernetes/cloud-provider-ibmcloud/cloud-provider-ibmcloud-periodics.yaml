@@ -210,3 +210,86 @@ periodics:
                 --down --auto-approve --ignore-destroy-errors
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
+  - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
+    interval: 6h
+    cluster: k8s-infra-ppc64le-prow-build
+    labels:
+      preset-ibmcloud-cred: "true"
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        repo: provider-ibmcloud-test-infra
+        workdir: true
+    annotations:
+      description: Runs e2e tests with alpha enabled feature gates against kubernetes ci latest on IBM powervs
+      testgrid-dashboards: ibm-k8s-e2e-alpha-enabled-default
+      testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250227-3a13bdd784-master
+          securityContext:
+            privileged: true
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: "USER"
+              value: "ci-kubernetes-ppc64le-e2e-alpha-enabled-default"
+          resources:
+            requests:
+              cpu: 2
+              memory: "6Gi"
+            limits:
+              cpu: 2
+              memory: "6Gi"
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+              set -o xtrace
+
+              export PATH=$GOPATH/bin:$PATH
+              export GO111MODULE=on
+              RESOURCE_TYPE="powervs"
+              #Call to boskos to checkout resource
+              source "./hack/boskos.sh"
+
+              #Setup of kubetest2 tf deployer and ginkgo tester
+              make install-deployer-tf
+              go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
+
+              #Install ansible required to bring up k8s cluster on infra
+              apt-get update && apt-get install -y ansible
+
+              K8S_BUILD_VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+
+              TIMESTAMP=$(date +%s)
+
+              set +o errexit
+              set -o xtrace
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+                --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
+                --powervs-ssh-key k8s-prow-sshkey \
+                --ssh-private-key /etc/secret-volume/ssh-privatekey \
+                --build-version $K8S_BUILD_VERSION \
+                --release-marker $K8S_BUILD_VERSION \
+                --cluster-name alpha-enabled-$TIMESTAMP \
+                --workers-count 2 \
+                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --break-kubetest-on-upfail true \
+                --extra-vars=feature_gates:AllAlpha=true,EventedPLEG=false \
+                --extra-vars=runtime_config:api/all=true \
+                --powervs-memory 32 \
+                --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
+                --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
+
+              [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+              [ $rc != 0 ] && echo "ERROR: alpha-enabled-default tests exited with code: $rc"; exit $rc
