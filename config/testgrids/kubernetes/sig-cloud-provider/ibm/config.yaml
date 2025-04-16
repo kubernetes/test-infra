@@ -4,6 +4,7 @@ dashboard_groups:
     - ibm-k8s-conformance-ppc64le
     - ibm-k8s-unit-tests-ppc64le
     - ibm-k8s-e2e-node-ppc64le
+    - ibm-k8s-e2e-alpha-enabled-default
     - ibm-etcd-tests-ppc64le
     - ibm-presubmits
 
@@ -11,6 +12,7 @@ dashboards:
 - name: ibm-k8s-unit-tests-ppc64le
 - name: ibm-k8s-conformance-ppc64le
 - name: ibm-k8s-e2e-node-ppc64le
+- name: ibm-k8s-e2e-alpha-enabled-default
 - name: ibm-presubmits
 - name: ibm-etcd-tests-ppc64le
   dashboard_tab:
