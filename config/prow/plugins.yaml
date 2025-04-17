@@ -344,6 +344,11 @@ blockades:
   blockregexps:
   - .*
   explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+- repos:
+  - kubernetes/sample-controller
+  blockregexps:
+  - .*
+  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."  
 
 blunderbuss:
   max_request_count: 2
