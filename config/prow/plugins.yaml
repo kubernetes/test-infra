@@ -283,73 +283,88 @@ lgtm:
   store_tree_hash: true
 
 blockades:
-- repos:
-  - kubernetes/api
-  blockregexps:
-  - .*
-  explanation: "This repository is read-only. Please make changes in the canonical location under kubernetes/kubernetes/staging/src/k8s.io/api instead."
-- repos:
-  - kubernetes/kubernetes
-  blockregexps:
-  - ^examples/
-  explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
-- repos:
-  - kubernetes/kubernetes
-  blockregexps:
-  - ^pkg/util/[^/]+\.go$
-  explanation: "Utility code must be added to a subpackage like pkg/util/flag, not pkg/util directly. See: #49923"
-- repos:
-  - kubernetes/kubernetes
-  blockregexps:
-  - ^test/conformance/testdata/conformance.yaml$
-  branchregexp: "^release-*"
-  explanation: "`test/conformance/testdata/conformance.yaml` cannot be updated on release branches."
-- repos:
-  - kubernetes/community
-  blockregexps:
-  - ^events/2016
-  - ^events/2017
-  - ^events/2018
-  - ^events/elections/2017
-  - ^events/elections/2018
-  - ^events/elections/2019
-  explanation: "These files are historical, and from events that have already occurred."
-- repos:
-  - kubernetes/community
-  blockregexps:
-  - ^keps/
-  explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
-- repos:
-  - kubernetes/community
-  blockregexps:
-  - ^contributors/design-proposals/
-  explanation: "The Design Proposal process has been deprecated in favor of [Kubernetes Enhancement Proposals (KEP)](https://git.k8s.io/enhancements/). These documents are here for historical purposes only."
-- repos:
-  - kubernetes/enhancements
-  blockregexps:
-  - ^keps/NEXT_KEP_NUMBER$
-  explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
-- repos:
-  - kubernetes/release
-  blockregexps:
-  - ^push-build.sh
-  explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
-- repos:
-  - kubernetes/client-go
-  blockregexps:
-  - .*
-  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
-- repos:
-  - kubernetes/k8s.io
-  blockregexps:
-  - ^k8s.gcr.io/
-  explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead"
-- repos:
-  - kubernetes/cri-api
-  blockregexps:
-  - .*
-  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+  - repos:
+      - k8s.io/*
+    required_labels:
+      - do-not-merge
+    missing_label_policy:
+      org: kubernetes
+      repo: k8s.io/*
+      label: do-not-merge
+      comment: |
+        This is a staging repository. Please submit your PR to https://github.com/kubernetes/kubernetes instead.
 
+  - repos:
+      - kubernetes/kubernetes
+    blockregexps:
+      - ^examples/
+    explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
+
+  - repos:
+      - kubernetes/kubernetes
+    blockregexps:
+      - ^pkg/util/[^/]+\.go$
+    explanation: "Utility code must be added to a subpackage like pkg/util/flag, not pkg/util directly. See: #49923"
+
+  - repos:
+      - kubernetes/kubernetes
+    blockregexps:
+      - ^test/conformance/testdata/conformance.yaml$
+    branchregexp: "^release-*"
+    explanation: "`test/conformance/testdata/conformance.yaml` cannot be updated on release branches."
+
+  - repos:
+      - kubernetes/community
+    blockregexps:
+      - ^events/2016
+      - ^events/2017
+      - ^events/2018
+      - ^events/elections/2017
+      - ^events/elections/2018
+      - ^events/elections/2019
+    explanation: "These files are historical, and from events that have already occurred."
+
+  - repos:
+      - kubernetes/community
+    blockregexps:
+      - ^keps/
+    explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
+
+  - repos:
+      - kubernetes/community
+    blockregexps:
+      - ^contributors/design-proposals/
+    explanation: "The Design Proposal process has been deprecated in favor of [Kubernetes Enhancement Proposals (KEP)](https://git.k8s.io/enhancements/). These documents are here for historical purposes only."
+
+  - repos:
+      - kubernetes/enhancements
+    blockregexps:
+      - ^keps/NEXT_KEP_NUMBER$
+    explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
+
+  - repos:
+      - kubernetes/release
+    blockregexps:
+      - ^push-build.sh
+    explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
+
+  - repos:
+      - kubernetes/client-go
+    blockregexps:
+      - .*
+    explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+
+  - repos:
+      - kubernetes/k8s.io
+    blockregexps:
+      - ^k8s.gcr.io/
+    explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead."
+
+  - repos:
+      - kubernetes/cri-api
+    blockregexps:
+      - .*
+    explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 blunderbuss:
   max_request_count: 2
   use_status_availability: true
