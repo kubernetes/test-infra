@@ -284,12 +284,74 @@ lgtm:
 
 blockades:
   - repos:
-      - k8s.io/*
+      - kubernetes/api
+      - kubernetes/apiextensions-apiserver
+      - kubernetes/apimachinery
+      - kubernetes/apiserver
+      - kubernetes/cli-runtime
+      - kubernetes/client-go
+      - kubernetes/cloud-provider
+      - kubernetes/cluster-bootstrap
+      - kubernetes/code-generator
+      - kubernetes/component-base
+      - kubernetes/component-helpers
+      - kubernetes/controller-manager
+      - kubernetes/cri-api
+      - kubernetes/cri-client
+      - kubernetes/csi-translation-lib
+      - kubernetes/dynamic-resource-allocation
+      - kubernetes/endpointslice
+      - kubernetes/externaljwt
+      - kubernetes/kms
+      - kubernetes/kube-aggregator
+      - kubernetes/kube-controller-manager
+      - kubernetes/kube-proxy
+      - kubernetes/kube-scheduler
+      - kubernetes/kubectl
+      - kubernetes/kubelet
+      - kubernetes/metrics
+      - kubernetes/mount-utils
+      - kubernetes/pod-security-admission
+      - kubernetes/sample-apiserver
+      - kubernetes/sample-cli-plugin
+      - kubernetes/sample-controller
     required_labels:
       - do-not-merge
     missing_label_policy:
       org: kubernetes
-      repo: k8s.io/*
+      repo:
+        - api
+        - apiextensions-apiserver
+        - apimachinery
+        - apiserver
+        - cli-runtime
+        - client-go
+        - cloud-provider
+        - cluster-bootstrap
+        - code-generator
+        - component-base
+        - component-helpers
+        - controller-manager
+        - cri-api
+        - cri-client
+        - csi-translation-lib
+        - dynamic-resource-allocation
+        - endpointslice
+        - externaljwt
+        - kms
+        - kube-aggregator
+        - kube-controller-manager
+        - kube-proxy
+        - kube-scheduler
+        - kubectl
+        - kubelet
+        - metrics
+        - mount-utils
+        - pod-security-admission
+        - sample-apiserver
+        - sample-cli-plugin
+        - sample-controller
+      label: do-not-merge
       label: do-not-merge
       comment: |
         This is a staging repository. Please submit your PR to https://github.com/kubernetes/kubernetes instead.
