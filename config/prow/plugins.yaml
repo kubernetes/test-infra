@@ -1639,10 +1639,6 @@ plugins:
     plugins:
     - override
 
-  kubernetes-sigs/hierarchical-namespaces:
-    plugins:
-    - milestone
-
   kubernetes-sigs/node-feature-discovery:
     plugins:
     - milestone
