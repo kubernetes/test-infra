@@ -1,3 +1,7 @@
+presets:
+- env:
+  - name: CI_RUN
+    value: presubmits
 presubmits:
   kubernetes-sigs/kueue:
   - name: pull-kueue-test-unit-release-0-11

@@ -1,3 +1,7 @@
+presets:
+- env:
+  - name: CI_RUN
+    value: periodics
 periodics:
   - interval: 12h
     name: periodic-kueue-test-unit-main
