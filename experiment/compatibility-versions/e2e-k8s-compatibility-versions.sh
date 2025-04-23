@@ -355,7 +355,7 @@ main() {
   # If the current version is alpha.0, it means the previous *stable* or developed
   # branch is actually n-2 relative to the current minor number for compatibility purposes.
   if [[ "${GIT_VERSION}" == *alpha.0 ]]; then
-    echo "Detected alpha.0 in gitVersion (${GIT_VERSION}), incrementing VERSION_DELTA."
+    echo "Detected alpha.0 in gitVersion (${GIT_VERSION}), treating as still the previous minor version."
     VERSION_DELTA=$((VERSION_DELTA + 1))
     echo "Adjusted VERSION_DELTA: ${VERSION_DELTA}"
   fi
