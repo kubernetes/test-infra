@@ -861,10 +861,9 @@ presubmits:
             memory: "4Gi"
 
   - name: pull-etcd-markdown-lint
-    optional: true # remove once the job is stable
     cluster: eks-prow-build-cluster
     always_run: false
-    # run_if_changed: '.*\.md$' # uncomment once the job is stable
+    run_if_changed: '.*\.md$'
     branches:
       - main
     decorate: true
