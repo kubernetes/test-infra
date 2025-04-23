@@ -107,7 +107,7 @@ periodics:
             # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
-{{- if eq $.branch "release-1.7" "release-1.8" "release-1.9" }}
+{{- if eq $.branch "release-1.8" "release-1.9" }}
           - name: GINKGO_SKIP
             value: "\\[Conformance\\]"
 {{- else }}
@@ -164,7 +164,7 @@ periodics:
         # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
-{{- if eq $.branch "release-1.7" "release-1.8" "release-1.9" }}
+{{- if eq $.branch "release-1.8" "release-1.9" }}
       - name: GINKGO_SKIP
         value: "\\[Conformance\\]"
 {{- else }}
@@ -226,7 +226,7 @@ periodics:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
-{{- if eq $.branch "release-1.7" "release-1.8" "release-1.9" }}
+{{- if eq $.branch "release-1.8" "release-1.9" }}
       - name: GINKGO_FOCUS
         value: "\\[Conformance\\] \\[K8s-Install\\]"
 {{- else }}
@@ -280,7 +280,7 @@ periodics:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
-{{- if eq $.branch "release-1.7" "release-1.8" "release-1.9" }}
+{{- if eq $.branch "release-1.8" "release-1.9" }}
       - name: GINKGO_FOCUS
         value: "\\[Conformance\\] \\[K8s-Install-ci-latest\\]"
 {{- else }}
@@ -338,7 +338,7 @@ periodics:
             # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
-{{- if eq $.branch "release-1.7" "release-1.8" "release-1.9" }}
+{{- if eq $.branch "release-1.8" "release-1.9" }}
           - name: GINKGO_SKIP
             value: "\\[Conformance\\]"
 {{- else }}
