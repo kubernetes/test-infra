@@ -16,7 +16,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-ppc64le
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -82,7 +82,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -116,7 +116,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -147,7 +147,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-ppc64le
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -176,7 +176,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -206,7 +206,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -251,7 +251,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -296,7 +296,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -341,7 +341,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -386,7 +386,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -431,7 +431,7 @@ periodics:
     testgrid-create-test-group: 'true'
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -475,7 +475,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -507,7 +507,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-ppc64le
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -539,7 +539,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -573,7 +573,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-amd64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -605,7 +605,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-ppc64le
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -637,7 +637,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-arm64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -671,7 +671,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-amd64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -703,7 +703,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-ppc64le
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -735,7 +735,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-arm64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -771,7 +771,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-release36-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -805,7 +805,7 @@ periodics:
     testgrid-tab-name: ci-etcd-e2e-release36-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -839,7 +839,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-release36-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -870,7 +870,7 @@ periodics:
     testgrid-tab-name: ci-etcd-unit-test-release36-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -899,7 +899,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-release36-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -931,7 +931,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-release36-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       args:
@@ -965,7 +965,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-release36-amd64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -997,7 +997,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-release36-arm64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -1031,7 +1031,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-release36-amd64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
@@ -1063,7 +1063,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-release36-arm64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250311-73aac21714-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
           - runner.sh
         args:
