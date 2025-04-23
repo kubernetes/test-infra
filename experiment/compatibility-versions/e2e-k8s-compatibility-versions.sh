@@ -350,6 +350,16 @@ main() {
   export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
   mkdir -p "${ARTIFACTS}"
 
+  GIT_VERSION=$(echo "${WORKSPACE_STATUS}" | awk '/^gitVersion/ {print $2}')
+  # Check if gitVersion contains alpha.0 and increment VERSION_DELTA if needed
+  # If the current version is alpha.0, it means the previous *stable* or developed
+  # branch is actually n-2 relative to the current minor number for compatibility purposes.
+  if [[ "${GIT_VERSION}" == *alpha.0 ]]; then
+    echo "Detected alpha.0 in gitVersion (${GIT_VERSION}), treating as still the previous minor version."
+    VERSION_DELTA=$((VERSION_DELTA + 1))
+    echo "Adjusted VERSION_DELTA: ${VERSION_DELTA}"
+  fi
+
   # Get current and n-1 version numbers
   MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
   MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
