@@ -343,7 +343,8 @@ upgrade_cluster_components() {
 
 main() {
   # create temp dir and setup cleanup
-  TMP_DIR=$(mktemp -d)
+  TMP_DIR=$(mktemp -d -p /tmp kind-e2e-XXXXXX)
+  echo "Created temporary directory: ${TMP_DIR}"
 
   # ensure artifacts (results) directory exists when not in CI
   export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
@@ -386,10 +387,13 @@ main() {
   # Clone the previous versions Kubernetes release branch
   # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
   export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
-  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_BRANCH}"
+  # Define the path within the temp directory for the cloned repo
+  PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s"
+  echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
+  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
 
-  # enter the release branch and run tests
-  pushd "${PREV_RELEASE_BRANCH}"
+  # enter the cloned prev repo branch (in temp) and run tests
+  pushd "${PREV_RELEASE_REPO_PATH}"
   run_tests || res=$?
   popd
 
