@@ -11,7 +11,7 @@ presubmits:
       description: Build test in sig-storage-lib-external-provisioner repo.
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.22
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         # Plain make runs also verify
         - make
