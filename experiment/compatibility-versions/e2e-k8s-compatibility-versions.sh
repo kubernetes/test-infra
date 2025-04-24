@@ -68,17 +68,6 @@ signal_handler() {
 }
 trap signal_handler INT TERM
 
-# build kubectl, kubernetes e2e test binaries, and ginkgo
-build() {
-  GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
-
-  # make sure we have e2e requirements
-  make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
-
-  # Ensure the built kubectl is used instead of system
-  export PATH="${PWD}/_output/bin:$PATH"
-}
-
 check_structured_log_support() {
 	case "${KUBE_VERSION}" in
 		v1.1[0-8].*)
@@ -243,8 +232,19 @@ EOF
     --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--v='"${KIND_CLUSTER_LOG_LEVEL}"'" }]'
 }
 
+build_prev_version_bins() {
+  GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
+
+  echo "Building e2e.test binary from release branch ${PREV_RELEASE_BRANCH}..."
+  make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
+
+  # Ensure the built kubectl is used instead of system
+  export PATH="${PWD}/_output/bin:$PATH"
+  echo "Finished building e2e.test binary from ${PREV_RELEASE_BRANCH}."
+}
+
 # run e2es with ginkgo-e2e.sh
-run_tests() {
+run_prev_version_tests() {
   # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
   # 1. k8s CI doesn´t offer IPv6 connectivity, so CoreDNS should be configured
   # to work in an offline environment:
@@ -376,8 +376,6 @@ main() {
   # debug kind version
   kind version
 
-  # build kubernetes (for upgrade)
-  build
   # in CI attempt to release some memory after building
   if [ -n "${KUBETEST_IN_DOCKER:-}" ]; then
     sync || true
@@ -404,7 +402,8 @@ main() {
 
   # enter the cloned prev repo branch (in temp) and run tests
   pushd "${PREV_RELEASE_REPO_PATH}"
-  run_tests || res=$?
+  build_prev_version_bins || res=$?
+  run_prev_version_tests || res=$?
   popd
 
 
