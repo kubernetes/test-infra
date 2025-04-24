@@ -382,6 +382,7 @@ presubmits:
             - runner.sh
           args:
             - make
+            - kind-image-build
             - test-e2e-kueueviz
           # docker-in-docker needs privileged mode
           securityContext:
