@@ -1,5 +1,5 @@
 periodics:
-- interval: 6h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-compatibility-versions-n-minus-1
   annotations:
@@ -57,7 +57,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
-- interval: 6h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-compatibility-versions-n-minus-2
   annotations:
@@ -115,7 +115,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
-- interval: 6h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-compatibility-versions-feature-gate-test
   annotations:
