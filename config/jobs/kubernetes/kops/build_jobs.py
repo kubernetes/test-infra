@@ -2184,6 +2184,15 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            branch='release-1.32',
+            k8s_version='1.31',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-cilium-1-32',
+            networking='cilium',
+            tab_name='e2e-1-32',
+            always_run=True,
+        ),
+        presubmit_test(
             branch='release-1.31',
             k8s_version='1.31',
             kops_channel='alpha',
