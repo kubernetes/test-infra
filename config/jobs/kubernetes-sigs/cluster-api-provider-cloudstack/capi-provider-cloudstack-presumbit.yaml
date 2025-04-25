@@ -74,10 +74,10 @@ presubmits:
         resources:
           requests:
             memory: "8Gi"
-            cpu: "1024m"
+            cpu: 2
           limits:
             memory: "8Gi"
-            cpu: "1024m"
+            cpu: 2
   - name: capi-provider-cloudstack-presubmit-unit-test
     cluster: eks-prow-build-cluster
     labels:
@@ -106,10 +106,10 @@ presubmits:
         resources:
           requests:
             memory: "8Gi"
-            cpu: "1024m"
+            cpu: 2
           limits:
             memory: "8Gi"
-            cpu: "1024m"
+            cpu: 2
   - name: capi-provider-cloudstack-presubmit-e2e-smoke-test
     cluster: eks-prow-build-cluster
     labels:
@@ -137,13 +137,12 @@ presubmits:
         args:
         - make
         - run-e2e-smoke
-        # docker-in-docker needs privileged mode
-        securityContext:
+        securityContext: # docker-in-docker needs privileged mode
           privileged: true
         resources:
           requests:
             memory: "8Gi"
-            cpu: "1024m"
+            cpu: 2
           limits:
             memory: "8Gi"
-            cpu: "1024m"
+            cpu: 2
