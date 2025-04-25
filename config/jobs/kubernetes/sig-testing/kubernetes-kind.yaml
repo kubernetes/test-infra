@@ -170,10 +170,7 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: LABEL_FILTER
-          value: "Feature: isEmpty"
-        # TODO(bentheelder): reduce the skip list further
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # enable IPV6 in bootstrap image
