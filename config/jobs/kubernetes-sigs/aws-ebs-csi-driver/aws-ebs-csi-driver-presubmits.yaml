@@ -36,8 +36,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows-fips
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     branches:
       - ^release-.*$
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -259,8 +258,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test-fips
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     branches:
       - ^release-.*$
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -392,8 +390,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-image-test
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     skip_branches:
     - gh-pages
     run_if_changed: "^hack/|^Dockerfile|^Makefile"
