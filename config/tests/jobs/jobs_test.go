@@ -396,12 +396,9 @@ func TestK8sInfraTrusted(t *testing.T) {
 // - not be a presubmit, only merged code
 // - skip dependabot branches (these contain unmerged code PRed by the github robot)
 func TestImagePushingJobs(t *testing.T) {
-	jobsToFix := 0
-	const trusted = "k8s-infra-prow-build-trusted"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
-	jobs := staticJobsMatchingAll(func(job cfg.JobBase) bool {
-		return strings.HasPrefix(job.SourcePath, imagePushingDir)
-	})
+	jobsToFix := 0
+	numJobs := 0
 
 	// no presubmits may exist here
 	for _, job := range c.AllStaticPresubmits(nil) {
@@ -410,19 +407,23 @@ func TestImagePushingJobs(t *testing.T) {
 			continue
 		}
 		t.Errorf("jobs in %s may not be presubmits but %s defined in %s is", imagePushingDir, job.Name, job.SourcePath)
+		jobsToFix++
+		numJobs++
 	}
 
-	// postsubmit specific tests
+	// postsubmits
 	for _, job := range c.AllStaticPostsubmits(nil) {
 		// Only consider jobs in config/jobs/image-pushing/...
 		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
 			continue
 		}
+		numJobs++
 		errs := []error{}
 		// must skip dependabot branches to prevent pushing unmerged code
 		if !slices.Contains(job.SkipBranches, "^dependabot") {
 			errs = append(errs, fmt.Errorf("image pushing job %s defined in %s must have skip_branches: - ^dependabot but does not", job.Name, job.SourcePath))
 		}
+		errs = append(errs, validateImagePushingJobBase(&job.JobBase)...)
 		if len(errs) > 0 {
 			jobsToFix++
 			for _, err := range errs {
@@ -431,40 +432,15 @@ func TestImagePushingJobs(t *testing.T) {
 		}
 	}
 
-	// generic job checks
-	for _, job := range jobs {
-		errs := []error{}
-		// Only consider Pods
-		if job.Spec == nil {
-			continue
-		}
+	// periodics
+	for _, job := range c.AllPeriodics() {
 		// Only consider jobs in config/jobs/image-pushing/...
 		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
 			continue
 		}
-
-		if err := validateImagePushingImage(job.Spec); err != nil {
-			errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
-		}
-		if job.Cluster != trusted {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, trusted, job.Cluster))
-		}
-		dashboardsString, ok := job.Annotations["testgrid-dashboards"]
-		if !ok {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
-		}
-		expectedDashboard := "sig-k8s-infra-gcb"
-		foundDashboard := false
-		for _, dashboardName := range strings.Split(dashboardsString, ",") {
-			dashboardName = strings.TrimSpace(dashboardName)
-			if dashboardName == expectedDashboard {
-				foundDashboard = true
-				break
-			}
-		}
-		if !foundDashboard {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have %s in testgrid-dashboards annotation, got: %s", job.Name, job.SourcePath, expectedDashboard, dashboardsString))
-		}
+		numJobs++
+		errs := []error{}
+		errs = append(errs, validateImagePushingJobBase(&job.JobBase)...)
 		if len(errs) > 0 {
 			jobsToFix++
 			for _, err := range errs {
@@ -472,7 +448,36 @@ func TestImagePushingJobs(t *testing.T) {
 			}
 		}
 	}
-	t.Logf("summary: %4d/%4d jobs in config/jobs/image-pushing fail to meet CI policy", jobsToFix, len(jobs))
+
+	t.Logf("summary: %4d/%4d jobs in config/jobs/image-pushing fail to meet CI policy", jobsToFix, numJobs)
+}
+
+func validateImagePushingJobBase(job *cfg.JobBase) []error {
+	errs := []error{}
+	if err := validateImagePushingImage(job.Spec); err != nil {
+		errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
+	}
+	const trusted = "k8s-infra-prow-build-trusted"
+	if job.Cluster != trusted {
+		errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, trusted, job.Cluster))
+	}
+	dashboardsString, ok := job.Annotations["testgrid-dashboards"]
+	if !ok {
+		errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
+	}
+	expectedDashboard := "sig-k8s-infra-gcb"
+	foundDashboard := false
+	for _, dashboardName := range strings.Split(dashboardsString, ",") {
+		dashboardName = strings.TrimSpace(dashboardName)
+		if dashboardName == expectedDashboard {
+			foundDashboard = true
+			break
+		}
+	}
+	if !foundDashboard {
+		errs = append(errs, fmt.Errorf("%s defined in %s must have %s in testgrid-dashboards annotation, got: %s", job.Name, job.SourcePath, expectedDashboard, dashboardsString))
+	}
+	return errs
 }
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
