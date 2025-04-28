@@ -1,10 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- mwielgus
-- maciekpytel
-- bskiba
+- sig-autoscaling-leads
 approvers:
-- mwielgus
-- maciekpytel
-- bskiba
+- sig-autoscaling-leads
