@@ -7,6 +7,7 @@ dashboard_groups:
       - sig-autoscaling-karpenter
       - sig-autoscaling-addon-resizer
       - sig-autoscaling-vpa-images
+      - sig-autoscaling-cluster-autoscaler-images
 
 dashboards:
   - name: sig-autoscaling-cluster-autoscaler
@@ -15,3 +16,4 @@ dashboards:
   - name: sig-autoscaling-karpenter
   - name: sig-autoscaling-addon-resizer
   - name: sig-autoscaling-vpa-images
+  - name: sig-autoscaling-cluster-autoscaler-images
