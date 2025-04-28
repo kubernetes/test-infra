@@ -393,6 +393,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 // - run on cluster: k8s-infra-prow-build-trusted
 // - use a pinned version of gcr.io/k8s-staging-test-infra/image-builder
 // - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
+// - not be a presubmit, only merged code
 func TestImagePushingJobs(t *testing.T) {
 	jobsToFix := 0
 	const trusted = "k8s-infra-prow-build-trusted"
@@ -401,6 +402,16 @@ func TestImagePushingJobs(t *testing.T) {
 		return strings.HasPrefix(job.SourcePath, imagePushingDir)
 	})
 
+	// no presubmits may exist here
+	for _, job := range c.AllStaticPresubmits(nil) {
+		// Only consider jobs in config/jobs/image-pushing/...
+		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			continue
+		}
+		t.Errorf("jobs in %s may not be presubmits but %s defined in %s is", imagePushingDir, job.Name, job.SourcePath)
+	}
+
+	// generic job checks
 	for _, job := range jobs {
 		errs := []error{}
 		// Only consider Pods
@@ -411,6 +422,7 @@ func TestImagePushingJobs(t *testing.T) {
 		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
 			continue
 		}
+
 		if err := validateImagePushingImage(job.Spec); err != nil {
 			errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
 		}
