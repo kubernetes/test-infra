@@ -22,11 +22,11 @@ presubmits:
         - build
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -54,11 +54,11 @@ presubmits:
         - ./hack/prow-test.sh
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
         env:
         - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
           valueFrom:
@@ -83,11 +83,11 @@ presubmits:
         - ./hack/prow-lint.sh
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
         env:
         - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
           valueFrom:
@@ -112,11 +112,11 @@ presubmits:
         - ./hack/prow-check-generate.sh
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
         env:
         - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
           valueFrom:
