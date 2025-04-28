@@ -394,6 +394,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 // - use a pinned version of gcr.io/k8s-staging-test-infra/image-builder
 // - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
 // - not be a presubmit, only merged code
+// - skip dependabot branches (these contain unmerged code PRed by the github robot)
 func TestImagePushingJobs(t *testing.T) {
 	jobsToFix := 0
 	const trusted = "k8s-infra-prow-build-trusted"
@@ -409,6 +410,25 @@ func TestImagePushingJobs(t *testing.T) {
 			continue
 		}
 		t.Errorf("jobs in %s may not be presubmits but %s defined in %s is", imagePushingDir, job.Name, job.SourcePath)
+	}
+
+	// postsubmit specific tests
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		// Only consider jobs in config/jobs/image-pushing/...
+		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			continue
+		}
+		errs := []error{}
+		// must skip dependabot branches to prevent pushing unmerged code
+		if !slices.Contains(job.SkipBranches, "^dependabot") {
+			errs = append(errs, fmt.Errorf("image pushing job %s defined in %s must have skip_branches: - ^dependabot but does not", job.Name, job.SourcePath))
+		}
+		if len(errs) > 0 {
+			jobsToFix++
+			for _, err := range errs {
+				t.Errorf("%v", err)
+			}
+		}
 	}
 
 	// generic job checks
