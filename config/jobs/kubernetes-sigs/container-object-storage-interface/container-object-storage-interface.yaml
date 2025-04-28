@@ -30,6 +30,11 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        env:
+        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 
   - name: pull-container-object-storage-interface-unit
     cluster: eks-prow-build-cluster
@@ -46,8 +51,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - make
-        - test
+        - ./hack/prow-test.sh
         resources:
           limits:
             cpu: 2
@@ -55,6 +59,11 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
+        env:
+        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 
   - name: pull-container-object-storage-interface-lint
     cluster: eks-prow-build-cluster
@@ -71,8 +80,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - make
-        - lint
+        - ./hack/prow-lint.sh
         resources:
           limits:
             cpu: 2
@@ -80,6 +88,11 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
+        env:
+        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 
   - name: pull-container-object-storage-interface-check-generated-files
     cluster: eks-prow-build-cluster
@@ -104,6 +117,11 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
+        env:
+        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 
   - name: pull-container-object-storage-interface-e2e
     cluster: eks-prow-build-cluster
@@ -133,3 +151,8 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        env:
+        - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
