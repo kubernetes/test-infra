@@ -5,6 +5,7 @@ triggers:
   - kubernetes-sigs/cluster-api
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cloud-provider-azure
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
@@ -272,6 +273,7 @@ lgtm:
   - kubernetes-sigs/cluster-api-operator
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/kjob
   - kubernetes-sigs/kueue
   store_tree_hash: true
@@ -529,10 +531,10 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-aws:
-    main: v1.x
-    release-1.0: v1.0.x
-    release-0.7: v0.7.x
-    release-0.6: v0.6.x
+    main: v2.8
+    release-2.7: v2.7
+    release-2.6: v2.6
+    release-2.5: v2.5
   kubernetes-sigs/cluster-api-provider-azure:
     main: v1.20
     release-1.19: v1.19
