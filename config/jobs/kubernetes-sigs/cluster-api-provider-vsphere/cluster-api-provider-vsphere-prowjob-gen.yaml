@@ -9,20 +9,20 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.32"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-1.32"
       # interval for coverage job
       interval: "24h"
       upgrades:
-      - from: "1.29"
-        to: "1.30"
       - from: "1.30"
         to: "1.31"
       - from: "1.31"
         to: "1.32"
       - from: "1.32"
         to: "1.33"
+      - from: "1.33"
+        to: "1.34"
     release-1.13:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.32"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-1.32"
       upgrades:
       - from: "1.29"
         to: "1.30"
@@ -33,7 +33,7 @@ prow_ignored:
       - from: "1.32"
         to: "1.33"
     release-1.12:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.31"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-1.31"
       upgrades:
       - from: "1.28"
         to: "1.29"
@@ -44,7 +44,7 @@ prow_ignored:
       - from: "1.31"
         to: "1.32"
     release-1.11:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.30"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-1.30"
       upgrades:
       - from: "1.28"
         to: "1.29"
@@ -53,7 +53,7 @@ prow_ignored:
       - from: "1.30"
         to: "1.31"
     release-1.10:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-1.29"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29"
       upgrades:
       - from: "1.28"
         to: "1.29"
@@ -85,4 +85,6 @@ prow_ignored:
     "1.32":
       k8sRelease: "stable-1.32"
     "1.33":
-      k8sRelease: "ci/latest-1.33"
+      k8sRelease: "stable-1.33"
+    "1.34":
+      k8sRelease: "ci/latest-1.34"

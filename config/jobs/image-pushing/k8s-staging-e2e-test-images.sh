@@ -80,7 +80,7 @@ for image in "${IMAGES[@]}"; do
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/${image//\//\\/}\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/${image//\//\\/}\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$

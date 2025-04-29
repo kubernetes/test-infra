@@ -22,7 +22,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -89,7 +89,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -102,7 +102,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20250303-2040' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-11-amd64-20250402-2070' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -156,7 +156,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -169,7 +169,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-12-amd64-20250316-2053' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-12-amd64-20250416-2084' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -223,7 +223,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -236,7 +236,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20250312' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20250403' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -290,7 +290,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -303,7 +303,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20250312' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20250403' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -357,7 +357,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -370,7 +370,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250305' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250419' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -424,7 +424,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -437,7 +437,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20250305' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20250419' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -491,7 +491,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -504,7 +504,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250305' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250419' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -558,7 +558,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -571,7 +571,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250305' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250419' --channel=alpha --networking=calico --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -625,7 +625,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -638,7 +638,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20250305.0-x86_64-gp2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20250414.0-x86_64-gp2' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -692,7 +692,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -705,7 +705,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='137112412989/al2023-ami-2023.6.20250303.0-kernel-6.1-x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='137112412989/al2023-ami-2023.7.20250414.0-kernel-6.1-x86_64' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -759,7 +759,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -826,7 +826,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -893,7 +893,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -960,7 +960,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         imagePullPolicy: Always
         command:
         - runner.sh

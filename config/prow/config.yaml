@@ -57,7 +57,6 @@ sinker:
 
 deck:
   spyglass:
-    announcement: "Prow has been successfully migrated to community Infrastructure on the 22nd of August. Updates on <a href='https://groups.google.com/a/kubernetes.io/g/dev/c/qzNYpcN5la4'>groups/kubernetes.io/dev</a>"
     size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
@@ -711,32 +710,6 @@ tide:
     - do-not-merge/work-in-progress
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-      - master
-      - release-1.33
-    labels:
-      - lgtm
-      - approved
-      - "cncf-cla: yes"
-    missingLabels:
-      - do-not-merge
-      - do-not-merge/blocked-paths
-      - do-not-merge/cherry-pick-not-approved
-      - do-not-merge/contains-merge-commits
-      - do-not-merge/hold
-      - do-not-merge/invalid-commit-message
-      - do-not-merge/invalid-owners-file
-      - do-not-merge/needs-kind
-      - do-not-merge/needs-sig
-      - do-not-merge/release-note-label-needed
-      - do-not-merge/work-in-progress
-      - needs-rebase
-  - repos:
-      - kubernetes/kubernetes
-    milestone: v1.33
-    includedBranches:
-      - master
-      - release-1.33
     labels:
     - lgtm
     - approved

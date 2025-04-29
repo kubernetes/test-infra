@@ -19,7 +19,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/agnhost\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/agnhost\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -61,7 +61,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/apparmor-loader\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/apparmor-loader\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -103,7 +103,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/busybox\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/busybox\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -145,7 +145,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/cuda-vector-add\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/cuda-vector-add\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -187,7 +187,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/cuda-vector-add-old\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/cuda-vector-add-old\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -229,7 +229,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/echoserver\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/echoserver\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -271,7 +271,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/glusterdynamic-provisioner\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/glusterdynamic-provisioner\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -313,7 +313,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/httpd\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/httpd\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -355,7 +355,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/httpd-new\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/httpd-new\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -397,7 +397,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/ipc-utils\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/ipc-utils\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -439,7 +439,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/jessie-dnsutils\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/jessie-dnsutils\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -481,7 +481,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/kitten\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/kitten\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -523,7 +523,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/metadata-concealment\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/metadata-concealment\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -565,7 +565,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/nautilus\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/nautilus\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -607,7 +607,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/nginx\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/nginx\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -649,7 +649,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/nginx-new\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/nginx-new\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -691,7 +691,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/node-perf\/tf-wide-deep\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/tf-wide-deep\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -733,7 +733,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/node-perf\/npb-ep\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/npb-ep\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -775,7 +775,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/node-perf\/npb-is\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/node-perf\/npb-is\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -817,7 +817,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/nonewprivs\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/nonewprivs\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -859,7 +859,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/nonroot\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/nonroot\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -901,7 +901,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/perl\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/perl\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -943,7 +943,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/pets\/redis-installer\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/pets\/redis-installer\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -985,7 +985,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/pets\/peer-finder\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/pets\/peer-finder\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1027,7 +1027,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/pets\/zookeeper-installer\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/pets\/zookeeper-installer\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1069,7 +1069,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/redis\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/redis\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1111,7 +1111,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/regression-issue-74839\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/regression-issue-74839\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1153,7 +1153,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/resource-consumer\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/resource-consumer\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1195,7 +1195,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/sample-apiserver\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/sample-apiserver\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1237,7 +1237,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/sample-device-plugin\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/sample-device-plugin\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1279,7 +1279,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/volume\/iscsi\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/volume\/iscsi\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1320,10 +1320,8 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
-      decoration_config:
-        timeout: 4h
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/volume\/rbd\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/volume\/rbd\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1365,7 +1363,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/volume\/nfs\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/volume\/nfs\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1407,7 +1405,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/volume\/gluster\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/volume\/gluster\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
@@ -1449,7 +1447,7 @@ postsubmits:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
-      run_if_changed: '^test\/images\/windows-servercore-cache\/'
+      run_if_changed: '^.go-version$|^test/images/[^/]+$|^test\/images\/windows-servercore-cache\/'
       branches:
         # TODO(releng): Remove once repo default branch has been renamed
         - ^master$

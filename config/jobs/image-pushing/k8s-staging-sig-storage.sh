@@ -38,6 +38,7 @@ readonly REPOS=(
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
     kubernetes-sigs/container-object-storage-interface
+    kubernetes-sigs/cosi-driver-sample
 )
 
 # Repos using "main" branch instead of "master" as default

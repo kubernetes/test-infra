@@ -68,17 +68,6 @@ signal_handler() {
 }
 trap signal_handler INT TERM
 
-# build kubectl, kubernetes e2e test binaries, and ginkgo
-build() {
-  GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
-
-  # make sure we have e2e requirements
-  make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
-
-  # Ensure the built kubectl is used instead of system
-  export PATH="${PWD}/_output/bin:$PATH"
-}
-
 check_structured_log_support() {
 	case "${KUBE_VERSION}" in
 		v1.1[0-8].*)
@@ -243,8 +232,19 @@ EOF
     --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--v='"${KIND_CLUSTER_LOG_LEVEL}"'" }]'
 }
 
+build_prev_version_bins() {
+  GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
+
+  echo "Building e2e.test binary from release branch ${PREV_RELEASE_BRANCH}..."
+  make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
+
+  # Ensure the built kubectl is used instead of system
+  export PATH="${PWD}/_output/bin:$PATH"
+  echo "Finished building e2e.test binary from ${PREV_RELEASE_BRANCH}."
+}
+
 # run e2es with ginkgo-e2e.sh
-run_tests() {
+run_prev_version_tests() {
   # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
   # 1. k8s CI doesn´t offer IPv6 connectivity, so CoreDNS should be configured
   # to work in an offline environment:
@@ -343,16 +343,28 @@ upgrade_cluster_components() {
 
 main() {
   # create temp dir and setup cleanup
-  TMP_DIR=$(mktemp -d)
+  TMP_DIR=$(mktemp -d -p /tmp kind-e2e-XXXXXX)
+  echo "Created temporary directory: ${TMP_DIR}"
 
   # ensure artifacts (results) directory exists when not in CI
   export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
   mkdir -p "${ARTIFACTS}"
 
-  # Get current and n-1 version numbers
-  MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
-  MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
   export VERSION_DELTA=${VERSION_DELTA:-1}
+
+  WORKSPACE_STATUS=$(./hack/print-workspace-status.sh)
+  GIT_VERSION=$(echo "$WORKSPACE_STATUS" | awk '/^gitVersion / {print $2}')
+  # Check if gitVersion contains alpha.0 and increment VERSION_DELTA if needed
+  # If the current version is alpha.0, it means the previous *stable* or developed
+  # branch is actually n-2 relative to the current minor number for compatibility purposes.
+  if [[ "${GIT_VERSION}" == *alpha.0* ]]; then
+    echo "Detected alpha.0 in gitVersion (${GIT_VERSION}), treating as still the previous minor version."
+    VERSION_DELTA=$((VERSION_DELTA + 1))
+    echo "Adjusted VERSION_DELTA: ${VERSION_DELTA}"
+  fi
+
+  MAJOR_VERSION=$(echo "$WORKSPACE_STATUS" | awk '/^STABLE_BUILD_MAJOR_VERSION / {print $2}')
+  MINOR_VERSION=$(echo "$WORKSPACE_STATUS" | awk '/^STABLE_BUILD_MINOR_VERSION / {split($2, minor, "+"); print minor[1]}')
   export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
   export PREV_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - VERSION_DELTA))"
   export EMULATED_VERSION="${PREV_VERSION}"
@@ -365,8 +377,6 @@ main() {
   # debug kind version
   kind version
 
-  # build kubernetes (for upgrade)
-  build
   # in CI attempt to release some memory after building
   if [ -n "${KUBETEST_IN_DOCKER:-}" ]; then
     sync || true
@@ -386,11 +396,15 @@ main() {
   # Clone the previous versions Kubernetes release branch
   # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
   export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
-  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_BRANCH}"
+  # Define the path within the temp directory for the cloned repo
+  PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s"
+  echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
+  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
 
-  # enter the release branch and run tests
-  pushd "${PREV_RELEASE_BRANCH}"
-  run_tests || res=$?
+  # enter the cloned prev repo branch (in temp) and run tests
+  pushd "${PREV_RELEASE_REPO_PATH}"
+  build_prev_version_bins || res=$?
+  run_prev_version_tests || res=$?
   popd
 
 

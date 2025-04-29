@@ -14,7 +14,7 @@ presubmits:
       path_alias: k8s.io/ingress-nginx
       spec:
         containers:
-          - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v2.0.1@sha256:78c1e675520ae9345789fdaf684ccb335a94938390dc6f9f651dd93164f3a888
+          - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v2.0.3@sha256:1016d108440ed31a453ef397fcd2c3b1236f7375830deece65ca34dd8500882d
             command:
               - hack/verify-boilerplate.sh
             resources:
@@ -39,7 +39,7 @@ presubmits:
       path_alias: k8s.io/ingress-nginx
       spec:
         containers:
-          - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v2.0.1@sha256:78c1e675520ae9345789fdaf684ccb335a94938390dc6f9f651dd93164f3a888
+          - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v2.0.3@sha256:1016d108440ed31a453ef397fcd2c3b1236f7375830deece65ca34dd8500882d
             command:
               - hack/verify-codegen.sh
             resources:
@@ -64,7 +64,7 @@ presubmits:
       path_alias: k8s.io/ingress-nginx
       spec:
         containers:
-          - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v2.0.1@sha256:78c1e675520ae9345789fdaf684ccb335a94938390dc6f9f651dd93164f3a888
+          - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v2.0.3@sha256:1016d108440ed31a453ef397fcd2c3b1236f7375830deece65ca34dd8500882d
             command:
               - make
             args:

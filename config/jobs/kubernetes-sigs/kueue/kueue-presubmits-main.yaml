@@ -30,7 +30,7 @@ presubmits:
           limits:
             cpu: "2"
             memory: "6Gi"
-  - name: pull-kueue-test-integration-main
+  - name: pull-kueue-test-integration-baseline-main
     cluster: eks-prow-build-cluster
     branches:
     - ^main
@@ -39,20 +39,18 @@ presubmits:
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-integration-main
-      description: "Run kueue test-integration"
+      testgrid-tab-name: pull-kueue-test-integration-baseline-main
+      description: "Run kueue test-integration-baseline"
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.24
         command:
         - make
         args:
-        - test-integration
+        - test-integration-baseline
         env:
         - name: GOMAXPROCS
           value: "7"
-        - name: INTEGRATION_RUN_ALL
-          value: "false"
         resources:
           requests:
             cpu: "7"
@@ -60,6 +58,34 @@ presubmits:
           limits:
             cpu: "7"
             memory: "10Gi"
+  - name: pull-kueue-test-integration-extended-main
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-integration-extended-main
+      description: "Run kueue test-integration-extended"
+    spec:
+      containers:
+        - image: public.ecr.aws/docker/library/golang:1.24
+          command:
+            - make
+          args:
+            - test-integration-extended
+          env:
+            - name: GOMAXPROCS
+              value: "7"
+          resources:
+            requests:
+              cpu: "7"
+              memory: "10Gi"
+            limits:
+              cpu: "7"
+              memory: "10Gi"
   - name: pull-kueue-test-integration-multikueue-main
     cluster: eks-prow-build-cluster
     branches:
@@ -81,8 +107,6 @@ presubmits:
         env:
         - name: GOMAXPROCS
           value: "7"
-        - name: INTEGRATION_RUN_ALL
-          value: "false"
         resources:
           requests:
             cpu: "7"
@@ -105,7 +129,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.30"
@@ -143,7 +167,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.31"
@@ -181,7 +205,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -219,7 +243,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -257,7 +281,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -295,7 +319,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -333,7 +357,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -371,7 +395,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -382,6 +406,7 @@ presubmits:
             - runner.sh
           args:
             - make
+            - kind-image-build
             - test-e2e-kueueviz
           # docker-in-docker needs privileged mode
           securityContext:
@@ -408,7 +433,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         securityContext:
           privileged: true
         command:
@@ -441,7 +466,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         securityContext:
           privileged: true
         command:

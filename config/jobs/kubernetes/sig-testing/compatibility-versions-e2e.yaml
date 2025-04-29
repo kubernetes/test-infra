@@ -1,5 +1,5 @@
 periodics:
-- interval: 6h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-compatibility-versions-n-minus-1
   annotations:
@@ -27,7 +27,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250227-3a13bdd784-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250422-9d0e6fd518-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - wrapper.sh
@@ -57,7 +57,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
-- interval: 6h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-compatibility-versions-n-minus-2
   annotations:
@@ -85,7 +85,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250227-3a13bdd784-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250422-9d0e6fd518-master
       imagePullPolicy: Always  # pull latest image for canary testing
       command:
       - wrapper.sh
@@ -115,7 +115,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
-- interval: 6h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-compatibility-versions-feature-gate-test
   annotations:
@@ -144,7 +144,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
       command:
       - runner.sh
       - bash

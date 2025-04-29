@@ -13,7 +13,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -36,8 +36,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-test-e2e-external-eks-windows-fips
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     branches:
       - ^release-.*$
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -47,7 +46,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -80,7 +79,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -110,7 +109,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -139,7 +138,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -170,7 +169,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -203,7 +202,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:
@@ -236,7 +235,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           command:
             - runner.sh
           args:
@@ -259,8 +258,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-external-test-fips
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     branches:
       - ^release-.*$
     skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
@@ -270,7 +268,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           command:
             - runner.sh
           args:
@@ -303,7 +301,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           command:
             - runner.sh
           args:
@@ -336,7 +334,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           command:
             - runner.sh
           args:
@@ -369,7 +367,7 @@ presubmits:
       preset-aws-credential-aws-shared-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
           command:
             - runner.sh
           args:
@@ -392,8 +390,7 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-image-test
     cluster: eks-prow-build-cluster
     decorate: true
-    optional: true
-    skip_report: true
+    optional: false
     skip_branches:
     - gh-pages
     run_if_changed: "^hack/|^Dockerfile|^Makefile"
@@ -403,7 +400,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
         command:
         - runner.sh
         args:

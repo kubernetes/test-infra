@@ -43,7 +43,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250227-3a13bdd784-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master"
 
 loader = jinja2.FileSystemLoader(searchpath=os.path.join(script_dir, "templates"))
 
@@ -444,6 +444,7 @@ k8s_versions = [
     "1.30",
     "1.31",
     "1.32",
+    "1.33",
 ]
 
 kops_versions = [
@@ -1339,7 +1340,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.32', '1.31', '1.30']:
+    for version in ['1.33', '1.32', '1.31', '1.30']:
         results.append(
             build_test(
                 cloud='aws',
@@ -1785,7 +1786,7 @@ def generate_versions():
             runs_per_day=8,
         )
     ]
-    for version in ['1.32', '1.31', '1.30', '1.29', '1.28', '1.27']:
+    for version in ['1.33', '1.32', '1.31', '1.30', '1.29', '1.28', '1.27']:
         results.append(
             build_test(
                 cloud='aws',
@@ -1804,7 +1805,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.32', '1.31', '1.30']:
+    for version in ['master', '1.33', '1.32', '1.31', '1.30']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -2182,6 +2183,15 @@ def generate_presubmits_e2e():
             ],
         ),
 
+        presubmit_test(
+            branch='release-1.32',
+            k8s_version='1.31',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-cilium-1-32',
+            networking='cilium',
+            tab_name='e2e-1-32',
+            always_run=True,
+        ),
         presubmit_test(
             branch='release-1.31',
             k8s_version='1.31',
