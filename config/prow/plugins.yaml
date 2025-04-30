@@ -356,9 +356,6 @@ blockades:
       label: do-not-merge
       comment: |
         This is a staging repository. Please submit your PR to https://github.com/kubernetes/kubernetes instead.
-    blockregexps:
-      - .*
-    explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 
   - repos:
       - kubernetes/kubernetes
@@ -416,6 +413,7 @@ blockades:
 
   - repos:
       - kubernetes/client-go
+      - kubernetes/cri-api
     blockregexps:
       - .*
     explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
