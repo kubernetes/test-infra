@@ -1,6 +1,10 @@
 postsubmits:
   kubernetes-sigs/cloud-provider-kind:
     - name: post-cloud-provider-kind-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
