@@ -1063,8 +1063,6 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 }
 
-type jobBasePredicate func(job cfg.JobBase) bool
-
 func allStaticJobs() []cfg.JobBase {
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPresubmits(nil) {
@@ -1080,24 +1078,6 @@ func allStaticJobs() []cfg.JobBase {
 		return jobs[i].Name < jobs[j].Name
 	})
 	return jobs
-}
-
-func staticJobsMatchingAll(predicates ...jobBasePredicate) []cfg.JobBase {
-	jobs := allStaticJobs()
-	matchingJobs := []cfg.JobBase{}
-	for _, job := range jobs {
-		matched := true
-		for _, p := range predicates {
-			if !p(job) {
-				matched = false
-				break
-			}
-		}
-		if matched {
-			matchingJobs = append(matchingJobs, job)
-		}
-	}
-	return matchingJobs
 }
 
 func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error) {
