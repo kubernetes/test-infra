@@ -395,6 +395,8 @@ func TestK8sInfraTrusted(t *testing.T) {
 // - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
 // - not be a presubmit, only merged code
 // - skip dependabot branches (these contain unmerged code PRed by the github robot)
+//   - this can either be via non-matching branch regexes or via skip_branch regexes
+//   - we loosely test this by comparing some known dependabot style branch patterns
 func TestImagePushingJobs(t *testing.T) {
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 	jobsToFix := 0
@@ -420,8 +422,8 @@ func TestImagePushingJobs(t *testing.T) {
 		numJobs++
 		errs := []error{}
 		// must skip dependabot branches to prevent pushing unmerged code
-		if !slices.Contains(job.SkipBranches, "^dependabot") {
-			errs = append(errs, fmt.Errorf("image pushing job %s defined in %s must have skip_branches: - ^dependabot but does not", job.Name, job.SourcePath))
+		if err := validateJobShouldSkipDependabot(job.JobBase, job.Brancher); err != nil {
+			errs = append(errs, err)
 		}
 		errs = append(errs, validateImagePushingJobBase(&job.JobBase)...)
 		if len(errs) > 0 {
@@ -450,6 +452,17 @@ func TestImagePushingJobs(t *testing.T) {
 	}
 
 	t.Logf("summary: %4d/%4d jobs in config/jobs/image-pushing fail to meet CI policy", jobsToFix, numJobs)
+}
+
+func validateJobShouldSkipDependabot(j cfg.JobBase, b cfg.Brancher) error {
+	// https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#pull-request-branch-nameseparator--
+	tc := []string{"dependabot/package/dep", "dependabot_package_dep", "dependabot-package-dep", "dependabot"}
+	for _, t := range tc {
+		if b.ShouldRun(t) {
+			return fmt.Errorf("image pushing job %s defined in %s must have skip_branches: - ^dependabot or branches configured to not match dependabot branches but does not", j.SourcePath, j.Name)
+		}
+	}
+	return nil
 }
 
 func validateImagePushingJobBase(job *cfg.JobBase) []error {
