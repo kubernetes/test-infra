@@ -1,6 +1,10 @@
 postsubmits:
   kubernetes-sigs/boskos:
     - name: post-boskos-push-images
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-boskos, sig-k8s-infra-gcb
