@@ -123,7 +123,7 @@ presubmits:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods|\[Alpha\]
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods|\[Alpha\]|\[FeatureGate:SchedulerAsyncPreemption\] \[Beta\]
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-serial-slow
