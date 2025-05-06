@@ -84,6 +84,11 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "sig-testing"
+          effect: "NoSchedule"
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
