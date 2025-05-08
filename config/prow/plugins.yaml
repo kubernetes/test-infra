@@ -1687,6 +1687,8 @@ plugins:
     - yuks
     - owners-label
     - verify-owners
+    - hold
+    
 
   containerd/containerd:
     plugins:
