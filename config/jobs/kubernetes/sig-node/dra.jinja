@@ -93,7 +93,11 @@
         - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=1
+        {%- if file == "canary" %}
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky {%- if file != "ci" %} && !Slow {%- endif %}'
+        {%- else %}
         - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky {%- if file != "ci" %} && !Slow {%- endif %}'
+        {%- endif %}
         - --timeout={{e2e_node_timeout}}
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
@@ -163,7 +167,11 @@
               kind delete cluster
           }
           trap atexit EXIT
+          {%- if file == "canary" %}
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if file != "ci" %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          {%- else %}
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky {%- if file != "ci" %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          {%- endif %}
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         {%- if file == "ci" %}
