@@ -1,6 +1,10 @@
 postsubmits:
   kubernetes-sigs/kind:
     - name: post-kind-push-binaries
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
@@ -26,6 +30,10 @@ postsubmits:
         github_team_ids:
           - 2921947 # kind-maintainers
     - name: post-kind-push-base-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/base)|(^images/Makefile)|(^.go-version)'
       annotations:
@@ -53,6 +61,10 @@ postsubmits:
         github_team_ids:
           - 2921947 # kind-maintainers
     - name: post-kind-push-kindnetd-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/kindnetd)|(^images/Makefile)|(^.go-version)'
       annotations:
@@ -80,6 +92,10 @@ postsubmits:
         github_team_ids:
           - 2921947 # kind-maintainers
     - name: post-kind-push-haproxy-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/haproxy)|(^images/Makefile)'
       annotations:
@@ -107,6 +123,10 @@ postsubmits:
         github_team_ids:
           - 2921947 # kind-maintainers
     - name: post-kind-push-local-path-provisioner-image
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/local-path-provisioner)|(^images/Makefile)|(^.go-version)'
       annotations:
@@ -141,6 +161,10 @@ postsubmits:
         testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
         testgrid-num-columns-recent: '3'
       decorate: true
+      skip_branches:
+        # do not run on dependabot branches, these exist prior to merge
+        # only merged code should trigger these jobs
+        - '^dependabot'
       spec:
         serviceAccountName: gcb-builder
         containers:

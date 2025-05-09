@@ -137,6 +137,11 @@ postsubmits:
       # this causes the job to only run on the master branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
       # probably does).
+      # if you remove it you must instead use the following:
+      #skip_branches:
+      #  # do not run on dependabot branches, these exist prior to merge
+      #  # only merged code should trigger these jobs
+      #  - '^dependabot'
       branches:
         - ^master$
       spec:

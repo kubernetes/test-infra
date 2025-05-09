@@ -393,46 +393,39 @@ func TestK8sInfraTrusted(t *testing.T) {
 // - run on cluster: k8s-infra-prow-build-trusted
 // - use a pinned version of gcr.io/k8s-staging-test-infra/image-builder
 // - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
+// - not be a presubmit, only merged code
+// - skip dependabot branches (these contain unmerged code PRed by the github robot)
+//   - this can either be via non-matching branch regexes or via skip_branch regexes
+//   - we loosely test this by comparing some known dependabot style branch patterns
 func TestImagePushingJobs(t *testing.T) {
-	jobsToFix := 0
-	const trusted = "k8s-infra-prow-build-trusted"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
-	jobs := staticJobsMatchingAll(func(job cfg.JobBase) bool {
-		return strings.HasPrefix(job.SourcePath, imagePushingDir)
-	})
+	jobsToFix := 0
+	numJobs := 0
 
-	for _, job := range jobs {
-		errs := []error{}
-		// Only consider Pods
-		if job.Spec == nil {
-			continue
-		}
+	// no presubmits may exist here
+	for _, job := range c.AllStaticPresubmits(nil) {
 		// Only consider jobs in config/jobs/image-pushing/...
 		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
 			continue
 		}
-		if err := validateImagePushingImage(job.Spec); err != nil {
-			errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
+		t.Errorf("jobs in %s may not be presubmits but %s defined in %s is", imagePushingDir, job.Name, job.SourcePath)
+		jobsToFix++
+		numJobs++
+	}
+
+	// postsubmits
+	for _, job := range c.AllStaticPostsubmits(nil) {
+		// Only consider jobs in config/jobs/image-pushing/...
+		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			continue
 		}
-		if job.Cluster != trusted {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, trusted, job.Cluster))
+		numJobs++
+		errs := []error{}
+		// must skip dependabot branches to prevent pushing unmerged code
+		if err := validateJobShouldSkipDependabot(job.JobBase, job.Brancher); err != nil {
+			errs = append(errs, err)
 		}
-		dashboardsString, ok := job.Annotations["testgrid-dashboards"]
-		if !ok {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
-		}
-		expectedDashboard := "sig-k8s-infra-gcb"
-		foundDashboard := false
-		for _, dashboardName := range strings.Split(dashboardsString, ",") {
-			dashboardName = strings.TrimSpace(dashboardName)
-			if dashboardName == expectedDashboard {
-				foundDashboard = true
-				break
-			}
-		}
-		if !foundDashboard {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have %s in testgrid-dashboards annotation, got: %s", job.Name, job.SourcePath, expectedDashboard, dashboardsString))
-		}
+		errs = append(errs, validateImagePushingJobBase(&job.JobBase)...)
 		if len(errs) > 0 {
 			jobsToFix++
 			for _, err := range errs {
@@ -440,7 +433,64 @@ func TestImagePushingJobs(t *testing.T) {
 			}
 		}
 	}
-	t.Logf("summary: %4d/%4d jobs in config/jobs/image-pushing fail to meet CI policy", jobsToFix, len(jobs))
+
+	// periodics
+	for _, job := range c.AllPeriodics() {
+		// Only consider jobs in config/jobs/image-pushing/...
+		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			continue
+		}
+		numJobs++
+		errs := []error{}
+		errs = append(errs, validateImagePushingJobBase(&job.JobBase)...)
+		if len(errs) > 0 {
+			jobsToFix++
+			for _, err := range errs {
+				t.Errorf("%v", err)
+			}
+		}
+	}
+
+	t.Logf("summary: %4d/%4d jobs in config/jobs/image-pushing fail to meet CI policy", jobsToFix, numJobs)
+}
+
+func validateJobShouldSkipDependabot(j cfg.JobBase, b cfg.Brancher) error {
+	// https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#pull-request-branch-nameseparator--
+	tc := []string{"dependabot/package/dep", "dependabot_package_dep", "dependabot-package-dep", "dependabot"}
+	for _, t := range tc {
+		if b.ShouldRun(t) {
+			return fmt.Errorf("image pushing job %s defined in %s must have skip_branches: - ^dependabot or branches configured to not match dependabot branches but does not", j.SourcePath, j.Name)
+		}
+	}
+	return nil
+}
+
+func validateImagePushingJobBase(job *cfg.JobBase) []error {
+	errs := []error{}
+	if err := validateImagePushingImage(job.Spec); err != nil {
+		errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
+	}
+	const trusted = "k8s-infra-prow-build-trusted"
+	if job.Cluster != trusted {
+		errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, trusted, job.Cluster))
+	}
+	dashboardsString, ok := job.Annotations["testgrid-dashboards"]
+	if !ok {
+		errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
+	}
+	expectedDashboard := "sig-k8s-infra-gcb"
+	foundDashboard := false
+	for _, dashboardName := range strings.Split(dashboardsString, ",") {
+		dashboardName = strings.TrimSpace(dashboardName)
+		if dashboardName == expectedDashboard {
+			foundDashboard = true
+			break
+		}
+	}
+	if !foundDashboard {
+		errs = append(errs, fmt.Errorf("%s defined in %s must have %s in testgrid-dashboards annotation, got: %s", job.Name, job.SourcePath, expectedDashboard, dashboardsString))
+	}
+	return errs
 }
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
@@ -1013,8 +1063,6 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 }
 
-type jobBasePredicate func(job cfg.JobBase) bool
-
 func allStaticJobs() []cfg.JobBase {
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPresubmits(nil) {
@@ -1030,24 +1078,6 @@ func allStaticJobs() []cfg.JobBase {
 		return jobs[i].Name < jobs[j].Name
 	})
 	return jobs
-}
-
-func staticJobsMatchingAll(predicates ...jobBasePredicate) []cfg.JobBase {
-	jobs := allStaticJobs()
-	matchingJobs := []cfg.JobBase{}
-	for _, job := range jobs {
-		matched := true
-		for _, p := range predicates {
-			if !p(job) {
-				matched = false
-				break
-			}
-		}
-		if matched {
-			matchingJobs = append(matchingJobs, job)
-		}
-	}
-	return matchingJobs
 }
 
 func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error) {
