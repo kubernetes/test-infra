@@ -198,10 +198,9 @@ periodics:
                 --break-kubetest-on-upfail true --powervs-memory 32 \
                 --playbook k8s-node-remote.yml
               EXTERNAL_IP=`grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' $(pwd)/config2-$TIMESTAMP/hosts`
-              # Skipping test due to https://github.com/kubernetes/kubernetes/issues/131132 and
-              # Related to https://github.com/kubernetes/kubernetes/issues/124791
+              # Skipping test related to https://github.com/kubernetes/kubernetes/issues/124791
               kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
-                "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop|when.querying.\/metrics\/cadvisor' && /make-test-e2e-node.sh"; \
+                "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop' && /make-test-e2e-node.sh"; \
                 rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
               kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} \
