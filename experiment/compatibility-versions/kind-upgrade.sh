@@ -39,7 +39,7 @@ update_control_plane(){
   for n in $CONTROL_PLANE_NODES; do
     for i in $CONTROL_PLANE_COMPONENTS; do
       kind load image-archive ${IMAGES_PATH}/${i}.tar --name ${CLUSTER_NAME} --nodes $n
-      docker exec $n sed -i.bak -r "s|^(.*image\:.*)\:.*$|\1-amd64\:${DOCKER_TAG}|" /etc/kubernetes/manifests/$i.yaml
+      docker exec $n sed -e '/image:.*-amd64:/!s|\(image:.*\):.*|\1-amd64:'"${DOCKER_TAG}"'|' -i /etc/kubernetes/manifests/$i.yaml
       echo "Updated component $i on node $n"
       sleep 1
     done
