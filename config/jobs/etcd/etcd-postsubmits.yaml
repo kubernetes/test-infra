@@ -29,6 +29,7 @@ postsubmits:
     cluster: eks-prow-build-cluster
     branches:
     - main
+    - release-3.5
     - release-3.6
     decorate: true
     annotations:

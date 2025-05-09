@@ -121,6 +121,7 @@ presubmits:
     always_run: true
     branches:
     - main
+    - release-3.5
     - release-3.6
     decorate: true
     annotations:
