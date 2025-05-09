@@ -52,13 +52,6 @@ prow_ignored:
         to: "1.30"
       - from: "1.30"
         to: "1.31"
-    release-1.10:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29"
-      upgrades:
-      - from: "1.28"
-        to: "1.29"
-      - from: "1.29"
-        to: "1.30"
 
   # The generator will run each template per branch and use a the name template
   # to generate the target filename.
