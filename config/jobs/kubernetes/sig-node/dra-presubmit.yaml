@@ -60,7 +60,7 @@ presubmits:
               kind delete cluster
           }
           trap atexit EXIT
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -133,7 +133,7 @@ presubmits:
               kind delete cluster
           }
           trap atexit EXIT
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
@@ -185,7 +185,7 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
@@ -242,7 +242,7 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
@@ -299,7 +299,7 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -352,7 +352,7 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
