@@ -264,8 +264,8 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.1.0
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.3.0
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -345,8 +345,8 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.1.0
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.3.0
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -531,8 +531,8 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --build=quick
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.1.0
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.3.0
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -849,8 +849,8 @@ periodics:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
-          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.1.0
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.3.0
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
