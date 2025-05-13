@@ -54,54 +54,6 @@ presubmits:
             cpu: "2"
             memory: "6Gi"
 
-  # This jobs runs e2e.test with a focus on tests for all alpha/beta storage features on a kind cluster
-  - name: pull-kubernetes-e2e-storage-kind-alpha-beta-features
-    always_run: false
-    optional: true
-    decorate: true
-    path_alias: k8s.io/kubernetes
-    cluster: eks-prow-build-cluster
-    skip_branches:
-    - release-\d+\.\d+
-    annotations:
-      testgrid-dashboards: presubmits-kubernetes-nonblocking
-      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-alpha-beta-features
-      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-      description: Run storage tests for alpha/beta features in a KIND cluster.
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250422-9d0e6fd518-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: FEATURE_GATES
-          value: '{"VolumeAttributesClass":true, "CSIVolumeHealth": true}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
-        - name: FOCUS
-          value: \[Feature:VolumeAttributesClass\]|\[Feature:CSIVolumeHealth\]
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "2"
-            memory: "6Gi"
-          limits:
-            cpu: "2"
-            memory: "6Gi"
-
   - name: pull-kubernetes-e2e-storage-kind-volume-group-snapshots
     always_run: false
     optional: true
@@ -182,55 +134,6 @@ periodics:
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].*\[Feature:Kind\].*\[Disruptive\]"
 
         # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "2"
-            memory: "6Gi"
-          limits:
-            cpu: "2"
-            memory: "6Gi"
-
-  # This jobs runs e2e.test with a focus on tests for all alpha/beta storage features on a kind cluster
-  - name: ci-kubernetes-e2e-storage-kind-alpha-beta-features
-    interval: 12h
-    annotations:
-      testgrid-dashboards: sig-storage-kubernetes
-      testgrid-tab-name: kind-storage-alpha-beta-features
-      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-      description: Run storage tests for alpha features in a KIND cluster.
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250422-9d0e6fd518-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: FEATURE_GATES
-          value: '{"VolumeAttributesClass":true, "CSIVolumeHealth": true}'
-        - name: RUNTIME_CONFIG
-          value: '{"api/ga":"true", "storage.k8s.io/v1alpha1":"true", "storage.k8s.io/v1beta1":"true"}'
-        - name: FOCUS
-          value: \[Feature:VolumeAttributesClass\]|\[Feature:CSIVolumeHealth\]
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
