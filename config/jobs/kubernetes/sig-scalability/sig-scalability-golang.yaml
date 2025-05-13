@@ -16,7 +16,6 @@ periodics:
     clone_uri: https://go.googlesource.com/go
   - org: kubernetes
     repo: kubernetes
-    base_sha: 9f01cd7b28fdbc8a1ceb9ec371fd817551659ee5 # head of master branch as of 2024-09-05
     base_ref: master
     path_alias: k8s.io/kubernetes
   - org: kubernetes
@@ -25,7 +24,6 @@ periodics:
     path_alias: k8s.io/perf-tests
   - org: kubernetes
     repo: release
-    base_sha: 75a8e7ef8b22fe41525d28c1818384aab795f145 # head of master branch as of 2024-09-05
     base_ref: master
     path_alias: k8s.io/release
   annotations:
@@ -53,10 +51,10 @@ periodics:
           memory: "16Gi"
 
 - interval: 24h
-  name: ci-golang-tip-k8s-1-23
+  name: ci-golang-tip-k8s-master
   cluster: k8s-infra-prow-build
   tags:
-  - "perfDashPrefix: golang-tip-k8s-1-23"
+  - "perfDashPrefix: golang-tip-k8s-master"
   - "perfDashJobType: performance"
   - "perfDashBuildsCount: 500"
   labels:
@@ -74,13 +72,12 @@ periodics:
   - org: kubernetes
     repo: perf-tests
     base_ref: master
-    base_sha: 6f93c89d2bf3e6f18d621bc264091b6842967c61 # head of perf-tests' master as of 2021-10-18
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
     testgrid-num-failures-to-alert: "3"
-    testgrid-tab-name: golang-tip-k8s-1-23
+    testgrid-tab-name: golang-tip-k8s-master
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
@@ -94,7 +91,7 @@ periodics:
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
-      - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.23.txt
+      - --extract=gs://k8s-infra-scale-golang-builds/ci/latest.txt
       - --gcp-master-size=n2-standard-4
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
