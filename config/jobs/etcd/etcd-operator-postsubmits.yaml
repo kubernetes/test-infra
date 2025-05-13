@@ -40,7 +40,7 @@ postsubmits:
       testgrid-tab-name: post-etcd-operator-test-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250513-98d205aae3-master
         command:
         - wrapper.sh
         args:

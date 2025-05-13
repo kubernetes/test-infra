@@ -43,7 +43,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         resources:
           limits:
             cpu: "4"
@@ -79,7 +79,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -124,7 +124,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
           args:
@@ -173,7 +173,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
           args:
@@ -227,7 +227,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
           args:
@@ -284,7 +284,7 @@ presubmits:
       testgrid-num-failures-to-alert: "10"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -341,7 +341,7 @@ presubmits:
       testgrid-num-failures-to-alert: "10"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         resources:
           limits:
             cpu: 4
@@ -393,7 +393,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -446,7 +446,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         env:
         - name: GOPATH
           value: /go
@@ -502,7 +502,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -556,7 +556,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -604,7 +604,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -651,7 +651,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -698,7 +698,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -747,7 +747,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -797,7 +797,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-serial-containerd-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         env:
         - name: GOPATH
           value: /go
@@ -850,7 +850,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           resources:
             limits:
               cpu: 4
@@ -896,7 +896,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
           args:
@@ -963,7 +963,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           resources:
             limits:
               cpu: 4
@@ -1017,7 +1017,7 @@ presubmits:
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         env:
         - name: GOPATH
           value: /go
@@ -1070,7 +1070,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           resources:
             limits:
               cpu: 4
@@ -1124,7 +1124,7 @@ presubmits:
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         env:
         - name: GOPATH
           value: /go
@@ -1177,7 +1177,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           resources:
             limits:
               cpu: 4
@@ -1226,7 +1226,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv2-imagefs-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1281,7 +1281,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv2-userns-e2e-serial
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1334,7 +1334,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv2-imagevolume-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1387,7 +1387,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv2-splitfs-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1441,7 +1441,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv1-evented-pleg-gce-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1497,7 +1497,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv2-gce-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         resources:
           limits:
             cpu: 4
@@ -1550,7 +1550,7 @@ presubmits:
       testgrid-tab-name: pr-node-crio-cgroupv1-node-e2e-features
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1607,7 +1607,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1664,7 +1664,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1724,7 +1724,7 @@ presubmits:
       testgrid-tab-name: pr-crio-gce-e2e
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         resources:
           limits:
             cpu: 4
@@ -1781,7 +1781,7 @@ presubmits:
       testgrid-tab-name: pr-kubelet-crio-cgroupv1-node-e2e-hugepages
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1840,7 +1840,7 @@ presubmits:
       testgrid-tab-name: pr-kubelet-crio-cgroupv2-node-e2e-hugepages
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1900,7 +1900,7 @@ presubmits:
       description: "Executes CPU, Memory and Topology manager e2e tests for crio"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -1960,7 +1960,7 @@ presubmits:
       description: "Executes CPU, Memory and Topology manager e2e tests for crio"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -2018,7 +2018,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           resources:
             limits:
               cpu: 4
@@ -2069,7 +2069,7 @@ presubmits:
       testgrid-tab-name: pr-crio-node-memoryqos-cgrpv2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -2123,7 +2123,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2175,7 +2175,7 @@ presubmits:
       path_alias: github.com/containerd/containerd
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -2228,7 +2228,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2283,7 +2283,7 @@ presubmits:
       path_alias: github.com/containerd/containerd
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -2336,7 +2336,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2388,7 +2388,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2440,7 +2440,7 @@ presubmits:
       path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2495,7 +2495,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2546,7 +2546,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2597,7 +2597,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -2648,7 +2648,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -2698,7 +2698,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgroupv1-node-e2e-eviction
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -2755,7 +2755,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgroupv2-node-e2e-eviction
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -2812,7 +2812,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgroupv2-imagefs-e2e-separatedisktest
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -2868,7 +2868,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgroupv2-splitfs-separate-disk
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         args:
@@ -2925,7 +2925,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -2976,7 +2976,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -3031,7 +3031,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -3086,7 +3086,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -3138,7 +3138,7 @@ presubmits:
       path_alias: github.com/containerd/containerd
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -3185,7 +3185,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
           args:
@@ -3235,7 +3235,7 @@ presubmits:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
           args:
@@ -3289,7 +3289,7 @@ presubmits:
         path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -3340,7 +3340,7 @@ presubmits:
       path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
