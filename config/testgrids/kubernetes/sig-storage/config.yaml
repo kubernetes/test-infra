@@ -71,6 +71,12 @@ dashboards:
       description: storage snapshot e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+    - name: kind-master-alpha-beta
+      test_group_name: ci-kubernetes-e2e-kind-alpha-beta-features
+      base_options: include-filter-by-regex=Volume%7Cstorage
+      description: Runs storage e2e tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
 
 - name: sig-storage-local-static-provisioner
   dashboard_tab:

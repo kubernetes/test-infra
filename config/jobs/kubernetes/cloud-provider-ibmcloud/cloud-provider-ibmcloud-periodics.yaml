@@ -19,7 +19,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250513-98d205aae3-master
           command:
             - make
             - test
@@ -52,7 +52,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250513-98d205aae3-master
           securityContext:
             privileged: true
           env:
@@ -151,7 +151,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250513-98d205aae3-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -198,10 +198,9 @@ periodics:
                 --break-kubetest-on-upfail true --powervs-memory 32 \
                 --playbook k8s-node-remote.yml
               EXTERNAL_IP=`grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' $(pwd)/config2-$TIMESTAMP/hosts`
-              # Skipping test due to https://github.com/kubernetes/kubernetes/issues/131132 and
-              # Related to https://github.com/kubernetes/kubernetes/issues/124791
+              # Skipping test related to https://github.com/kubernetes/kubernetes/issues/124791
               kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
-                "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop|when.querying.\/metrics\/cadvisor' && /make-test-e2e-node.sh"; \
+                "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop' && /make-test-e2e-node.sh"; \
                 rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
               kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} \
@@ -229,7 +228,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250513-98d205aae3-master
           securityContext:
             privileged: true
           env:
@@ -312,7 +311,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-default
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250422-9d0e6fd518-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250513-98d205aae3-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"

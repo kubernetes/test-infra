@@ -1,15 +1,10 @@
-# sigs.k8s.io/descheduler presubmits
+# sigs.k8s.io/cluster-capacity presubmits
 presubmits:
-  kubernetes-sigs/descheduler:
-  - name: pull-descheduler-verify-release-1-33
+  kubernetes-sigs/cluster-capacity:
+  - name: pull-cluster-capacity-verify-gofmt-release-1-33
     cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-release-1.33
     decorate: true
-    decoration_config:
-      timeout: 15m
-    path_alias: sigs.k8s.io/descheduler
+    path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.33$
@@ -20,23 +15,18 @@ presubmits:
         command:
         - make
         args:
-        - verify
+        - verify-gofmt
         resources:
-          limits:
-            cpu: 8
-            memory: 8Gi
           requests:
-            cpu: 8
-            memory: 8Gi
-  - name: pull-descheduler-verify-build-release-1-33
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-verify-build-release-1-33
     cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-build-release-1.33
     decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/descheduler
+    path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.33$
@@ -49,26 +39,20 @@ presubmits:
         args:
         - build
         resources:
-          limits:
-            cpu: 6
-            memory: 4Gi
           requests:
-            cpu: 6
+            cpu: 2
             memory: 4Gi
-  - name: pull-descheduler-unit-test-release-1-33
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-unit-test-release-1-33
     cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-unit-test-release-1.33
     decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: sigs.k8s.io/descheduler
+    path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.33$
-    always_run: false
-    run_if_changed: '\.go$'
+    always_run: true
     spec:
       containers:
       - image: public.ecr.aws/docker/library/golang:1.24.2
@@ -77,20 +61,21 @@ presubmits:
         args:
         - test-unit
         resources:
-          limits:
-            cpu: 6
-            memory: 4Gi
           requests:
-            cpu: 6
+            cpu: 2
             memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-release-1-33-1-33
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-33-1-33
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-33-1.33
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.33-1.33
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -115,20 +100,21 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          limits:
-            cpu: 6
-            memory: 4Gi
           requests:
-            cpu: 6
+            cpu: 2
             memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-release-1-33-1-32
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-33-1-32
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-33-1.32
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.33-1.32
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -153,20 +139,21 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          limits:
-            cpu: 6
-            memory: 4Gi
           requests:
-            cpu: 6
+            cpu: 2
             memory: 4Gi
-  - name: pull-descheduler-test-e2e-k8s-release-1-33-1-31
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-33-1-31
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-33-1.31
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.33-1.31
     decorate: true
     decoration_config:
-      timeout: 40m
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -191,9 +178,9 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          limits:
-            cpu: 6
-            memory: 4Gi
           requests:
-            cpu: 6
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
             memory: 4Gi
