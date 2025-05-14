@@ -391,7 +391,12 @@ main() {
   UPGRADE_SCRIPT="${UPGRADE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/kind-upgrade.sh}"
   echo "Upgrading cluster with ${UPGRADE_SCRIPT}"
 
-  upgrade_cluster_components
+  upgrade_cluster_components || res=$?
+  # If upgrade fails, we shouldn't run tests but should still clean up.
+  if [[ "$res" -ne 0 ]]; then
+    cleanup
+    exit $res
+  fi
 
   # Clone the previous versions Kubernetes release branch
   # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
