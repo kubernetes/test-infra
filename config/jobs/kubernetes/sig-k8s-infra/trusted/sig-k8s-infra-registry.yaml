@@ -7,7 +7,11 @@ periodics:
     annotations:
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: "1"
+      # this rarely has a flake like exceeding QPS or network connection issues
+      # it runs in under 2m ever 5m so a flake is not worth alerting on
+      testgrid-num-failures-to-alert: "3"
+      # if this stops running for some reason we have a problem
+      testgrid-alert-stale-results-hours: "1"
     extra_refs:
       - org: kubernetes
         repo: registry.k8s.io
