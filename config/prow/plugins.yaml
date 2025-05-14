@@ -1472,6 +1472,11 @@ plugins:
     - wip
     - yuks
 
+  kubernetes-sigs/aws-ebs-csi-driver:
+    plugins:
+    - release-note
+    - override
+
   kubernetes-sigs/cloud-provider-azure:
     plugins:
     - milestone
