@@ -72,9 +72,10 @@ check_structured_log_support() {
 	case "${KUBE_VERSION}" in
 		v1.1[0-8].*)
 			echo "$1 is only supported on versions >= v1.19, got ${KUBE_VERSION}"
-			exit 1
+			return 1
 			;;
 	esac
+  return 0
 }
 
 # Function to check if version is greater than or equal to the target
@@ -143,11 +144,11 @@ create_cluster() {
   true)
     if [ "${feature_gates}" != "{}" ]; then
       echo "GA_ONLY=true and FEATURE_GATES=${feature_gates} are mutually exclusive."
-      exit 1
+      return 1
     fi
     if [ "${runtime_config}" != "{}" ]; then
       echo "GA_ONLY=true and RUNTIME_CONFIG=${runtime_config} are mutually exclusive."
-      exit 1
+      return 1
     fi
 
     echo "Limiting to GA APIs and features for ${PREV_VERSION}"
@@ -156,7 +157,7 @@ create_cluster() {
     ;;
   *)
     echo "\$GA_ONLY set to '${GA_ONLY}'; supported values are true and false (default)"
-    exit 1
+    return 1
     ;;
   esac
 
@@ -230,6 +231,7 @@ EOF
   # Patch kube-proxy to set the verbosity level
   kubectl patch -n kube-system daemonset/kube-proxy \
     --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/command/-", "value": "--v='"${KIND_CLUSTER_LOG_LEVEL}"'" }]'
+  return 0
 }
 
 build_prev_version_bins() {
@@ -337,8 +339,9 @@ upgrade_cluster_components() {
 
   if ! "$success"; then
     echo "Upgrade failed after $RETRY_ATTEMPTS attempts."
-    exit 1
+    return 1
   fi
+  return 0
 }
 
 main() {
