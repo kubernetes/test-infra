@@ -215,12 +215,24 @@ main() {
   mkdir -p "${ARTIFACTS}"
 
   # Get current and n-1 version numbers
-  MAJOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
-  MINOR_VERSION=$(./hack/print-workspace-status.sh | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
+  WORKSPACE_STATUS=$(./hack/print-workspace-status.sh)
+  MAJOR_VERSION=$(echo "$WORKSPACE_STATUS" | awk '/STABLE_BUILD_MAJOR_VERSION/ {print $2}')
+  MINOR_VERSION=$(echo "$WORKSPACE_STATUS" | awk '/STABLE_BUILD_MINOR_VERSION/ {split($2, minor, "+"); print minor[1]}')
   export VERSION_DELTA=${VERSION_DELTA:-1}
+
   export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
-  export EMULATED_VERSION=$(get_latest_release_version)
-  
+  export EMULATED_VERSION=$(get_release_version)
+
+  # Check if gitVersion contains alpha.0 and increment VERSION_DELTA if needed
+  # If the current version is alpha.0, it means the previous *stable* or developed
+  # branch is actually n-2 relative to the current minor number for compatibility purposes.
+  GIT_VERSION=$(echo "$WORKSPACE_STATUS" | awk '/^gitVersion / {print $2}')
+  if [[ "${GIT_VERSION}" == *alpha.0* ]]; then
+    echo "Detected alpha.0 in gitVersion (${GIT_VERSION}), treating as still the previous minor version."
+    VERSION_DELTA=$((VERSION_DELTA + 1))
+    echo "Adjusted VERSION_DELTA: ${VERSION_DELTA}"
+  fi
+
   # Set original paths with fallbacks
   export VERSIONED_FEATURE_LIST=${VERSIONED_FEATURE_LIST:-"test/featuregates_linter/test_data/versioned_feature_list.yaml"}
   export PREV_VERSIONED_FEATURE_LIST=${PREV_VERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/versioned_feature_list.yaml"}
@@ -280,11 +292,12 @@ main() {
   cleanup
 }
 
-get_latest_release_version() {
+get_release_version() {
   git ls-remote --heads https://github.com/kubernetes/kubernetes.git | \
     grep -o 'release-[0-9]\+\.[0-9]\+' | \
     sort -t. -k1,1n -k2,2n | \
-    tail -n1 | \
+    tail -n $VERSION_DELTA | \
+    head -n1 | \
     cut -d- -f2
 }
 
