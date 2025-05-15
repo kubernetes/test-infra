@@ -42,7 +42,7 @@ periodics:
       - name: PARALLEL
         value: "true"
       - name: FEATURE_GATES
-        value: '{"AllBeta":true, "MultiCIDRServiceAllocator":false}'
+        value: '{"AllBeta":true}'
       - name: RUNTIME_CONFIG
         value: '{"api/beta":"true", "api/ga":"true"}'
       # we need privileged mode in order to do docker in docker
