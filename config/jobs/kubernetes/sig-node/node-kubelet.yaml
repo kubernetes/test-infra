@@ -43,6 +43,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking, sig-node-containerd
     testgrid-tab-name: ci-node-e2e
