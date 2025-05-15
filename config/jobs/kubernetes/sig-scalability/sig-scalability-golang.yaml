@@ -89,14 +89,13 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics --profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
-      - --env=DEPLOY_GCI_DRIVER=false
-      - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
       - --extract=gs://k8s-infra-scale-golang-builds/ci/latest.txt
       - --gcp-master-size=n2-standard-4
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
+      - --tear-down-previous
       - --provider=gce
       - --kubemark
       - --kubemark-nodes=2500
