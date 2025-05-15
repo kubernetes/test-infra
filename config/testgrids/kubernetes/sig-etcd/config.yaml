@@ -50,6 +50,32 @@ dashboards:
           value: <test-url>
         - key: etcdVersion
           value: v3.6
+    - name: ci-etcd-robustness-release36-amd64
+      test_group_name: ci-etcd-robustness-release36-amd64
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: template
+          value: bug-report.yml
+        - key: title
+          value: '[robustness tests] 3.6-amd64: <test-name>'
+        - key: problem
+          value: <test-url>
+        - key: etcdVersion
+          value: v3.6
+    - name: ci-etcd-robustness-release36-arm64
+      test_group_name: ci-etcd-robustness-release36-arm64
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: template
+          value: bug-report.yml
+        - key: title
+          value: '[robustness tests] 3.6-arm64: <test-name>'
+        - key: problem
+          value: <test-url>
+        - key: etcdVersion
+          value: v3.6
     - name: ci-etcd-robustness-release35-amd64
       test_group_name: ci-etcd-robustness-release35-amd64
       file_bug_template:
