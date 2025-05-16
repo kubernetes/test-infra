@@ -18,6 +18,54 @@
 set -e
 set -o pipefail
 
+# Set default values
+CLUSTER_NAME=${CLUSTER_NAME:-kind}
+BUILD_MODE=${BUILD_MODE:-docker}
+UPDATE_KUBE_PROXY=${UPDATE_KUBE_PROXY:-true}
+UPDATE_KUBELET=${UPDATE_KUBE_PROXY:-true}
+# TODO: we can have more granularity here
+UPDATE_CONTROL_PLANE=${UPDATE_CONTROL_PLANE:-true}
+CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
+
+# Initialize variables
+# Assume go installed
+KUBE_ROOT="."
+# KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
+source "${KUBE_ROOT}/hack/lib/version.sh"
+kube::version::get_version_vars
+DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
+DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
+export GOFLAGS="-tags=providerless"
+export KUBE_BUILD_CONFORMANCE=n
+
+# KIND nodes
+NODES=$(kind get nodes --name ${CLUSTER_NAME})
+CONTROL_PLANE_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep control)
+WORKER_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep worker)
+
+parse_args()
+{
+    while [ "$1" != "" ]; do
+        case $1 in
+            -n | --name )			shift
+                                          	CLUSTER_NAME=$1
+                                          	;;
+            --no-kubelet )                   	UPDATE_KUBELET=false
+                                                ;;
+            --no-control-plane )               	UPDATE_CONTROL_PLANE=false
+                                                ;;
+            -h | --help )                       usage
+                                                exit
+                                                ;;
+            * )                                 usage
+                                                exit 1
+        esac
+        shift
+    done
+}
+
+parse_args $*
+
 build_docker(){
   build/run.sh make all WHAT="cmd/kubectl cmd/kubelet" 1> /dev/null
   make quick-release-images 1> /dev/null
@@ -52,54 +100,6 @@ usage()
     echo "                       [--no-control-plane]  [--no-kubelet]"
     echo ""
 }
-
-parse_args()
-{
-    while [ "$1" != "" ]; do
-        case $1 in
-            -n | --name )			shift
-                                          	CLUSTER_NAME=$1
-                                          	;;
-            --no-kubelet )                   	UPDATE_KUBELET=false
-                                                ;;
-            --no-control-plane )               	UPDATE_CONTROL_PLANE=false
-                                                ;;
-            -h | --help )                       usage
-                                                exit
-                                                ;;
-            * )                                 usage
-                                                exit 1
-        esac
-        shift
-    done
-}
-
-# Set default values
-CLUSTER_NAME=${CLUSTER_NAME:-kind}
-BUILD_MODE=${BUILD_MODE:-docker}
-UPDATE_KUBE_PROXY=${UPDATE_KUBE_PROXY:-true}
-UPDATE_KUBELET=${UPDATE_KUBE_PROXY:-true}
-# TODO: we can have more granularity here
-UPDATE_CONTROL_PLANE=${UPDATE_CONTROL_PLANE:-true}
-CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
-
-parse_args $*
-
-# Initialize variables
-# Assume go installed
-KUBE_ROOT="."
-# KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
-source "${KUBE_ROOT}/hack/lib/version.sh"
-kube::version::get_version_vars
-DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
-DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
-export GOFLAGS="-tags=providerless"
-export KUBE_BUILD_CONFORMANCE=n
-
-# KIND nodes
-NODES=$(kind get nodes --name ${CLUSTER_NAME})
-CONTROL_PLANE_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep control)
-WORKER_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep worker)
 
 # Main
 build_docker

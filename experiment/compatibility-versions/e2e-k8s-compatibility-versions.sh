@@ -318,8 +318,8 @@ upgrade_cluster_components() {
   local attempt=1
   local success=false
 
-  bash -x "${UPGRADE_SCRIPT}" --no-kubelet | tee "${ARTIFACTS}/upgrade-output-1.txt"
-  bash -x "${UPGRADE_SCRIPT}" --no-kubelet | tee "${ARTIFACTS}/upgrade-output-2.txt"
+  bash "${UPGRADE_SCRIPT}" --no-kubelet | tee "${ARTIFACTS}/upgrade-output-1.txt"
+  bash "${UPGRADE_SCRIPT}" --no-kubelet | tee "${ARTIFACTS}/upgrade-output-2.txt"
   # Run the script twice, is necessary for fully updating the binaries
 
   while [ "$attempt" -le "$RETRY_ATTEMPTS" ]; do
