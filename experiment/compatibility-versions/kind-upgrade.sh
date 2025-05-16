@@ -74,8 +74,6 @@ parse_args()
     done
 }
 
-parse_args $*
-
 # Set default values
 CLUSTER_NAME=${CLUSTER_NAME:-kind}
 BUILD_MODE=${BUILD_MODE:-docker}
@@ -84,6 +82,8 @@ UPDATE_KUBELET=${UPDATE_KUBE_PROXY:-true}
 # TODO: we can have more granularity here
 UPDATE_CONTROL_PLANE=${UPDATE_CONTROL_PLANE:-true}
 CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
+
+parse_args $*
 
 # Initialize variables
 # Assume go installed
