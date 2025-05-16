@@ -288,6 +288,35 @@ presubmits:
       testgrid-tab-name: pull-external-test-fips
       description: kubernetes/kubernetes external test on pull requests on release branch for fips image
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-security
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: false
+    branches:
+      - ^release-.*$
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - security
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: pull-security
+      description: Scans release branch for any known vulnerabilities
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-eks
     cluster: eks-prow-build-cluster
     decorate: true
