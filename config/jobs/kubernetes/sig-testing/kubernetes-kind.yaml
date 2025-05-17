@@ -567,6 +567,9 @@ periodics:
         export PATH=$PATH:$GOPATH/bin
         mkdir -p "${WORKDIR}"
 
+        # needed by gomod_staleness.py
+        apt update && apt -y install jq
+
         # Update each dependency to the latest version
         ./../test-infra/experiment/dependencies/gomod_staleness.py
 
