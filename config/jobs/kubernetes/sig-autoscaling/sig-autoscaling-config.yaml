@@ -87,6 +87,9 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
+      env:
+      - name: FEATURE_GATES
+        value: "InPlaceOrRecreate=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -133,6 +136,9 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
+      env:
+      - name: FEATURE_GATES
+        value: "InPlaceOrRecreate=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -179,6 +185,9 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
+      env:
+      - name: FEATURE_GATES
+        value: "InPlaceOrRecreate=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -225,6 +234,9 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
+      env:
+      - name: FEATURE_GATES
+        value: "InPlaceOrRecreate=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa

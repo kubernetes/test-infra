@@ -237,6 +237,9 @@ presubmits:
           requests:
             cpu: 2
             memory: 6Gi
+        env:
+        - name: FEATURE_GATES
+          value: "InPlaceOrRecreate=true"
   - name: pull-kubernetes-e2e-autoscaling-ca-build
     cluster: k8s-infra-prow-build
     annotations:
