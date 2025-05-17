@@ -933,20 +933,6 @@ subjects:
 - kind: ServiceAccount
   name: "statusreconciler"
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  namespace: prow
-  labels:
-    app: ghproxy
-  name: ghproxy
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1421,12 +1407,24 @@ spec:
   selector:
     app: minio
   ports:
-    -
-      name: minio-1
+    - name: minio-1
       port: 9001
       targetPort: 9001
       nodePort: 30003
-    -
-      name: minio-2
+    - name: minio-2
       port: 9000
       targetPort: 9000
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: prow
+  labels:
+    app: ghproxy
+  name: ghproxy
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
