@@ -100,6 +100,11 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-serial-containerd
@@ -150,6 +155,11 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-flaky
@@ -319,6 +329,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 - name: ci-kubernetes-node-swap-fedora
   cluster: k8s-infra-prow-build
@@ -423,6 +438,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 - name: ci-kubernetes-node-swap-fedora-serial
   interval: 4h
@@ -526,6 +546,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 - name: ci-kubernetes-node-swap-conformance-fedora-serial
   interval: 4h
@@ -627,6 +652,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 
 - name: ci-kubernetes-node-e2e-containerd-standalone-mode-all-alpha
@@ -677,6 +707,11 @@ periodics:
         limits:
           cpu: 4
           memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-containerd-standalone-mode-all-alpha
@@ -730,6 +765,11 @@ periodics:
         limits:
           cpu: 4
           memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-containerd-standalone-mode
@@ -782,6 +822,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 24h
@@ -830,6 +875,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 - name: ci-kubernetes-node-kubelet-serial-memory-manager
   interval: 24h
@@ -878,6 +928,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 - name: ci-kubernetes-node-e2e-cri-proxy-serial
   interval: 24h
@@ -932,6 +987,11 @@ periodics:
           limits:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 - name: ci-kubernetes-e2e-relaxed-environment-variable-validation
   interval: 24h
   cluster: k8s-infra-prow-build
@@ -979,6 +1039,11 @@ periodics:
           requests:
             cpu: 4
             memory: 6Gi
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-node"
+        effect: "NoSchedule"
 
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
