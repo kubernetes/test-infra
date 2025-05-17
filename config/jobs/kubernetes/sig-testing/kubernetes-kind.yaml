@@ -568,7 +568,7 @@ periodics:
         mkdir -p "${WORKDIR}"
 
         # Update each dependency to the latest version
-        ./../test-infra/experiment/gomod_staleness.py
+        ./../test-infra/experiment/dependencies/gomod_staleness.py
 
         # See if update-vendor still works
         hack/update-vendor.sh
