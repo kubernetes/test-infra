@@ -83,10 +83,18 @@ update_kubelet() {
 }
 
 update_control_plane(){
+  local emulation_forward_compatible=$1
   # TODO allow to configure node and control plane components
   for n in $CONTROL_PLANE_NODES; do
     for i in $CONTROL_PLANE_COMPONENTS; do
       kind load image-archive ${IMAGES_PATH}/${i}.tar --name ${CLUSTER_NAME} --nodes $n
+      if [ "$emulation_forward_compatible" == "true" ]; then
+        # set --emulation-forward-compatible=true for apiserver if not already set
+        docker exec $n bash -c "grep -q 'emulation-forward-compatible=true' /etc/kubernetes/manifests/$i.yaml || sed -e '/- kube-apiserver/a \ \ \ \ - --emulation-forward-compatible=true' -i /etc/kubernetes/manifests/$i.yaml"
+      else
+        # remove --emulation-forward-compatible=true
+        docker exec $n sed -e '/- --emulation-forward-compatible=true/d' -i /etc/kubernetes/manifests/$i.yaml
+      fi
       docker exec $n sed -e '/image:.*-amd64:/!s|\(image:.*\):.*|\1-amd64:'"${DOCKER_TAG}"'|' -i /etc/kubernetes/manifests/$i.yaml
       echo "Updated component $i on node $n"
       sleep 1
@@ -107,7 +115,7 @@ IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
 KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
-  update_control_plane
+  update_control_plane "true"
 fi
 
 if [[ "$UPDATE_KUBELET" == "true" ]]; then

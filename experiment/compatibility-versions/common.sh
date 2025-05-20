@@ -155,12 +155,6 @@ create_cluster() {
     ;;
   esac
 
-  # Conditionally include the emulation-forward-compatible flag based on version
-  emulation_forward_compatible=""
-  if version_gte "${PREV_VERSION}" "1.33"; then
-    emulation_forward_compatible="      \"emulation-forward-compatible\": \"true\""
-  fi
-
   # create the config file
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 # config for 1 control plane node and 2 workers (necessary for conformance)
@@ -186,8 +180,7 @@ kubeadmConfigPatches:
   apiServer:
     extraArgs:
 ${apiServer_extra_args}
-      "emulated-version": "${EMULATED_VERSION}"${emulation_forward_compatible:+
-$emulation_forward_compatible}
+      "emulated-version": "${EMULATED_VERSION}"
   controllerManager:
     extraArgs:
 ${controllerManager_extra_args}
