@@ -111,7 +111,39 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Update Go module dependencies and report on changes.')
     parser.add_argument('--skip', nargs='+', default=["github.com/libopenstorage/openstorage"],
                         help='List of packages to skip updating (default: github.com/libopenstorage/openstorage)')
+    parser.add_argument('--patch-output', type=str,
+                        help='Path to save the output from git patch for go.mod/sum')
+    parser.add_argument('--markdown-output', type=str,
+                        help='Path to save the markdown table of dependency differences')
     return parser.parse_args()
+
+
+def print_markdown_diff(before, after):
+    markdown_lines = []
+    markdown_lines.append("Package      | Current       | Latest        | URL")
+    markdown_lines.append("------------ | ------------- | ------------- |------------- ")
+
+    for pkg in sorted(before.keys()):
+        if pkg.startswith("k8s.io"):
+            continue
+        old = sanitize(before[pkg])
+        if pkg not in after:
+            line = "~%s~ | %s | Dropped | NONE" % (pkg, old)
+            markdown_lines.append(line)
+            print(line)
+            continue
+        new = sanitize(after[pkg])
+        repo, oldtag, newtag = source(pkg, old, new)
+        if old != new:
+            line = "%s | %s | %s | https://%s/compare/%s...%s " % (pkg, old, new, repo, oldtag, newtag)
+            markdown_lines.append(line)
+            print(line)
+        else:
+            line = "~%s~ | %s | %s | No changes" % (pkg, old, new)
+            markdown_lines.append(line)
+            print(line)
+
+    return markdown_lines
 
 
 def main():
@@ -143,25 +175,21 @@ go get -u %s""" % pkg
     print(">>>> Packages that got dropped %r" % (list(set(before.keys()) - set(after.keys()))))
     print(">>>> Packages that were added  %r" % (list(set(after.keys()) - set(before.keys()))))
 
+    os.system("git add . && git commit -m 'gomod_staleness.py: update go.mod'")
     print(">>>>> Patch of differences <<<<")
-    os.system("git add . && git commit -m 'gomod_staleness.py: update go.mod' && git --no-pager format-patch -1 HEAD --stdout")
+    patch_output = subprocess.check_output("git --no-pager format-patch -1 HEAD --stdout", shell=True).decode('utf-8')
+    print(patch_output)
+    if args.patch_output:
+        with open(args.patch_output, 'w') as f:
+            f.write(patch_output)
+        print(f"Patch output saved to {args.patch_output}")
 
     print(">>>>> Mark down of differences <<<<")
-    print("Package      | Current       | Latest        | URL")
-    print("------------ | ------------- | ------------- |------------- ")
-    for pkg in sorted(before.keys()):
-        if pkg.startswith("k8s.io"):
-            continue
-        old = sanitize(before[pkg])
-        if pkg not in after:
-            print("~%s~ | %s | Dropped | NONE" % (pkg, old))
-            continue
-        new = sanitize(after[pkg])
-        repo, oldtag, newtag = source(pkg, old, new)
-        if old != new:
-            print("%s | %s | %s | https://%s/compare/%s...%s " % (pkg, old, new, repo, oldtag, newtag))
-        else:
-            print("~%s~ | %s | %s | No changes" % (pkg, old, new))
+    markdown_lines = print_markdown_diff(before, after)
+    if args.markdown_output:
+        with open(args.markdown_output, 'w') as f:
+            f.write('\n'.join(markdown_lines))
+        print(f"Markdown output saved to {args.markdown_output}")
 
 
 if __name__ == "__main__":
