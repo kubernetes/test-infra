@@ -38,5 +38,5 @@ periodics:
             memory: 4Gi
     annotations:
       testgrid-create-test-group: "true"
-      testgrid-dashboards: sig-testing-misc
+      testgrid-dashboards: sig-arch-code-organization
       description: Generates dependency statistics by running depstat for base periodically

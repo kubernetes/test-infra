@@ -528,54 +528,6 @@ periodics:
 
 - interval: 4h
   cluster: k8s-infra-prow-build
-  name: ci-kubernetes-e2e-kind-dependencies
-  annotations:
-    testgrid-dashboards: sig-testing-kind
-    testgrid-tab-name: kind-master-dependencies
-    description: Runs tests after updating dependencies to latest versions
-    testgrid-alert-email: davanum@gmail.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250513-98d205aae3-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      - ./../test-infra/experiment/dependencies/update-dependencies-and-run-kind-e2e.sh
-      env:
-      - name: LABEL_FILTER
-        value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
-      - name: PARALLEL
-        value: "true"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 7
-          memory: 9000Mi
-        requests:
-          cpu: 7
-          memory: 9000Mi
-
-- interval: 4h
-  cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
     testgrid-dashboards: sig-release-master-informing, sig-testing-kind
