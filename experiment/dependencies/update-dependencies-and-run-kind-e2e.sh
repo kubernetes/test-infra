@@ -37,8 +37,14 @@ apt update && apt -y install jq
 # grab the stats before we start
 depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-before.txt"
 
-# Update each dependency to the latest version
-./../test-infra/experiment/dependencies/gomod_staleness.py --patch-output "${WORKDIR}"/latest-go-mod-sum.patch --markdown-output "${WORKDIR}"/differences.md
+# get the list of packages to skip from unwanted-dependencies.json
+SKIP_PACKAGES=$(jq -r '.spec.pinnedModules | to_entries[] | .key' hack/unwanted-dependencies.json)
+
+# update each dependency to the latest version, skipping the packages above
+./../test-infra/experiment/dependencies/gomod_staleness.py \
+  --skip ${SKIP_PACKAGES} \
+  --patch-output "${WORKDIR}"/latest-go-mod-sum.patch \
+  --markdown-output "${WORKDIR}"/differences.md
 mdtohtml "${WORKDIR}"/differences.md "${WORKDIR}"/differences.html
 
 # See if update-vendor still works

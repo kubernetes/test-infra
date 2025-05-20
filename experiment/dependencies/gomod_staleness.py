@@ -71,6 +71,10 @@ def source(pkg, old, new):
         return "github.com/golang" + pkg[len("golang.org/x"):], old, new
     elif pkg.startswith("go.uber.org/"):
         return "github.com/uber-go" + pkg[len("go.uber.org"):], old, new
+    elif pkg.startswith("sigs.k8s.io/"):
+        return "github.com/kubernetes-sigs" + pkg[len("sigs.k8s.io"):], old, new
+    elif pkg.startswith("cel.dev/"):
+        return "github.com/google/cel-spec", old, new
     elif pkg.startswith("go.starlark.net"):
         return "github.com/google/starlark-go", old, new
     elif pkg.startswith("gopkg.in"):
