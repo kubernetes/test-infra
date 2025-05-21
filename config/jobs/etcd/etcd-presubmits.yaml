@@ -600,8 +600,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: true
     branches:
-      # TODO: Uncomment this once main is prepared for 3.7 development
-      # - main
+      - main
       - release-3.6
       - release-3.4
     decorate: true
