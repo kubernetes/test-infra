@@ -57,8 +57,8 @@ diff -s -u --ignore-all-space "${WORKDIR}"/stats-before.txt "${WORKDIR}"/stats-a
 # Do not worry if this fails, it is bound to fail
 hack/lint-dependencies.sh || true
 
-# Do not worry if this fails, it is bound to fail
-hack/verify-typecheck.sh || true
+# ensure that all our code will compile
+hack/verify-typecheck.sh
 
 # run kind based tests
-e2e-k8s.sh || true
+e2e-k8s.sh
