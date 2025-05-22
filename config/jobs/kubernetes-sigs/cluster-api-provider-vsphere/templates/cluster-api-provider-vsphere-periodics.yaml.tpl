@@ -45,7 +45,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
@@ -154,7 +154,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
@@ -204,7 +204,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true

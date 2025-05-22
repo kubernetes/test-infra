@@ -20,7 +20,7 @@ periodics:
       slug: cluster-api-provider-vsphere-maintainers
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs
