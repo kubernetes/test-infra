@@ -115,7 +115,7 @@ presubmits:
       description: Run storage long running tests for alpha/beta features in a KIND cluster.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250422-9d0e6fd518-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250513-98d205aae3-master
         command:
         - wrapper.sh
         - bash
