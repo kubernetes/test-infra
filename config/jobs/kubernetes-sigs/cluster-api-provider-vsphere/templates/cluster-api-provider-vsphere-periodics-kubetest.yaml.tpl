@@ -5,7 +5,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-alpha-features
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   interval: 168h # one week
   decorate: true
@@ -61,7 +61,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-serial
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   interval: 168h # one week
   decorate: true
@@ -117,7 +117,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-slow
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   interval: 168h # one week
   decorate: true
@@ -173,7 +173,7 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   interval: 168h # one week
   decorate: true

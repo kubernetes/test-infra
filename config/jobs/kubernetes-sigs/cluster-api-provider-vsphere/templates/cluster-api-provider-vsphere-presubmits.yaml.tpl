@@ -103,7 +103,7 @@ presubmits:
     - ^{{ $.branch }}$
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-gcve-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
@@ -149,7 +149,7 @@ presubmits:
     - ^{{ $.branch }}$
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-gcve-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
@@ -245,7 +245,7 @@ presubmits:
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-gcve-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
     decoration_config:
@@ -294,7 +294,7 @@ presubmits:
     - ^{{ $.branch }}$
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-gcve-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
@@ -338,7 +338,7 @@ presubmits:
     - ^{{ $.branch }}$
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-gcve-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
     decorate: true
