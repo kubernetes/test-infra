@@ -37,6 +37,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs unit tests
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -138,6 +139,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-conformance-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -188,6 +190,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
 - name: periodic-cluster-api-provider-vsphere-e2e-govmomi-conformance-ci-latest-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -238,6 +241,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests with K8S ci latest for CAPV
 - name: periodic-cluster-api-provider-vsphere-e2e-supervisor-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -341,6 +345,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 - name: periodic-cluster-api-provider-vsphere-e2e-supervisor-conformance-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -391,6 +396,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
 - name: periodic-cluster-api-provider-vsphere-e2e-supervisor-conformance-ci-latest-main
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -497,9 +503,10 @@ periodics:
     description: Shows test coverage for CAPV
 
 - name: periodic-cluster-api-provider-vsphere-janitor
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-janitor-config: "true"
+    preset-gcve-e2e-config: "true"
   interval: 12h
   decorate: true
   decoration_config:
