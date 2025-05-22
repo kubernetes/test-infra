@@ -7,20 +7,20 @@ presets:
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
-        name: cluster-api-provider-vsphere-ci
-        key: k8s-gcp-gcve-ci-url
+        name: k8s-gcp-gcve-credentials
+        key: url
   - name: GOVC_USERNAME
     valueFrom:
       secretKeyRef:
-        name: cluster-api-provider-vsphere-ci
-        key: k8s-gcp-gcve-ci-username
+        name: k8s-gcp-gcve-credentials
+        key: username
   - name: GOVC_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: cluster-api-provider-vsphere-ci
-        key: k8s-gcp-gcve-ci-password
+        name: k8s-gcp-gcve-credentials
+        key: password
   - name: VSPHERE_TLS_THUMBPRINT
     valueFrom:
       secretKeyRef:
-        name: cluster-api-provider-vsphere-ci
-        key: k8s-gcp-gcve-ci-thumbprint
+        name: k8s-gcp-gcve-credentials
+        key: thumbprint
