@@ -3,6 +3,7 @@ periodics:
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L713
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-alpha-features
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -59,6 +60,7 @@ periodics:
 
 # original jobs: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L857
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-serial
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -115,6 +117,7 @@ periodics:
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L896
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk-slow
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
@@ -171,6 +174,7 @@ periodics:
 
 # original job: https://github.com/kubernetes/test-infra/blob/92927d1abec1c3c78e396356e1bbaf19f9e2b699/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L581
 - name: periodic-cluster-api-provider-vsphere-e2e-exp-kk
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"

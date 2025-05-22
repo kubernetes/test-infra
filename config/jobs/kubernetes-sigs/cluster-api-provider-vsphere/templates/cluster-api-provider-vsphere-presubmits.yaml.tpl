@@ -99,6 +99,7 @@ presubmits:
 {{ $modeFocus := "" -}}
 {{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-blocking-{{ ReplaceAll $.branch "." "-" }}
+    cluster: k8s-infra-prow-build
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -145,6 +146,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-{{ $mode }}-blocking-{{ ReplaceAll $.branch "." "-" }}
       description: Runs only PR Blocking e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
+    cluster: k8s-infra-prow-build
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -243,6 +245,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
       description: Runs e2e tests with vcsim / govmomi mode
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-gcve-e2e-config: "true"
@@ -290,6 +293,7 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
+    cluster: k8s-infra-prow-build
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -334,6 +338,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
       description: Runs conformance tests for CAPV
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+    cluster: k8s-infra-prow-build
     branches:
     - ^{{ $.branch }}$
     labels:
@@ -380,9 +385,10 @@ presubmits:
 {{ end -}}
 {{- if eq $.branch "main" }}
   - name: pull-cluster-api-provider-vsphere-janitor-main
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-janitor-config: "true"
+      preset-gcve-e2e-config: "true"
     always_run: false
     optional: true
     decorate: true
