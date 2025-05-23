@@ -55,7 +55,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
