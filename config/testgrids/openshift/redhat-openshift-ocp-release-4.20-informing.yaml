@@ -3124,14 +3124,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6
+    name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6-conformance
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6-conformance
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6499,6 +6499,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-techpreview
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-techpreview
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -7471,33 +7498,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm-single-node
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm-single-node
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-single-node-recert-cluster-rename
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -8209,8 +8209,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-compact-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-ha-dualstack-conformance
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-ha-dualstack-conformance
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6
-  name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6-conformance
+  name: periodic-ci-openshift-release-master-nightly-4.20-e2e-agent-single-node-ipv6-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-alibaba-ovn
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-alibaba-ovn
 - days_of_results: 60
@@ -8509,6 +8509,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-sno-cert-rotation-suspend-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-techpreview
+  name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-techpreview
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-arbiter-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-metal-ovn-two-node-fencing
@@ -8596,8 +8598,6 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-static-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm
   name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm-single-node
-  name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm-single-node
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-single-node-recert-cluster-rename
   name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-single-node-recert-cluster-rename
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-opct-external-aws-ccm
