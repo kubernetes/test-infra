@@ -197,6 +197,14 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
+      # use experimental new nodepool with C4 VM, cgroup v2
+      nodeSelector:
+        cloud.google.com/gke-nodepool: "pool6-20250327232037500200000001"
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "sig-testing"
+          effect: "NoSchedule"
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
