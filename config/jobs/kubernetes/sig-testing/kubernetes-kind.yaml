@@ -84,6 +84,9 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
+      # use experimental new nodepool with C4 VM, cgroup v2
+      nodeSelector:
+       cloud.google.com/gke-nodepool: "pool6-20250327232037500200000001"
       tolerations:
         - key: "dedicated"
           operator: "Equal"
@@ -104,7 +107,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -138,6 +140,14 @@ presubmits:
           requests:
             cpu: 4
             memory: 9Gi
+      # use experimental new nodepool with C4 VM, cgroup v2
+      nodeSelector:
+        cloud.google.com/gke-nodepool: "pool6-20250327232037500200000001"
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "sig-testing"
+          effect: "NoSchedule"
     annotations:
       fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
@@ -153,7 +163,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
