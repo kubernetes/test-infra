@@ -10,6 +10,7 @@ periodics:
 {{ end -}}
 {{- range $_, $upgrade := $.config.Upgrades }}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-upgrade-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
+  cluster: k8s-infra-prow-build
   cron: {{ $cron }}
   decorate: true
   decoration_config:
@@ -20,7 +21,7 @@ periodics:
       slug: cluster-api-provider-vsphere-maintainers
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes-sigs

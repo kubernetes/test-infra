@@ -43,9 +43,10 @@ periodics:
 {{ $cron := "'0 0 * * *'" -}}
 {{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
@@ -152,9 +153,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs all e2e tests
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
@@ -202,9 +204,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
     description: Runs conformance tests for CAPV
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
+    preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
   cron: {{ $cron }}
   decorate: true
@@ -309,9 +312,10 @@ periodics:
     description: Shows test coverage for CAPV
 
 - name: periodic-cluster-api-provider-vsphere-janitor
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-janitor-config: "true"
+    preset-gcve-e2e-config: "true"
   interval: 12h
   decorate: true
   decoration_config:
