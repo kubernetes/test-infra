@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale-amazonvpc
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -62,7 +62,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: amazonvpc
@@ -70,7 +70,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
     cluster: eks-prow-build-cluster
     branches:
@@ -173,7 +173,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: amazonvpc
@@ -181,7 +181,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc-using-cl2
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
     cluster: eks-prow-build-cluster
     branches:
@@ -278,7 +278,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: amazonvpc
@@ -286,7 +286,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
 
-# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+# {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: presubmit-kops-gce-scale-ipalias-using-cl2
     cluster: k8s-infra-prow-build
     branches:
@@ -381,7 +381,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -389,7 +389,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-gce-scale-ipalias-using-cl2
 
-# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+# {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: presubmit-kops-gce-small-scale-ipalias-using-cl2
     cluster: k8s-infra-prow-build
     branches:
@@ -478,7 +478,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce
@@ -486,7 +486,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-gce-small-scale-ipalias-using-cl2
 
-# {"cloud": "gce", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+# {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: presubmit-kops-gce-small-scale-kindnet-using-cl2
     cluster: k8s-infra-prow-build
     branches:
@@ -577,7 +577,7 @@ presubmits:
             memory: "16Gi"
     annotations:
       test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: u2204
+      test.kops.k8s.io/distro: u2404
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: gce

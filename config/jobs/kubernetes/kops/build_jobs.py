@@ -61,7 +61,7 @@ def marker_updown_green(kops_version):
 
 # Returns a string representing the periodic prow job and the number of job invocations per week
 def build_test(cloud='aws',
-               distro='u2204',
+               distro='u2404',
                networking='cilium',
                irsa=True,
                k8s_version='ci',
@@ -265,7 +265,7 @@ def build_test(cloud='aws',
 # Returns a string representing a presubmit prow job YAML
 def presubmit_test(branch='master',
                    cloud='aws',
-                   distro='u2204',
+                   distro='u2404',
                    networking='cilium',
                    irsa=True,
                    k8s_version='stable',
