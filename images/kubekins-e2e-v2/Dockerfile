@@ -66,7 +66,7 @@ ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud
 RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
-    if [ "${TARGETARCH}" != "ppc64le" ]; then \
+    if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
         /google-cloud-sdk/install.sh \
         --disable-installation-options \
         --bash-completion=false \
@@ -160,7 +160,7 @@ RUN wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_
 
 # install kind if a version is provided
 ARG KIND_VERSION
-RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ -n "${KIND_VERSION}" ]; then \
+RUN if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ] && [ -n "${KIND_VERSION}" ]; then \
     wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-${TARGETARCH} && \
     chmod +x /usr/local/bin/kind; \
     fi
