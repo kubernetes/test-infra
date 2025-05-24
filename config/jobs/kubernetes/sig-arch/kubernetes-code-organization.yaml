@@ -1,3 +1,54 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-kind-dependencies
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250513-98d205aae3-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-kind-e2e.sh
+        env:
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-tab-name: pull-kind-master-dependencies
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      fork-per-release: "true"
+
 periodics:
 - interval: 4h
   cluster: k8s-infra-prow-build
