@@ -1,0 +1,23 @@
+postsubmits:
+  kubernetes-sigs/blixt:
+    # Blixt Images
+    - name: post-blixt-images
+      annotations:
+        testgrid-dashboards: sig-network-blixt, sig-k8s-infra-gcb
+      branches:
+        - ^main$
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
+              - --with-git-dir
+              - .
