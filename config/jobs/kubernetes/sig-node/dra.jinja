@@ -17,6 +17,7 @@
 {%- endif %}
 {%- if file == "ci" and not all_features %}
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-release-master-informing" %}
+{%- set testgrid_alert_email = testgrid_alert_email + ", release-team@kubernetes.io" %}
 {%- endif %}
   - name: {{job_name}}
     cluster: {{cluster}}

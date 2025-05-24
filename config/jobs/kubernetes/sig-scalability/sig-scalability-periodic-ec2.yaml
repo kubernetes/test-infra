@@ -64,7 +64,7 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops, sig-scalability-aws, sig-release-master-informing, amazon-ec2-release
     testgrid-tab-name: ec2-master-scale-performance
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master
