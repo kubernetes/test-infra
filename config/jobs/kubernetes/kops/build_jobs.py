@@ -1459,7 +1459,7 @@ def generate_network_plugins():
         extra_flags = ['--node-size=t3.large']
         if plugin in ['kuberouter']:
             k8s_version = 'ci'
-        if plugin in ['cilium-eni', 'amazon-vpc']:
+        if plugin in ['cilium-eni']:
             distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         if plugin in ['amazon-vpc']:
             extra_flags += [
@@ -1859,7 +1859,7 @@ def generate_presubmits_network_plugins():
         if plugin == 'amazonvpc':
             master_size = "r6g.xlarge"
             node_size = "r6g.xlarge"
-        if plugin in ['amazonvpc', 'cilium-eni']:
+        if plugin in ['cilium-eni']:
             distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         results.append(
             presubmit_test(
