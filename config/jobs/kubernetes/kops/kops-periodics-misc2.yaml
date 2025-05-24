@@ -2,7 +2,7 @@
 # 52 jobs, total of 1449 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.29", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.29", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-scenario-gcr-mirror
   cron: '11 0-23/1 * * *'
   labels:
@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250516' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250516' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -56,17 +56,17 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.29'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-1.29, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-1.29, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-scenario-gcr-mirror
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-eks-pod-identity
   cluster: k8s-infra-kops-prow-build
   cron: '13 3-23/8 * * *'
@@ -129,12 +129,12 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, sig-k8s-infra-canaries
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, sig-k8s-infra-canaries
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-eks-pod-identity
 
@@ -204,7 +204,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium-k8s-ci
 
-# {"cloud": "gce", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-gce-cni-cilium-k8s-ci
   cron: '22 12-23/24 * * *'
   labels:
@@ -260,13 +260,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: gce
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-gce, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-gce, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-cni-cilium-k8s-ci
 
@@ -1373,7 +1373,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-amd64-conformance
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-aws-load-balancer-controller
   cluster: k8s-infra-kops-prow-build
   cron: '37 5-23/8 * * *'
@@ -1426,16 +1426,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-load-balancer-controller
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-keypair-rotation-ha
   cluster: k8s-infra-kops-prow-build
   cron: '26 12-23/24 * * *'
@@ -1490,16 +1490,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-keypair-rotation-ha
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-metrics-server
   cluster: k8s-infra-kops-prow-build
   cron: '42 2-23/8 * * *'
@@ -1552,16 +1552,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-metrics-server
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-pod-identity-webhook
   cluster: k8s-infra-kops-prow-build
   cron: '50 6-23/8 * * *'
@@ -1614,16 +1614,16 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-pod-identity-webhook
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-addon-resource-tracking
   cluster: k8s-infra-kops-prow-build
   cron: '43 4-23/8 * * *'
@@ -1676,12 +1676,12 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-addon-resource-tracking
 
@@ -2220,7 +2220,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-selinux-alpha
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=spec.kubeAPIServer.runtimeConfig=api/all=true --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--set=spec.kubeAPIServer.runtimeConfig=api/all=true --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-sig-network-beta
   cron: '56 2-23/8 * * *'
   labels:
@@ -2250,7 +2250,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250516' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.runtimeConfig=api/all=true --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250516' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.runtimeConfig=api/all=true --discovery-store=s3://k8s-kops-prow/discovery" \
           --kubernetes-feature-gates=AllBeta \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2279,13 +2279,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/extra_flags: --set=spec.kubeAPIServer.runtimeConfig=api/all=true --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-sig-network-beta
 
