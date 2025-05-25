@@ -954,6 +954,36 @@ presubmits:
       nodeSelector:
         kubernetes.io/arch: arm64
 
+  - name: pull-etcd-functional-amd64
+    cluster: k8s-infra-prow-build
+    always_run: true
+    branches:
+      - release-3.4
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-functional-amd64
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250513-98d205aae3-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            apt-get update && apt-get install -y netcat-openbsd
+            GOARCH=amd64 make test-functional
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+
   - name: pull-etcd-coverage-report
     cluster: eks-prow-build-cluster
     always_run: true
