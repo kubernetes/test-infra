@@ -9,7 +9,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -37,6 +36,13 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
+      nodeSelector:
+        cloud.google.com/machine-family: c4
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "sig-testing"
+          effect: "NoSchedule"
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -85,7 +91,7 @@ presubmits:
             memory: 9000Mi
       # use experimental new nodepool with C4 VM, cgroup v2
       nodeSelector:
-       cloud.google.com/gke-nodepool: "pool6-20250327232037500200000001"
+       cloud.google.com/machine-family: c4
       tolerations:
         - key: "dedicated"
           operator: "Equal"
@@ -141,7 +147,7 @@ presubmits:
             memory: 9000Mi
       # use experimental new nodepool with C4 VM, cgroup v2
       nodeSelector:
-        cloud.google.com/gke-nodepool: "pool6-20250327232037500200000001"
+        cloud.google.com/machine-family: c4
       tolerations:
         - key: "dedicated"
           operator: "Equal"
@@ -198,7 +204,7 @@ presubmits:
             memory: 9000Mi
       # use experimental new nodepool with C4 VM, cgroup v2
       nodeSelector:
-        cloud.google.com/gke-nodepool: "pool6-20250327232037500200000001"
+        cloud.google.com/machine-family: c4
       tolerations:
         - key: "dedicated"
           operator: "Equal"
@@ -499,7 +505,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -541,6 +546,13 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+    nodeSelector:
+      cloud.google.com/machine-family: c4
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
 
 - interval: 4h
   cluster: k8s-infra-prow-build
@@ -553,7 +565,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -591,6 +602,13 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+    nodeSelector:
+      cloud.google.com/machine-family: c4
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
 
 - interval: 4h
   cluster: k8s-infra-prow-build
@@ -603,7 +621,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -645,6 +662,13 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+    nodeSelector:
+      cloud.google.com/machine-family: c4
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
 - interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-rootless
