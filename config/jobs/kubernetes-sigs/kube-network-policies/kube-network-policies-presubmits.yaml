@@ -6,7 +6,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     always_run: true
     optional: false
     decorate: true
@@ -52,7 +51,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     always_run: true
     optional: false
     decorate: true

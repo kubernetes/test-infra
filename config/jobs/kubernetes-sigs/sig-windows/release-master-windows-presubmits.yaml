@@ -380,7 +380,6 @@ presubmits:
       - master
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-azure-community: "true"
@@ -433,7 +432,6 @@ presubmits:
       - master
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-azure-community: "true"

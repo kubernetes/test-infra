@@ -36,7 +36,6 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-etcd-operator-presubmits
       testgrid-tab-name: pull-etcd-operator-test-e2e

@@ -134,7 +134,6 @@ periodics:
   interval: 24h
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   name: ci-kubernetes-kind-e2e-json-logging-1-30
   spec:
     containers:
@@ -506,7 +505,6 @@ periodics:
   interval: 24h
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   name: ci-kubernetes-kind-e2e-parallel-1-30
   spec:
     containers:
@@ -551,7 +549,6 @@ periodics:
   interval: 24h
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   name: ci-kubernetes-kind-ipv6-e2e-parallel-1-30
   spec:
     containers:
@@ -1750,7 +1747,6 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-service-account: "true"
     max_concurrency: 8
     name: pull-kubernetes-conformance-kind-ipv6-parallel
@@ -1891,7 +1887,6 @@ presubmits:
       timeout: 1h0m0s
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     name: pull-kubernetes-e2e-kind
     path_alias: k8s.io/kubernetes
     spec:
@@ -1930,7 +1925,6 @@ presubmits:
       timeout: 1h0m0s
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     name: pull-kubernetes-e2e-kind-ipv6
     path_alias: k8s.io/kubernetes
     spec:
@@ -1973,7 +1967,6 @@ presubmits:
       timeout: 1h0m0s
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     name: pull-kubernetes-conformance-kind-ga-only-parallel
     path_alias: k8s.io/kubernetes
     spec:

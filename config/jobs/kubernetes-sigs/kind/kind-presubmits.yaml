@@ -80,7 +80,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
     decorate: true
@@ -124,7 +123,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: false
     decorate: true
@@ -173,7 +171,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -219,7 +216,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -261,7 +257,6 @@ presubmits:
     optional: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -303,7 +298,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -349,7 +343,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -395,7 +388,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -441,7 +433,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -487,7 +478,6 @@ presubmits:
     optional: false
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -542,7 +532,6 @@ presubmits:
       path_alias: k8s.io/kubernetes
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: sigs.k8s.io/kind
     spec:
       containers:

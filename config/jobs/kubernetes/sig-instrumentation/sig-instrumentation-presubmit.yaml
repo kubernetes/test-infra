@@ -18,7 +18,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -82,7 +81,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: k8s.io/kubernetes
     spec:
       containers:

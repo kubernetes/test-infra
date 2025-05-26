@@ -20,8 +20,6 @@ presubmits:
     labels:
       # this is required because we want to run kind in docker
       preset-dind-enabled: "true"
-      # this is required to make CNI installation to succeed for kind
-      preset-kind-volume-mounts: "true"
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-auth-encryption-at-rest
