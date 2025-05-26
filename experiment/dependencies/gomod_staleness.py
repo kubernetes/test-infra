@@ -172,6 +172,14 @@ go get -u %s""" % pkg
         print(">>>> Running command %r" % update_command)
         os.system(update_command)
 
+    print(">>>> Ensuring Packages that will be skipped are at their previous versions" % args.skip)
+    for pkg in args.skip:
+        if pkg in before.keys():
+            update_command = """\
+    go get %s@%s""" % (pkg, before[pkg])
+            print(">>>> Running command %r" % update_command)
+            os.system(update_command)
+
     print(">>>> parsing go.mod after updates")
     after = get_dependencies()
     print("Found %d packages after updating dependencies" % len(before.values()))
