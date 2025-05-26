@@ -8,7 +8,6 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -67,7 +66,6 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-kind
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -120,7 +118,6 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -172,7 +169,6 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -224,7 +220,6 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -273,7 +268,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 200m
@@ -318,7 +312,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 200m
@@ -369,7 +362,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -424,7 +416,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -474,7 +465,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -522,7 +512,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -576,7 +565,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -633,7 +621,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -679,7 +666,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -731,7 +717,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -778,7 +763,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -830,7 +814,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -881,7 +864,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -942,7 +924,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m

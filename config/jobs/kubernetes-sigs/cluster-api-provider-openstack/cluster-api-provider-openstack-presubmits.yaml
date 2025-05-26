@@ -52,7 +52,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     skip_if_only_changed: '^(docs/|LICENSE|netlify.toml|OWNERS|OWNERS_ALIASES|SECURITY_CONTACTS|tilt-provider.json|.github/|.gitignore|.golangci.yml)|\\.md$'
     optional: false
@@ -96,7 +95,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     always_run: false
     optional: true
@@ -143,7 +141,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
     always_run: false
     optional: true

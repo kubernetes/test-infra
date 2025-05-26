@@ -82,7 +82,6 @@ presubmits:
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-do-credential: "true"
     branches:
     - ^main$
@@ -115,7 +114,6 @@ presubmits:
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-do-credential: "true"
     branches:
     - ^main$
@@ -145,7 +143,6 @@ presubmits:
   - name: pull-cluster-api-provider-digitalocean-e2e-workload-upgrade
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-do-credential: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
@@ -189,7 +186,6 @@ presubmits:
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-do-credential: "true"
     branches:
     - ^main$
@@ -222,7 +218,6 @@ presubmits:
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-do-credential: "true"
     branches:
     - ^main$
@@ -258,7 +253,6 @@ presubmits:
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-do-credential: "true"
     branches:
     - ^main$

@@ -9,7 +9,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     always_run: true
     optional: true
     decorate: true
@@ -59,7 +58,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     always_run: true
     optional: true
     decorate: true
@@ -116,7 +114,6 @@ presubmits:
     optional: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decorate: true
     extra_refs:
     - org: kubernetes

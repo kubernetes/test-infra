@@ -9,7 +9,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -218,7 +217,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 2h20m # allow plenty of time for a serial conformance run
       grace_period: 15m
@@ -258,7 +256,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -307,7 +304,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -357,7 +353,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -406,7 +401,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -451,7 +445,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -499,7 +492,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -553,7 +545,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -603,7 +594,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -720,7 +710,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m

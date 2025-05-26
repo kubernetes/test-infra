@@ -68,7 +68,6 @@ presubmits:
     - ^release-.*$
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250513-98d205aae3-master

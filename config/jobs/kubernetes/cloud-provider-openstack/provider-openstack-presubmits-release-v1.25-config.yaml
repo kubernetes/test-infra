@@ -32,7 +32,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
@@ -69,7 +68,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
@@ -106,7 +104,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
