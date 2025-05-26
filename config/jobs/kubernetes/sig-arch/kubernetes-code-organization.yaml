@@ -9,7 +9,6 @@ presubmits:
     - release-\d+\.\d+ # per-release settings
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
       grace_period: 15m
@@ -42,6 +41,13 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
+      nodeSelector:
+        cloud.google.com/machine-family: c4
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "sig-testing"
+          effect: "NoSchedule"
     annotations:
       testgrid-dashboards: sig-arch-code-organization
       testgrid-tab-name: pull-kind-master-dependencies
@@ -61,7 +67,6 @@ periodics:
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
     timeout: 60m
@@ -97,3 +102,10 @@ periodics:
         requests:
           cpu: 7
           memory: 9000Mi
+    nodeSelector:
+      cloud.google.com/machine-family: c4
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sig-testing"
+        effect: "NoSchedule"
