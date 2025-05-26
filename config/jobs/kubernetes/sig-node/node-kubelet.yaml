@@ -51,7 +51,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking, sig-node-containerd
     testgrid-tab-name: ci-node-e2e
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com, release-team@kubernetes.io
     description: "Uses kubetest to run node-e2e tests (+NodeConformance, -Flaky|Slow|Serial)"
 
 - name: ci-kubernetes-node-kubelet-serial-containerd

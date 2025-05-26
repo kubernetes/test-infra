@@ -1072,7 +1072,7 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking, google-gce
     testgrid-tab-name: gce-cos-master-reboot
     description: Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against a cluster created with cluster/kube-up.sh
-    testgrid-alert-email: gke-node-experience-team+alerts@google.com
+    testgrid-alert-email: gke-node-experience-team+alerts@google.com, release-team@kubernetes.io
     testgrid-num-failures-to-alert: '6'
 
 - interval: 30m

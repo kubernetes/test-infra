@@ -209,7 +209,7 @@ periodics:
     fork-per-release-replacements: "--extract=ci/fast/latest-fast -> --extract=ci/latest-{{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce
     testgrid-tab-name: gce-cos-master-scalability-100
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
     testgrid-num-failures-to-alert: '2'
   spec:
