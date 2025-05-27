@@ -48,13 +48,7 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
-    nodeSelector:
-      cloud.google.com/machine-family: c4
-    tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "sig-testing"
-        effect: "NoSchedule"
+
 - interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-kind-ipv6-e2e-parallel
@@ -111,10 +105,3 @@ periodics:
           memory: 9Gi
           # during the tests more like 3-20m is used
           cpu: 7
-    nodeSelector:
-      cloud.google.com/machine-family: c4
-    tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "sig-testing"
-        effect: "NoSchedule"

@@ -41,13 +41,6 @@ presubmits:
           requests:
             cpu: 7
             memory: 9000Mi
-      nodeSelector:
-        cloud.google.com/machine-family: c4
-      tolerations:
-        - key: "dedicated"
-          operator: "Equal"
-          value: "sig-testing"
-          effect: "NoSchedule"
     annotations:
       testgrid-dashboards: sig-arch-code-organization
       testgrid-tab-name: pull-kind-master-dependencies
@@ -102,10 +95,3 @@ periodics:
         requests:
           cpu: 7
           memory: 9000Mi
-    nodeSelector:
-      cloud.google.com/machine-family: c4
-    tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "sig-testing"
-        effect: "NoSchedule"
