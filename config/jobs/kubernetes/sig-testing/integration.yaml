@@ -72,11 +72,6 @@ presubmits:
           requests:
             cpu: 8
             memory: 20Gi
-      tolerations:
-        - key: "dedicated"
-          operator: "Equal"
-          value: "sig-testing"
-          effect: "NoSchedule"
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
@@ -145,11 +140,6 @@ presubmits:
           requests:
             cpu: 6
             memory: 15Gi
-      tolerations:
-        - key: "dedicated"
-          operator: "Equal"
-          value: "sig-testing"
-          effect: "NoSchedule"
 periodics:
 - interval: 1h
   cluster: eks-prow-build-cluster

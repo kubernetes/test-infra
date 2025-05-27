@@ -28,11 +28,6 @@ periodics:
         requests:
           cpu: 2
           memory: 4Gi
-    tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "sig-testing"
-        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: prow
@@ -78,11 +73,6 @@ periodics:
         requests:
           cpu: 2
           memory: 4Gi
-    tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "sig-testing"
-        effect: "NoSchedule"
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: node
