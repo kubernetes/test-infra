@@ -38,6 +38,10 @@ postsubmits:
 
   kubernetes-sigs/cluster-api-provider-vsphere:
     - name: post-cluster-api-provider-vsphere-push-images
+      rerun_auth_config:
+        github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-vsphere-maintainers
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
@@ -415,7 +419,7 @@ periodics:
         slug: cluster-api-maintainers
     cluster: k8s-infra-prow-build-trusted
     decorate: true
-    cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
+    cron: '0 4 * * *' # everyday at 20:00 PT (4:00 UTC)
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api
@@ -450,9 +454,13 @@ periodics:
       testgrid-num-failures-to-alert: "1"
 
   - name: cluster-api-provider-vsphere-push-images-nightly
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-vsphere-maintainers
     cluster: k8s-infra-prow-build-trusted
     decorate: true
-    cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
+    cron: '0 4 * * *' # everyday at 20:00 PT (4:00 UTC)
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-vsphere
