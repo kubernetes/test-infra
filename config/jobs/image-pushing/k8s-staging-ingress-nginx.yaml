@@ -5,6 +5,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       branches:
+        - ^main$
         - ^release-.+$
       run_if_changed: ^TAG$
       cluster: k8s-infra-prow-build-trusted
