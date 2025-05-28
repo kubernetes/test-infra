@@ -23,6 +23,9 @@
 
 set -o errexit -o nounset -o xtrace
 
+CLUSTER_NAME=${CLUSTER_NAME:-kind}
+CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
+
 # Settings:
 # SKIP: ginkgo skip regex
 # FOCUS: ginkgo focus regex
@@ -326,6 +329,64 @@ upgrade_cluster_components() {
 
   if ! "$success"; then
     echo "Upgrade failed after $RETRY_ATTEMPTS attempts."
+    return 1
+  fi
+  return 0
+}
+
+set_emulation_version() {
+  CONTROL_PLANE_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep control)
+  local version=$1
+  for n in $CONTROL_PLANE_NODES; do
+    for i in $CONTROL_PLANE_COMPONENTS; do
+      docker exec $n sed -e 's/emulated-version=.*/emulated-version='"${version}"'/' -i /etc/kubernetes/manifests/$i.yaml
+      echo "Updated emulated version for component $i on node $n to $version"
+      ret=0
+      wait_for_container_running $n $i || ret=$?
+      if [[ "$ret" -ne 0 ]]; then
+        return $ret;
+      fi
+    done
+  done
+  return 0
+}
+
+delete_emulation_version() {
+  CONTROL_PLANE_NODES=$(kind get nodes --name ${CLUSTER_NAME} | grep control)
+  for n in $CONTROL_PLANE_NODES; do
+    for i in $CONTROL_PLANE_COMPONENTS; do
+      docker exec $n sed -e '/emulated-version=/d' -i /etc/kubernetes/manifests/$i.yaml
+      docker exec $n sed -e '/emulation-forward-compatible=/d' -i /etc/kubernetes/manifests/$i.yaml
+      echo "Deleted emulated version for component $i on node $n"
+      ret=0
+      wait_for_container_running $n $i || ret=$?
+      if [[ "$ret" -ne 0 ]]; then
+        return $ret;
+      fi
+    done
+  done
+  return 0
+}
+
+wait_for_container_running() {
+  local node=$1
+  local name=$2
+
+  local attempt=1
+  local success=false
+  echo "Waiting for $name to become ready"
+  while [ "$attempt" -le $RETRY_ATTEMPTS ]; do
+    local container_id=$(docker exec $node crictl ps --output json | jq -r --arg NAME "$name" '.containers[] | select(.metadata.name == $NAME) | .id')
+    if docker exec $node crictl ps --id $container_id | grep -q Running; then
+      echo "Container $name is ready"
+      success=true
+      break
+    fi
+    attempt=$((attempt + 1))
+    sleep 15
+  done
+  if ! "$success"; then
+    echo "Container wait failed after $RETRY_ATTEMPTS attempts."
     return 1
   fi
   return 0
