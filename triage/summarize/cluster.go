@@ -305,24 +305,31 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 				klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m+1, numClusters, fTextLen, numTests)
 				localNumFailures += numTests
 
-				mu.Lock()
-				// If a cluster exists for the given cluster text
-				if _, ok := clusters[key]; ok {
-					clusterCase = "EXISTING"
+				// Use an anonymous function with deferred unlock to ensure we always unlock the mutex
+				func() {
+					mu.Lock()
+					defer mu.Unlock()
 
-					// If there isn't yet a slice of failures for that test, make a new one
-					if _, ok := clusters[key][testName]; !ok {
-						clusters[key][testName] = make([]failure, 0, len(tests))
+					// If a cluster exists for the given cluster text
+					if _, ok := clusters[key]; ok {
+						clusterCase = "EXISTING"
+
+						// If there isn't yet a slice of failures for that test, make a new one
+						if _, ok := clusters[key][testName]; !ok {
+							clusters[key][testName] = make([]failure, 0, len(tests))
+						}
+
+						// Copy the contents into the test's failure slice
+						clusters[key][testName] = append(clusters[key][testName], tests...)
+						return
 					}
 
-					// Copy the contents into the test's failure slice
-					clusters[key][testName] = append(clusters[key][testName], tests...)
-					mu.Unlock()
-				} else if time.Since(testStart).Seconds() > 30 && fTextLen > truncatedClusterTextLength/2 && numTests == 1 {
-					// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
-					clusterCase = "BAILED"
-					mu.Unlock()
-				} else {
+					if time.Since(testStart).Seconds() > 30 && fTextLen > truncatedClusterTextLength/2 && numTests == 1 {
+						// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
+						clusterCase = "BAILED"
+						return
+					}
+
 					other, found := findMatch(key, clusters.keys())
 					if found {
 						clusterCase = "OTHER"
@@ -338,8 +345,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 						clusterCase = "NEW"
 						clusters[key] = failuresGroup{testName: tests}
 					}
-					mu.Unlock()
-				}
+				}()
 
 				clusterDuration := int(time.Since(clusterStart).Seconds())
 				klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
