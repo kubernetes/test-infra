@@ -982,11 +982,9 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-vsphere-upi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-vsphere-upi-serial
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-vsphere-upi-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le
+- gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le
   name: promote-release-openshift-machine-os-content-e2e-aws-4.6-ppc64le
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x
+- gcs_prefix: test-platform-results/logs/promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.6-s390x
 - gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.5-to-4.6-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.3-to-4.4-to-4.5-to-4.6-ci
