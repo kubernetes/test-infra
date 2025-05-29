@@ -29,6 +29,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
@@ -185,6 +186,7 @@ func findMatch(fnorm string, candidates []string) (result string, found bool) {
 	// Sort distancePairs by each pair's distResult
 	sort.Slice(distancePairs, func(i, j int) bool { return distancePairs[i].distResult < distancePairs[j].distResult })
 
+	testStart := time.Now()
 	for _, pair := range distancePairs {
 		// allow up to 10% differences
 		limit := int(float32(len(fnorm)+len(pair.key)) / 2.0 * 0.10)
@@ -201,6 +203,10 @@ func findMatch(fnorm string, candidates []string) (result string, found bool) {
 
 		if dist < limit {
 			return pair.key, true
+		}
+		if time.Since(testStart).Seconds() > 30 {
+			klog.Warningf("findMatch took too long, returning empty string. fnorm: %s, candidates: %v", fnorm, len(candidates))
+			return "", false
 		}
 	}
 	return "", false
