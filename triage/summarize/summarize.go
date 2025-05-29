@@ -111,7 +111,7 @@ func summarize(flags summarizeFlags) {
 
 	clusteredLocal := clusterLocal(failedTests, flags.numWorkers, flags.memoize, flags.maxClusterTextLength)
 
-	clustered := clusterGlobal(clusteredLocal, previousClustered, flags.memoize, flags.maxClusterTextLength)
+	clustered := clusterGlobal(clusteredLocal, flags.numWorkers, previousClustered, flags.memoize, flags.maxClusterTextLength)
 
 	klog.V(2).Infof("Rendering results...")
 	start := time.Now()
