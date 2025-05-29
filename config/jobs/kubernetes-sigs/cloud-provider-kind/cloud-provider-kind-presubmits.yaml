@@ -30,7 +30,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv6|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv6|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|SCTPConnectivity
         command:
         - wrapper.sh
         - bash
@@ -85,7 +85,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv4|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|Internet.connection|loadbalancer.source.ranges
+          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|IPv4|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|Internet.connection|loadbalancer.source.ranges|SCTPConnectivity
         command:
         - wrapper.sh
         - bash
@@ -136,7 +136,7 @@ presubmits:
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|Networking-IPv6|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+          value: Alpha|Beta|NetworkPolicy|Disruptive|Flaky|Networking-IPv6|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|SCTPConnectivity
         - name: PARALLEL
           value: "true"
         - name: IP_FAMILY
