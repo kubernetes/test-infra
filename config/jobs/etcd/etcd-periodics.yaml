@@ -1331,6 +1331,70 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: arm64
 
+- name: ci-etcd-integration-1-cpu-release34-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: release-3.4
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-amd64
+    testgrid-tab-name: ci-etcd-integration-1-cpu-release34-amd64
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        make gofail-enable
+        export JUNIT_REPORT_DIR=${ARTIFACTS}
+        GOOS=linux GOARCH=amd64 CPU=1 make test-integration
+      resources:
+        requests:
+          cpu: "2"
+          memory: "3Gi"
+        limits:
+          cpu: "2"
+          memory: "3Gi"
+
+- name: ci-etcd-integration-2-cpu-release34-amd64
+  cluster: eks-prow-build-cluster
+  interval: 24h
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: release-3.4
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+    testgrid-tab-name: ci-etcd-integration-2-cpu-release34-amd64
+  spec:
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            set -euo pipefail
+            make gofail-enable
+            export JUNIT_REPORT_DIR=${ARTIFACTS}
+            GOOS=linux GOARCH=amd64 CPU=2 make test-integration
+        resources:
+          requests:
+            cpu: "3"
+            memory: "3Gi"
+          limits:
+            cpu: "3"
+            memory: "3Gi"
+
 - name: ci-etcd-integration-4-cpu-release34-amd64
   cluster: eks-prow-build-cluster
   interval: 24h
