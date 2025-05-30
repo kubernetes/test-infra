@@ -624,36 +624,34 @@ presubmits:
               cpu: 4
               memory: 8Gi
           env:
-            - name: TEST_CCM # CAPZ config
+            - name: TEST_CCM  # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE # CAPZ config
-              value: "Standard_D2s_v3"
-            - name: DISABLE_ZONE # azuredisk-csi-driver config
+            - name: TEST_VMSS_FLEX  # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_VMSS_FLEX # azuredisk-csi-driver config
-              value: "true"
-            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+            - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
               value: "1"
-            - name: KUBERNETES_VERSION # CAPZ config
+            - name: KUBERNETES_VERSION  # CAPZ config
               value: "v1.30.2"
-            - name: ORCHESTRATION_MODE # CAPZ config
+            - name: ORCHESTRATION_MODE  # CAPZ config
               value: "Flexible"
-            - name: AZURE_LOADBALANCER_SKU # azuredisk-csi-driver config
+            - name: CLUSTER_TEMPLATE  # CAPZ config
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
+            - name: AZURE_LOADBALANCER_SKU  # azuredisk-csi-driver config
               value: "Standard"
-            - name: CLUSTER_PROVISIONING_TOOL # azuredisk-csi-driver config
+            - name: CLUSTER_PROVISIONING_TOOL  # azuredisk-csi-driver config
               value: "capz"
-            - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
-            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG  # CAPZ config
               value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
-            - name: ENABLE_VMSS_FLEX # azuredisk-csi-driver config
+            - name: ENABLE_VMSS_FLEX  # azuredisk-csi-driver config
               value: "true"
-            - name: ENABLE_MULTI_SLB # azuredisk-csi-driver config
+            - name: ENABLE_MULTI_SLB  # azuredisk-csi-driver config
               value: "false"
-            - name: PUT_VMSS_VM_BATCH_SIZE # azuredisk-csi-driver config
+            - name: PUT_VMSS_VM_BATCH_SIZE  # azuredisk-csi-driver config
               value: "0"
-            - name: LB_BACKEND_POOL_CONFIG_TYPE # azuredisk-csi-driver config
+            - name: LB_BACKEND_POOL_CONFIG_TYPE  # azuredisk-csi-driver config
               value: ""
+            - name: HEALTH_PROBE_MODE
+              value: "servicenodeport"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-vmssflex
