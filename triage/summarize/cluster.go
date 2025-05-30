@@ -22,7 +22,6 @@ package summarize
 
 import (
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -233,7 +232,8 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 		return clusters
 	}
 
-	numFailures := atomic.Int64{} // Atomic counter for the number of failures
+	numFailures := 0
+	var numFailuresMu sync.Mutex // Mutex for the numFailures counter
 
 	klog.V(2).Infof("Combining clustered failures for %d unique tests...", len(newlyClustered))
 	start := time.Now()
@@ -347,7 +347,9 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 			}
 
 			// Update the global failure count
-			numFailures.Add(int64(localNumFailures))
+			numFailuresMu.Lock()
+			numFailures += localNumFailures
+			numFailuresMu.Unlock()
 
 			testDuration := time.Since(testStart)
 			klog.V(2).Infof("Finished processing test %s with %d clusters in %s",
@@ -369,7 +371,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 
 	elapsed := time.Since(start)
 	klog.V(2).Infof("Finished clustering %d unique tests (%d failures) into %d clusters in %s",
-		len(newlyClustered), numFailures.Load(), len(clusters), elapsed.String())
+		len(newlyClustered), numFailures, len(clusters), elapsed.String())
 
 	// Memoize the results
 	if memoize {
