@@ -136,7 +136,7 @@ periodics:
       command:
       - timeout
       args:
-      - "10800"
+      - "18000"
       - /update_summaries.sh
       # When changing CPUs, also change NUM_WORKERS above
       resources:
