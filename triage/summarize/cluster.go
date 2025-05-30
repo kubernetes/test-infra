@@ -214,18 +214,13 @@ Returns:
 		...
 	}
 */
-func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previouslyClustered []jsonCluster, memoize bool, maxClusterTextLength int) nestedFailuresGroups {
+func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster, memoize bool, maxClusterTextLength int) nestedFailuresGroups {
 	const memoPath string = "memo_cluster_global.json"
 	const memoMessage string = "clustering across tests"
 	truncatedClusterTextLength := maxClusterTextLength + len(truncatedSep)
 
-	if numWorkers <= 0 {
-		numWorkers = 1
-	}
-
 	// The eventual global clusters
 	clusters := make(nestedFailuresGroups)
-	var mu sync.Mutex // Mutex to protect concurrent access to clusters
 
 	// Try to retrieve memoized results first to avoid another computation
 	if memoize && getMemoizedResults(memoPath, memoMessage, &clusters) {
@@ -233,7 +228,6 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 	}
 
 	numFailures := 0
-	var numFailuresMu sync.Mutex // Mutex for the numFailures counter
 
 	klog.V(2).Infof("Combining clustered failures for %d unique tests...", len(newlyClustered))
 	start := time.Now()
@@ -261,105 +255,65 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, numWorkers int, previous
 		}
 	}
 
-	// Sort tests by most failures
-	sortedTests := newlyClustered.sortByMostAggregatedFailures()
-
-	// Create a wait group to synchronize goroutines
-	var wg sync.WaitGroup
-
-	// Limit number of parallel go routines
-	semaphore := make(chan struct{}, numWorkers)
-
-	klog.V(2).Infof("Processing tests in parallel with %d workers", numWorkers)
-
-	// Process each test in parallel
-	for n, outerPair := range sortedTests {
+	// Look at tests with the most failures over all clusters first
+	for n, outerPair := range newlyClustered.sortByMostAggregatedFailures() {
 		testName := outerPair.Key
 		testClusters := outerPair.Group
 
-		wg.Add(1)
-		go func(n int, testName string, testClusters failuresGroup) {
-			// Acquire semaphore slot
-			semaphore <- struct{}{}
-			defer func() {
-				// Release semaphore slot when done
-				<-semaphore
-				wg.Done()
-			}()
+		klog.V(3).Infof("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
+		testStart := time.Now()
 
-			klog.V(3).Infof("%4d/%4d tests, %4d clusters, %s", n+1, len(newlyClustered), len(testClusters), testName)
-			testStart := time.Now()
-			localNumFailures := 0
+		// Look at clusters with the most failures first
+		for m, innerPair := range testClusters.sortByMostFailures() {
+			key := innerPair.Key // The cluster text
+			tests := innerPair.Failures
 
-			// Look at clusters with the most failures first
-			for m, innerPair := range testClusters.sortByMostFailures() {
-				key := innerPair.Key // The cluster text
-				tests := innerPair.Failures
+			clusterStart := time.Now()
+			fTextLen := len(key)
+			numClusters := len(testClusters)
+			numTests := len(tests)
+			var clusterCase string
 
-				clusterStart := time.Now()
-				fTextLen := len(key)
-				numClusters := len(testClusters)
-				numTests := len(tests)
-				var clusterCase string
+			klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m+1, numClusters, fTextLen, numTests)
+			numFailures += numTests
 
-				klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures ...", m+1, numClusters, fTextLen, numTests)
-				localNumFailures += numTests
+			// If a cluster exists for the given cluster text
+			if _, ok := clusters[key]; ok {
+				clusterCase = "EXISTING"
 
-				mu.Lock()
-				// If a cluster exists for the given cluster text
-				if _, ok := clusters[key]; ok {
-					clusterCase = "EXISTING"
+				// If there isn't yet a slice of failures for that test, make a new one
+				if _, ok := clusters[key][testName]; !ok {
+					clusters[key][testName] = make([]failure, 0, len(tests))
+				}
 
-					// If there isn't yet a slice of failures for that test, make a new one
-					if _, ok := clusters[key][testName]; !ok {
-						clusters[key][testName] = make([]failure, 0, len(tests))
+				// Copy the contents into the test's failure slice
+				clusters[key][testName] = append(clusters[key][testName], tests...)
+			} else if time.Since(testStart).Seconds() > 30 && fTextLen > truncatedClusterTextLength/2 && numTests == 1 {
+				// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
+				clusterCase = "BAILED"
+			} else {
+				other, found := findMatch(key, clusters.keys())
+				if found {
+					clusterCase = "OTHER"
+
+					// If there isn't yet a slice of failures that test, make a new one
+					if _, ok := clusters[other][testName]; !ok {
+						clusters[other][testName] = make([]failure, 0, len(tests))
 					}
 
 					// Copy the contents into the test's failure slice
-					clusters[key][testName] = append(clusters[key][testName], tests...)
-					mu.Unlock()
-				} else if time.Since(testStart).Seconds() > 30 && fTextLen > truncatedClusterTextLength/2 && numTests == 1 {
-					// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
-					clusterCase = "BAILED"
-					mu.Unlock()
+					clusters[other][testName] = append(clusters[other][testName], tests...)
 				} else {
-					other, found := findMatch(key, clusters.keys())
-					if found {
-						clusterCase = "OTHER"
-
-						// If there isn't yet a slice of failures that test, make a new one
-						if _, ok := clusters[other][testName]; !ok {
-							clusters[other][testName] = make([]failure, 0, len(tests))
-						}
-
-						// Copy the contents into the test's failure slice
-						clusters[other][testName] = append(clusters[other][testName], tests...)
-					} else {
-						clusterCase = "NEW"
-						clusters[key] = failuresGroup{testName: tests}
-					}
-					mu.Unlock()
+					clusterCase = "NEW"
+					clusters[key] = failuresGroup{testName: tests}
 				}
-
-				clusterDuration := int(time.Since(clusterStart).Seconds())
-				klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
-					m+1, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
 			}
 
-			// Update the global failure count
-			numFailuresMu.Lock()
-			numFailures += localNumFailures
-			numFailuresMu.Unlock()
-
-			testDuration := time.Since(testStart)
-			klog.V(2).Infof("Finished processing test %s with %d clusters in %s",
-				testName, len(testClusters), testDuration.String())
-
-		}(n, testName, testClusters)
+			clusterDuration := int(time.Since(clusterStart).Seconds())
+			klog.V(3).Infof("  %4d/%4d clusters, %5d chars failure text, %5d failures, cluster:%s in %d sec, test: %s",
+				m+1, numClusters, fTextLen, numTests, clusterCase, clusterDuration, testName)
+		}
 	}
-
-	// Wait for all tests to be processed
-	wg.Wait()
 
 	// If we seeded clusters using the previous run's keys, some of those
 	// clusters may have disappeared. Remove the resulting empty entries.
