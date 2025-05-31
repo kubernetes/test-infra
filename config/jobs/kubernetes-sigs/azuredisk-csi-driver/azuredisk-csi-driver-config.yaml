@@ -635,13 +635,11 @@ presubmits:
             - name: ORCHESTRATION_MODE  # CAPZ config
               value: "Flexible"
             - name: CLUSTER_TEMPLATE  # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/refs/heads/main/templates/test/ci/cluster-template-prow-machine-pool-flex.yaml
             - name: AZURE_LOADBALANCER_SKU  # azuredisk-csi-driver config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL  # azuredisk-csi-driver config
               value: "capz"
-            - name: CUSTOM_CLOUD_PROVIDER_CONFIG  # CAPZ config
-              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
             - name: ENABLE_VMSS_FLEX  # azuredisk-csi-driver config
               value: "true"
             - name: ENABLE_MULTI_SLB  # azuredisk-csi-driver config
