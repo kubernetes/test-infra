@@ -709,6 +709,7 @@ presubmits:
     branches:
       - main
       - release-3.6
+      - release-3.4
     decorate: true
     decoration_config:
       timeout: 60m
@@ -739,6 +740,7 @@ presubmits:
     branches:
       - main
       - release-3.6
+      - release-3.4
     decorate: true
     decoration_config:
       timeout: 60m
