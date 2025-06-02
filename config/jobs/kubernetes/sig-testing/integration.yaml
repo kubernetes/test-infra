@@ -72,6 +72,44 @@ presubmits:
           requests:
             cpu: 8
             memory: 20Gi
+  - name: pull-kubernetes-integration-race
+    cluster: eks-prow-build-cluster
+    always_run: false # Has known failures.
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-canaries
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250527-1b2b10e804-master
+        command:
+        - runner.sh
+        env:
+        - name: KUBE_TIMEOUT
+          value: "-timeout=1h30m"
+        - name: KUBE_RACE
+          value: "-race"
+        args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 8
+            memory: 20Gi
+          requests:
+            cpu: 8
+            memory: 20Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
@@ -170,6 +208,47 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 6
+          memory: 20Gi
+        requests:
+          cpu: 6
+          memory: 20Gi
+- interval: 6h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-integration-race-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "false"
+    # fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: integration-race-master
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com
+    description: "Ends up running: make test-integration with race detection"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250527-1b2b10e804-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      env:
+      - name: SHORT
+        value: --short=false
+      - name: KUBE_RACE
+        value: "-race"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
