@@ -67,3 +67,10 @@ the instance.
 To change the version of CRI-O being used for a single ignition file, just copy
 [env.yaml](./templates/base/env.yaml) and adapt
 [`./templates/generate`](./templates/generate) accordingly.
+
+Make sure the specified cri-o version is uploaded to
+`https://storage.googleapis.com/cri-o/artifacts/cri-o.amd64.{{ CRIO_COMMIT }}.tar.gz`,
+otherwise the tests should fail.
+
+You can test the cri-o version change by changing [env-canary.yaml](./templates/base/env-canary.yaml)
+and run `pull-kubernetes-node-crio-cgrpv2-e2e-canary`.
