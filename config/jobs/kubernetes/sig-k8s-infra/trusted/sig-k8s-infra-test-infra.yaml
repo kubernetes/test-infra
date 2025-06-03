@@ -141,11 +141,11 @@ periodics:
       # When changing CPUs, also change NUM_WORKERS above
       resources:
         requests:
-          cpu: 8
-          memory: 64Gi
+          cpu: 7
+          memory: 48Gi
         limits:
-          cpu: 8
-          memory: 64Gi
+          cpu: 7
+          memory: 48Gi
 
 - name: ci-test-infra-autobump-prowjobs
   cron: "06 14-23 * * 1-5"  # Run every hour at 7:06 - 16:06 PDT (in UTC) Mon-Fri
