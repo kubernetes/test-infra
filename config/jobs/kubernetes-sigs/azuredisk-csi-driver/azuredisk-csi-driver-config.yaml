@@ -626,6 +626,8 @@ presubmits:
           env:
             - name: TEST_CCM  # CAPZ config
               value: "true"
+            - name: ENABLE_TOPOLOGY  # CAPZ config
+              value: "false"
             - name: TEST_VMSS_FLEX  # azuredisk-csi-driver config
               value: "true"
             - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
