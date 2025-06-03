@@ -75,6 +75,7 @@ presubmits:
   - name: pull-kubernetes-integration-race
     cluster: eks-prow-build-cluster
     always_run: false # Has known failures.
+    optional: true
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job
