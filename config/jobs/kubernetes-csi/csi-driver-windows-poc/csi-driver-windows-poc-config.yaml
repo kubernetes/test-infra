@@ -25,7 +25,7 @@ presubmits:
         args:
         - --check-leaked-resources
         - --cluster=
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --extract=ci/latest
         - --provider=gce
         - --gcp-nodes=2

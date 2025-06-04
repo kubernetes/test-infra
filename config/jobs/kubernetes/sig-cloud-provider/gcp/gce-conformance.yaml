@@ -23,7 +23,7 @@ periodics:
       - --extract=ci/fast/latest-fast
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m

@@ -38,7 +38,7 @@ presubmits:
         - --cluster=
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
@@ -90,7 +90,7 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -372,7 +372,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
@@ -650,7 +650,7 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
           - --deployment=node
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
@@ -702,7 +702,7 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
           - --deployment=node
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
@@ -754,7 +754,7 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
           - --deployment=node
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
           - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false --service-feature-gates=AllAlpha=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
@@ -808,7 +808,7 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
           args:
           - --deployment=node
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
           - '--node-test-args=--feature-gates=SidecarContainers=true --service-feature-gates=SidecarContainers=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
@@ -876,7 +876,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=Feature: containsAny Serial'
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
@@ -928,7 +928,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - --node-test-args=--service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true" --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
             - --node-tests=true
@@ -1051,7 +1051,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
             - --node-tests=true
@@ -1116,7 +1116,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=Feature: containsAny CPUManager && !Flaky'
         - --skip-regex=""
@@ -1168,7 +1168,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
@@ -1233,7 +1233,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --skip-regex=""
         - '--label-filter=Feature: containsAny TopologyManager && !Flaky'
@@ -1285,7 +1285,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-hugepages.yaml
             - '--node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
@@ -1335,7 +1335,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --timeout=3h
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
@@ -1390,7 +1390,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Feature:ProcMountType\]|\[Feature:UserNamespacesSupport\]
         - '--test-args=--service-feature-gates="UserNamespacesSupport=true,ProcMountType=true" --feature-gates="UserNamespacesSupport=true,ProcMountType=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
@@ -1443,7 +1443,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[Feature:ImageVolume\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
@@ -1496,7 +1496,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
@@ -1550,7 +1550,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
@@ -1618,7 +1618,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
@@ -1674,7 +1674,7 @@ presubmits:
             - --test=node
             - --
             - --repo-root=.
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --parallelism=8
             - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
             - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
@@ -1715,7 +1715,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[Feature:.+\]|\[Feature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
@@ -1772,7 +1772,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Serial\]
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
@@ -1829,7 +1829,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Serial\]
         # *Manager jobs are skipped because they have corresponding test lanes with the right image
@@ -1901,7 +1901,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
@@ -1946,7 +1946,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Feature:HugePages\]
         - --skip-regex=""
@@ -2005,7 +2005,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Feature:HugePages\]
         - --skip-regex=""
@@ -2065,7 +2065,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --skip-regex=""
         - '--label-filter=Feature: isSubsetOf { CPUManager, MemoryManager, TopologyManager }'
@@ -2125,7 +2125,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --skip-regex=""
         - '--label-filter=Feature: isSubsetOf { CPUManager, MemoryManager, TopologyManager }'
@@ -2187,7 +2187,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             - --node-tests=true
@@ -2239,7 +2239,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
@@ -2291,7 +2291,7 @@ presubmits:
         args:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--service-feature-gates="NodeSwap=true" --feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -2342,7 +2342,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
             - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
             - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
@@ -2401,7 +2401,7 @@ presubmits:
         args:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -2455,7 +2455,7 @@ presubmits:
             - /workspace/scenarios/kubernetes_e2e.py
           args:
             - --deployment=node
-            - --gcp-zone=us-west1-b
+            - --gcp-zone=us-central1-b
             - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
             - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
             - --env=KUBE_NODE_EXTRA_METADATA=user-data=/home/prow/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
@@ -2514,7 +2514,7 @@ presubmits:
         args:
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -2565,7 +2565,7 @@ presubmits:
           - /workspace/scenarios/kubernetes_e2e.py
         args:
           - --deployment=node
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
@@ -2624,7 +2624,7 @@ presubmits:
           - --build=quick
           - --cluster=
           - --env=ENABLE_AUTH_PROVIDER_GCP=true
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --gcp-node-image=gci
           - --gcp-nodes=1
           - --provider=gce
@@ -2683,7 +2683,7 @@ presubmits:
         args:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
@@ -2739,7 +2739,7 @@ presubmits:
         args:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
@@ -2795,7 +2795,7 @@ presubmits:
         args:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2-serial.yaml
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -2851,7 +2851,7 @@ presubmits:
         args:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-eviction.yaml
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -2908,7 +2908,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Feature:Eviction\]
         - --skip-regex=""
@@ -2965,7 +2965,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=\[Feature:Eviction\]
         - --skip-regex=""
@@ -3022,7 +3022,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=SeparateDisk
         - --skip-regex=""
@@ -3078,7 +3078,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - --focus-regex=KubeletSeparateDiskGC
         - --skip-regex=""
@@ -3133,7 +3133,7 @@ presubmits:
         args:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
@@ -3184,7 +3184,7 @@ presubmits:
         args:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
@@ -3355,7 +3355,7 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--feature-gates="ResourceHealthStatus=true" --service-feature-gates="ResourceHealthStatus=true" --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -3569,7 +3569,7 @@ presubmits:
           - --build=quick
           - --cluster=
           - --env=KUBE_FEATURE_GATES=RelaxedEnvironmentVariableValidation=true
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --gcp-node-image=gci
           - --gcp-nodes=1
           - --provider=gce

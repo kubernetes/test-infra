@@ -52,7 +52,7 @@ presubmits:
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
         - --timeout=320m
@@ -108,7 +108,7 @@ presubmits:
         - --env=NETWORK_POLICY_PROVIDER=kube-network-policies
         - --ginkgo-parallel=30
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
@@ -179,7 +179,7 @@ presubmits:
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --ginkgo-parallel=30
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
@@ -240,7 +240,7 @@ presubmits:
         - --env=KUBE_PROXY_MODE=nftables
         - --env=KUBE_GCE_NODE_IMAGE=cos-113-18244-236-88
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --gcp-master-image=gci
         - --gcp-node-image=gci
@@ -292,7 +292,7 @@ presubmits:
         - --env=KUBE_ENABLE_NODELOCAL_DNS=true
         - --env=KUBE_ENABLE_NODE_PROBLEM_DETECTOR=none
         - --extract=ci/latest
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
@@ -363,7 +363,7 @@ periodics:
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
@@ -476,7 +476,7 @@ periodics:
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
@@ -589,7 +589,7 @@ periodics:
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --env=KUBE_ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
@@ -623,7 +623,7 @@ periodics:
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
       - --timeout=320m
@@ -661,7 +661,7 @@ periodics:
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/fast/latest-fast
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
@@ -697,7 +697,7 @@ periodics:
       - --env=CREATE_CUSTOM_NETWORK=true
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       - --timeout=180m
@@ -735,7 +735,7 @@ periodics:
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
@@ -772,7 +772,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       # skip ESIPP should work from pods #97081
@@ -811,7 +811,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       # skip ESIPP should work from pods #97081
@@ -852,7 +852,7 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\] --minStartupPods=8
@@ -887,7 +887,7 @@ periodics:
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --env=KUBE_ENABLE_NODE_PROBLEM_DETECTOR=none
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
@@ -923,7 +923,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       - --timeout=500m
@@ -960,7 +960,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|LoadBalancer|\[sig-cloud-provider-gcp\]  --minStartupPods=8
       - --timeout=500m
@@ -993,7 +993,7 @@ periodics:
       - --env=NETWORK_POLICY_PROVIDER=kube-network-policies
       - --ginkgo-parallel=30
       - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
       # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)

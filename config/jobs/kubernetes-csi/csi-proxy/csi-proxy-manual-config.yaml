@@ -26,7 +26,7 @@ presubmits:
         - --check-leaked-resources
         - --cluster=
         - --extract=ci/latest
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --gcp-nodes=1
         - --test=false
@@ -48,7 +48,7 @@ presubmits:
         - name: NUM_NODES
           value: "1"
         - name: GCP_ZONE
-          value: "us-west1-b"
+          value: "us-central1-b"
         securityContext:
             privileged: true
         resources:

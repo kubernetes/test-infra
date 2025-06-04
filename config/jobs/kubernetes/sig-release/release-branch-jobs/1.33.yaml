@@ -17,7 +17,7 @@ periodics:
       - --extract=ci/fast/latest-fast
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
@@ -100,7 +100,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=2
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
@@ -267,7 +267,7 @@ periodics:
       - --test=node
       - --
       - --repo-root=.
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --parallelism=1
       - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
       - --timeout=60m
@@ -322,7 +322,7 @@ periodics:
       - --test=node
       - --
       - --repo-root=.
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --parallelism=1
       - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
       - --timeout=60m
@@ -377,7 +377,7 @@ periodics:
       - --test=node
       - --
       - --repo-root=.
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --parallelism=1
       - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
       - --timeout=60m
@@ -428,7 +428,7 @@ periodics:
       - --test=node
       - --
       - --repo-root=.
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --parallelism=1
       - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
       - --timeout=60m
@@ -1359,7 +1359,7 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-nodes=2
         - --gcp-project-type=gpu-project
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
@@ -1540,7 +1540,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
@@ -1592,7 +1592,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
@@ -1644,7 +1644,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
@@ -1692,7 +1692,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=1
         - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
         - --timeout=60m
@@ -1743,7 +1743,7 @@ presubmits:
         - --cluster=
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
@@ -1785,7 +1785,7 @@ presubmits:
       containers:
       - args:
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -2031,7 +2031,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]

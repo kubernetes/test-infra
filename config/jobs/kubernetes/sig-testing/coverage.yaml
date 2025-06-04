@@ -85,7 +85,7 @@ periodics:
         ../test-infra/scenarios/kubernetes_e2e.py \
           --build=quick \
           --dump-before-and-after \
-          --gcp-zone=us-west1-b \
+          --gcp-zone=us-central1-b \
           --provider=gce \
           --timeout=300m \
           --test_args="--ginkgo.focus=\[Conformance\]"
@@ -155,7 +155,7 @@ periodics:
           --gcp-master-image=gci \
           --gcp-node-image=gci \
           --gcp-nodes=4 \
-          --gcp-zone=us-west1-b \
+          --gcp-zone=us-central1-b \
           --ginkgo-parallel=30 \
           --provider=gce \
           --timeout=150m \

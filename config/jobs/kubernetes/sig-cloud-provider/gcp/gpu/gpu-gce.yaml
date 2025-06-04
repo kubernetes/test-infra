@@ -49,7 +49,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=2
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
