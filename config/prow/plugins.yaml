@@ -143,6 +143,7 @@ approve:
   ignore_review_state: true
 
 help:
+  help_guidelines_url: https://www.kubernetes.dev/docs/guide/help-wanted/
   help_guidelines_summary: |
                         Please ensure that the issue body includes answers to the following questions:
                         - Why are we solving this issue?
