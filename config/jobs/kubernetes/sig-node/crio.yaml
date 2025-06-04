@@ -27,7 +27,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -80,7 +80,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -132,7 +132,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -184,7 +184,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -236,7 +236,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -288,7 +288,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -340,7 +340,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -392,7 +392,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -444,7 +444,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -496,7 +496,7 @@ periodics:
       args:
       - --deployment=node
       - --env=KUBE_SSH_USER=core
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
@@ -548,7 +548,7 @@ periodics:
         args:
           - --deployment=node
           - --env=KUBE_SSH_USER=core
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
@@ -600,7 +600,7 @@ periodics:
         args:
           - --deployment=node
           - --env=KUBE_SSH_USER=core
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
@@ -652,7 +652,7 @@ periodics:
         args:
           - --deployment=node
           - --env=KUBE_SSH_USER=core
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
@@ -704,7 +704,7 @@ periodics:
         args:
           - --deployment=node
           - --env=KUBE_SSH_USER=core
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
@@ -756,7 +756,7 @@ periodics:
         args:
           - --deployment=node
           - --env=KUBE_SSH_USER=core
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock
             --container-runtime-process-name=/usr/local/bin/crio
             --container-runtime-pid-file=
@@ -827,7 +827,7 @@ periodics:
           - --test=node
           - --
           - --repo-root=.
-          - --gcp-zone=us-west1-b
+          - --gcp-zone=us-central1-b
           - --parallelism=1
           - --focus-regex=\[Feature:ProcMountType\]|\[Feature:UserNamespacesSupport\]
           - '--test-args=--service-feature-gates="UserNamespacesSupport=true,ProcMountType=true" --feature-gates="UserNamespacesSupport=true,ProcMountType=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'

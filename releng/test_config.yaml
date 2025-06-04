@@ -402,7 +402,7 @@ nodeCommon:
   - --deployment=node
   - --node-tests=true
   - --provider=gce
-  - --gcp-zone=us-west1-b
+  - --gcp-zone=us-central1-b
 
 nodeImages:
   cos1:

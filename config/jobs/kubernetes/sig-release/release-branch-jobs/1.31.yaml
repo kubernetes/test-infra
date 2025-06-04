@@ -17,7 +17,7 @@ periodics:
       - --extract=ci/fast/latest-fast
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
@@ -100,7 +100,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
@@ -604,7 +604,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -654,7 +654,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -717,7 +717,7 @@ presubmits:
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -832,7 +832,7 @@ presubmits:
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=1
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -994,7 +994,7 @@ presubmits:
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -1045,7 +1045,7 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-nodes=2
         - --gcp-project-type=gpu-project
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
@@ -1097,7 +1097,7 @@ presubmits:
         - --cluster=
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
@@ -1139,7 +1139,7 @@ presubmits:
       containers:
       - args:
         - --deployment=node
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -1382,7 +1382,7 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]

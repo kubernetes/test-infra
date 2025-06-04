@@ -27,7 +27,7 @@ presubmits:
         - --down=false
         - --gcp-node-image=gci
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
@@ -74,7 +74,7 @@ presubmits:
         - --down=false
         - --gcp-node-image=gci
         - --gcp-nodes=4
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m

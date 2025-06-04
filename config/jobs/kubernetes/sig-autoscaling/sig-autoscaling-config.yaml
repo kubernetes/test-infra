@@ -25,7 +25,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -71,7 +71,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -120,7 +120,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -169,7 +169,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -218,7 +218,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -268,7 +268,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=3
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
@@ -303,7 +303,7 @@ periodics:
       - --cluster=hpa
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       # Enable HPAScaleToZero. Required for scale to zero tests.
       - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
@@ -339,7 +339,7 @@ periodics:
       - --cluster=hpa
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       # Enable HPAScaleToZero. Required for scale to zero tests.
       - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
@@ -374,7 +374,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --gcp-node-image=gci
       - --extract=ci/latest
       - --timeout=240m
@@ -411,7 +411,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --gcp-node-image=gci
       - --extract=ci/latest
       - --timeout=240m

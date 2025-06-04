@@ -130,7 +130,7 @@ presubmits:
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
           --provider=gce
-          --gcp-zone=us-west1-b
+          --gcp-zone=us-central1-b
           --node-tests=true
           "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml --extra-envs=${EXTRA_ENVS}"
           '--node-test-args=--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/"'
@@ -176,7 +176,7 @@ presubmits:
           --extract=ci/latest
           --provider=gce
           --gcp-node-image=gci
-          --gcp-zone=us-west1-b
+          --gcp-zone=us-central1-b
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
@@ -220,7 +220,7 @@ presubmits:
           --extract=ci/latest
           --provider=gce
           --gcp-node-image=gci
-          --gcp-zone=us-west1-b
+          --gcp-zone=us-central1-b
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
@@ -304,7 +304,7 @@ presubmits:
           --extract=ci/latest
           --provider=gce
           --gcp-node-image=ubuntu
-          --gcp-zone=us-west1-b
+          --gcp-zone=us-central1-b
           --ginkgo-parallel=30
           --image-family=pipeline-1-24
           --image-project=ubuntu-os-gke-cloud
@@ -350,7 +350,7 @@ presubmits:
           --extract=ci/latest
           --provider=gce
           --gcp-node-image=ubuntu
-          --gcp-zone=us-west1-b
+          --gcp-zone=us-central1-b
           --ginkgo-parallel=30
           --image-family=pipeline-1-24
           --image-project=ubuntu-os-gke-cloud

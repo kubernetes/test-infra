@@ -23,7 +23,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
@@ -80,7 +80,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/latest
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-b
       - --provider=gce
       - --gcp-nodes=2
       - --test=false

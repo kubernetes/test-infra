@@ -40,7 +40,7 @@ presubmits:
         - --env=ENABLE_POD_PRIORITY=true
         - --gcp-node-image=gci
         - --gcp-nodes=3
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
@@ -86,7 +86,7 @@ presubmits:
         - --build=quick
         - --check-leaked-resources
         - --provider=gce
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --gcp-node-image=gci
         - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\] --minStartupPods=8
         - --ginkgo-parallel=1
@@ -131,7 +131,7 @@ presubmits:
         - --build=quick
         - --check-leaked-resources
         - --provider=gce
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --gcp-node-image=gci
         - --env=KUBE_FEATURE_GATES=HPAConfigurableTolerance=true
         - --test_args=--ginkgo.focus=\[Feature:HPAConfigurableTolerance\] --minStartupPods=8
@@ -179,7 +179,7 @@ presubmits:
         - --cluster=hpa
         - --check-leaked-resources
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         # Enable HPAScaleToZero. Required for scale to zero tests.
         - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
@@ -221,7 +221,7 @@ presubmits:
         - --check-leaked-resources
         - --extract=ci/latest
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-b
         - --provider=gce
         - --test=false
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
