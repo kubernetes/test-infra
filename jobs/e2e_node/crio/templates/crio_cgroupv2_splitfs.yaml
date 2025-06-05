@@ -32,8 +32,8 @@ storage:
       contents:
         inline: |
           [Manager]
-          DefaultEnvironment="CRIO_SCRIPT_COMMIT=0083f3f8aa9e4368292c6fc4879e56f615e46585"
-          DefaultEnvironment="CRIO_COMMIT=bdcf72ff47866e1377cf1ba5372c7fc53ed9de99"
+          DefaultEnvironment="CRIO_SCRIPT_COMMIT=c54e56dea6a3175198e3bd9b306f681a67c48a09"
+          DefaultEnvironment="CRIO_COMMIT=c5c41f21fa802d1c19a4114e88ecd91a270e3a15"
     - path: /etc/containers/storage.conf
       contents:
         local: 60-storage-split-disk.conf
