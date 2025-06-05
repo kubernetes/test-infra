@@ -119,7 +119,7 @@ main() {
 
   # enter the cloned prev repo branch (in temp) and run tests
   pushd "${PREV_RELEASE_REPO_PATH}"
-  build_prev_version_bins || res=$?
+  download_prev_version_bins ${EMULATED_VERSION} || res=$?
   run_prev_version_tests || res=$?
   popd
 
