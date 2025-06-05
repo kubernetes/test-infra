@@ -32,8 +32,9 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 KUBE_ROOT="."
 # KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
 source "${KUBE_ROOT}/hack/lib/version.sh"
-kube::version::get_version_vars
-DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
+LATEST_IMAGE=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
+echo "{\"revision\":\"$LATEST_IMAGE\"}" >"${ARTIFACTS}/metadata.json"
+DOCKER_TAG=${LATEST_IMAGE/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
 export GOFLAGS="-tags=providerless"
 export KUBE_BUILD_CONFORMANCE=n
@@ -66,9 +67,9 @@ parse_args()
 
 parse_args $*
 
-build_docker(){
-  build/run.sh make all WHAT="cmd/kubectl cmd/kubelet" 1> /dev/null
-  make quick-release-images 1> /dev/null
+download_docker(){
+  curl -L 'https://dl.k8s.io/ci/'${LATEST_IMAGE}'/kubernetes-server-linux-amd64.tar.gz' > kubernetes-server-linux-amd64.tar.gz
+  tar -xvf kubernetes-server-linux-amd64.tar.gz
 }
 
 update_kubelet() {
@@ -110,9 +111,9 @@ usage()
 }
 
 # Main
-build_docker
-IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
-KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
+download_docker
+IMAGES_PATH="${KUBE_ROOT}/kubernetes/server/bin"
+KUBELET_BINARY=$(find ${KUBE_ROOT}/kubernetes/server/bin/ -type f -name kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"
