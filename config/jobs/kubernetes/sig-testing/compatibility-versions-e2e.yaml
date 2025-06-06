@@ -254,7 +254,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./../test-infra/experiment/compatibility-versions/experiment/compatibility-versions/e2e-skip-version-testing.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && ./../test-infra/experiment/compatibility-versions/e2e-skip-version-testing.sh
       env:
       - name: VERSION_DELTA
         value: "2"
