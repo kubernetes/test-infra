@@ -25,7 +25,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-kind-e2e.sh
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode kind
         env:
         - name: LABEL_FILTER
           value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
@@ -44,6 +44,49 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-arch-code-organization
       testgrid-tab-name: pull-kind-master-dependencies
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      fork-per-release: "true"
+
+  - name: pull-kubernetes-e2e-unit-dependencies
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250527-1b2b10e804-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode unit
+        resources:
+          limits:
+            cpu: 7.2
+            memory: "43Gi"
+          requests:
+            cpu: 7.2
+            memory: "43Gi"
+    annotations:
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-tab-name: pull-unit-master-dependencies
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       fork-per-release: "true"
@@ -79,7 +122,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - ./../test-infra/experiment/dependencies/update-dependencies-and-run-kind-e2e.sh
+      - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode kind
       env:
       - name: LABEL_FILTER
         value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
@@ -95,3 +138,46 @@ periodics:
         requests:
           cpu: 7
           memory: 9000Mi
+
+- interval: 4h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-unit-dependencies
+  annotations:
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: unit-master-dependencies
+    description: Runs unit tests after updating dependencies to latest versions
+    testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '6'
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    # unit tests have no business requiring root or doing privileged operations
+    securityContext:
+      # NOTE: these are arbitrary non-root values. They don't exist in the
+      # image and don't need to, the unit tests should only write to TMPDIR
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250527-1b2b10e804-master
+      securityContext:
+        allowPrivilegeEscalation: false
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode unit
+      resources:
+        limits:
+          cpu: 7.2
+          memory: "43Gi"
+        requests:
+          cpu: 7.2
+          memory: "43Gi"
