@@ -143,11 +143,11 @@ approve:
   ignore_review_state: true
 
 help:
+  help_guidelines_url: https://www.kubernetes.dev/docs/guide/help-wanted/
   help_guidelines_summary: |
                         Please ensure that the issue body includes answers to the following questions:
                         - Why are we solving this issue?
                         - To address this issue, are there any code changes? If there are code changes, what needs to be done in the code and what places can the assignee treat as reference points?
-                        - Does this issue have zero to low barrier of entry?
                         - How can the assignee reach out to you for help?
 
 # Lower bounds in number of lines changed; XS is assumed to be zero.
