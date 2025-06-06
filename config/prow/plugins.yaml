@@ -1694,7 +1694,7 @@ plugins:
     - owners-label
     - verify-owners
     - hold
-    
+    - lifecycle
 
   containerd/containerd:
     plugins:
