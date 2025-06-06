@@ -19,6 +19,32 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+# Default test mode
+TEST_MODE="kind"
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case $key in
+    --test-mode)
+      TEST_MODE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [--test-mode <kind|unit>]"
+      exit 1
+      ;;
+  esac
+done
+
+# Validate test mode
+if [[ "${TEST_MODE}" != "kind" && "${TEST_MODE}" != "unit" ]]; then
+  echo "Invalid test mode: ${TEST_MODE}. Must be either 'kind' or 'unit'."
+  echo "Usage: $0 [--test-mode <kind|unit>]"
+  exit 1
+fi
+
 # install kind
 curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
 
@@ -32,7 +58,9 @@ go install github.com/sgaunet/mdtohtml@latest
 popd
 
 # needed by gomod_staleness.py
-apt update && apt -y install jq
+if ! command -v jq &> /dev/null; then
+  apt update && apt -y install jq
+fi
 
 # grab the stats before we start
 depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-before.txt"
@@ -60,5 +88,11 @@ hack/lint-dependencies.sh || true
 # ensure that all our code will compile
 hack/verify-typecheck.sh
 
-# run kind based tests
-e2e-k8s.sh
+# run tests based on the selected mode
+if [[ "${TEST_MODE}" == "kind" ]]; then
+  # run kind based e2e tests
+  e2e-k8s.sh
+else
+  # run unit tests
+  make test
+fi
