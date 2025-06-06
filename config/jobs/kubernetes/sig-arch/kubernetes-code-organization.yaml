@@ -74,7 +74,9 @@ presubmits:
           allowPrivilegeEscalation: false
         command:
         - runner.sh
-        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode unit
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
+        - --test-mode
+        - unit
         resources:
           limits:
             cpu: 7.2
@@ -169,7 +171,9 @@ periodics:
         allowPrivilegeEscalation: false
       command:
       - runner.sh
-      - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode unit
+      - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
+      - --test-mode
+      - unit
       resources:
         limits:
           cpu: 7.2
