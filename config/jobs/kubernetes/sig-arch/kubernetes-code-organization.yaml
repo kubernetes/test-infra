@@ -73,9 +73,7 @@ presubmits:
         securityContext:
           allowPrivilegeEscalation: false
         command:
-        - wrapper.sh
-        - bash
-        - -c
+        - runner.sh
         - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode unit
         resources:
           limits:
@@ -170,9 +168,7 @@ periodics:
       securityContext:
         allowPrivilegeEscalation: false
       command:
-      - wrapper.sh
-      - bash
-      - -c
+      - runner.sh
       - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh --test-mode unit
       resources:
         limits:
