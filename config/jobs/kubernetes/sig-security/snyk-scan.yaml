@@ -13,6 +13,11 @@ periodics:
   - org: kubernetes
     repo: sig-security
     base_ref: main
+    workdir: false
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: main
+    path_alias: k8s.io/kubernetes
     workdir: true
   spec:
     containers:
@@ -31,7 +36,7 @@ periodics:
       command:
       - sh
       - "-c"
-      - "cd sig-security-tooling/scanning/ && ./build-deps-and-release-images.sh"
+      - "/home/prow/go/src/github.com/kubernetes/sig-security/sig-security-tooling/scanning/build-deps-and-release-images.sh"
   annotations:
     testgrid-create-test-group: "true"
     testgrid-alert-email: security-tooling-private@kubernetes.io
