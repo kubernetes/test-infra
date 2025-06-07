@@ -48,11 +48,12 @@ fi
 # install kind
 curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
 
-# install depstat
+# install depstat and mdttohtml
 export WORKDIR=${ARTIFACTS:-$TMPDIR}
 export PATH=$PATH:$GOPATH/bin
 mkdir -p "${WORKDIR}"
 pushd "$WORKDIR"
+export GOCACHE="${GOCACHE:-"$(mktemp -d)/cache"}"
 go install github.com/kubernetes-sigs/depstat@latest
 go install github.com/sgaunet/mdtohtml@latest
 popd
