@@ -16,7 +16,7 @@ periodics:
     workdir: false
   - org: kubernetes
     repo: kubernetes
-    base_ref: main
+    base_ref: master
     path_alias: k8s.io/kubernetes
     workdir: true
   spec:
