@@ -235,6 +235,30 @@ build_prev_version_bins() {
   echo "Finished building e2e.test binary from ${PREV_RELEASE_BRANCH}."
 }
 
+download_prev_version_bins() {
+  local version=$1
+  wget https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable-${version}.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  if [ $? -ne 0 ]; then
+    echo "failed to download previous version binaries"
+    return 1
+  fi
+  tar -xvf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz 
+  mkdir -p _output/bin
+  mv kubernetes/test/bin/* _output/bin
+  return 0
+}
+
+download_current_version_bins() {
+  wget https://dl.k8s.io/ci/$(curl -Ls https://dl.k8s.io/ci/latest.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  if [ $? -ne 0 ]; then
+    echo "failed to download previous version binaries"
+    return 1
+  fi
+  tar -xvf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  mv kubernetes/test/bin/* _output/bin
+  return 0
+}
+
 # run e2es with ginkgo-e2e.sh
 run_prev_version_tests() {
   # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
