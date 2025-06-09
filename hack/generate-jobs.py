@@ -89,10 +89,11 @@ def generate_one(path: pathlib.Path, verify: bool) -> typing.List[str]:
                         if name not in gen_jobs:
                             continue
 
+                    args = dict(config[section])
+                    args[name] = True
                     tmp.write(
                         template.render(
-                            config[section],
-                            file=name,
+                            args,
                             job_name=job.format(section=section),
                             header=header,
                         )
