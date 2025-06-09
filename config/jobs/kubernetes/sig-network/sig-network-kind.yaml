@@ -895,8 +895,8 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|NetworkPolicy|Disruptive|Flaky|IPv6|SCTPConnectivity
-      #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|NetworkPolicy|Disruptive|Flaky|IPv6|SCTPConnectivity|IPerf2
+      # cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -908,10 +908,10 @@ periodics:
           cpu: 4
           memory: 9Gi
   annotations:
-    testgrid-dashboards: sig-network-kind
+    testgrid-dashboards: sig-release-master-blocking, sig-network-kind
     testgrid-tab-name: sig-network-kind, loadbalancer
-    description: Runs loadbalancer tests in kind with cloud-provider-kind
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    description: "OWNER: sig-network; runs loadbalancer tests in kind with cloud-provider-kind"
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com, kubernetes-sig-network-test-failures@googlegroups.com, release-team@kubernetes.io
     testgrid-num-columns-recent: '3'
 - interval: 6h
   cluster: k8s-infra-prow-build
