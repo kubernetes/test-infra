@@ -636,9 +636,9 @@ periodics:
           cpu: 1
           memory: "3Gi"
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-gce, sig-network-gce
+    testgrid-dashboards: google-gce, sig-network-gce
     testgrid-tab-name: gci-gce-ingress
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
     testgrid-alert-stale-results-hours: '24'
 - interval: 6h
