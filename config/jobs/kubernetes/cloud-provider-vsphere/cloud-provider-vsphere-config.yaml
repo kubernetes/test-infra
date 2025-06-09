@@ -365,6 +365,7 @@ presubmits:
       preset-gcve-e2e-config: "true"
     branches:
     - ^master$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -401,6 +402,7 @@ presubmits:
       preset-gcve-e2e-config: "true"
     branches:
     - ^master$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
