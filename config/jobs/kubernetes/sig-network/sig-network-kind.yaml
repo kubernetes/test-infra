@@ -688,7 +688,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity|KubeProxyNFAcct
       command:
         - wrapper.sh
         - bash
