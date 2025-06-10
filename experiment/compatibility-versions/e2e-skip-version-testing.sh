@@ -40,8 +40,6 @@ run_skip_version_tests() {
     export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
     # Define the path within the temp directory for the cloned repo
     PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s-${EMULATED_VERSION}"
-    echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
-    git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
     # Set value of emulated version 
     set_emulation_version "$EMULATED_VERSION" || ret=$?
     if [[ "$ret" -ne 0 ]]; then
@@ -67,7 +65,9 @@ run_skip_version_tests() {
   # Test removal of emulated version entirely.
   export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
   delete_emulation_version || ret=$?
-  download_current_version_bins || ret=$?
+
+  LATEST_VERSION="${LATEST_VERSION:-}"
+  download_current_version_bins ${LATEST_VERSION} || ret=$?
   run_prev_version_tests || ret=$?
   return $ret
 }

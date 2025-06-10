@@ -32,9 +32,7 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 KUBE_ROOT="."
 # KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
 source "${KUBE_ROOT}/hack/lib/version.sh"
-LATEST_IMAGE=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
-echo "{\"revision\":\"$LATEST_IMAGE\"}" >"${ARTIFACTS}/metadata.json"
-DOCKER_TAG=${LATEST_IMAGE/+/_}
+DOCKER_TAG=${LATEST_VERSION/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
 export GOFLAGS="-tags=providerless"
 export KUBE_BUILD_CONFORMANCE=n
@@ -67,8 +65,8 @@ parse_args()
 
 parse_args $*
 
-download_docker(){
-  curl -L 'https://dl.k8s.io/ci/'${LATEST_IMAGE}'/kubernetes-server-linux-amd64.tar.gz' > kubernetes-server-linux-amd64.tar.gz
+download_images(){
+  curl -L 'https://dl.k8s.io/ci/'${LATEST_VERSION}'/kubernetes-server-linux-amd64.tar.gz' > kubernetes-server-linux-amd64.tar.gz
   tar -xvf kubernetes-server-linux-amd64.tar.gz
 }
 
@@ -111,9 +109,13 @@ usage()
 }
 
 # Main
-download_docker
-IMAGES_PATH="${KUBE_ROOT}/kubernetes/server/bin"
-KUBELET_BINARY=$(find ${KUBE_ROOT}/kubernetes/server/bin/ -type f -name kubelet)
+TMP_DIR=$(mktemp -d -p /tmp kind-e2e-XXXXXX)
+echo "Created temporary directory: ${TMP_DIR}"
+pushd $TMP_DIR
+download_images
+popd
+IMAGES_PATH="${TMP_DIR}/kubernetes/server/bin"
+KUBELET_BINARY=$(find ${TMP_DIR}/kubernetes/server/bin/ -type f -name kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"
