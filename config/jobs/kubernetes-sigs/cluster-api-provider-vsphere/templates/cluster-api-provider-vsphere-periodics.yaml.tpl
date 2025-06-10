@@ -40,8 +40,8 @@ periodics:
 {{ $modeFocus := "" -}}
 {{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
 {{/* Run govmomi at 00:00 UTC, supervisor at 03:00 UTC */ -}}
-{{ $cron := "'0 0 * * *'" -}}
-{{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
+{{ $cron := "'0 21 * * *'" -}}
+{{ if eq $mode "supervisor" }}{{ $cron = "'0 19 * * *'" }}{{ end -}}
 - name: periodic-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
   cluster: k8s-infra-prow-build
   labels:
