@@ -71,7 +71,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_TEMPLATE  # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
@@ -131,7 +131,7 @@ presubmits:
           value: "1"
             # TODO: Should use a 1.29 K8s version
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -190,7 +190,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -252,7 +252,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: ORCHESTRATION_MODE  # CAPZ config
           value: "Flexible"
         - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -400,7 +400,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         resources:
@@ -458,7 +458,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -518,7 +518,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -576,7 +576,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_TEMPLATE  # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
@@ -652,7 +652,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_TEMPLATE  # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win-oot-credential-provider.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
@@ -753,7 +753,7 @@ presubmits:
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
-          value: "latest-1.32"
+          value: "latest"
         - name: CLUSTER_TEMPLATE  # CAPZ config
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version-oot-credential-provider.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
@@ -834,7 +834,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.32"
+        value: "latest"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -896,7 +896,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.32"
+        value: "latest"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -958,7 +958,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
-        value: "latest-1.32"
+        value: "latest"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
