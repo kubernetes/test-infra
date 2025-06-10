@@ -3,8 +3,8 @@
 {{ $modeFocus := "" -}}
 {{ if eq $mode "supervisor" }}{{ $modeFocus = "\\\\[supervisor\\\\] " }}{{ end -}}
 {{/* Run govmomi at 00:00 UTC, supervisor at 03:00 UTC */ -}}
-{{ $cron := "'0 0 * * *'" -}}
-{{ if eq $mode "supervisor" }}{{ $cron = "'0 3 * * *'" }}{{ end -}}
+{{ $cron := "'0 21 * * *'" -}}
+{{ if eq $mode "supervisor" }}{{ $cron = "'0 19 * * *'" }}{{ end -}}
 {{ if eq $i 0 -}}
 periodics:
 {{ end -}}
