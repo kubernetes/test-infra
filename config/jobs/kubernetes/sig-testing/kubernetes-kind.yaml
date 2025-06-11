@@ -90,7 +90,8 @@ presubmits:
 
   - name: pull-kubernetes-e2e-kind-ipv6
     cluster: k8s-infra-prow-build
-    optional: false
+    # TODO: once this is no longer required in github, disable always_run
+    optional: true
     always_run: true
     skip_report: false
     decorate: true
