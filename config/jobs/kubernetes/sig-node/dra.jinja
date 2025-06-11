@@ -117,6 +117,87 @@ presubmits:
         - -xce
         - |
           set -o pipefail
+          {%- if canary %}
+          {%- if ci %}
+          # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+          revision=$(curl --fail --silent --show-error --location ${CI_URL}/${LATEST_TXT})
+          # Report what was tested.
+          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+          # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+          hash=${revision/*+/}
+          kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+          kind_node_source="${CI_URL}/$revision/kubernetes-server-linux-amd64.tar.gz"
+          {%- else %}
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          {%- endif %}
+          {%- if all_features %}
+          # Which DRA features exist can change over time.
+          features=( $( {%- if ci %} curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/pkg/features/kube_features.go" | grep '"DRA' {% else %} grep '"DRA' pkg/features/kube_features.go {%- endif %} | sed 's/.*"\(.*\)"/\1/' ) )
+          : "Enabling DRA feature(s): ${features[*]}."
+          {%- else %}
+          features=( )
+          {%- endif %}
+          {%- if ci %}
+          curl --fail --silent --show-error --location "${CI_URL}/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+          ginkgo=kubernetes/test/bin/ginkgo
+          e2e_test=kubernetes/test/bin/e2e.test
+          {%- else %}
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          {%- endif %}
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          control_plane_image=dra/node:latest
+          kind build node-image --image="$control_plane_image" "${kind_node_source}"
+          {%- if kubelet_skew|int > 0 %}
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\([0-9]*\).*/\1/')
+          # TODO: find latest patch release
+          worker_image=dra/node:skewed{{kubelet_skew}}
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/v$major.$((minor - {{kubelet_skew|int}})).0/kubernetes-server-linux-amd64.tar.gz"
+          # We might need support for disabling tests which need a recent kubelet. We'll see...
+          {%- else %}
+          worker_image="$control_plane_image"
+          {%- endif %}
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final config gets dumped to stderr of the job.
+          # It's the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          kind create cluster --retain --config <( (
+              ${kind_yaml_cmd[@]} |
+              # Configure potentially different images for control plane and workers.
+              sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) | tee /dev/stderr )
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+          {%- else -%}
           {%- if ci %}
           # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
           revision=$(curl --fail --silent --show-error --location ${CI_URL}/${LATEST_TXT})
@@ -170,6 +251,7 @@ presubmits:
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
+          {%- endif -%}
         {%- if ci %}
         env:
         - name: LATEST_TXT
