@@ -47,10 +47,9 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # The final config gets dumped to stderr of the job.
-          # It's the result of getting the original kind.yaml, manipulating it with sed,
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
-          kind create cluster --retain --config <( (
+          (
               ${kind_yaml_cmd[@]} |
               # Configure potentially different images for control plane and workers.
               sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
@@ -69,7 +68,9 @@ presubmits:
               local:
                 dataDir: /tmp/etcd
           EOF
-          ) | tee /dev/stderr )
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
@@ -135,10 +136,9 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # The final config gets dumped to stderr of the job.
-          # It's the result of getting the original kind.yaml, manipulating it with sed,
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
-          kind create cluster --retain --config <( (
+          (
               ${kind_yaml_cmd[@]} |
               # Configure potentially different images for control plane and workers.
               sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
@@ -157,7 +157,9 @@ presubmits:
               local:
                 dataDir: /tmp/etcd
           EOF
-          ) | tee /dev/stderr )
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
@@ -189,7 +191,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
-      description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the previous release.
+      description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 1" release.
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     decorate: true
     decoration_config:
@@ -219,17 +221,20 @@ presubmits:
           kind build node-image --image="$control_plane_image" "${kind_node_source}"
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\([0-9]*\).*/\1/')
-          # TODO: find latest patch release
+          previous_minor=$((minor - 1))
+          # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
+          # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
+          $ TODO: only in the periodic job. In the presubmit, test against a known-good previous release.
+          previous=$((curl --silent -L https://dl.k8s.io/release/latest-$major.$previous_minor.txt && echo && curl --silent -L https://dl.k8s.io/release/stable-$major.$previous_minor.txt && echo) | sort -n | tail -1)
           worker_image=dra/node:skewed1
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/v$major.$((minor - 1)).0/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/$previous/kubernetes-server-linux-amd64.tar.gz"
           # We might need support for disabling tests which need a recent kubelet. We'll see...
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # The final config gets dumped to stderr of the job.
-          # It's the result of getting the original kind.yaml, manipulating it with sed,
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
-          kind create cluster --retain --config <( (
+          (
               ${kind_yaml_cmd[@]} |
               # Configure potentially different images for control plane and workers.
               sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
@@ -248,7 +253,105 @@ presubmits:
               local:
                 dataDir: /tmp/etcd
           EOF
-          ) | tee /dev/stderr )
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
+  - name: pull-kubernetes-kind-dra-n-2-canary
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 2" release.
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250527-1b2b10e804-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          control_plane_image=dra/node:latest
+          kind build node-image --image="$control_plane_image" "${kind_node_source}"
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 2))
+          # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
+          # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
+          $ TODO: only in the periodic job. In the presubmit, test against a known-good previous release.
+          previous=$((curl --silent -L https://dl.k8s.io/release/latest-$major.$previous_minor.txt && echo && curl --silent -L https://dl.k8s.io/release/stable-$major.$previous_minor.txt && echo) | sort -n | tail -1)
+          worker_image=dra/node:skewed2
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/$previous/kubernetes-server-linux-amd64.tar.gz"
+          # We might need support for disabling tests which need a recent kubelet. We'll see...
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]} |
+              # Configure potentially different images for control plane and workers.
+              sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
