@@ -156,9 +156,13 @@ presubmits:
           {%- if kubelet_skew|int > 0 %}
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\([0-9]*\).*/\1/')
-          # TODO: find latest patch release
+          previous_minor=$((minor - {{kubelet_skew}}))
+          # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
+          # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
+          $ TODO: only in the periodic job. In the presubmit, test against a known-good previous release.
+          previous=$((curl --silent -L https://dl.k8s.io/release/latest-$major.$previous_minor.txt && echo && curl --silent -L https://dl.k8s.io/release/stable-$major.$previous_minor.txt && echo) | sort -n | tail -1)
           worker_image=dra/node:skewed{{kubelet_skew}}
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/v$major.$((minor - {{kubelet_skew|int}})).0/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/$previous/kubernetes-server-linux-amd64.tar.gz"
           # We might need support for disabling tests which need a recent kubelet. We'll see...
           {%- else %}
           worker_image="$control_plane_image"
@@ -166,10 +170,9 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # The final config gets dumped to stderr of the job.
-          # It's the result of getting the original kind.yaml, manipulating it with sed,
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
-          kind create cluster --retain --config <( (
+          (
               ${kind_yaml_cmd[@]} |
               # Configure potentially different images for control plane and workers.
               sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
@@ -188,7 +191,9 @@ presubmits:
               local:
                 dataDir: /tmp/etcd
           EOF
-          ) | tee /dev/stderr )
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
