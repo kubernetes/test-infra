@@ -183,6 +183,7 @@ postsubmits:
     branches:
     - main
     - release-3.6
+    - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-postsubmits
