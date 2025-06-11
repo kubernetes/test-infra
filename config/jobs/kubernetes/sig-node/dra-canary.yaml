@@ -220,7 +220,7 @@ presubmits:
           control_plane_image=dra/node:latest
           kind build node-image --image="$control_plane_image" "${kind_node_source}"
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 1))
           # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
           # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
@@ -316,7 +316,7 @@ presubmits:
           control_plane_image=dra/node:latest
           kind build node-image --image="$control_plane_image" "${kind_node_source}"
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 2))
           # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
           # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
