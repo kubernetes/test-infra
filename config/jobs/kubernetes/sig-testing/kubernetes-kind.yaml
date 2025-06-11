@@ -41,6 +41,7 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       fork-per-release: "true"
+      description: Uses kubetest to run e2e tests for on-by-default features against a latest kubernetes master cluster created with sigs.k8s.io/kind
 
 
   # NOTE: changes should generally be synced to pull-kind-e2e-kubernetes-canary
@@ -135,6 +136,7 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+      description: Uses kubetest to run e2e tests for on-by-default features against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
 
   - name: pull-kubernetes-e2e-kind-ipv6-canary
     cluster: k8s-infra-prow-build
