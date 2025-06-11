@@ -120,13 +120,13 @@ presubmits:
           {%- if canary %}
           {%- if ci %}
           # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
-          revision=$(curl --fail --silent --show-error --location ${CI_URL}/${LATEST_TXT})
+          revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
           # Report what was tested.
           echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
           # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
           hash=${revision/*+/}
           kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
-          kind_node_source="${CI_URL}/$revision/kubernetes-server-linux-amd64.tar.gz"
+          kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
           {%- else %}
           # A presubmit job uses the checked out and merged source code.
           revision=$(git describe --tags)
@@ -141,7 +141,7 @@ presubmits:
           features=( )
           {%- endif %}
           {%- if ci %}
-          curl --fail --silent --show-error --location "${CI_URL}/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+          curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
           ginkgo=kubernetes/test/bin/ginkgo
           e2e_test=kubernetes/test/bin/e2e.test
           {%- else %}
@@ -159,10 +159,10 @@ presubmits:
           previous_minor=$((minor - {{kubelet_skew}}))
           # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
           # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
-          $ TODO: only in the periodic job. In the presubmit, test against a known-good previous release.
-          previous=$((curl --silent -L https://dl.k8s.io/release/latest-$major.$previous_minor.txt && echo && curl --silent -L https://dl.k8s.io/release/stable-$major.$previous_minor.txt && echo) | sort -n | tail -1)
+          # TODO: only in the periodics? Otherwise https://dl.k8s.io/release/stable-$major.$previous_minor.txt
+          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
           worker_image=dra/node:skewed{{kubelet_skew}}
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/$previous/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz"
           # We might need support for disabling tests which need a recent kubelet. We'll see...
           {%- else %}
           worker_image="$control_plane_image"

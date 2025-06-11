@@ -224,10 +224,10 @@ presubmits:
           previous_minor=$((minor - 1))
           # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
           # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
-          $ TODO: only in the periodic job. In the presubmit, test against a known-good previous release.
-          previous=$((curl --silent -L https://dl.k8s.io/release/latest-$major.$previous_minor.txt && echo && curl --silent -L https://dl.k8s.io/release/stable-$major.$previous_minor.txt && echo) | sort -n | tail -1)
+          # TODO: only in the periodics? Otherwise https://dl.k8s.io/release/stable-$major.$previous_minor.txt
+          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
           worker_image=dra/node:skewed1
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/$previous/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz"
           # We might need support for disabling tests which need a recent kubelet. We'll see...
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
@@ -320,10 +320,10 @@ presubmits:
           previous_minor=$((minor - 2))
           # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
           # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
-          $ TODO: only in the periodic job. In the presubmit, test against a known-good previous release.
-          previous=$((curl --silent -L https://dl.k8s.io/release/latest-$major.$previous_minor.txt && echo && curl --silent -L https://dl.k8s.io/release/stable-$major.$previous_minor.txt && echo) | sort -n | tail -1)
+          # TODO: only in the periodics? Otherwise https://dl.k8s.io/release/stable-$major.$previous_minor.txt
+          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
           worker_image=dra/node:skewed2
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/$previous/kubernetes-server-linux-amd64.tar.gz"
+          kind build node-image --image="$worker_image" "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz"
           # We might need support for disabling tests which need a recent kubelet. We'll see...
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
