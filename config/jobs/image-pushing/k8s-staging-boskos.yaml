@@ -1,6 +1,13 @@
 postsubmits:
   kubernetes-sigs/boskos:
     - name: post-boskos-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: sig-testing-leads
+        github_users:
+          - mkumatag
+          - Amulyam24
       skip_branches:
         # do not run on dependabot branches, these exist prior to merge
         # only merged code should trigger these jobs
