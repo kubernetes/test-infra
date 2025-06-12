@@ -191,7 +191,7 @@ presubmits:
           previous_minor=$((minor - {{kubelet_skew}}))
           # TODO: use dl.k8s.io/release for presubmits.
           previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
-          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
           /tmp/kubelet --version
           worker_nodes=$(kind get nodes | grep worker)
