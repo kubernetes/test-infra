@@ -41,18 +41,14 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          control_plane_image=dra/node:latest
-          kind build node-image --image="$control_plane_image" "${kind_node_source}"
-          worker_image="$control_plane_image"
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
-              ${kind_yaml_cmd[@]} |
-              # Configure potentially different images for control plane and workers.
-              sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
+              ${kind_yaml_cmd[@]}
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
@@ -70,12 +66,13 @@ presubmits:
           EOF
           ) >/tmp/kind.yaml
           cat /tmp/kind.yaml
-          kind create cluster --retain --config /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
+
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -130,18 +127,14 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          control_plane_image=dra/node:latest
-          kind build node-image --image="$control_plane_image" "${kind_node_source}"
-          worker_image="$control_plane_image"
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
-              ${kind_yaml_cmd[@]} |
-              # Configure potentially different images for control plane and workers.
-              sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
+              ${kind_yaml_cmd[@]}
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
@@ -159,12 +152,13 @@ presubmits:
           EOF
           ) >/tmp/kind.yaml
           cat /tmp/kind.yaml
-          kind create cluster --retain --config /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
+
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -217,27 +211,14 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          control_plane_image=dra/node:latest
-          kind build node-image --image="$control_plane_image" "${kind_node_source}"
-          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
-          previous_minor=$((minor - 1))
-          # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
-          # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
-          # TODO: only in the periodics? Otherwise https://dl.k8s.io/release/stable-$major.$previous_minor.txt
-          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
-          worker_image=dra/node:skewed1
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz"
-          # We might need support for disabling tests which need a recent kubelet. We'll see...
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
-              ${kind_yaml_cmd[@]} |
-              # Configure potentially different images for control plane and workers.
-              sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
+              ${kind_yaml_cmd[@]}
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
@@ -255,12 +236,31 @@ presubmits:
           EOF
           ) >/tmp/kind.yaml
           cat /tmp/kind.yaml
-          kind create cluster --retain --config /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 1))
+          # TODO: use dl.k8s.io/release for presubmits.
+          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We might need support for disabling tests which need a recent kubelet. We'll see...
+
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -313,27 +313,14 @@ presubmits:
           e2e_test=_output/bin/e2e.test
           # The latest kind is assumed to work also for older release branches, should this job get forked.
           curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
-          control_plane_image=dra/node:latest
-          kind build node-image --image="$control_plane_image" "${kind_node_source}"
-          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
-          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
-          previous_minor=$((minor - 2))
-          # latest-*.txt is only the latest release candidate and can be lower than stable-*.txt.
-          # Pick whatever is more recent to ensure that we cover release candidates for older patch releases.
-          # TODO: only in the periodics? Otherwise https://dl.k8s.io/release/stable-$major.$previous_minor.txt
-          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
-          worker_image=dra/node:skewed2
-          kind build node-image --image="$worker_image" "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz"
-          # We might need support for disabling tests which need a recent kubelet. We'll see...
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
-              ${kind_yaml_cmd[@]} |
-              # Configure potentially different images for control plane and workers.
-              sed -e "/^- role: control-plane/ a \  image: $control_plane_image" -e "/^- role: worker/ a \  image: $worker_image"
+              ${kind_yaml_cmd[@]}
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
@@ -351,12 +338,31 @@ presubmits:
           EOF
           ) >/tmp/kind.yaml
           cat /tmp/kind.yaml
-          kind create cluster --retain --config /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 2))
+          # TODO: use dl.k8s.io/release for presubmits.
+          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We might need support for disabling tests which need a recent kubelet. We'll see...
+
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
