@@ -34,7 +34,8 @@ presubmits:
         - |
           set -o pipefail
           # A presubmit job uses the checked out and merged source code.
-          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
           kind_node_source=.
           features=( )
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
@@ -46,20 +47,34 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # Inject ClusterConfiguration which causes etcd to use /tmp
-          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
-              # Add kubeadmConfigPatches list before node list, there is none at the moment.
-              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
-          fi
-          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
-          # Additional features are not in kind.yaml, but they can be added at the end.
-          kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
+
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
@@ -105,7 +120,8 @@ presubmits:
         - |
           set -o pipefail
           # A presubmit job uses the checked out and merged source code.
-          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
           kind_node_source=.
           # Which DRA features exist can change over time.
           features=( $( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
@@ -119,21 +135,253 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # Inject ClusterConfiguration which causes etcd to use /tmp
-          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
-              # Add kubeadmConfigPatches list before node list, there is none at the moment.
-              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
-          fi
-          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
-          # Additional features are not in kind.yaml, but they can be added at the end.
-          kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
+
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
+  - name: pull-kubernetes-kind-dra-n-1
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 1" release.
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 1))
+          # Test with the lastest stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We need support for disabling tests which need a recent kubelet.
+          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+          # when the deployed kubelet is 1.32. This is enforced by
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation }$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
+  - name: pull-kubernetes-kind-dra-n-2
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 2" release.
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 2))
+          # Test with the lastest stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We need support for disabling tests which need a recent kubelet.
+          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+          # when the deployed kubelet is 1.32. This is enforced by
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation }$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         # docker-in-docker needs privileged mode
