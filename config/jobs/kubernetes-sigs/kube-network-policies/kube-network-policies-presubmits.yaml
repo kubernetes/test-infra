@@ -19,7 +19,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250527-1b2b10e804-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
         env:
         - name: KUBE_PROXY_MODE
           value: "nftables"
@@ -64,7 +64,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250527-1b2b10e804-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
