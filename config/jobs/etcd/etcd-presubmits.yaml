@@ -157,20 +157,51 @@ presubmits:
             cpu: "4"
             memory: "4Gi"
 
-  - name: pull-etcd-govulncheck
+  - name: pull-etcd-govulncheck-main
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
     - main
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-etcd-presubmits
+      testgrid-tab-name: pull-etcd-govulncheck-main
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          export PATH=$GOPATH/bin:$PATH && make run-govulncheck
+        resources:
+          requests:
+            cpu: "4"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+
+  - name: pull-etcd-govulncheck-release-branches
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
     - release-3.6
     - release-3.4
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
-      testgrid-tab-name: pull-etcd-govulncheck
+      testgrid-tab-name: pull-etcd-govulncheck-release-branches
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
+      # Keep it in sync with the Go version used by the stable releases.
+      # Once the stable branches use Go 1.24, we can use the tool directive
+      # and the installed tools should use the same toolchain version from the
+      # go.mod. Therefore, we can go back to use the kubekins image, and
+      # consolidate the jobs.
+      - image: public.ecr.aws/docker/library/golang:1.23
         command:
         - runner.sh
         args:
