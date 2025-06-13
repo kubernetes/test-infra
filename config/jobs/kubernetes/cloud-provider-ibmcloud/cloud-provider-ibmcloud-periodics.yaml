@@ -19,7 +19,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
           command:
             - make
             - test
@@ -52,7 +52,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
           securityContext:
             privileged: true
           env:
@@ -151,7 +151,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -228,7 +228,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
           securityContext:
             privileged: true
           env:
@@ -311,7 +311,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-default
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
