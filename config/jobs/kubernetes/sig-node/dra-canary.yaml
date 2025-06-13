@@ -262,10 +262,9 @@ presubmits:
           # We need support for disabling tests which need a recent kubelet.
           # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
           # when the deployed kubelet is 1.32. This is enforced by
-          # generating `KubeletMinVersion: isSubsetOf { 1.33, 1.34 }`, i.e.
-          # not including the actual kubelet version and anything older
-          # in an allow list.
-          kubelet_label_filter="&& KubeletMinVersion: isSubsetOf { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation }$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
@@ -370,10 +369,9 @@ presubmits:
           # We need support for disabling tests which need a recent kubelet.
           # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
           # when the deployed kubelet is 1.32. This is enforced by
-          # generating `KubeletMinVersion: isSubsetOf { 1.33, 1.34 }`, i.e.
-          # not including the actual kubelet version and anything older
-          # in an allow list.
-          kubelet_label_filter="&& KubeletMinVersion: isSubsetOf { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation }$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
