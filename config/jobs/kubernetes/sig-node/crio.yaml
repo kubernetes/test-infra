@@ -104,7 +104,7 @@ periodics:
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v1"
-  - name: ci-crio-cgroupv1-node-e2e-features-canary
+- name: ci-crio-cgroupv1-node-e2e-features-canary
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -211,7 +211,7 @@ periodics:
     testgrid-tab-name: ci-crio-cgroupv2-node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v2"
-  - name: ci-crio-cgroupv2-node-e2e-features-canary
+- name: ci-crio-cgroupv2-node-e2e-features-canary
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
