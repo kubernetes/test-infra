@@ -574,6 +574,11 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        headlamp:
+          exclude:
+          - "*" # We don't want to protect any branches (except the main one) in this repo
+          include:
+          - main
         hydrophone:
           exclude:
             - "^dependencies/" # don't protect branches created by github action that updates dependencies
