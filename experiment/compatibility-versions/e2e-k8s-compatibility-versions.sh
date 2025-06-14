@@ -114,12 +114,9 @@ main() {
   export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
   # Define the path within the temp directory for the cloned repo
   PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s"
-  echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
-  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
-
   # enter the cloned prev repo branch (in temp) and run tests
   pushd "${PREV_RELEASE_REPO_PATH}"
-  build_prev_version_bins || res=$?
+  download_prev_version_bins ${EMULATED_VERSION} || res=$?
   run_prev_version_tests || res=$?
   popd
 
