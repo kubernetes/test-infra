@@ -32,6 +32,10 @@ WORKDIR /workspace
 RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/apk/repositories && \
     apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make
 
+# Install jq
+RUN curl -o /usr/bin/jq -fsSLO https://github.com/jqlang/jq/releases/download/jq-1.8.0/jq-linux-amd64
+RUN chmod +x /usr/bin/jq
+
 RUN curl -fsSLO https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
 RUN tar xzf google-cloud-sdk.tar.gz -C /
 RUN rm google-cloud-sdk.tar.gz
