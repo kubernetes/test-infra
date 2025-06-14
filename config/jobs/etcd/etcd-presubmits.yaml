@@ -203,9 +203,8 @@ presubmits:
       # consolidate the jobs.
       - image: public.ecr.aws/docker/library/golang:1.23
         command:
-        - runner.sh
+        - /bin/bash
         args:
-        - bash
         - -c
         - |
           export PATH=$GOPATH/bin:$PATH && make run-govulncheck
