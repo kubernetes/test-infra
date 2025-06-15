@@ -1,8 +1,8 @@
 ---
-gitHubLogin: "k8s-ci-robot"
-gitHubToken: "/etc/github-token/oauth"
+gitHubLogin: "k8s-infra-ci-robot"
+gitHubToken: "/etc/github-token/token"
 gitName: "Kubernetes Prow Robot"
-gitEmail: "20407524+k8s-ci-robot@users.noreply.github.com"
+gitEmail: "75457971+k8s-infra-ci-robot@users.noreply.github.com"
 onCallAddress: "" # No oncall assigned to this at the moment.
 selfAssign: true # Commenting `/cc`, so that autobump PR is not assigned to anyone
 additionalPRBody: "/cc @dims"
@@ -12,18 +12,14 @@ gitHubRepo: "test-infra"
 remoteName: "test-infra"
 upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 includedConfigPaths:
-  - "."
-excludedConfigPaths:
-  - ".ko.yaml" # Contains gcr.io/k8s-staging-test-infra/git, which is not pushed by prow
+  - "config/jobs"
+extraFiles:
+  - config/mkpj.sh
+  - config/prow/config.yaml
 targetVersion: "latest"
 prefixes:
   - name: "Prow"
     prefix: "us-docker.pkg.dev/k8s-infra-prow/images/"
     repo: "https://github.com/kubernetes-sigs/prow"
     summarise: true
-    consistentImages: true
-  - name: "Boskos"
-    prefix: "gcr.io/k8s-staging-boskos/"
-    repo: "https://github.com/kubernetes-sigs/boskos"
-    summarise: false
     consistentImages: true
