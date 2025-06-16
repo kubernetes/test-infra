@@ -1621,6 +1621,7 @@ plugins:
   kubernetes-sigs/image-builder:
     plugins:
     - mergecommitblocker
+    - override
 
   kubernetes-sigs/contributor-playground:
     plugins:
