@@ -40,10 +40,10 @@ presubmits:
           # addressed in https://github.com/kubernetes/kubernetes/issues/93822
           limits:
             cpu: 7
-            memory: 12Gi
+            memory: 24Gi
           requests:
             cpu: 7
-            memory: 12Gi
+            memory: 24Gi
   - name: pull-kubernetes-linter-hints
     cluster: eks-prow-build-cluster
     decorate: true
