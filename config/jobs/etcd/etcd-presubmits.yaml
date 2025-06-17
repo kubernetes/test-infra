@@ -33,6 +33,7 @@ presubmits:
     branches:
     - main
     - release-3.6
+    - release-3.5
     - release-3.4
     decorate: true
     annotations:
@@ -94,6 +95,7 @@ presubmits:
     branches:
     - main
     - release-3.6
+    - release-3.5
     - release-3.4
     decorate: true
     annotations:
