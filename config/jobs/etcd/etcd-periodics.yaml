@@ -1436,7 +1436,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-release35-amd64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
       command:
       - runner.sh
       args:
@@ -1468,7 +1468,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-1-cpu-release35-arm64
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
       command:
       - runner.sh
       args:
@@ -1502,7 +1502,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-release35-amd64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
         command:
           - runner.sh
         args:
@@ -1534,7 +1534,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-2-cpu-release35-arm64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
         command:
           - runner.sh
         args:
@@ -1568,7 +1568,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-release35-amd64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
         command:
           - runner.sh
         args:
@@ -1600,7 +1600,7 @@ periodics:
     testgrid-tab-name: ci-etcd-integration-4-cpu-release35-arm64
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250527-1b2b10e804-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
         command:
           - runner.sh
         args:
