@@ -574,6 +574,13 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        headlamp:
+          exclude:
+          - "^hl-ci-" # Do not protect branches created by CI
+          - "^hl-rc-" # Do not protect release candidate branches
+          branches:
+            gh-pages:
+              protect: false
         hydrophone:
           exclude:
             - "^dependencies/" # don't protect branches created by github action that updates dependencies
