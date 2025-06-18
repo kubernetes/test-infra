@@ -211,3 +211,114 @@ periodics:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, sig-scalability-azure
       testgrid-tab-name: azure-dra-master-scalability-100
+  - name: ci-kubernetes-e2e-azure-dra-with-workload-scalability
+    tags:
+      - "perfDashPrefix: azure-dra-100Nodes-with-workload"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 8h
+    interval: 12h
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              sleep 300 &&
+              cd ${GOPATH}/src/k8s.io/perf-tests/ &&
+              ./run-e2e.sh cluster-loader2
+              --nodes=100 \
+              --provider=aks \
+              --testconfig=testing/dra/config.yaml \
+              --report-dir=${ARTIFACTS}
+              --nodes=100
+              --v=2
+          securityContext:
+            privileged: true
+          env:
+            # CAPZ variables
+            - name: TEST_K8S
+              value: "true"
+            - name: WINDOWS
+              value: "false"
+            - name: CLUSTER_TEMPLATE
+              value: "templates/test/dev/cluster-template-custom-builds-load-dra.yaml"
+            - name: AZURE_LOCATION
+              value: "northeurope"
+            - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: CONTROL_PLANE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: AZURE_NODE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: TEST_WINDOWS
+              value: "false"
+            - name: "CONTROL_PLANE_MACHINE_COUNT"
+              value: "5"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "0" # Don't create windows workers
+            - name: WORKER_MACHINE_COUNT
+              value: "100"
+            # From google cl2
+            - name: CL2_ENABLE_DNS_PROGRAMMING
+              value: "true"
+            - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+              value: "0"
+            - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+              value: "true"
+            - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+              value: "99.5"
+            # For DRA cl2 tests
+            - name: CL2_MODE
+              value: "Indexed"
+            - name: CL2_NODES_PER_NAMESPACE
+              value: "10"
+            - name: CL2_JOB_RUNNING_TIME
+              value: "3s"
+            - name: CL2_LONG_JOB_RUNNING_TIME
+              value: "45m"
+            # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+            - name: DEPLOY_AZURE_CSI_DRIVER
+              value: "false"
+          resources:
+            requests:
+              cpu: "6"
+              memory: "9Gi"
+            limits:
+              cpu: "6"
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, sig-scalability-azure
+      testgrid-tab-name: azure-dra-with-workload-master-scalability-100
