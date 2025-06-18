@@ -387,6 +387,45 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
+  - name: pull-kubernetes-dra-integration-canary
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      description: Runs integration tests for DRA which need some additional setup in the job.
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
+        command:
+        - runner.sh
+        - /bin/bash
+        - -xce
+        - |
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
+          # The "more complex" ones with a dependency on kind are under test/e2e/dra, in a separate Ginkgo suite.
+          make test WHAT="test/e2e/dra" KIND_COMMAND=kind KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
   - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra-canary
     cluster: k8s-infra-prow-build
     skip_branches:
