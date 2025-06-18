@@ -418,6 +418,9 @@ presubmits:
           # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
           # The "more complex" ones with a dependency on kind are under test/e2e/dra, in a separate Ginkgo suite.
           make test WHAT="test/e2e/dra" KIND_COMMAND=kind KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 2

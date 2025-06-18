@@ -229,6 +229,8 @@ presubmits:
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
+        {%- endif %}
+        {%- if use_dind == "true" %}
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
