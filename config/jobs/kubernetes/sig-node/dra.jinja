@@ -88,6 +88,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
         command:
         - runner.sh
+
         {%- if job_type == "node" %}
         args:
         - kubetest2
@@ -111,7 +112,18 @@ presubmits:
         - name: KUBE_SSH_USER
           value: core
         {%- endif %}
-        {%- else %}
+
+        {%- elif job_type == "integration" %}
+        - /bin/bash
+        - -xce
+        - |
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
+          # The "more complex" ones with a dependency on kind are under test/e2e/dra, in a separate Ginkgo suite.
+          make test WHAT="test/e2e/dra" KIND_COMMAND=kind KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+
+        {%- elif job_type == "e2e" %}
         args:
         - /bin/bash
         - -xce
