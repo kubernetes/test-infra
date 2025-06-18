@@ -91,6 +91,101 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       fork-per-release: "true"
 
+  - name: pull-kubernetes-e2e-kind-golang-tip
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: LABEL_FILTER
+          value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+        - name: PARALLEL
+          value: "true"
+        - name: GO_VERSION
+          value: "devel"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-tab-name: pull-kind-master-golang-tip
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      fork-per-release: "true"
+
+  - name: pull-kubernetes-e2e-unit-golang-tip
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+        - runner.sh
+        - make
+        - test
+        env:
+        - name: GO_VERSION
+          value: "devel"
+        resources:
+          limits:
+            cpu: 7.2
+            memory: "43Gi"
+          requests:
+            cpu: 7.2
+            memory: "43Gi"
+    annotations:
+      testgrid-dashboards: sig-arch-code-organization
+      testgrid-tab-name: pull-unit-master-golang-tip
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      fork-per-release: "true"
+
 periodics:
 - interval: 4h
   cluster: k8s-infra-prow-build
@@ -174,6 +269,100 @@ periodics:
       - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
       - --test-mode
       - unit
+      resources:
+        limits:
+          cpu: 7.2
+          memory: "43Gi"
+        requests:
+          cpu: 7.2
+          memory: "43Gi"
+
+- interval: 4h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-golang-tip
+  annotations:
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: kind-master-golang-tip
+    description: Runs tests using golang tip
+    testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: LABEL_FILTER
+        value: "Feature: isEmpty && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      - name: GO_VERSION
+        value: "devel"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 7
+          memory: 9000Mi
+        requests:
+          cpu: 7
+          memory: 9000Mi
+
+- interval: 4h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-unit-golang-tip
+  annotations:
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: unit-master-golang-tip
+    description: Runs unit tests using golang tip
+    testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '6'
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    # unit tests have no business requiring root or doing privileged operations
+    securityContext:
+      # NOTE: these are arbitrary non-root values. They don't exist in the
+      # image and don't need to, the unit tests should only write to TMPDIR
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250613-876fb90a97-master
+      securityContext:
+        allowPrivilegeEscalation: false
+      command:
+      - runner.sh
+      - make
+      - test
+      env:
+      - name: GO_VERSION
+        value: "devel"
       resources:
         limits:
           cpu: 7.2
