@@ -87,3 +87,29 @@ presubmits:
           requests:
             cpu: 3
             memory: 10Gi
+  - name: pull-gateway-api-inference-extension-test-unit-python-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^tools/dynamic-lora-sidecar/"
+    decorate: true
+    path_alias: sigs.k8s.io/gateway-api-inference-extension
+    annotations:
+      testgrid-dashboards: sig-network-gateway-api
+      testgrid-tab-name: pull-gateway-api-inference-extension-test-unit-python-main
+      description: "Run unit tests of dynamic-lora-sidecar python code"
+    spec:
+      containers:
+        - image: python:3.10-slim-buster
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - cd tools/dynamic-lora-sidecar && make test
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
