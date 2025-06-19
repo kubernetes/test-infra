@@ -6904,6 +6904,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-extended
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-extended
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -7074,6 +7101,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-hcp-cnftests
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-mno-ztp-cnftests
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-mno-ztp-cnftests
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8227,6 +8281,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-service-mesh-sail-operator-3.0.2-ocp-4.19-lp-interop-servicemesh-interop-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-service-mesh-sail-operator-3.0.2-ocp-4.19-lp-interop-servicemesh-interop-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-quay-quay-tests-master-ocp-419-quay-quay-e2e-tests-quay313-ocp419-lp-interop
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -8973,6 +9054,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-arbiter-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-extended
+  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-extended
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-two-node-fencing-upgrade
 - days_of_results: 60
@@ -8988,6 +9071,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-cnftests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-hcp-cnftests
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-hcp-cnftests
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-mno-ztp-cnftests
+  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-mno-ztp-cnftests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-ptp
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-ptp
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-telco5g-sno-ztp-cnftests
@@ -9091,6 +9176,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-upgrade-from-stable-4.18-e2e-vsphere-zones-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.19-upgrade-from-stable-4.18-e2e-vsphere-zones-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-service-mesh-sail-operator-3.0.2-ocp-4.19-lp-interop-servicemesh-interop-aws
+  name: periodic-ci-openshift-service-mesh-sail-operator-3.0.2-ocp-4.19-lp-interop-servicemesh-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-419-quay-quay-e2e-tests-quay313-ocp419-lp-interop
   name: periodic-ci-quay-quay-tests-master-ocp-419-quay-quay-e2e-tests-quay313-ocp419-lp-interop
 - gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-419-quay-quay-e2e-tests-quay313-ocp419-lp-interop-fips
