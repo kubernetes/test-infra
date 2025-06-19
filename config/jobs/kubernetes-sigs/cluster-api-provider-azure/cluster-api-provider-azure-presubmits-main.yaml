@@ -692,7 +692,7 @@ presubmits:
           privileged: true
         env:
           - name: TEST_WINDOWS
-            value: "false"
+            value: "" # disabled
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
         resources:
