@@ -259,6 +259,7 @@ periodics:
               ./run-e2e.sh cluster-loader2
               --nodes=100 \
               --provider=aks \
+              --enable-prometheus-server=true \
               --testconfig=testing/dra/config.yaml \
               --report-dir=${ARTIFACTS}
               --nodes=100
