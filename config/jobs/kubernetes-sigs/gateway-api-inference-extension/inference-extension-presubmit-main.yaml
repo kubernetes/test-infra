@@ -89,8 +89,6 @@ presubmits:
             memory: 10Gi
   - name: pull-gateway-api-inference-extension-test-unit-python-main
     cluster: eks-prow-build-cluster
-    branches:
-    - ^main
     skip_if_only_changed: "^tools/dynamic-lora-sidecar/"
     decorate: true
     path_alias: sigs.k8s.io/gateway-api-inference-extension
