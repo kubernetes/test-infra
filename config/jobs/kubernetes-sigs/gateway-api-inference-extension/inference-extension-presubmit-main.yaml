@@ -98,7 +98,7 @@ presubmits:
       description: "Run unit tests of dynamic-lora-sidecar python code"
     spec:
       containers:
-        - image: python:3.10-slim-buster
+        - image: python:3.10-buster
           command:
             - /bin/bash
           args:
