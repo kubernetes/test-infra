@@ -7,16 +7,17 @@ emeritus_approvers:
 - chrigl
 - lingxiankong
 - ramineni
+- jichenjc
 approvers:
 - dulek
-- jichenjc
 - kayrus
+- stephenfin
 - zetaab
 reviewers:
 - dulek
-- jichenjc
 - kayrus
 - mdbooth
+- stephenfin
 - zetaab
 
 labels:
