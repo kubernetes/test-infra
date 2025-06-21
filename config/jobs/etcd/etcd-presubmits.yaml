@@ -64,6 +64,7 @@ presubmits:
     branches:
     - main
     - release-3.6
+    - release-3.5
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-presubmits
