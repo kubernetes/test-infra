@@ -17,7 +17,7 @@ presets:
     preset-capz-containerd-2-0-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v2.1.1/containerd-2.1.1-windows-amd64.tar.gz"
+    value: "latest"
 - labels:
     preset-windows-repo-list: "true"
   env:
