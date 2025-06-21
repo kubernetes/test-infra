@@ -104,6 +104,8 @@ create_cluster() {
   KIND_CLUSTER_LOG_LEVEL=${KIND_CLUSTER_LOG_LEVEL:-4}
 
   EMULATED_VERSION=${EMULATED_VERSION:-}
+  export LATEST_VERSION="${LATEST_VERSION:-$(curl -Ls https://dl.k8s.io/ci/latest.txt)}"
+  echo "{\"revision\":\"$LATEST_VERSION\"}" >"${ARTIFACTS}/metadata.json"
 
   # potentially enable --logging-format
   CLUSTER_LOG_FORMAT=${CLUSTER_LOG_FORMAT:-}
@@ -233,6 +235,31 @@ build_prev_version_bins() {
   # Ensure the built kubectl is used instead of system
   export PATH="${PWD}/_output/bin:$PATH"
   echo "Finished building e2e.test binary from ${PREV_RELEASE_BRANCH}."
+}
+
+# TODO: Support Mac as a platform along with Linux https://github.com/kubernetes/test-infra/pull/34930#discussion_r2138760351
+download_prev_version_bins() {
+  local version=$1
+  wget https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable-${version}.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  if [ $? -ne 0 ]; then
+    echo "failed to download previous version binaries"
+    return 1
+  fi
+  tar -xvf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz 
+  mkdir -p _output/bin
+  mv kubernetes/test/bin/* _output/bin
+  return 0
+}
+
+download_current_version_bins() {
+  wget 'https://dl.k8s.io/ci/'"${1}"/'kubernetes-test-'"$(go env GOOS)-$(go env GOARCH)"'.tar.gz'
+  if [ $? -ne 0 ]; then
+    echo "failed to download previous version binaries"
+    return 1
+  fi
+  tar -xvf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  mv kubernetes/test/bin/* _output/bin
+  return 0
 }
 
 # run e2es with ginkgo-e2e.sh
