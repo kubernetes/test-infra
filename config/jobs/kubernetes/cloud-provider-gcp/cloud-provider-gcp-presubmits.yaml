@@ -38,11 +38,11 @@ presubmits:
           fi
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 16Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 16Gi
   - name: cloud-provider-gcp-verify-all
     cluster: k8s-infra-prow-build
     always_run: true
