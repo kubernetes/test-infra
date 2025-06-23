@@ -154,6 +154,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-multi-p-p
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-multi-p-p
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-s390x
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1261,6 +1315,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-s390x
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -2106,6 +2187,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-serial
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-tls-13
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-tls-13
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8571,6 +8679,10 @@ test_groups:
   name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.18-lp-interop-tempo-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.18-lp-interop-tempo-interop-aws-fips
   name: periodic-ci-openshift-grafana-tempo-operator-main-tempo-product-ocp-4.18-lp-interop-tempo-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.18-install-analysis-all-s390x
 - days_of_results: 60
@@ -8670,6 +8782,8 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-fips-ovn-remote-libvirt-multi-z-z
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-p-p
   name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-s390x
+  name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-s390x
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-multi-z-z
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.18-ocp-heavy-build-ovn-remote-libvirt-ppc64le
@@ -8751,6 +8865,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-serial
   name: periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-serial
+- days_of_results: 60
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-tls-13
+  name: periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-tls-13
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.18-e2e-aws-ovn-upgrade
