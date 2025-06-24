@@ -311,6 +311,8 @@ periodics:
             - name: CL2_LONG_JOB_RUNNING_TIME
               value: "45m"
             # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+            - name: PROMETHEUS_PVC_STORAGE_CLASS
+              value: "default"
             - name: DEPLOY_AZURE_CSI_DRIVER
               value: "false"
           resources:
