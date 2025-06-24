@@ -24,7 +24,7 @@ periodics:
       - --job-config-path=config/jobs
       - --github-token-path=/etc/github/token
       - --confirm
-      - --github-endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
       - --github-endpoint=https://api.github.com
       - --github-hourly-tokens=1000 # Up the rate limit from default (300) to 1000
       volumeMounts:
