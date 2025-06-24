@@ -6,6 +6,7 @@ dashboard_groups:
     - ibm-k8s-e2e-node-ppc64le
     - ibm-k8s-e2e-default
     - ibm-k8s-e2e-alpha-enabled-default
+    - ibm-k8s-e2e-slow-ppc64le
     - ibm-etcd-tests-ppc64le
     - ibm-presubmits
 
@@ -15,6 +16,7 @@ dashboards:
 - name: ibm-k8s-e2e-node-ppc64le
 - name: ibm-k8s-e2e-default
 - name: ibm-k8s-e2e-alpha-enabled-default
+- name: ibm-k8s-e2e-slow-ppc64le
 - name: ibm-presubmits
 - name: ibm-etcd-tests-ppc64le
   dashboard_tab:
