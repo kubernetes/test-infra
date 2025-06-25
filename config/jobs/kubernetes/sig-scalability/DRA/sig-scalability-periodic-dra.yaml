@@ -209,6 +209,8 @@ periodics:
               value: "45m"
             - name: PROMETHEUS_PVC_STORAGE_CLASS
               value: "default"
+            - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+              value: "6443"
           resources:
             requests:
               cpu: "6"
