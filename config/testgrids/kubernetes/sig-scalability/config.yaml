@@ -3,6 +3,7 @@ dashboard_groups:
   dashboard_names:
     - sig-scalability-aws
     - sig-scalability-azure
+    - sig-scalability-dra
     - sig-scalability-gce
     - sig-scalability-node
     - sig-scalability-kubemark
@@ -15,6 +16,7 @@ dashboard_groups:
 dashboards:
 - name: sig-scalability-aws
 - name: sig-scalability-azure
+- name: sig-scalability-dra
 - name: sig-scalability-gce
 - name: sig-scalability-kubemark
 - name: sig-scalability-node

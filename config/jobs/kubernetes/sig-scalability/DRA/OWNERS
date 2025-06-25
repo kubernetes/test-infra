@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- jackfrancis
+- nojnhuh
+- alaypatel07
+approvers:
+- jackfrancis
+- nojnhuh
+- alaypatel07
+
+labels:
+- wg/device-management
