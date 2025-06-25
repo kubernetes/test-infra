@@ -1,7 +1,7 @@
 periodics:
-  - name: ci-kubernetes-e2e-dra-scalability
+  - name: ci-kubernetes-e2e-azure-dra-scalability
     tags:
-    - "perfDashPrefix: dra-100Nodes"
+    - "perfDashPrefix: azure-dra-100Nodes"
     - "perfDashBuildsCount: 270"
     - "perfDashJobType: performance"
     cluster: eks-prow-build-cluster
@@ -104,10 +104,10 @@ periodics:
             memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-scalability-dra
-      testgrid-tab-name: dra-master-scalability-100
-  - name: ci-kubernetes-e2e-dra-with-workload-scalability
+      testgrid-tab-name: azure-dra-master-scalability-100
+  - name: ci-kubernetes-e2e-azure-dra-with-workload-scalability
     tags:
-      - "perfDashPrefix: dra-100Nodes-with-workload"
+      - "perfDashPrefix: azure-dra-100Nodes-with-workload"
       - "perfDashBuildsCount: 270"
       - "perfDashJobType: performance"
     cluster: eks-prow-build-cluster
@@ -180,6 +180,9 @@ periodics:
               value: "Standard_D8s_v3"
             - name: TEST_WINDOWS
               value: "false"
+            # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+            - name: DEPLOY_AZURE_CSI_DRIVER
+              value: "false"
             - name: "CONTROL_PLANE_MACHINE_COUNT"
               value: "5"
             - name: WINDOWS_WORKER_MACHINE_COUNT
@@ -204,11 +207,8 @@ periodics:
               value: "3s"
             - name: CL2_LONG_JOB_RUNNING_TIME
               value: "45m"
-            # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
             - name: PROMETHEUS_PVC_STORAGE_CLASS
               value: "default"
-            - name: DEPLOY_AZURE_CSI_DRIVER
-              value: "false"
           resources:
             requests:
               cpu: "6"
@@ -218,4 +218,4 @@ periodics:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-scalability-dra
-      testgrid-tab-name: dra-with-workload-master-scalability-100
+      testgrid-tab-name: azure-dra-with-workload-master-scalability-100
