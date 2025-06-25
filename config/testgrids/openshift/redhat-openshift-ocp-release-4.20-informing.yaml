@@ -451,6 +451,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-a-a-to-x-a
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-a-a-to-x-a
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-day-0-x-ax
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -486,6 +513,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-ax
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-x-to-a-x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-x-to-a-x
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8146,6 +8200,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws-fips
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws-fips
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: release-openshift-origin-installer-e2e-aws-upgrade-4.17-to-4.18-to-4.19-to-4.20-ci
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -8198,10 +8306,16 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-a-a
+- days_of_results: 60
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-a-a-to-x-a
+  name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-a-a-to-x-a
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-day-0-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-day-0-x-ax
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-ax
+- days_of_results: 60
+  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-x-to-a-x
+  name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-gcp-ovn-multi-x-x-to-a-x
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-ibmcloud-ovn-multi-x-px
   name: periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-ibmcloud-ovn-multi-x-px
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.20-ocp-e2e-ibmcloud-ovn-multi-x-xz
@@ -8894,6 +9008,10 @@ test_groups:
   name: periodic-ci-quay-quay-tests-master-ocp-420-quay-quay-e2e-tests-quay314-ocp420-lp-interop
 - gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-420-quay-quay-e2e-tests-quay314-ocp420-lp-interop-fips
   name: periodic-ci-quay-quay-tests-master-ocp-420-quay-quay-e2e-tests-quay314-ocp420-lp-interop-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws
+  name: periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws-fips
+  name: periodic-ci-stackrox-stackrox-master-ocp-4-20-lp-interop-acs-tests-aws-fips
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.17-to-4.18-to-4.19-to-4.20-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.17-to-4.18-to-4.19-to-4.20-ci
