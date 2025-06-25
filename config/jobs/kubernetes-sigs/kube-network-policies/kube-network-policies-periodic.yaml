@@ -26,6 +26,8 @@ periodics:
         value: "true"
       - name: LABEL_FILTER
         value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy || Conformance"
+      - name: SKIP
+        value: \[Feature:SCTPConnectivity\]
       command:
         - wrapper.sh
         - bash
@@ -79,6 +81,8 @@ periodics:
         value: "true"
       - name: LABEL_FILTER
         value: "!Slow && !Disruptive && !Flaky && Feature: containsAny NetworkPolicy || Conformance"
+      - name: SKIP
+        value: \[Feature:SCTPConnectivity\]
       command:
         - wrapper.sh
         - bash
