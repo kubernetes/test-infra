@@ -163,8 +163,9 @@ periodics:
               cpu: 2
               memory: 10Gi
           command:
-            - /bin/bash
+            - runner.sh
           args:
+            - bash
             - -c
             - |
               set -o errexit
