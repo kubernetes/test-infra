@@ -9,7 +9,7 @@ presubmits:
       optional: true
       decorate: true
       decoration_config:
-        timeout: 1h
+        timeout: 2h
       run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-ova\.sh|images/capi/packer/(config|goss|ova)/.*|images/capi/hack/ensure-(ansible|packer|goss).*'
       path_alias: sigs.k8s.io/image-builder
       max_concurrency: 3
