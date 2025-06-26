@@ -6,7 +6,6 @@ periodics:
     testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: compatibility-version-test-n-minus-1
     description: Uses kind to run e2e tests from the n-1 kubernetes release against a latest kubernetes master components w/ --emulated-version=n-1 set.
-    # TODO(#34269) update owners in experiment/compatibility-versions
     testgrid-alert-email: compatibility-version-test@google.com
     testgrid-num-columns-recent: '6'
   labels:
@@ -63,7 +62,6 @@ periodics:
     testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: compatibility-version-test-n-minus-2
     description: Uses kind to run e2e tests from the n-2 kubernetes release against a latest kubernetes master components w/ --emulated-version=n-2 set.
-    # TODO(#34269) update owners in experiment/compatibility-versions
     testgrid-alert-email: compatibility-version-test@google.com
     testgrid-num-columns-recent: '6'
   labels:
@@ -120,7 +118,6 @@ periodics:
     testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: compatibility-versions-feature-gate-test
     description: Uses kind to run bespoke feature gate tests from the n-1 kubernetes release yaml files against a latest kubernetes master components w/ --emulated-version=n-1 set.
-    # TODO(#34269) update owners in experiment/compatibility-versions
     testgrid-alert-email: compatibility-version-test@google.com
     testgrid-num-failures-to-alert: "2"
     testgrid-num-columns-recent: '6'
@@ -170,7 +167,6 @@ periodics:
     testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: two-steps-upgrade-test-n-minus-1
     description: Uses kind to run e2e tests from the n-1 kubernetes release against a latest kubernetes master components w/ --emulated-version=n-1 set.
-    # TODO(#34269) update owners in experiment/compatibility-versions
     testgrid-alert-email: compatibility-version-test@google.com
     testgrid-num-columns-recent: '6'
   labels:
@@ -227,7 +223,6 @@ periodics:
     testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: skip-version-test-n-minus-2
     description: Uses kind to upgrade a cluster from n-2 and upgrades the emulaion version from n-2 -> n-1 -> n, running conformance tests between.
-    # TODO(#34269) update owners in experiment/compatibility-versions
     testgrid-alert-email: compatibility-version-test@google.com
     testgrid-num-columns-recent: '6'
   labels:
