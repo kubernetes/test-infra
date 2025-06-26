@@ -40,8 +40,6 @@ presubmits:
               set -o pipefail
               set -o xtrace
 
-              export PATH=$GOPATH/bin:$PATH
-              export GO111MODULE=on
               RESOURCE_TYPE="powervs"
               #Call to boskos to checkout resource
               source "./hack/boskos.sh"
