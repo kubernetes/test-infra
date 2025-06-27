@@ -1,6 +1,6 @@
 periodics:
   - name: periodic-cluster-api-provider-gcp-build-main
-    interval: 4h
+    interval: 12h
     decorate: true
     cluster: eks-prow-build-cluster
     extra_refs:
@@ -31,7 +31,7 @@ periodics:
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
       testgrid-num-failures-to-alert: "2"
   - name: periodic-cluster-api-provider-gcp-test-main
-    interval: 4h
+    interval: 12h
     decorate: true
     cluster: eks-prow-build-cluster
     extra_refs:
