@@ -3,11 +3,13 @@
 # Synced to the root OWNERS file in sigs.k8s.io/external-dns as of 09/16/23
 
 approvers:
+  - ivankatliarchuk
   - mloiseleur
   - raffo
   - szuecs
 
 reviewers:
+  - ivankatliarchuk
   - mloiseleur
   - raffo
   - szuecs
