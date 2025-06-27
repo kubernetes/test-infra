@@ -147,7 +147,10 @@ func (c *client) findConfigToUpdate() error {
 		}
 
 		// No error is expected
-		filepath.Walk(fullPath, func(leafPath string, info os.FileInfo, err error) error {
+		filepath.WalkDir(fullPath, func(leafPath string, info os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
 			if !re.MatchString(leafPath) {
 				return nil
 			}
