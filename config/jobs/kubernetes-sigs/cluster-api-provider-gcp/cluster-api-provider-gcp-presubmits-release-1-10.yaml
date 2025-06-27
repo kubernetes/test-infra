@@ -1,16 +1,16 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-gcp:
-  - name: pull-cluster-api-provider-gcp-test-release-1-7
+  - name: pull-cluster-api-provider-gcp-test-release-1-10
     always_run: true
     optional: false
     decorate: true
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -22,18 +22,18 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-test-release-1-7
-  - name: pull-cluster-api-provider-gcp-build-release-1-7
+      testgrid-tab-name: pr-test-release-1-10
+  - name: pull-cluster-api-provider-gcp-build-release-1-10
     always_run: true
     optional: false
     decorate: true
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -45,20 +45,21 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-build-release-1-7
-  - name: pull-cluster-api-provider-gcp-make-release-1-7
+      testgrid-tab-name: pr-build-release-1-10
+  - name: pull-cluster-api-provider-gcp-make-release-1-10
     cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -74,8 +75,8 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-make-release-1-7
-  - name: pull-cluster-api-provider-gcp-verify-release-1-7
+      testgrid-tab-name: pr-make-release-1-10
+  - name: pull-cluster-api-provider-gcp-verify-release-1-10
     always_run: true
     optional: false
     decorate: true
@@ -86,10 +87,10 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.7$
+    - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
         command:
         - "runner.sh"
         - "make"
@@ -105,15 +106,15 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-verify-release-1-7
-  - name: pull-cluster-api-provider-gcp-e2e-test-release-1-7
+      testgrid-tab-name: pr-verify-release-1-10
+  - name: pull-cluster-api-provider-gcp-e2e-test-release-1-10
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     always_run: true
     optional: false
     decorate: true
@@ -121,7 +122,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -140,15 +141,15 @@ presubmits:
               memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-test-release-1-7
-  - name: pull-cluster-api-provider-gcp-conformance-release-1-7
+      testgrid-tab-name: pr-e2e-test-release-1-10
+  - name: pull-cluster-api-provider-gcp-conformance-release-1-10
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     always_run: false
     optional: true
     decorate: true
@@ -156,7 +157,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -175,15 +176,15 @@ presubmits:
               memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-conformance-release-1-7
-  - name: pull-cluster-api-provider-gcp-capi-e2e-release-1-7
+      testgrid-tab-name: pr-conformance-release-1-10
+  - name: pull-cluster-api-provider-gcp-capi-e2e-release-1-10
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     always_run: false
     optional: true
     decorate: true
@@ -191,7 +192,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -213,15 +214,15 @@ presubmits:
               memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-capi-e2e-test-release-1-7
-  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade-release-1-7
+      testgrid-tab-name: pr-capi-e2e-test-release-1-10
+  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade-release-1-10
     cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     always_run: false
     optional: true
     decorate: true
@@ -229,7 +230,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -250,8 +251,8 @@ presubmits:
               memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-upgrade-release-1-7
-  - name: pull-cluster-api-provider-gcp-apidiff-release-1-7
+      testgrid-tab-name: pr-e2e-upgrade-release-1-10
+  - name: pull-cluster-api-provider-gcp-apidiff-release-1-10
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
@@ -260,10 +261,10 @@ presubmits:
     labels:
       preset-service-account: "true"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
         command:
           - runner.sh
         args:
@@ -277,15 +278,15 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-apidiff-main-release-1-7
-  - name: pull-cluster-api-provider-gcp-coverage-release-1-7
+      testgrid-tab-name: pr-apidiff-main-release-1-10
+  - name: pull-cluster-api-provider-gcp-coverage-release-1-10
     always_run: false
     optional: true
     decorate: true
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^release-1.7$
+    - ^release-1.10$
     extra_refs:
       - org: kubernetes
         repo: test-infra
@@ -293,7 +294,7 @@ presubmits:
         path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.29
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250409-f52ea67ed6-1.33
         command:
         - runner.sh
         args:
@@ -320,5 +321,5 @@ presubmits:
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-coverage-release-1-7
+      testgrid-tab-name: pr-coverage-release-1-10
       testgrid-alert-email: k8s-infra-staging-cluster-api-gcp@kubernetes.io
