@@ -2,14 +2,15 @@
 
 reviewers:
 - cpanato
+- damdo
 - justinsb
-- richardcase
-- vincepri
+- salasberryfin
+
 approvers:
 - cpanato
+- damdo
 - justinsb
-- richardcase
-- vincepri
+- salasberryfin
 
 labels:
 - sig/cluster-lifecycle
@@ -19,3 +20,5 @@ emeritus_approvers:
 - maisem
 - detiber
 - krousey
+- richardcase
+- vincepri
