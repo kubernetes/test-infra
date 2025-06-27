@@ -1037,6 +1037,38 @@ periodics:
     nodeSelector:
       kubernetes.io/arch: arm64
 
+- name: ci-etcd-e2e-release35-amd64
+  interval: 4h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: release-3.5
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics, sig-etcd-amd64
+    testgrid-tab-name: ci-etcd-e2e-release35-amd64
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
+      resources:
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"
+
 - name: ci-etcd-unit-test-release35-amd64
   interval: 4h
   cluster: eks-prow-build-cluster
