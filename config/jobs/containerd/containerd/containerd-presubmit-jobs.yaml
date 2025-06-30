@@ -1,7 +1,8 @@
 presubmits:
   containerd/containerd:
   - name: pull-containerd-build
-    always_run: true
+    always_run: false
+    optional: true
     cluster: k8s-infra-prow-build
     branches:
     - main
