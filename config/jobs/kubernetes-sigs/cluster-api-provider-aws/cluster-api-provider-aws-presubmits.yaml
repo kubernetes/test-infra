@@ -90,11 +90,11 @@ presubmits:
         - ./scripts/ci-docker-build.sh
         resources:
           requests:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "6"
+            memory: "12Gi"
           limits:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "6"
+            memory: "12Gi"
         # docker-in-docker needs privileged mode
         securityContext:
             privileged: true
