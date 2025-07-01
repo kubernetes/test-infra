@@ -413,11 +413,13 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          # The latest kind is assumed to work also for older release branches, should this job get forked.
-          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
           # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
-          # The "more complex" ones with a dependency on kind are under test/e2e/dra, in a separate Ginkgo suite.
-          make test WHAT="test/e2e/dra" KIND_COMMAND=kind KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+          # The "more complex" ones with a dependency on local-up-cluster.sh are under test/integration/dra/cluster, in a separate Ginkgo suite.
+          make test WHAT="test/integration/dra/cluster" KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+        env:
+          - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+            value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
