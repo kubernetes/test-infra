@@ -606,7 +606,8 @@ periodics:
           value: /go
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
-
+        - name: KUBE_SSH_USER
+          value: core
 - name: ci-kubernetes-fsquota-ubuntu
   interval: 24h
   cluster: k8s-infra-prow-build
