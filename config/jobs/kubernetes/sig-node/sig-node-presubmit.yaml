@@ -2536,7 +2536,8 @@ presubmits:
             value: /go
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
-
+          - name: KUBE_SSH_USER
+            value: core
   - name: pull-kubernetes-node-kubelet-credential-provider
     cluster: k8s-infra-prow-build
     always_run: false
