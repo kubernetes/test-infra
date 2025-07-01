@@ -2227,3 +2227,11 @@ repos:
         target: prs
         prowPlugin: label
         addedBy: approvers or reviewers or members
+  kubernetes-sigs/gateway-api-inference-extension:
+    labels:
+      - color: e11d21
+        description: Categorizes an issue or PR as introducing a breaking change.
+        name: kind/breaking-change
+        target: both
+        prowPlugin: label
+        addedBy: anyone
