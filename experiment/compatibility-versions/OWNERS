@@ -1,7 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-# TODO(#34269) update owners in experiment/compatibility-versions to a group/rotation and route the alert email to a rotation vs individual email
 reviewers:
-- aaron-prindle
+- compatibility-version-experiment-approvers
 approvers:
-- aaron-prindle
+- compatibility-version-experiment-approvers
