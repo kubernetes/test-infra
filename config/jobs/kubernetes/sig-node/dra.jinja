@@ -18,7 +18,7 @@ presubmits:
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-node-containerd" %}
 {%- set runtime = "containerd" %}
 {%- endif %}
-{%- if ci and release_informing == "true" %}
+{%- if ci and release_informing %}
 {%- set testgrid_dashboards = testgrid_dashboards + ", sig-release-master-informing" %}
 {%- set testgrid_alert_email = testgrid_alert_email + ", release-team@kubernetes.io" %}
 {%- endif %}
@@ -40,7 +40,7 @@ presubmits:
     {%- endif %}
     labels:
       preset-service-account: "true"
-      {%- if use_dind == "true" %}
+      {%- if use_dind %}
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       {%- endif %}
@@ -103,7 +103,7 @@ presubmits:
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/{{runtime}}/{{runtime}}.sock --container-runtime-process-name=/usr/local/bin/{{runtime}} --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/{{runtime}}.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"{{runtime}}.log\", \"journalctl\": [\"-u\", \"{{runtime}}\"]}"'
         - --image-config-file={{image_config_file}}
-        {%- if inject_ssh_public_key == "true" %}
+        {%- if inject_ssh_public_key %}
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -228,11 +228,11 @@ presubmits:
           kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
           {%- endif %}
 
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         {%- endif %}
-        {%- if use_dind == "true" %}
+        {%- if use_dind %}
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
