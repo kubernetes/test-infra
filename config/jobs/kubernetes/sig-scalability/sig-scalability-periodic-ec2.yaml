@@ -67,7 +67,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com, release-team@kubernetes.io
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -172,7 +172,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, eks-scalability@amazon.com
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master
       imagePullPolicy: Always
       command:
       - runner.sh

@@ -85,7 +85,7 @@ presubmits:
     {%- endif %}
     spec:
       containers:
-      - image: {% if canary %}gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-master{% else %}gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-master{% endif %}
+      - image: {% if canary %}gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master{% else %}gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master{% endif %}
         command:
         - runner.sh
 
