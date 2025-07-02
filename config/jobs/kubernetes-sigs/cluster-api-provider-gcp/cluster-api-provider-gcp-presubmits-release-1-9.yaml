@@ -10,7 +10,7 @@ presubmits:
     - ^release-1.9$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -33,7 +33,7 @@ presubmits:
     - ^release-1.9$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -58,7 +58,7 @@ presubmits:
     - ^release-1.9$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -89,7 +89,7 @@ presubmits:
     - ^release-1.9$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
         command:
         - "runner.sh"
         - "make"
@@ -121,7 +121,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -156,7 +156,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -191,7 +191,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -229,7 +229,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -263,7 +263,7 @@ presubmits:
     - ^release-1.9$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
         command:
           - runner.sh
         args:
@@ -293,7 +293,7 @@ presubmits:
         path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-1.30
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-1.30
         command:
         - runner.sh
         args:

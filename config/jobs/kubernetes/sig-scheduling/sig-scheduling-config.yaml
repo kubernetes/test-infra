@@ -74,7 +74,7 @@ presubmits:
       timeout: 3h55m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-4f94b8ee0c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master
         command:
         - runner.sh
         args:
