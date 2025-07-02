@@ -418,7 +418,7 @@ presubmits:
           # The "more complex" ones with a dependency on local-up-cluster.sh are under test/integration/dra/cluster, in a separate Ginkgo suite.
           make test WHAT="test/integration/dra/cluster" KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
         env:
-          - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+          - name: CDI_IN_DOCKER_ENABLED
             value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
