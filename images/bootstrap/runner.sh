@@ -46,7 +46,8 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     export CDI_IN_DOCKER_ENABLED=${CDI_IN_DOCKER_ENABLED:-false}
     if [[ "${CDI_IN_DOCKER_ENABLED}" == "true" ]]; then
         echo "Enabling CDI for Docker."
-        cat /etc/docker/daemon.json <<EOF
+        mkdir -p /etc/docker/
+        cat >/etc/docker/daemon.json <<EOF
 {
   "features": {
     "cdi": true
