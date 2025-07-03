@@ -85,7 +85,7 @@ presubmits:
     {%- endif %}
     spec:
       containers:
-      - image: {% if canary %}gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master{% else %}gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master{% endif %}
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master
         command:
         - runner.sh
 
@@ -117,10 +117,13 @@ presubmits:
         - /bin/bash
         - -xce
         - |
+          cat /etc/docker/daemon.json
+          ps -efww
+          lsof -p `pidof containerd`
           make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
           # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
           # The "more complex" ones with a dependency on local-up-cluster.sh are under test/integration/dra/cluster, in a separate Ginkgo suite.
-          make test WHAT="test/integration/dra/cluster" KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+          make test WHAT="test/integration/dra/cluster" FULL_LOG=true KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
         env:
           - name: CDI_IN_DOCKER_ENABLED
             value: "true"
