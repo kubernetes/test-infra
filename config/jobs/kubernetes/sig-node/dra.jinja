@@ -119,7 +119,10 @@ presubmits:
         - |
           cat /etc/docker/daemon.json
           ps -efww
-          lsof -p `pidof containerd`
+          cat /var/run/docker/containerd/containerd.toml || true
+          ls -l /etc/containerd/runtime_*.toml || true
+          cat /etc/containerd/runtime_*.toml || true
+          exit 1
           make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
           # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
           # The "more complex" ones with a dependency on local-up-cluster.sh are under test/integration/dra/cluster, in a separate Ginkgo suite.
