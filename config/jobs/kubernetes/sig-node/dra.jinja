@@ -117,7 +117,9 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          service docker stop
+          timeout 30 service docker stop || true
+          # force kill docker related processes
+          (cat /var/run/docker*.pid | xargs kill -9) || true
           rm /var/log/docker.log
           containerd config default > /etc/containerd/config.toml
           sed -ie 's/enable_cdi = false/enable_cdi = true/' /etc/containerd/config.toml
