@@ -499,19 +499,19 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          cat /etc/docker/daemon.json
+          service docker stop
+          rm /var/log/docker.log
+          containerd config default > /etc/containerd/config.toml
+          sed -ie 's/enable_cdi = false/enable_cdi = true/' /etc/containerd/config.toml
+          containerd >/var/log/containerd.log 2>&1 &
+          service docker start
           ps -efww
-          cat /var/run/docker/containerd/containerd.toml || true
-          ls -l /etc/containerd/runtime_*.toml || true
-          cat /etc/containerd/runtime_*.toml || true
-          exit 1
+          cat /var/log/docker.log
+          cat /var/log/containerd.log
           make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
           # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
           # The "more complex" ones with a dependency on local-up-cluster.sh are under test/integration/dra/cluster, in a separate Ginkgo suite.
           make test WHAT="test/integration/dra/cluster" FULL_LOG=true KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
-        env:
-          - name: CDI_IN_DOCKER_ENABLED
-            value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
