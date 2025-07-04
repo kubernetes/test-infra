@@ -369,6 +369,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/branchprotector" href="#area/branchprotector">`area/branchprotector`</a> | Issues or PRs related to prow's branchprotector component| label | |
 | <a id="area/crier" href="#area/crier">`area/crier`</a> | Issues or PRs related to prow's crier component| label | |
 | <a id="area/deck" href="#area/deck">`area/deck`</a> | Issues or PRs related to prow's deck component| label | |
+| <a id="area/documentation" href="#area/documentation">`area/documentation`</a> | Issues or PRs related to documentation| label | |
 | <a id="area/gangway" href="#area/gangway">`area/gangway`</a> | Issues or PRs related to prow's gangway component| label | |
 | <a id="area/gerrit" href="#area/gerrit">`area/gerrit`</a> | Issues or PRs related to prow's gerrit component| label | |
 | <a id="area/ghproxy" href="#area/ghproxy">`area/ghproxy`</a> | Issues or PRs related to prow's ghproxy component| label | |
