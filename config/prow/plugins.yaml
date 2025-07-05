@@ -285,67 +285,142 @@ lgtm:
   store_tree_hash: true
 
 blockades:
+  - repos:
+    - kubernetes/api
+    - kubernetes/apiextensions-apiserver
+    - kubernetes/apimachinery
+    - kubernetes/apiserver
+    - kubernetes/cli-runtime
+    - kubernetes/cloud-provider
+    - kubernetes/cluster-bootstrap
+    - kubernetes/code-generator
+    - kubernetes/component-base
+    - kubernetes/component-helpers
+    - kubernetes/controller-manager
+    - kubernetes/cri-api
+    - kubernetes/cri-client
+    - kubernetes/csi-translation-lib
+    - kubernetes/dynamic-resource-allocation
+    - kubernetes/endpointslice
+    - kubernetes/externaljwt
+    - kubernetes/kms
+    - kubernetes/kube-aggregator
+    - kubernetes/kube-controller-manager
+    - kubernetes/kube-proxy
+    - kubernetes/kube-scheduler
+    - kubernetes/kubectl
+    - kubernetes/kubelet
+    - kubernetes/metrics
+    - kubernetes/mount-utils
+    - kubernetes/pod-security-admission
+    - kubernetes/sample-apiserver
+    - kubernetes/sample-cli-plugin
+    - kubernetes/sample-controller
+  required_labels:
+    - do-not-merge
+  missing_label_policy:
+    org: kubernetes
+    repos:
+      - api
+      - apiextensions-apiserver
+      - apimachinery
+      - apiserver
+      - cli-runtime
+      - cloud-provider
+      - cluster-bootstrap
+      - code-generator
+      - component-base
+      - component-helpers
+      - controller-manager
+      - cri-api
+      - cri-client
+      - csi-translation-lib
+      - dynamic-resource-allocation
+      - endpointslice
+      - externaljwt
+      - kms
+      - kube-aggregator
+      - kube-controller-manager
+      - kube-proxy
+      - kube-scheduler
+      - kubectl
+      - kubelet
+      - metrics
+      - mount-utils
+      - pod-security-admission
+      - sample-apiserver
+      - sample-cli-plugin
+      - sample-controller
+    label: do-not-merge
+    comment: |
+      This is a staging repository. Please submit your PR to https://github.com/kubernetes/kubernetes instead.
+
 - repos:
-  - kubernetes/kubernetes
+    - kubernetes/kubernetes
   blockregexps:
-  - ^examples/
+    - ^examples/
   explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
+
 - repos:
-  - kubernetes/kubernetes
+    - kubernetes/kubernetes
   blockregexps:
-  - ^pkg/util/[^/]+\.go$
+    - ^pkg/util/[^/]+\.go$
   explanation: "Utility code must be added to a subpackage like pkg/util/flag, not pkg/util directly. See: #49923"
+
 - repos:
-  - kubernetes/kubernetes
+    - kubernetes/kubernetes
   blockregexps:
-  - ^test/conformance/testdata/conformance.yaml$
+    - ^test/conformance/testdata/conformance.yaml$
   branchregexp: "^release-*"
   explanation: "`test/conformance/testdata/conformance.yaml` cannot be updated on release branches."
+
 - repos:
-  - kubernetes/community
+    - kubernetes/community
   blockregexps:
-  - ^events/2016
-  - ^events/2017
-  - ^events/2018
-  - ^events/elections/2017
-  - ^events/elections/2018
-  - ^events/elections/2019
+    - ^events/2016
+    - ^events/2017
+    - ^events/2018
+    - ^events/elections/2017
+    - ^events/elections/2018
+    - ^events/elections/2019
   explanation: "These files are historical, and from events that have already occurred."
+
 - repos:
-  - kubernetes/community
+    - kubernetes/community
   blockregexps:
-  - ^keps/
+    - ^keps/
   explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
+
 - repos:
-  - kubernetes/community
+    - kubernetes/community
   blockregexps:
-  - ^contributors/design-proposals/
+    - ^contributors/design-proposals/
   explanation: "The Design Proposal process has been deprecated in favor of [Kubernetes Enhancement Proposals (KEP)](https://git.k8s.io/enhancements/). These documents are here for historical purposes only."
+
 - repos:
-  - kubernetes/enhancements
+    - kubernetes/enhancements
   blockregexps:
-  - ^keps/NEXT_KEP_NUMBER$
+    - ^keps/NEXT_KEP_NUMBER$
   explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
+
 - repos:
-  - kubernetes/release
+    - kubernetes/release
   blockregexps:
-  - ^push-build.sh
+    - ^push-build.sh
   explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
+
 - repos:
-  - kubernetes/client-go
+    - kubernetes/client-go
+    - kubernetes/cri-api
   blockregexps:
-  - .*
+    - .*
   explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+
 - repos:
-  - kubernetes/k8s.io
+    - kubernetes/k8s.io
   blockregexps:
-  - ^k8s.gcr.io/
-  explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead"
-- repos:
-  - kubernetes/cri-api
-  blockregexps:
-  - .*
-  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+    - ^k8s.gcr.io/
+  explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead."
 
 blunderbuss:
   max_request_count: 2
