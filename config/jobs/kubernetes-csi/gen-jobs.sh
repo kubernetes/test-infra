@@ -24,26 +24,26 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.30
 1.31
 1.32
+1.33
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.30
 1.31
 1.32
+1.33
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.32"
+experimental_k8s_version="1.33"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.31"
+latest_stable_k8s_version="1.32"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.15.0"
+hostpath_driver_version="v1.17.0"
 
 # We need this image because it has Docker in Docker and go.
 dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master"
