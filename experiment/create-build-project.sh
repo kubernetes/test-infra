@@ -39,7 +39,7 @@ PROJECT_ID=
 INTERACTIVE=
 
 CLUSTER_NAME="prow"
-MACHINE_TYPE="e2-standard-1"
+MACHINE_TYPE="e2-standard-2"
 NUM_NODES="3"
 ZONE="us-west1-a"
 POD_NAMESPACE="test-pods"
