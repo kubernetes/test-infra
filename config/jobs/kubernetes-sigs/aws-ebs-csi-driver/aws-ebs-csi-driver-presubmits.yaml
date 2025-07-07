@@ -317,6 +317,40 @@ presubmits:
       testgrid-tab-name: pull-security
       description: Scans release branch for any known vulnerabilities
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-external-test-eks-bottlerocket
+    cluster: eks-prow-build-cluster
+    decorate: true
+    optional: true
+    skip_report: true
+    skip_branches:
+      - gh-pages
+    skip_if_only_changed: "^docs/|^examples/|.md$|OWNERS$|^.github/"
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-shared-testing: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250702-e205934cd3-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-external-eks-bottlerocket
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver, amazon-ec2-presubmits
+      testgrid-tab-name: pull-ebs-external-test-eks-bottlerocket
+      description: kubernetes/kubernetes external test on pull request on eks using bottlerocket
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test-eks
     cluster: eks-prow-build-cluster
     decorate: true
