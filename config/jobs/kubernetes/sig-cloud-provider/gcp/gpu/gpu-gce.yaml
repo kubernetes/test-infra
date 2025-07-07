@@ -5,14 +5,14 @@ presets:
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-t4,count=2
   - name: NODE_SIZE
-    value: n1-standard-2
+    value: e2-standard-2
 - labels:
     preset-ci-gce-device-plugin-gpu-nvidia-t4: "true"
   env:
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-t4,count=2
   - name: NODE_SIZE
-    value: n1-standard-2
+    value: e2-standard-2
 
 periodics:
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu

@@ -18,7 +18,7 @@ set -o nounset
 set -o pipefail
 
 if [[ $# -lt 6 ]]; then
-    echo "Usage: $(basename "$0") <gcp-project-id> <pool-name> <workers:200> <diskgb:600> <machine:n1-standard-2> <bot ...>" >&2
+    echo "Usage: $(basename "$0") <gcp-project-id> <pool-name> <workers:200> <diskgb:600> <machine:e2-standard-2> <bot ...>" >&2
     exit 1
 fi
 
