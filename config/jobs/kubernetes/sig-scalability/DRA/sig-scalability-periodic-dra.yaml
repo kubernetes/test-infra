@@ -94,7 +94,9 @@ periodics:
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
+          value: "99.99"
+        - name: CL2_REPEATS
+          value: "10"
         resources:
           requests:
             cpu: "6"
