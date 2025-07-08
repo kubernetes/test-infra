@@ -7,8 +7,8 @@ periodics:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 8h
-    interval: 12h
+      timeout: 6h
+    interval: 6h
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     labels:
       preset-dind-enabled: "true"
@@ -27,9 +27,9 @@ periodics:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: kubernetes
+    - org: nojnhuh
       repo: perf-tests
-      base_ref: master
+      base_ref: api-avail-err-log
       path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
