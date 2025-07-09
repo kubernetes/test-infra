@@ -4,7 +4,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
-      timeout: 8h
+      timeout: 3h
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -24,9 +24,9 @@ presubmits:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: kubernetes
+    - org: nojnhuh
       repo: perf-tests
-      base_ref: master
+      base_ref: api-avail-err-log
       path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
@@ -91,7 +91,7 @@ presubmits:
         - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
+          value: "99.99"
         resources:
           requests:
             cpu: "6"
