@@ -26,7 +26,7 @@ periodics:
   labels:
     preset-azure-community: "true"
     preset-capz-containerd-1-7-latest: "true"
-    preset-capz-windows-2022-202503b: "true"
+    preset-capz-windows-2022: "true"
     preset-capz-windows-common: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -61,7 +61,7 @@ periodics:
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
-    preset-capz-windows-2022-202503b: "true"
+    preset-capz-windows-2022: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
