@@ -27,8 +27,8 @@ import (
 	"strings"
 	"text/template"
 
+	gyaml "go.yaml.in/yaml/v2"
 	"sigs.k8s.io/yaml"
-	gyaml "sigs.k8s.io/yaml/goyaml.v2"
 
 	v1 "k8s.io/api/core/v1"
 	prowapi "sigs.k8s.io/prow/pkg/apis/prowjobs/v1"
