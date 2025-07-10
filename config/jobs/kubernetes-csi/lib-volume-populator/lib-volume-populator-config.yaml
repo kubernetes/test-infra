@@ -33,6 +33,9 @@ presubmits:
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.31.0"
+        # Use K8s 1.33+ e2e test version: https://github.com/kubernetes-csi/lib-volume-populator/issues/221
+        - name: CSI_PROW_E2E_VERSION
+          value: "v1.33.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.31"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -130,6 +133,9 @@ presubmits:
         # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.32.0"
+        # Use K8s 1.33+ e2e test version: https://github.com/kubernetes-csi/lib-volume-populator/issues/221
+        - name: CSI_PROW_E2E_VERSION
+          value: "v1.33.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
