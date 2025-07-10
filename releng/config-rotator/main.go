@@ -24,8 +24,8 @@ import (
 	"os"
 	"strings"
 
+	gyaml "go.yaml.in/yaml/v2"
 	"sigs.k8s.io/yaml"
-	gyaml "sigs.k8s.io/yaml/goyaml.v2"
 
 	"sigs.k8s.io/prow/pkg/config"
 )
