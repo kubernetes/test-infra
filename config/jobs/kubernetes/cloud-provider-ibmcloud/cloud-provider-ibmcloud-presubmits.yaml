@@ -65,7 +65,7 @@ presubmits:
                 --build-version $K8S_BUILD_VERSION \
                 --release-marker $K8S_BUILD_VERSION \
                 --cluster-name pull-$TIMESTAMP \
-                --workers-count 2 \
+                --workers-count 1 \
                 --up --down --auto-approve --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true \
                 --powervs-memory 32 \
