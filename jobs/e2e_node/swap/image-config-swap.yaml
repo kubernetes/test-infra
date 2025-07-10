@@ -9,4 +9,4 @@ images:
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
     image_regex: ".*[^-cgroupsv1]$"
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/ubuntu-swap-1G-allocation.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml"
-    machine: n1-standard-2
+    machine: e2-standard-2

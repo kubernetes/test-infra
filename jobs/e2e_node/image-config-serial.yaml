@@ -4,10 +4,10 @@
 images:
   ubuntu:
     image: ubuntu-gke-2204-1-24-v20220623
-    machine: n1-standard-2 # These tests need a lot of memory
+    machine: e2-standard-2 # These tests need a lot of memory
     project: ubuntu-os-gke-cloud
   cos-stable1:
     image_family: cos-beta
     project: cos-cloud
-    machine: n1-standard-2 # These tests need a lot of memory
+    machine: e2-standard-2 # These tests need a lot of memory
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
