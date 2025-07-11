@@ -223,6 +223,8 @@ periodics:
               value: "default"
             - name: PROMETHEUS_APISERVER_SCRAPE_PORT
               value: "6443"
+            - name: PROMETHEUS_SCRAPE_KUBELETS
+              value: "true"
           resources:
             requests:
               cpu: "6"
