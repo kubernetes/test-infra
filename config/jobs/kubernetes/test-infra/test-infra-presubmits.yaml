@@ -6,6 +6,7 @@ presubmits:
     - master
     run_if_changed: 'gubernator|config/prow/config.yaml|config/jobs/.+\.yaml'
     decorate: true
+    optional: false
     labels:
       preset-service-account: "true"
     spec:
