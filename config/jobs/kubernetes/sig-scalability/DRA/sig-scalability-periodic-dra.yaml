@@ -47,13 +47,10 @@ periodics:
           ./run-e2e.sh cluster-loader2
           --nodes=100 \
           --provider=aks \
-          --testconfig=testing/load/config.yaml \
-          --testconfig=testing/huge-service/config.yaml \
-          --testconfig=testing/access-tokens/config.yaml \
-          --testoverrides=./testing/experiments/enable_restart_count_check.yaml \
-          --testoverrides=./testing/experiments/use_simple_latency_query.yaml \
-          --testoverrides=./testing/overrides/load_throughput.yaml \
+          --enable-prometheus-server=true \
+          --testconfig=testing/dra-baseline/config.yaml \
           --report-dir=${ARTIFACTS}
+          --nodes=100
           --v=2
         securityContext:
           privileged: true
@@ -97,6 +94,19 @@ periodics:
           value: "99.99"
         - name: CL2_REPEATS
           value: "10"
+        # For DRA cl2 tests
+        - name: CL2_MODE
+          value: "Indexed"
+        - name: CL2_NODES_PER_NAMESPACE
+          value: "10"
+        - name: CL2_JOB_RUNNING_TIME
+          value: "3s"
+        - name: CL2_LONG_JOB_RUNNING_TIME
+          value: "45m"
+        - name: PROMETHEUS_PVC_STORAGE_CLASS
+          value: "default"
+        - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+          value: "6443"
         resources:
           requests:
             cpu: "6"
@@ -135,9 +145,9 @@ periodics:
         repo: kubernetes
         base_ref: master
         path_alias: k8s.io/kubernetes
-      - org: kubernetes
+      - org: alaypatel07
         repo: perf-tests
-        base_ref: master
+        base_ref: dra-baseline
         path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
