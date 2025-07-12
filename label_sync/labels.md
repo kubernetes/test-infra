@@ -20,6 +20,7 @@
 - [Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontroller-runtime-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for issues](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-issues)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for PRs](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-prs)
+- [Labels that apply to kubernetes-sigs/gateway-api-inference-extension, for both issues and PRs](#labels-that-apply-to-kubernetes-sigsgateway-api-inference-extension-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/kind, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskind-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/krew, for both issues and PRs](#labels-that-apply-to-kubernetes-sigskrew-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/kubespray, only for PRs](#labels-that-apply-to-kubernetes-sigskubespray-only-for-prs)
@@ -330,6 +331,12 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="kind/gep" href="#kind/gep">`kind/gep`</a> | PRs related to Gateway Enhancement Proposal(GEP)| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/gateway-api-inference-extension, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="kind/breaking-change" href="#kind/breaking-change">`kind/breaking-change`</a> | Categorizes an issue or PR as introducing a breaking change.| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/kind, for both issues and PRs
 
