@@ -499,10 +499,15 @@ presubmits:
         - /bin/bash
         - -xce
         - |
-          make WHAT="cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
-          # "Normal" integration tests under test/integration/dra run in pull-kubernetes-integration.
-          # The "more complex" ones with a dependency on local-up-cluster.sh are under test/integration/dra/cluster, in a separate Ginkgo suite.
-          make test WHAT="test/integration/dra/cluster" FULL_LOG=true KUBETEST_IN_DOCKER=true KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir KUBE_TIMEOUT=-timeout=30m KUBE_TEST_ARGS="-args -ginkgo.junit-report=${ARTIFACTS}/junit.xml"
+          # test/e2e_dra is a separate Ginkgo suite with a dependency on local-up-cluster.sh.
+          # We could use "make test WHAT=./test/e2e_dra", but then we would get a test JUnit file
+          # in addition to the better one from Ginkgo, so instead we build the test binary and
+          # invoke it directly. The Ginkgo CLI doesn't add any benefit because we cannot run
+          # tests in parallel.
+          #
+          # We also need the control plane binaries.
+          make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
+          KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
