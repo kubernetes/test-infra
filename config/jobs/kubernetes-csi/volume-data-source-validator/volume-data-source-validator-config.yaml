@@ -35,6 +35,8 @@ presubmits:
           value: "1.31.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.31"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.31"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -58,7 +60,7 @@ presubmits:
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true
     decorate: true
     skip_report: false
@@ -132,6 +134,8 @@ presubmits:
           value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -155,7 +159,7 @@ presubmits:
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true
     decorate: true
     skip_report: false
@@ -229,6 +233,8 @@ presubmits:
           value: "1.33.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.33"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.33"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -252,7 +258,7 @@ presubmits:
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true
     decorate: true
     skip_report: false
@@ -295,7 +301,7 @@ presubmits:
             cpu: 4
   - name: pull-kubernetes-csi-volume-data-source-validator-alpha-1-32-on-kubernetes-1-32
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     optional: true
     decorate: true
     skip_report: false
@@ -326,6 +332,8 @@ presubmits:
           value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
