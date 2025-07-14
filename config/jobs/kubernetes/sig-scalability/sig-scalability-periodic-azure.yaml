@@ -65,8 +65,6 @@ periodics:
           value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
-        - name: AZURE_LOCATION
-          value: "northeurope"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
           value: "Standard_D8s_v3"
         - name: CONTROL_PLANE_MACHINE_TYPE
