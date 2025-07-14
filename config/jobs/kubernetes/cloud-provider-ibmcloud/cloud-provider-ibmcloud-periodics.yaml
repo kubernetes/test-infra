@@ -23,6 +23,9 @@ periodics:
           command:
             - make
             - test
+          env:
+            - name: KUBE_TIMEOUT
+              value: "-timeout=300s"
           securityContext:
             allowPrivilegeEscalation: false
           resources:
