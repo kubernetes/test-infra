@@ -19,6 +19,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
         imagePullPolicy: Always
+        name: verify
         command:
         - runner.sh
         args:
@@ -32,6 +33,11 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
+        - name: VERIFY_MEM_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: verify
+              resource: limits.memory
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
