@@ -887,7 +887,7 @@ presubmits:
           operator: "Equal"
           value: "sig-node"
           effect: "NoSchedule"
-  - name: pull-kubernetes-node-kubelet-serial-podresources
+  - name: pull-kubernetes-node-kubelet-serial-podlevelresources
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
@@ -896,7 +896,7 @@ presubmits:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-kubelet-serial-e2e-podresources
+      testgrid-tab-name: pr-kubelet-serial-e2e-podlevelresources
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
