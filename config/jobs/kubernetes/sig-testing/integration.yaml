@@ -18,7 +18,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
         command:
         - runner.sh
         env:
@@ -54,7 +54,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
         command:
         - runner.sh
         env:
@@ -91,7 +91,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
         command:
         - runner.sh
         env:
@@ -128,7 +128,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
         command:
         - runner.sh
         env:
@@ -164,7 +164,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-go-canary
         command:
         - runner.sh
         args:
@@ -201,7 +201,7 @@ periodics:
     description: "Ends up running: make test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
       command:
       - runner.sh
       args:
@@ -240,7 +240,7 @@ periodics:
     description: "Ends up running: make test-integration with race detection"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
       command:
       - runner.sh
       args:
