@@ -396,6 +396,8 @@ EOF
           value: "$kubernetes.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-$deployment"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: "$deployment_suffix"
         - name: CSI_PROW_DRIVER_VERSION

@@ -35,6 +35,8 @@ presubmits:
           value: "1.31.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.31"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.31"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -132,6 +134,8 @@ presubmits:
           value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -229,6 +233,8 @@ presubmits:
           value: "1.33.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.33"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.33"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -326,6 +332,8 @@ presubmits:
           value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
@@ -377,6 +385,8 @@ presubmits:
           value: "1.31.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.31"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.31"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: "-test"
         - name: CSI_PROW_DRIVER_VERSION
@@ -474,6 +484,8 @@ presubmits:
           value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: "-test"
         - name: CSI_PROW_DRIVER_VERSION
@@ -571,6 +583,8 @@ presubmits:
           value: "1.33.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.33"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.33"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: "-test"
         - name: CSI_PROW_DRIVER_VERSION
@@ -668,6 +682,8 @@ presubmits:
           value: "1.32.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.32"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.32"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: "-test"
         - name: CSI_PROW_DRIVER_VERSION
