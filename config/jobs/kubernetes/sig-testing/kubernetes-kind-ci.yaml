@@ -22,7 +22,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250714-70266d743a-master
       command:
       - wrapper.sh
       - bash
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250714-70266d743a-master
       command:
       - wrapper.sh
       - bash
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250714-70266d743a-master
       command:
       - wrapper.sh
       - bash
@@ -170,7 +170,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250714-70266d743a-master
       command:
       - wrapper.sh
       - bash
@@ -219,7 +219,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250613-876fb90a97-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250714-70266d743a-master
       command:
       - wrapper.sh
       - bash
@@ -270,7 +270,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250710-e96fecb3d6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
       command:
       - runner.sh
       args:
@@ -332,7 +332,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250613-876fb90a97-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250714-70266d743a-master
       command:
       - runner.sh
       args:
