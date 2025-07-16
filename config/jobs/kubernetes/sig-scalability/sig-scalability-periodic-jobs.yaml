@@ -1062,6 +1062,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
       - --env=KUBE_GCE_PRIVATE_CLUSTER=false
       - --env=CL2_LIST_CONFIG_MAP_BYTES=100000
       - --env=CL2_LIST_CONFIG_MAP_NUMBER=10000
@@ -1134,6 +1135,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=KUBE_FEATURE_GATES=DetectCacheInconsistency=false
       - --env=KUBE_GCE_PRIVATE_CLUSTER=false
       - --env=CL2_LIST_CONFIG_MAP_BYTES=100000
       - --env=CL2_LIST_CONFIG_MAP_NUMBER=10000
