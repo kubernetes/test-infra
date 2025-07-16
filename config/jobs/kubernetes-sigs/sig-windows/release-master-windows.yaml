@@ -232,7 +232,9 @@ periodics:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods|\[Alpha\]|\[FeatureGate:SchedulerAsyncPreemption\] \[Beta\]
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|\[Alpha\]|\[FeatureGate:SchedulerAsyncPreemption\] \[Beta\]
+          - name: NODE_FEATURE_GATES
+            value: "WindowsGracefulNodeShutdown=true"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
@@ -355,7 +357,6 @@ periodics:
     preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-serial-slow: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -393,9 +394,9 @@ periodics:
           - name: API_SERVER_FEATURE_GATES
             value: "InPlacePodVerticalScaling=true"
           - name: GINKGO_FOCUS
-            value: (\[Feature:InPlacePodVerticalScaling\]|\[Feature:NodeLogQuery\]|\[sig-windows\]|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods) # run the features and a few windows related tests
+            value: (\[Feature:InPlacePodVerticalScaling\]|\[Feature:NodeLogQuery\]|\[sig-windows\]) # run the features and a few windows related tests
           - name: NODE_FEATURE_GATES
-            value: "InPlacePodVerticalScaling=true,NodeLogQuery=true,PodAndContainerStatsFromCRI=true,RuntimeClassInImageCriApi=true,WindowsGracefulNodeShutdown=true"
+            value: "InPlacePodVerticalScaling=true,NodeLogQuery=true,PodAndContainerStatsFromCRI=true,RuntimeClassInImageCriApi=true"
           - name: SCHEDULER_FEATURE_GATES
             value: "InPlacePodVerticalScaling=true"
           - name: WINDOWS_CONTAINERD_URL
