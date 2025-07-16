@@ -33,7 +33,7 @@ storage:
         inline: |
           [Manager]
           DefaultEnvironment="CRIO_SCRIPT_COMMIT=0936ec4f6d77fba3a42432adaf8aa57b629c06cf"
-          DefaultEnvironment="CRIO_COMMIT=5655aea0470e126bbb0dd9a5092efb32fb4e12d1"
+          DefaultEnvironment="CRIO_COMMIT=9cdf516777eb88e515173650bf28af18a87ec23f"
     # Note: this ignition file assumes FCOS has shadow-utils installed.
     # As of the time of writing this, it does.
     - path: /etc/subuid
