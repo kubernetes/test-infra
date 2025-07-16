@@ -523,7 +523,7 @@ presubmits:
           --cluster-name=e2e-test-azure.k8s \
           --env AZURE_STORAGE_ACCOUNT=stkopsstatestore \
           --env JOB_NAME=pull-kops-e2e-kubernetes-azure \
-          --create-args "--azure-subscription-id=46678f10-4bbb-447e-98e8-d2829589f2d8 --networking=calico --node-count=2 --master-count=1" \
+          --create-args "--networking=calico --node-count=2 --master-count=1" \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
           --test=kops \
