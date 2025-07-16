@@ -492,3 +492,54 @@ presubmits:
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-kubernetes-e2e-ubuntu-gce-build
+  - name: pull-kops-e2e-kubernetes-azure
+    branches:
+    - master
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-kops-azure-cred-wi: "true"
+      preset-dind-enabled: "true"
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          make test-e2e-install
+          kubetest2 kops \
+          -v 2 \
+          --up --build --down \
+          --cloud-provider=azure \
+          --cluster-name=e2e-test-azure.k8s \
+          --env AZURE_STORAGE_ACCOUNT=stkopsstatestore \
+          --env JOB_NAME=pull-kops-e2e-kubernetes-azure \
+          --create-args "--azure-subscription-id=46678f10-4bbb-447e-98e8-d2829589f2d8 --networking=calico --node-count=2 --master-count=1" \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+          --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+          --test=kops \
+          -- \
+          --test-package-marker=stable.txt \
+          --parallel 25
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: "6Gi"
+          requests:
+            cpu: "4"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-azure
