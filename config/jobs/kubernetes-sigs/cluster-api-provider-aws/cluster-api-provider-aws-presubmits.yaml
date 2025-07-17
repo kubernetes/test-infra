@@ -90,14 +90,14 @@ presubmits:
         - ./scripts/ci-docker-build.sh
         resources:
           requests:
-            cpu: "6"
-            memory: "12Gi"
+            cpu: "4"
+            memory: "8Gi"
           limits:
-            cpu: "6"
-            memory: "12Gi"
+            cpu: "4"
+            memory: "8Gi"
         # docker-in-docker needs privileged mode
         securityContext:
-            privileged: true
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build-docker
