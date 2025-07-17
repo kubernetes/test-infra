@@ -482,6 +482,54 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
+  - name: pull-kubernetes-dra-integration
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    always_run: false
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits
+      description: Runs integration tests for DRA which need some additional setup in the job.
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+        command:
+        - runner.sh
+        - /bin/bash
+        - -xce
+        - |
+          # test/e2e_dra is a separate Ginkgo suite with a dependency on local-up-cluster.sh.
+          # We could use "make test WHAT=./test/e2e_dra", but then we would get a test JUnit file
+          # in addition to the better one from Ginkgo, so instead we build the test binary and
+          # invoke it directly. The Ginkgo CLI doesn't add any benefit because we cannot run
+          # tests in parallel.
+          #
+          # We also need the control plane binaries.
+          make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
+          KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
   - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra
     cluster: k8s-infra-prow-build
     skip_branches:
