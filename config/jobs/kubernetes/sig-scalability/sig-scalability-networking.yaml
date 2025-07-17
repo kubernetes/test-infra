@@ -28,7 +28,7 @@ periodics:
     testgrid-tab-name: kube-network-policies
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -114,7 +114,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -191,7 +191,7 @@ periodics:
   spec:
     serviceAccountName: k8s-kops-test
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
       imagePullPolicy: Always
       command:
       - runner.sh
