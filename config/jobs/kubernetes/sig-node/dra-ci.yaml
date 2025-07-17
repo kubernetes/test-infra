@@ -21,7 +21,7 @@ periodics:
       timeout: 90m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -105,7 +105,7 @@ periodics:
       timeout: 90m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -194,7 +194,7 @@ periodics:
       timeout: 90m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -305,7 +305,7 @@ periodics:
       timeout: 90m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -416,7 +416,7 @@ periodics:
       timeout: 90m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         - /bin/bash
@@ -470,7 +470,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -529,7 +529,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -588,7 +588,7 @@ periodics:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
@@ -643,7 +643,7 @@ periodics:
       base_ref: release/2.0
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
         command:
         - runner.sh
         args:
