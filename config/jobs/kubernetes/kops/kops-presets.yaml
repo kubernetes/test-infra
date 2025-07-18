@@ -49,11 +49,11 @@ presets:
     preset-kops-azure-cred-wi: "true"
   env: # below env values are not secrets
     - name: AZURE_CLIENT_ID # AZURE_CLIENT_ID is being overloaded with Azure Workload ID
-      value: "cabf5f22-ec7e-4e84-9e35-c02e57ca555d"
+      value: "34d8e06d-d198-477e-b166-6936e58d90ae"
     - name: AZURE_SUBSCRIPTION_ID
-      value: "0e46bd28-a80f-4d3a-8200-d9eb8d80cb2e"
+      value: "46678f10-4bbb-447e-98e8-d2829589f2d8"
     - name: AZURE_TENANT_ID
-      value: "097f89a0-9286-43d2-9a1a-08f1d49b1af8"
+      value: "d1aa7522-0959-442e-80ee-8c4f7fb4c184"
     - name: AZURE_FEDERATED_TOKEN_FILE
       value: "/var/run/secrets/azure-token/serviceaccount/token"
     - name: AZURE_STORAGE_ACCOUNT
