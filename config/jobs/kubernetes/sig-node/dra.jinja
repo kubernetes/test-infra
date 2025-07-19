@@ -64,6 +64,7 @@ presubmits:
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
+    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_20_repo %}
     extra_refs:
     {%- if ci and need_kubernetes_repo %}
     - org: kubernetes
@@ -82,6 +83,7 @@ presubmits:
     - org: containerd
       repo: containerd
       base_ref: release/2.0
+    {%- endif %}
     {%- endif %}
     spec:
       containers:
