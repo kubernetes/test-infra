@@ -90,6 +90,11 @@ presubmits:
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
           value: "99.99"
+        # CAPZ clusters don't expose each individual control plane node.
+        - name: CL2_API_AVAILABILITY_MEASUREMENT_IPS_CONFIGURED
+          value: "true"
+        - name: CL2_API_AVAILABILITY_MEASUREMENT_USE_INTERNAL_IPS
+          value: "false"
         resources:
           requests:
             cpu: "6"
