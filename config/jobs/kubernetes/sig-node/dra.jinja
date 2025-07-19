@@ -64,20 +64,22 @@ presubmits:
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
-    {%- if job_type == "node" %}
+    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_20_repo %}
     extra_refs:
-    {%- if ci %}
+    {%- if ci and need_kubernetes_repo %}
     - org: kubernetes
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
       workdir: true
     {%- endif %}
+    {%- if need_test_infra_repo %}
     - org: kubernetes
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
-    {%- if "containerd-2-0" in job_name %}
+    {%- endif %}
+    {%- if need_containerd_20_repo %}
     - org: containerd
       repo: containerd
       base_ref: release/2.0
