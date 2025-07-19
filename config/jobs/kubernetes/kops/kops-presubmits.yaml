@@ -522,7 +522,7 @@ presubmits:
           --up --build --down \
           --cloud-provider=azure \
           --cluster-name=e2e-test-azure.k8s \
-          --env AZURE_STORAGE_ACCOUNT=stkopsstatestore \
+          --env KOPS_FEATURE_FLAGS=Azure \
           --env JOB_NAME=pull-kops-e2e-kubernetes-azure \
           --create-args "--networking=cilium --node-count=5 --master-count=1" \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
