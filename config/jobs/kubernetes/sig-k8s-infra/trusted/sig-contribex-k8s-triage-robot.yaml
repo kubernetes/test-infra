@@ -255,7 +255,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     testgrid-tab-name: retester
-    description: Automatically /retest for approved PRs that are failing tests
+    description: Automatically /retest-required for approved PRs that are failing tests
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/commenter:v20250306-095fc63a16
@@ -302,7 +302,7 @@ periodics:
         - Prevent this bot from retesting with `/lgtm cancel` or `/hold`
         - Help make our tests less flaky by following our [Flaky Tests Guide][1]
 
-        /retest
+        /retest-required
 
         [1]: https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md
       - --template
