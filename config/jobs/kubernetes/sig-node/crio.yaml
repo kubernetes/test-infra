@@ -970,7 +970,7 @@ periodics:
           memory: 6Gi
         requests:
           cpu: 4
-          memory: 6Gi  
+          memory: 6Gi
 - name: ci-crio-cgroupv2-node-e2e-conformance
   cluster: k8s-infra-prow-build
   interval: 1h
