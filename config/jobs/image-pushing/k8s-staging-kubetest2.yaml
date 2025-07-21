@@ -41,6 +41,9 @@ periodics:
       testgrid-dashboards: sig-testing-kubetest2, sig-k8s-infra-gcb
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
     decorate: true
+    decoration_config:
+      timeout: 180m
+      grace_period: 10m
     extra_refs:
       - org: kubernetes-sigs
         repo: kubetest2
