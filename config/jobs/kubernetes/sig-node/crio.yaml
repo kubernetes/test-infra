@@ -90,7 +90,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --parallelism=1
       - --focus-regex=\[NodeConformance\]
-      - --skip-regex="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
       - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --timeout=180m
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
@@ -411,7 +411,8 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - --focus-regex=\[Flaky\]
+      - --label-filter=Flaky
+      - --skip-regex=
       - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --timeout=60m
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
@@ -519,7 +520,7 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - --skip-regex="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --skip-regex=\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]
       - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --timeout=300m
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
@@ -626,7 +627,7 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - --skip-regex="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --skip-regex=\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]
       - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --timeout=300m
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
@@ -953,7 +954,8 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - --focus-regex="Node Performance Testing"
+      - --focus-regex=Node Performance Testing
+      - --skip-regex=
       - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --timeout=60m
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-performance.yaml
@@ -1060,8 +1062,8 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=8
-      - --focus-regex="\[NodeConformance\]"
-      - --skip-regex="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --focus-regex=\[NodeConformance\]
+      - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
       - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --timeout=180m
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
