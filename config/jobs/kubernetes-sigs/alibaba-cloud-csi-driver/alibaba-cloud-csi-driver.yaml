@@ -113,7 +113,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     always_run: false
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
-    optional: true  # TODO: testing
+    optional: false
     decorate: true
     spec:
       containers:
