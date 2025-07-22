@@ -90,6 +90,8 @@ presubmits:
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
           value: "99.99"
+        - name: PROMETHEUS_SCRAPE_KUBELETS
+          value: "true"
         resources:
           requests:
             cpu: "6"
@@ -202,6 +204,8 @@ presubmits:
           value: "default"
         - name: PROMETHEUS_APISERVER_SCRAPE_PORT
           value: "6443"
+        - name: PROMETHEUS_SCRAPE_KUBELETS
+          value: "true"
         resources:
           requests:
             cpu: "6"
