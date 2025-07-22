@@ -295,7 +295,9 @@ presubmits:
         - name: WINDOWS_WORKER_MACHINE_COUNT
           value: "0" # Don't create windows workers
         - name: WORKER_MACHINE_COUNT
-          value: "1000"
+          value: "100"
+        - name: EXTRA_NODES
+          value: "900"
         # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
         - name: CL2_ENABLE_DNS_PROGRAMMING
           value: "true"
