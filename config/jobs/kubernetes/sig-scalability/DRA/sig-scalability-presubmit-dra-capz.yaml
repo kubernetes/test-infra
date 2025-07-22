@@ -128,9 +128,9 @@ presubmits:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: alaypatel07
+    - org: kubernetes
       repo: perf-tests
-      base_ref: dra-kubelet-latencies
+      base_ref: master
       path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
@@ -206,6 +206,8 @@ presubmits:
           value: "6443"
         - name: PROMETHEUS_SCRAPE_KUBELETS
           value: "true"
+        - name: NODE_PRELOAD_IMAGES
+          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
         resources:
           requests:
             cpu: "6"
