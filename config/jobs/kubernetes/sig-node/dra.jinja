@@ -230,6 +230,12 @@ presubmits:
           # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
           # including all unsupportd kubelet versions in a deny list.
           kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          # Running tests which only cover control plane behavior are not useful
+          # in a kubelet version skew job. We can filter them out by including
+          # only tests which have the DynamicResourceAllocation feature because
+          # only those cover kubelet behavior.
+          kubelet_label_filter+=" && Feature: contains DynamicResourceAllocation"
           {%- endif %}
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } {%- if kubelet_skew|int > 0 %}$kubelet_label_filter{%- endif %} {%- if not all_features %} && !Alpha {%- endif %} && !Flaky {%- if not ci and not allow_slow %} && !Slow {%- endif %}" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
