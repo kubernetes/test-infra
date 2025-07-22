@@ -363,7 +363,7 @@ presubmits:
           # in a kubelet version skew job. We can filter them out by including
           # only tests which have the DynamicResourceAllocation feature because
           # only those cover kubelet behavior.
-          kubelet_label_filter+=" && Feature: contains DynamicResourceAllocation"
+          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation }$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
@@ -478,7 +478,7 @@ presubmits:
           # in a kubelet version skew job. We can filter them out by including
           # only tests which have the DynamicResourceAllocation feature because
           # only those cover kubelet behavior.
-          kubelet_label_filter+=" && Feature: contains DynamicResourceAllocation"
+          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
 
           KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation }$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
