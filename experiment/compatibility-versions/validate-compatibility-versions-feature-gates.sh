@@ -34,6 +34,9 @@ echo "Validating features for emulated_version=${emulated_version}, current_vers
 rm -f "${results_file}"
 touch "${results_file}"
 
+# Obtain the list of features that have been removed fully and are not in scope of emulation version(e.g kubelet)
+REMOVED_FEATURE_LIST=${REMOVED_FEATURE_LIST:-''}
+
 # Parse /metrics -> actual_features[featureName] = 0 or 1
 declare -A actual_features
 declare -A actual_stages
@@ -149,7 +152,7 @@ while IFS= read -r unversioned_feature_entry; do
 done < <(echo "$unversioned_feature_stream")
 
 # For each "expected" feature (versioned):
-# - If missing from /metrics => fail unless stage==ALPHA or lock==true
+# - If missing from /metrics => fail unless stage==ALPHA or lock==true or is a deprecated feature that is listed as properly removed.
 # - If present & stage!=ALPHA => compare numeric value
 for feature_name in "${!expected_stage[@]}"; do
   stage="${expected_stage[$feature_name]}"
@@ -165,6 +168,12 @@ for feature_name in "${!expected_stage[@]}"; do
   if [[ -z "$got" ]]; then
     # Missing from metrics
     if [[ "$locked" == "true" ]]; then
+      continue
+    fi
+
+    # Deprecated feature that was removed, these can continue. These can only be features that are not in the 
+    # scope of compatibility version(e.g kuebelet).
+    if [[  "$REMOVED_FEATURE_LIST" == *"$feature_name"* ]]; then
       continue
     fi
 
@@ -196,6 +205,11 @@ for unversioned_feature_name in "${!expected_unversioned_stage[@]}"; do
   if [[ -z "$got" ]]; then
     # Missing from metrics
     if [[ "$unversioned_locked" == "true" ]]; then
+      continue
+    fi
+    # Deprecated feature that was removed, these can continue. These can only be features that are not in the 
+    # scope of compatibility version(e.g kuebelet).
+    if [[  "$REMOVED_FEATURE_LIST" == *"$feature_name"* ]]; then
       continue
     fi
     echo "FAIL: expected unversioned feature gate '$unversioned_feature_name' not found in metrics (lockToDefault=${unversioned_locked})" \

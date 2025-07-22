@@ -208,6 +208,10 @@ periodics:
       env:
       - name: RUNTIME_CONFIG
         value: '{"api/beta":"true", "api/ga":"true"}'
+      # List of features that are not in scope of emulation version and have been removed. These can pass since they are not subject to the same policies as
+      # feature gates that exist in components such as KCM.
+      - name: REMOVED_FEATURE_LIST
+        value: "LegacySidecarContainers"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -260,6 +264,10 @@ periodics:
         value: '{"api/beta":"true", "api/ga":"true"}'
       - name: VERSION_DELTA
         value: "2"
+      # List of features that are not in scope of emulation version and have been removed. These can pass since they are not subject to the same policies as
+      # feature gates that exist in components such as KCM.
+      - name: REMOVED_FEATURE_LIST
+        value: "LegacySidecarContainers"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
