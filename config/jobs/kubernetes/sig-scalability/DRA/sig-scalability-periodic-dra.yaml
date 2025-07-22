@@ -27,9 +27,9 @@ periodics:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: alaypatel07
+    - org: kubernetes
       repo: perf-tests
-      base_ref: dra-baseline
+      base_ref: master
       path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
