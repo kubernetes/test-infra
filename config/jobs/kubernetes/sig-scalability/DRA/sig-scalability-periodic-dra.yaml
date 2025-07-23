@@ -290,11 +290,11 @@ periodics:
             - --use-logexporter
           resources:
             requests:
-              cpu: 1
-              memory: "2Gi"
+              cpu: 6
+              memory: "9Gi"
             limits:
-              cpu: 1
-              memory: "2Gi"
+              cpu: 6
+              memory: "9Gi"
           env:
             - name: CL2_MODE
               value: "Indexed"
