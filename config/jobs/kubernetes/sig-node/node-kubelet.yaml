@@ -367,7 +367,7 @@ periodics:
           - '--node-test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero]|\[Feature:UserNamespacesPodSecurityStandards]|\[Feature:KubeletCredentialProviders]"
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero]|\[Feature:UserNamespacesPodSecurityStandards]|\[Feature:KubeletCredentialProviders]|\[Alpha\]"
           - --timeout=180m
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
         env:
