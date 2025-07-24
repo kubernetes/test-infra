@@ -275,6 +275,7 @@ periodics:
             - --cluster=
             - --extract=ci/latest
             - --gcp-node-image=gci
+            - --gcp-project-type=scalability-project
             - --gcp-nodes=100
             - --provider=gce
             - --env=KUBE_FEATURE_GATES=DynamicResourceAllocation=true
@@ -290,11 +291,11 @@ periodics:
             - --use-logexporter
           resources:
             requests:
-              cpu: 2
-              memory: "6Gi"
+              cpu: 6
+              memory: "16Gi"
             limits:
-              cpu: 2
-              memory: "6Gi"
+              cpu: 6
+              memory: "16Gi"
           env:
             - name: CL2_MODE
               value: "Indexed"
