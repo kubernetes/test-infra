@@ -15,6 +15,7 @@ periodics:
       - --ttl=6h
       - --path=s3://cloud-provider-aws-shared-e2e/objs.json
       - --exclude-tags=Shared=Ignore
+      - --enable-target-group-clean=true
       image: gcr.io/k8s-staging-boskos/aws-janitor:v20240801-1221bfe
       resources:
         requests:
