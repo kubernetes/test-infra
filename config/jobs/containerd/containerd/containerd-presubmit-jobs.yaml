@@ -143,7 +143,7 @@ presubmits:
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
           --node-tests=true
           --provider=gce
-          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"'
+          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Alpha\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.7-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
         resources:
