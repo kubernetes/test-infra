@@ -424,7 +424,7 @@ presubmits:
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[Feature:.+\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
+        - --test_args=--nodes=8 --focus="\[Feature:.+\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Alpha\]"
         - --timeout=65m
         env:
         - name: GOPATH
@@ -493,7 +493,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[Feature:.+\]
-        - --skip-regex=\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|[\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|[\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       tolerations:
@@ -1339,7 +1339,7 @@ presubmits:
         - --parallelism=8
         - --timeout=3h
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--ginkgo.timeout=3h --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-imagefs.yaml
         resources:
@@ -1499,7 +1499,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - --timeout=3h
         - '--test-args=--ginkgo.timeout=3h --service-feature-gates="KubeletSeparateDiskGC=true" --feature-gates="KubeletSeparateDiskGC=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-splitfs.yaml
@@ -1553,7 +1553,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --feature-gates=EventedPLEG=true --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-evented-pleg.yaml
         resources:
@@ -1621,7 +1621,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
   - name: pull-kubernetes-node-crio-cgrpv2-e2e-canary
@@ -1677,7 +1677,7 @@ presubmits:
             - --gcp-zone=us-central1-b
             - --parallelism=8
             - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-            - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+            - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
             - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
             - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-canary.yaml
   - name: pull-crio-cgroupv1-node-e2e-features
@@ -1718,7 +1718,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
         resources:
@@ -1904,7 +1904,7 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
   - name: pull-crio-cgroupv1-node-e2e-hugepages
@@ -2297,7 +2297,7 @@ presubmits:
         - '--node-test-args=--service-feature-gates="NodeSwap=true" --feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Alpha\]"
         - --timeout=180m
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
         resources:
@@ -2693,7 +2693,7 @@ presubmits:
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--fail-cgroupv1=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
+        - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Alpha\]"
         - --timeout=65m
         env:
         - name: GOPATH
@@ -3194,7 +3194,7 @@ presubmits:
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
+        - --test_args=--nodes=8 --focus="\[Feature:.+\]|\[Feature\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Alpha\]"
         - --timeout=65m
         env:
         - name: GOPATH
