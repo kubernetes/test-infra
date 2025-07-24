@@ -279,6 +279,7 @@ periodics:
             - --gcp-nodes=100
             - --provider=gce
             - --env=KUBE_FEATURE_GATES=DynamicResourceAllocation=true
+            - --runtime-config=api/all=true
             - --test=false
             - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
             - --test-cmd-args=cluster-loader2
