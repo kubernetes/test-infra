@@ -286,6 +286,10 @@ periodics:
             - --test-cmd-args=--nodes=100
             - --test-cmd-args=--provider=gce
             - --test-cmd-args=--enable-prometheus-server=true
+            - --test-cmd-args=--prometheus-scrape-node-exporter
+            - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+            - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+            - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
             - --test-cmd-args=--testconfig=testing/dra/config.yaml
             - --test-cmd-args=--report-dir=/workspace/_artifacts
             - --test-cmd-name=ClusterLoaderV2
@@ -306,10 +310,6 @@ periodics:
               value: "3s"
             - name: CL2_LONG_JOB_RUNNING_TIME
               value: "45m"
-            - name: PROMETHEUS_PVC_STORAGE_CLASS
-              value: "ssd-csi"
-            - name: PROMETHEUS_APISERVER_SCRAPE_PORT
-              value: "6443"
             - name: PROMETHEUS_SCRAPE_KUBELETS
               value: "true"
             - name: NODE_PRELOAD_IMAGES
