@@ -174,3 +174,60 @@ periodics:
     testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-fqdn
+- name: e2e-kops-k8s-azure-cilium
+  cron: '30 1-23/3 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-kops-azure-cred-wi: "true"
+    preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: azure
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250722-31ecdfb417-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+        -v 2 \
+        --up --build --down \
+        --cloud-provider=azure \
+        --env KOPS_FEATURE_FLAGS=Azure \
+        --create-args "--networking=cilium" \
+        --cluster-name=e2e-kops-k8s-azure-cilium \
+        --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
+        --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+        --test=kops \
+        -- \
+        --test-package-marker=stable.txt \
+        --parallel 25
+      resources:
+        limits:
+          cpu: "4"
+          memory: "6Gi"
+        requests:
+          cpu: "4"
+          memory: "6Gi"
+  annotations:
+    test.kops.k8s.io/cloud: azure
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: 'cilium'
+    testgrid-dashboards: kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: e2e-kops-k8s-azure-cilium
