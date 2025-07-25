@@ -61,7 +61,7 @@ periodics:
         - name: WINDOWS
           value: "false"
         - name: CLUSTER_TEMPLATE
-          value: "templates/test/dev/cluster-template-custom-builds-load-dra.yaml"
+          value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
           value: "Standard_D8s_v3"
         - name: CONTROL_PLANE_MACHINE_TYPE
@@ -183,7 +183,7 @@ periodics:
             - name: WINDOWS
               value: "false"
             - name: CLUSTER_TEMPLATE
-              value: "templates/test/dev/cluster-template-custom-builds-load-dra.yaml"
+              value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
             - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
               value: "Standard_D8s_v3"
             - name: CONTROL_PLANE_MACHINE_TYPE
