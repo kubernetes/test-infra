@@ -282,9 +282,9 @@ presubmits:
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
+          value: "Standard_D32s_v3"
         - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
+          value: "Standard_D32s_v3"
         - name: AZURE_NODE_MACHINE_TYPE
           value: "Standard_D2s_v3"
         - name: NODE_MACHINE_TYPE
@@ -320,12 +320,16 @@ presubmits:
           value: "3s"
         - name: CL2_LONG_JOB_RUNNING_TIME
           value: "150m"
+        - name: CL2_PROMETHEUS_CPU_SCALE_FACTOR
+          value: "2"
+        - name: CL2_PROMETHEUS_MEMORY_SCALE_FACTOR
+          value: "10"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "default"
         - name: PROMETHEUS_APISERVER_SCRAPE_PORT
           value: "6443"
         - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "true"
+          value: "false" # Too heavy for a test of this size
         - name: NODE_PRELOAD_IMAGES
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
         resources:
