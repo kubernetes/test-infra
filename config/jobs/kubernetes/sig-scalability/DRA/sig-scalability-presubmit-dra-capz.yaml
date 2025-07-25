@@ -92,6 +92,11 @@ presubmits:
           value: "true"
         - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
           value: "99.99"
+        - name: CL2_NODE_AVAILABLE_MILLICORES
+          value: "2000"
+        - name: CL2_SYSTEM_USED_MILLICORES
+          value: "1200"  # this allows each workload pod to run with 100m
+        -
         - name: PROMETHEUS_SCRAPE_KUBELETS
           value: "true"
         resources:
