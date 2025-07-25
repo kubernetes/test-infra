@@ -532,3 +532,57 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-latestk8s-main
+  # network test against kubernetes master branch with `kind` ipv6
+  - name: capi-kubernetes-kind-network-ipv6
+    cluster: eks-prow-build-cluster
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 200m
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: kind
+      base_ref: main
+      path_alias: sigs.k8s.io/kind
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250717-57d1ca3de9-master
+        command:
+          - cd ./../kind &&
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
+          requests:
+            cpu: 4
+            memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-kubernetes-kind-network-ipv6
+      description: For debugging IPv6 issues. Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
