@@ -321,7 +321,7 @@ presubmits:
         - name: CL2_LONG_JOB_RUNNING_TIME
           value: "150m"
         - name: CL2_PROMETHEUS_CPU_SCALE_FACTOR
-          value: "2"
+          value: "20"
         - name: CL2_PROMETHEUS_MEMORY_SCALE_FACTOR
           value: "10"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
