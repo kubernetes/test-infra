@@ -208,7 +208,7 @@ periodics:
         --cloud-provider=azure \
         --env KOPS_FEATURE_FLAGS=Azure \
         --create-args "--networking=cilium" \
-        --cluster-name=e2e-kops-k8s-azure-cilium \
+        --cluster-name=e2e-k8s-azure-cilium.kops \
         --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
         --kubernetes-version=https://dl.k8s.io/release/stable.txt \
         --test=kops \
