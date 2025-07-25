@@ -204,7 +204,7 @@ periodics:
         make test-e2e-install
         kubetest2 kops \
         -v 2 \
-        --up --build --down \
+        --up --down \
         --cloud-provider=azure \
         --env KOPS_FEATURE_FLAGS=Azure \
         --create-args "--networking=cilium" \
