@@ -282,6 +282,7 @@ periodics:
             - --check-leaked-resources
             - --cluster=
             - --extract=ci/latest
+            - --gcp-node-size=e2-standard-4
             - --gcp-node-image=gci
             - --gcp-project-type=scalability-project
             - --gcp-nodes=100
