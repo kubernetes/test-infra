@@ -8,6 +8,9 @@
     {%- if not boskos_resource_type %}
     preset-aws-credential: "true"
     {%- endif %}
+    {%- elif cloud == "azure" %}
+    preset-service-account: "true"
+    preset-kops-azure-cred-wi: "true"
     {%- else %}
     preset-k8s-ssh: "true"
     {%- endif %}
@@ -27,6 +30,8 @@
   spec:
     {%- if cloud == "gce" %}
     serviceAccountName: k8s-kops-test
+    {%- elif cloud == "azure" %}
+    serviceAccountName: azure
     {%- endif %}
     containers:
     - command:
@@ -95,10 +100,12 @@
           {%- endif %}
           --parallel={{test_parallelism}}
       env:
+      {%- if cloud != "azure" %}
       - name: KUBE_SSH_KEY_PATH
         value: {{kops_ssh_key_path}}
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
+      {%- endif %}
       {%- for key, val in env.items() %}
       - name: {{ key }}
         value: "{{ val }}"

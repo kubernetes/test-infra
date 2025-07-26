@@ -17,6 +17,9 @@
       preset-aws-credential: "true"
       {%- endif %}
       preset-dind-enabled: "true"
+      {%- elif cloud == "azure" %}
+      preset-service-account: "true"
+      preset-kops-azure-cred-wi: "true"
       {%- else %}
       preset-k8s-ssh: "true"
       {%- endif %}
@@ -27,6 +30,8 @@
     spec:
       {%- if cloud == "gce" %}
       serviceAccountName: k8s-kops-test
+      {%- elif cloud == "azure" %}
+      serviceAccountName: azure
       {%- endif %}
       containers:
       - image: {{image}}
@@ -90,10 +95,12 @@
         securityContext:
           privileged: true
         env:
+        {%- if cloud != "azure" %}
         - name: KUBE_SSH_KEY_PATH
           value: {{kops_ssh_key_path}}
         - name: KUBE_SSH_USER
           value: {{kops_ssh_user}}
+        {%- endif %}
         - name: GOPATH
           value: /home/prow/go
         {%- for key, val in env.items() %}

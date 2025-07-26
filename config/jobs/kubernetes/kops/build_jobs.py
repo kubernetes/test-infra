@@ -117,6 +117,13 @@ def build_test(cloud='aws',
         if build_cluster is None:
             build_cluster = 'k8s-infra-prow-build'
 
+    elif cloud == 'azure':
+        kops_image = None
+        kops_ssh_user = 'kops'
+        kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
+        if build_cluster is None:
+            build_cluster = 'k8s-infra-prow-build'
+
     validation_wait = None
     if distro in ('flatcar', 'flatcararm64') or (distro in ('amzn2', 'rhel8') and kops_version in ('1.26', '1.27')):
         validation_wait = '20m'
@@ -304,6 +311,13 @@ def presubmit_test(branch='master',
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
         if build_cluster is None:
             build_cluster = 'k8s-infra-kops-prow-build'
+
+    elif cloud == 'azure':
+        kops_image = None
+        kops_ssh_user = 'kops'
+        kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
+        if build_cluster is None:
+            build_cluster = 'k8s-infra-prow-build'
 
     elif cloud == 'gce':
         kops_image = None
@@ -1433,6 +1447,8 @@ def generate_presubmits_distros():
 def generate_network_plugins():
 
     plugins = ['amazon-vpc', 'calico', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
+    supports_gce = {'calico', 'cilium', 'kindnet'}
+    supports_azure = {'cilium'}
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
@@ -1461,6 +1477,35 @@ def generate_network_plugins():
                 runs_per_day=3,
             )
         )
+        if plugin in supports_azure:
+            results.append(
+                build_test(
+                    cloud="azure",
+                    # distro="ubuntu2404",
+                    k8s_version=k8s_version,
+                    kops_channel='alpha',
+                    feature_flags=['Azure'],
+                    name_override=f"kops-azure-cni-{plugin}",
+                    networking=networking_arg,
+                    extra_dashboards=['kops-network-plugins'],
+                    runs_per_day=8
+                )
+            )
+        if plugin in supports_gce:
+            results.append(
+                build_test(
+                    cloud="gce",
+                    # distro="ubuntu2404",
+                    k8s_version=k8s_version,
+                    kops_channel='alpha',
+                    name_override=f"kops-gce-cni-{plugin}",
+                    networking=networking_arg,
+                    extra_flags=["--gce-service-account=default"],
+                    extra_dashboards=['kops-network-plugins'],
+                    runs_per_day=8,
+                )
+            )
+
     return results
 
 ################################
@@ -1824,6 +1869,7 @@ def generate_presubmits_network_plugins():
     }
     supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kindnet'}
     supports_gce = {'calico', 'cilium', 'kindnet'}
+    supports_azure = {'cilium'}
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
@@ -1859,13 +1905,30 @@ def generate_presubmits_network_plugins():
                 optional=optional,
             )
         )
+        if plugin in supports_azure:
+            results.append(
+                presubmit_test(
+                    cloud='azure',
+                    # distro='ubuntu2404',
+                    feature_flags=['Azure'],
+                    k8s_version=k8s_version,
+                    kops_channel='alpha',
+                    name=f"pull-kops-e2e-azure-cni-{plugin}",
+                    tab_name=f"e2e-azure-cni-{plugin}",
+                    networking=networking_arg,
+                    run_if_changed=run_if_changed,
+                    optional=True,
+                )
+            )
         if plugin in supports_gce:
             results.append(
                 presubmit_test(
                     cloud='gce',
+                    # distro='ubuntu2404',
                     k8s_version=k8s_version,
                     kops_channel='alpha',
                     name=f"pull-kops-e2e-gce-cni-{plugin}",
+                    tab_name=f"e2e-gce-cni-{plugin}",
                     networking=networking_arg,
                     extra_flags=[
                         f"--gce-service-account=default" # Workaround for test-infra#24747
