@@ -287,7 +287,6 @@ periodics:
             - --gcp-nodes=100
             - --provider=gce
             - --env=KUBE_FEATURE_GATES=DynamicResourceAllocation=true
-            - --env=KUBE_GCE_PRIVATE_CLUSTER=false
             - --runtime-config=api/all=true
             - --test=false
             - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -319,8 +318,6 @@ periodics:
               value: "3s"
             - name: CL2_LONG_JOB_RUNNING_TIME
               value: "45m"
-            - name: CL2_PROMETHEUS_TOLERATE_MASTER
-              value: "true"
             - name: PROMETHEUS_SCRAPE_KUBELETS
               value: "true"
             - name: NODE_PRELOAD_IMAGES
