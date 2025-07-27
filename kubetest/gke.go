@@ -67,6 +67,7 @@ var (
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
 	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default", "DataKey":"my-data-key"}]`)
 	gkeDumpAdditionalLogsCmd       = flag.String("gke-dump-additional-logs-cmd", "", "(gke-only) if set, run this command to dump cluster logs.")
+	gkeNetworkULAInternalIPv6      = flag.Bool("gke-network-ula-internal-ipv6", false, "(gke-only) if true, create a network with --enable-ula-internal-ipv6.")
 
 	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -102,6 +103,7 @@ type gkeDeployer struct {
 	cluster                     string
 	shape                       map[string]gkeNodePool
 	network                     string
+	networkULAInternalIPv6      bool
 	subnetwork                  string
 	subnetMode                  string
 	subnetworkRegion            string
@@ -166,6 +168,8 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 		return nil, fmt.Errorf("--gcp-network must be set for GKE deployment")
 	}
 	g.network = network
+
+	g.networkULAInternalIPv6 = *gkeNetworkULAInternalIPv6
 
 	if strings.ToUpper(image) == "CUSTOM" {
 		if imageFamily == "" || imageProject == "" {
@@ -326,9 +330,16 @@ func (g *gkeDeployer) Up() error {
 		"--format=value(name)")) != nil {
 		// Assume error implies non-existent.
 		log.Printf("Couldn't describe network '%s', assuming it doesn't exist and creating it", g.network)
+
+		enableULAInternalIPv6 := ""
+		if g.networkULAInternalIPv6 {
+			enableULAInternalIPv6 = "--enable-ula-internal-ipv6"
+		}
+
 		if err := control.FinishRunning(exec.Command("gcloud", "compute", "networks", "create", g.network,
 			"--project="+g.project,
-			"--subnet-mode="+g.subnetMode)); err != nil {
+			"--subnet-mode="+g.subnetMode,
+			enableULAInternalIPv6)); err != nil {
 			return err
 		}
 	}
