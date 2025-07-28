@@ -280,7 +280,8 @@ periodics:
                 --release-marker $K8S_BUILD_VERSION \
                 --cluster-name alpha-enabled-$TIMESTAMP \
                 --workers-count 2 \
-                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --up --down --auto-approve  --ignore-destroy-errors \
+                --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true \
                 --extra-vars=feature_gates:AllAlpha=true,EventedPLEG=false \
                 --extra-vars=runtime_config:api/all=true \
@@ -359,7 +360,8 @@ periodics:
                 --release-marker $K8S_BUILD_VERSION \
                 --cluster-name e2e-default-$TIMESTAMP \
                 --workers-count 2 \
-                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --up --down --auto-approve --ignore-destroy-errors \
+                --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true \
                 --powervs-memory 32 \
                 --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
@@ -438,7 +440,8 @@ periodics:
                 --release-marker $K8S_BUILD_VERSION \
                 --cluster-name e2e-slow-$TIMESTAMP \
                 --workers-count 2 \
-                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --up --down --auto-approve  --ignore-destroy-errors \
+                --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true \
                 --powervs-memory 32 \
                 --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:' ; rc=$?
@@ -515,7 +518,8 @@ periodics:
                 --release-marker $K8S_BUILD_VERSION \
                 --cluster-name e2e-serial-$TIMESTAMP \
                 --workers-count 2 \
-                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --up --down --auto-approve  --ignore-destroy-errors \
+                --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true \
                 --powervs-memory 32 \
                 --extra-vars=container_runtime_test_handler:true \
