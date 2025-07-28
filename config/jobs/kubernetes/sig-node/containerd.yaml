@@ -500,7 +500,7 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-containerd
+    testgrid-dashboards: sig-node-containerd, sig-node-gpu
     testgrid-tab-name: e2e-cos-device-plugin-gpu
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
