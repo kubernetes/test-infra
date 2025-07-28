@@ -6,7 +6,7 @@ combination of `docker`, `gcloud`, and `go` all in the same build step
 ## contents
 
 - base:
-  - golang:1.24.3-alpine
+  - golang:1.24.5-alpine
 - languages:
   - `go`
 - tools:
