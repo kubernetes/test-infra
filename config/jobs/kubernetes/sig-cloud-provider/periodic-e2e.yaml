@@ -3,7 +3,7 @@ periodics:
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ec2-device-plugin-gpu
   annotations:
-    testgrid-dashboards: amazon-ec2
+    testgrid-dashboards: amazon-ec2, sig-node-gpu
     testgrid-tab-name: ci-kubernetes-e2e-ec2-device-plugin-gpu
   labels:
     preset-e2e-containerd-ec2: "true"

@@ -78,7 +78,7 @@ periodics:
     fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
-    testgrid-dashboards: sig-release-1.32-blocking, google-gce
+    testgrid-dashboards: sig-release-1.32-blocking, google-gce, sig-node-gpu
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.32
   cluster: k8s-infra-prow-build
