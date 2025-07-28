@@ -268,9 +268,9 @@ periodics:
         repo: kubernetes
         base_ref: master
         path_alias: k8s.io/kubernetes
-      - org: kubernetes
+      - org: alaypatel07
         repo: perf-tests
-        base_ref: master
+        base_ref: dra-gke-plugin-in-kube-system
         path_alias: k8s.io/perf-tests
     spec:
       containers:
