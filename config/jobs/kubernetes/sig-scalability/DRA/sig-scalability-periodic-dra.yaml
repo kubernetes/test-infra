@@ -270,7 +270,7 @@ periodics:
         path_alias: k8s.io/kubernetes
       - org: alaypatel07
         repo: perf-tests
-        base_ref: dra-gke-plugin-in-kube-system
+        base_ref: dra-wait-for-resource-slice
         path_alias: k8s.io/perf-tests
     spec:
       containers:
