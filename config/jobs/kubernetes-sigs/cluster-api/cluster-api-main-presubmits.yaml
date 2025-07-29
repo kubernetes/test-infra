@@ -556,7 +556,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/krte:v20250717-57d1ca3de9-master
         command:
-          - cd ./../kind &&
           - wrapper.sh
           - bash
           - -c
