@@ -270,7 +270,7 @@ periodics:
         path_alias: k8s.io/kubernetes
       - org: alaypatel07
         repo: perf-tests
-        base_ref: dra-wait-for-resource-slice
+        base_ref: dra-dependency-wait-for-resourceslice
         path_alias: k8s.io/perf-tests
     spec:
       containers:
