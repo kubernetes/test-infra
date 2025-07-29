@@ -544,14 +544,11 @@ presubmits:
     decoration_config:
       timeout: 200m
     extra_refs:
-    - org: kubernetes-sigs
-      repo: kind
-      base_ref: main
-      path_alias: sigs.k8s.io/kind
     - org: kubernetes
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/krte:v20250717-57d1ca3de9-master
