@@ -533,7 +533,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-latestk8s-main
   # network test against kubernetes master branch with `kind` ipv6
-  - name: capi-kubernetes-kind-network-ipv6
+  - name: capi-kubernetes-kind-network-dual
     cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
@@ -563,11 +563,11 @@ presubmits:
           value: "true"
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
-          value: "ipv6"
+          value: "dual"
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
-          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity
+          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|SCTPConnectivity
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
