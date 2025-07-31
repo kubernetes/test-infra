@@ -22,6 +22,7 @@ dashboards:
 - name: sig-auth-secrets-store-sync-controller
 - name: sig-auth-secrets-store-sync-controller-periodic
 - name: sig-auth-secrets-store-sync-controller-presubmit
+- name: sig-auth-kubelet-serving-certs
 
 dashboard_groups:
 - name: sig-auth
@@ -36,3 +37,4 @@ dashboard_groups:
   - sig-auth-secrets-store-sync-controller
   - sig-auth-secrets-store-sync-controller-periodic
   - sig-auth-secrets-store-sync-controller-presubmit
+  - sig-auth-kubelet-serving-certs
