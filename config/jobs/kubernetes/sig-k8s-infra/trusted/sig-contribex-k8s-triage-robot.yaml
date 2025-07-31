@@ -153,6 +153,7 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/kubectl
         -repo:kubernetes/steering
+        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
@@ -214,6 +215,7 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
+        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -339,6 +341,7 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
+        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:lifecycle/rotten
         -label:"help wanted"
@@ -400,6 +403,7 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
+        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:lifecycle/rotten
         label:lifecycle/stale
@@ -458,6 +462,7 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
+        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
@@ -519,6 +524,7 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -repo:kubernetes/steering
+        -repo:kubernetes-sigs/ingate
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
