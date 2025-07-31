@@ -7,6 +7,7 @@ dashboard_groups:
     - sig-api-machinery-structured-merge-diff
     - sig-api-machinery-kubebuilder
     - sig-api-machinery-network-proxy
+    - sig-api-machinery-emulated-version
 
 dashboards:
 - name: sig-api-machinery-gce-gke
@@ -36,3 +37,4 @@ dashboards:
 - name: sig-api-machinery-kubebuilder
 - name: sig-api-machinery-gengo
 - name: sig-api-machinery-network-proxy
+- name: sig-api-machinery-emulated-version
