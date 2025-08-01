@@ -336,7 +336,7 @@ def presubmit_test(branch='master',
     if extra_flags is None:
         extra_flags = []
 
-    if irsa and cloud == "aws" and scenario is None:
+    if irsa and cloud == "aws" and scenario is None and name != "pull-kops-aws-distro-al2023":
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
