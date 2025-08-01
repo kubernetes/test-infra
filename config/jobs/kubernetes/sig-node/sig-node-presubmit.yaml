@@ -972,7 +972,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
           resources:
             limits:
               cpu: 4
