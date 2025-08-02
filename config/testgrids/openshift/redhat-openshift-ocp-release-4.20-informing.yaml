@@ -8801,8 +8801,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-ovn-upgrade-out-of-change
   name: periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-ovn-upgrade-out-of-change
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-ovn-usernamespace
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-ovn-usernamespace
   name: periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-ovn-usernamespace
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-ovn-xpn
