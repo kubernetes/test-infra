@@ -337,10 +337,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-certmanager-main
     cluster: eks-prow-build-cluster
@@ -375,10 +375,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-test-e2e-kueueviz-main
     cluster: eks-prow-build-cluster
@@ -413,10 +413,10 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
             limits:
-              cpu: "7"
+              cpu: "10"
               memory: "10Gi"
   - name: pull-kueue-verify-main
     cluster: eks-prow-build-cluster
