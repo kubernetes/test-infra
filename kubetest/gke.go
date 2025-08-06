@@ -448,6 +448,16 @@ func (g *gkeDeployer) Up() error {
 			return fmt.Errorf("error creating node pool %q: %w", poolName, err)
 		}
 	}
+
+	endpoint, err := exec.Command("gcloud", "container", "clusters", "describe", g.cluster, "--project=", g.project, "--location", g.location, "--format='value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)'")
+	if err != nil {
+		return fmt.Errorf("error fetching cluster endpoint: %v", err)
+	}
+
+	if err = os.Setenv("GKFE_CLUSTER_ENDPOINT", string(endpoint)); err != nil {
+		return fmt.Errorf("error setting GKFE cluster endpoint: %v", err)
+	}
+
 	return nil
 }
 
