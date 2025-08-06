@@ -52,7 +52,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
+    testgrid-dashboards: cluster-api-core-1.9
     testgrid-tab-name: capi-e2e-release-1-9-1-26-1-27
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -109,7 +109,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
+    testgrid-dashboards: cluster-api-core-1.9
     testgrid-tab-name: capi-e2e-release-1-9-1-27-1-28
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -166,7 +166,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
+    testgrid-dashboards: cluster-api-core-1.9
     testgrid-tab-name: capi-e2e-release-1-9-1-28-1-29
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -223,7 +223,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
+    testgrid-dashboards: cluster-api-core-1.9
     testgrid-tab-name: capi-e2e-release-1-9-1-29-1-30
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -280,7 +280,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
+    testgrid-dashboards: cluster-api-core-1.9
     testgrid-tab-name: capi-e2e-release-1-9-1-30-1-31
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -337,7 +337,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.9
+    testgrid-dashboards: cluster-api-core-1.9
     testgrid-tab-name: capi-e2e-release-1-9-1-31-1-32
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"

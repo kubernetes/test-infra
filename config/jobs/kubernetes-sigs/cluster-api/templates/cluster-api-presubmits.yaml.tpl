@@ -24,7 +24,7 @@ presubmits:
             cpu: 6000m
             memory: 4Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-build-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-apidiff-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -51,7 +51,7 @@ presubmits:
             cpu: 6000m
             memory: 2Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-apidiff-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-verify-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -81,7 +81,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-verify-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-test-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -107,7 +107,7 @@ presubmits:
             cpu: 7300m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-test-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-test-mink8s-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -143,7 +143,7 @@ presubmits:
             cpu: 7300m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-test-mink8s-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -202,7 +202,7 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -250,7 +250,7 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-e2e-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -301,7 +301,7 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -356,7 +356,7 @@ presubmits:
             cpu: 6000m
             memory: 6Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
   - name: pull-cluster-api-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -404,7 +404,7 @@ presubmits:
             cpu: 4000m
             memory: 4Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
   - name: pull-cluster-api-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
@@ -452,7 +452,7 @@ presubmits:
             cpu: 4000m
             memory: 4Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
 {{ if eq $.branch "main" }}
   - name: pull-cluster-api-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
@@ -516,6 +516,6 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
 {{ end -}}

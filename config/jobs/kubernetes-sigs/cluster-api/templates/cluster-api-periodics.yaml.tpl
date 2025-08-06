@@ -28,7 +28,7 @@ periodics:
           cpu: 7300m
           memory: 8Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-test-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -71,7 +71,7 @@ periodics:
           cpu: 7300m
           memory: 8Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-test-mink8s-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -128,7 +128,7 @@ periodics:
             cpu: 3000m
             memory: 8Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -193,7 +193,7 @@ periodics:
           cpu: 3000m
           memory: 8Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-mink8s-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -247,7 +247,7 @@ periodics:
           cpu: 4000m
           memory: 4Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-conformance-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -301,7 +301,7 @@ periodics:
           cpu: 4000m
           memory: 4Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -371,7 +371,7 @@ periodics:
             cpu: 3000m
             memory: 8Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-latestk8s-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"

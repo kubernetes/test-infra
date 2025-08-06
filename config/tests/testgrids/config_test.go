@@ -64,6 +64,7 @@ var (
 	}
 	orgs = []string{
 		"conformance",
+		"cluster-api-core",
 		"kops",
 		"presubmits",
 		"sig",

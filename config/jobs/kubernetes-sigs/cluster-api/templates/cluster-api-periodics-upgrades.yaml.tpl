@@ -57,7 +57,7 @@ periodics:
           cpu: 6000m
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api{{ if eq $.branch "main" | not -}}{{ TrimPrefix $.branch "release" }}{{- end }}
+    testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: capi-e2e-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
