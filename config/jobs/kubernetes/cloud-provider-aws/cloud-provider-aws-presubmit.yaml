@@ -3,6 +3,8 @@ presubmits:
   - name: pull-cloud-provider-aws-e2e
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 4h
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
@@ -17,10 +19,10 @@ presubmits:
         resources:
           limits:
             cpu: 2
-            memory: 4Gi
+            memory: 6Gi
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 6Gi
         command:
         - runner.sh
         args:
