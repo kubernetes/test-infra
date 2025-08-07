@@ -7579,6 +7579,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-disk-setup
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-disk-setup
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-etcd-scaling
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -8838,8 +8865,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-secureboot
   name: periodic-ci-openshift-release-master-ci-4.20-e2e-gcp-secureboot
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-vsphere-ovn-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-vsphere-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.20-e2e-vsphere-ovn-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-e2e-vsphere-runc-upgrade
   name: periodic-ci-openshift-release-master-ci-4.20-e2e-vsphere-runc-upgrade
@@ -8867,11 +8893,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-metal-ovn-single-node-rt-upgrade-test
   name: periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-metal-ovn-single-node-rt-upgrade-test
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade-storage-data
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade-storage-data
   name: periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-ovn-upgrade-storage-data
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-runc-upgrade
   name: periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-vsphere-runc-upgrade
@@ -9256,8 +9280,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-telco5g-sno-ztp-cnftests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-csi-operator-test
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-csi-operator-test
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-externallb-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-externallb-ovn
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-externallb-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-host-groups-ovn-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-host-groups-ovn-techpreview
@@ -9265,56 +9288,45 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ipi-ovn-runc
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ipi-ovn-runc-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ipi-ovn-runc-techpreview
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-csi
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-csi
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-etcd-scaling
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-disk-setup
+  name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-disk-setup
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-etcd-scaling
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-etcd-scaling
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-host-groups-csi
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-host-groups-csi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-hybrid-env
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-hybrid-env
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-kube-apiserver-rollout
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-kube-apiserver-rollout
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-kube-apiserver-rollout
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-multi-network
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-multi-network
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-multi-network
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-multi-vcenter
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-multi-vcenter
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-serial
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-serial-runc
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-serial-runc
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-techpreview
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-techpreview
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-techpreview-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-techpreview-serial
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-techpreview-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-hybrid-env
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-hybrid-env
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-multi-vcenter
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-multi-vcenter
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-serial
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-zones
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-zones
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-upi-zones
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-zones
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-zones
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-ovn-zones
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-static-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-static-ovn
   name: periodic-ci-openshift-release-master-nightly-4.20-e2e-vsphere-static-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm
   name: periodic-ci-openshift-release-master-nightly-4.20-metal-ovn-network-flow-matrix-bm
@@ -9347,11 +9359,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-metal-ovn-single-node-rt-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-metal-ovn-single-node-rt-upgrade
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-vsphere-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-vsphere-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-vsphere-upgrade
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-vsphere-zones-upgrade
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-vsphere-zones-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.20-upgrade-from-stable-4.19-e2e-vsphere-zones-upgrade
 - gcs_prefix: test-platform-results/logs/periodic-ci-quay-quay-tests-master-ocp-420-quay-quay-e2e-tests-quay314-ocp420-lp-interop
   name: periodic-ci-quay-quay-tests-master-ocp-420-quay-quay-e2e-tests-quay314-ocp420-lp-interop
