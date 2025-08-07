@@ -37,6 +37,8 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+    # TODO(https://github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/issues/2146): turn this test to required once the test is fixed.
+    optional: true
     decorate: true
     decoration_config:
       timeout: 60m
