@@ -31,12 +31,14 @@ TEST_CONFIG_YAML = "test_config.yaml"
 JOB_CONFIG = "../config/jobs"
 BRANCH_JOB_DIR = "../config/jobs/kubernetes/sig-release/release-branch-jobs"
 
-# FIXME PLEASE: max_config_count decreased from 5 to 4; this is not the right way to rotate out stable4
+# FIXME PLEASE: max_config_count decreased from 5 to 4; this is not the
+# right way to rotate out stable4
 max_config_count = 4
 min_config_count = 3
 
 # FIXME PLEASE: explicitly removed 'stable4' from the suffixes below
-# TODO: For robustness, make looping logic conditional on this list so 'stable4' can optionally exist
+# TODO: For robustness, make looping logic conditional on this list so
+# 'stable4'can optionally exist
 suffixes = ['beta', 'stable1', 'stable2', 'stable3']
 
 class ToolError(Exception):
