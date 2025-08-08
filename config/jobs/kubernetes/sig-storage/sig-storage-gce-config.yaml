@@ -270,7 +270,7 @@ presubmits:
                 --test-args="--master-os-distro=custom --node-os-distro=custom" \
                 --timeout=120m \
                 --focus-regex="\[Feature:SELinux\]" \
-                --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
+                --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
                 --use-built-binaries=true \
                 --parallel=1 # [Feature:SELinux] tests include serial ones
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master

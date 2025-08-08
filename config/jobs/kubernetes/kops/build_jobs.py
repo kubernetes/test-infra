@@ -924,7 +924,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
                    #   in v1.32.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
@@ -962,7 +962,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - Feature:SELinuxMountReadWriteOncePodOnly: these tests require SELinuxMount
                    #   feature gate off.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]",
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
