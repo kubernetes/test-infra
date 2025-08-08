@@ -2145,8 +2145,10 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     testgrid-dashboards: kops-distro-rhel9, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
+    testgrid-num-failures-to-alert: '10'
     testgrid-tab-name: kops-aws-selinux
 
 # {"cloud": "aws", "distro": "rhel9", "extra_flags": "--set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
@@ -2216,8 +2218,10 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     testgrid-dashboards: kops-distro-rhel9, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
+    testgrid-num-failures-to-alert: '10'
     testgrid-tab-name: kops-aws-selinux-alpha
 
 # {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-370-67 --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
