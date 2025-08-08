@@ -42,7 +42,7 @@ periodics:
         value: "win2019"
       - name: NODE_SIZE
         value: "e2-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250808-38ff9ff2bd-master
       resources:
         requests:
           cpu: 1000m
@@ -99,7 +99,7 @@ periodics:
         value: "win2022"
       - name: NODE_SIZE
         value: "e2-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250808-38ff9ff2bd-master
       resources:
         requests:
           cpu: 1000m
