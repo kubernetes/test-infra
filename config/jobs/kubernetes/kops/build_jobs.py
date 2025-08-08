@@ -85,7 +85,9 @@ def build_test(cloud='aws',
                build_cluster=None,
                cluster_name=None,
                template_path=None,
-               storage_e2e_cred=False):
+               storage_e2e_cred=False,
+               alert_email=None,
+               alert_num_failures=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if kops_version is None:
         kops_deploy_url = marker_updown_green(None)
@@ -259,6 +261,11 @@ def build_test(cloud='aws',
         'testgrid-days-of-results': str(days_of_results),
         'testgrid-tab-name': tab,
     }
+    if alert_email is not None:
+        annotations['testgrid-alert-email'] = alert_email
+    if alert_num_failures is not None:
+        annotations['testgrid-num-failures-to-alert'] = str(alert_num_failures)
+
     for (k, v) in spec.items():
         annotations[f"test.kops.k8s.io/{k}"] = v or ""
 
@@ -299,7 +306,9 @@ def presubmit_test(branch='master',
                    use_boskos=False,
                    build_cluster=None,
                    cluster_name=None,
-                   use_preset_for_account_creds=None):
+                   use_preset_for_account_creds=None,
+                   alert_email=None,
+                   alert_num_failures=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
         if distro == "channels":
@@ -422,6 +431,11 @@ def presubmit_test(branch='master',
         'testgrid-days-of-results': '90',
         'testgrid-tab-name': tab_name or name,
     }
+    if alert_email is not None:
+        annotations['testgrid-alert-email'] = alert_email
+    if alert_num_failures is not None:
+        annotations['testgrid-num-failures-to-alert'] = str(alert_num_failures)
+
     for (k, v) in spec.items():
         annotations[f"test.kops.k8s.io/{k}"] = v or ""
 
@@ -932,7 +946,9 @@ def generate_misc():
                    test_args="--master-os-distro=custom --node-os-distro=custom",
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
-                   runs_per_day=3),
+                   runs_per_day=3,
+                   alert_email="kubernetes-sig-storage-test-failures@googlegroups.com",
+                   alert_num_failures=10),
 
         # [sig-storage, @jsafrane] A one-off scenario testing all SELinux related feature gates enabled
         # and opt-in selinux-warning-controller.
@@ -970,7 +986,9 @@ def generate_misc():
                    test_args="--master-os-distro=custom --node-os-distro=custom",
                    # Serial and Disruptive tests can be slow.
                    test_timeout_minutes=120,
-                   runs_per_day=3),
+                   runs_per_day=3,
+                   alert_email="kubernetes-sig-storage-test-failures@googlegroups.com",
+                   alert_num_failures=10),
 
         # test kube-up to kops jobs migration
         build_test(name_override="ci-kubernetes-e2e-cos-gce-canary",
