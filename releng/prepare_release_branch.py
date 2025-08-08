@@ -34,6 +34,8 @@ BRANCH_JOB_DIR = "../config/jobs/kubernetes/sig-release/release-branch-jobs"
 max_config_count = 5
 min_config_count = 3
 
+# FIXME this system doesn't really work, rework the script
+
 suffixes = ['beta', 'stable1', 'stable2', 'stable3', 'stable4']
 
 class ToolError(Exception):

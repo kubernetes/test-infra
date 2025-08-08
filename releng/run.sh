@@ -20,6 +20,8 @@ set -o pipefail
 # Auto-detect architecture
 if [[ "${GOARCH:-}" == "" ]]; then
   HOST_ARCH=$(go env GOARCH)
+else
+  HOST_ARCH="${GOARCH}"
 fi
 
 # Since the compiled tools are mounted into a Linux container, it's more important to get the ARCH right
