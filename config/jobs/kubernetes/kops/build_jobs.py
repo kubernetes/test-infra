@@ -903,7 +903,7 @@ def generate_misc():
         build_test(name_override="kops-aws-selinux",
                    # RHEL8 VM image is enforcing SELinux by default.
                    cloud="aws",
-                   distro="rhel8",
+                   distro="rhel9",
                    networking="cilium",
                    k8s_version="ci",
                    kops_channel="alpha",
@@ -940,7 +940,7 @@ def generate_misc():
         build_test(name_override="kops-aws-selinux-alpha",
                    # RHEL8 VM image is enforcing SELinux by default.
                    cloud="aws",
-                   distro="rhel8",
+                   distro="rhel9",
                    networking="cilium",
                    k8s_version="ci",
                    kops_channel="alpha",
