@@ -25,7 +25,7 @@ presubmits:
             cpu: 6000m
             memory: 4Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-build-release-1-10
   - name: pull-cluster-api-apidiff-release-1-10
     cluster: eks-prow-build-cluster
@@ -52,7 +52,7 @@ presubmits:
             cpu: 6000m
             memory: 2Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-apidiff-release-1-10
   - name: pull-cluster-api-verify-release-1-10
     cluster: eks-prow-build-cluster
@@ -82,7 +82,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-verify-release-1-10
   - name: pull-cluster-api-test-release-1-10
     cluster: eks-prow-build-cluster
@@ -108,7 +108,7 @@ presubmits:
             cpu: 7300m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-test-release-1-10
   - name: pull-cluster-api-test-mink8s-release-1-10
     cluster: eks-prow-build-cluster
@@ -144,7 +144,7 @@ presubmits:
             cpu: 7300m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-test-mink8s-release-1-10
   - name: pull-cluster-api-e2e-mink8s-release-1-10
     cluster: eks-prow-build-cluster
@@ -198,7 +198,7 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-e2e-mink8s-release-1-10
   - name: pull-cluster-api-e2e-blocking-release-1-10
     cluster: eks-prow-build-cluster
@@ -241,7 +241,7 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-e2e-blocking-release-1-10
   - name: pull-cluster-api-e2e-release-1-10
     cluster: eks-prow-build-cluster
@@ -287,7 +287,7 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-e2e-release-1-10
   - name: pull-cluster-api-e2e-upgrade-1-32-1-33-release-1-10
     cluster: eks-prow-build-cluster
@@ -337,7 +337,7 @@ presubmits:
             cpu: 6000m
             memory: 6Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-e2e-release-1-10-1-32-1-33
   - name: pull-cluster-api-e2e-conformance-release-1-10
     cluster: eks-prow-build-cluster
@@ -380,7 +380,7 @@ presubmits:
             cpu: 4000m
             memory: 4Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-e2e-conformance-release-1-10
   - name: pull-cluster-api-e2e-conformance-ci-latest-release-1-10
     cluster: eks-prow-build-cluster
@@ -423,5 +423,5 @@ presubmits:
             cpu: 4000m
             memory: 4Gi
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.10
+      testgrid-dashboards: cluster-api-core-1.10
       testgrid-tab-name: capi-pr-e2e-conformance-ci-latest-release-1-10
