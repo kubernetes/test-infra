@@ -101,7 +101,6 @@ presubmits:
           value: "2000"
         - name: CL2_SYSTEM_USED_MILLICORES
           value: "1200"  # this allows each workload pod to run with 100m
-        -
         - name: PROMETHEUS_SCRAPE_KUBELETS
           value: "true"
         resources:
