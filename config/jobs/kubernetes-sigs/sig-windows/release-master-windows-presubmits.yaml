@@ -10,63 +10,63 @@ presets:
     value: "Standard_D4s_v3"
 presubmits:
   kubernetes/kubernetes:
-  # - name: pull-kubernetes-e2e-capz-windows-master
-  #   cluster: eks-prow-build-cluster
-  #   decorate: true
-  #   always_run: false
-  #   optional: true
-  #   run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
-  #   path_alias: k8s.io/kubernetes
-  #   branches:
-  #     - master
-  #     - main
-  #   labels:
-  #     preset-dind-enabled: "true"
-  #     preset-kind-volume-mounts: "true"
-  #     preset-capz-windows-2022: "true"
-  #     preset-capz-containerd-1-7-latest: "true"
-  #     preset-capz-windows-common-pull: "true"
-  #     preset-azure-community: "true"
-  #   extra_refs:
-  #   - org: kubernetes-sigs
-  #     repo: cluster-api-provider-azure
-  #     base_ref: main
-  #     path_alias: sigs.k8s.io/cluster-api-provider-azure
-  #     workdir: false
-  #   - org: kubernetes-sigs
-  #     repo: cloud-provider-azure
-  #     base_ref: master
-  #     path_alias: sigs.k8s.io/cloud-provider-azure
-  #     workdir: false
-  #   - org: kubernetes-sigs
-  #     repo: windows-testing
-  #     base_ref: master
-  #     path_alias: k8s.io/windows-testing
-  #     workdir: true
-  #   spec:
-  #     serviceAccountName: azure
-  #     containers:
-  #     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
-  #       command:
-  #       - "runner.sh"
-  #       - "env"
-  #       - "KUBERNETES_VERSION=latest"
-  #       - "./capz/run-capz-e2e.sh"
-  #       securityContext:
-  #         privileged: true
-  #       resources:
-  #         requests:
-  #           cpu: 2
-  #           memory: "9Gi"
-  #         limits:
-  #           cpu: 2
-  #           memory: "9Gi"
-  #   annotations:
-  #     fork-per-release: "true"
-  #     fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
-  #     testgrid-dashboards: sig-windows-presubmit
-  #     testgrid-tab-name: pull-kubernetes-e2e-capz-windows
-  #     testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-windows-master
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-common-pull: "true"
+      preset-azure-community: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: windows-testing
+      base_ref: master
+      path_alias: k8s.io/windows-testing
+      workdir: true
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-master
+        command:
+        - "runner.sh"
+        - "env"
+        - "KUBERNETES_VERSION=latest"
+        - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
+    annotations:
+      fork-per-release: "true"
+      fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows
+      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-windows-serial-slow
     cluster: eks-prow-build-cluster
     decorate: true

@@ -80,14 +80,14 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
+    fork-per-release-cron: 0 8-23/24 * * *, 0 14-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.34-blocking, google-gce, sig-node-gpu
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.34
   cluster: k8s-infra-prow-build
-  cron: 0 3-23/6 * * *
+  cron: 0 8-23/12 * * *
   decorate: true
   decoration_config:
     timeout: 5h0m0s
@@ -123,7 +123,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -137,7 +137,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -786,7 +786,7 @@ periodics:
       - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable1
+      - --extra-version-markers=k8s-stable2
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -800,13 +800,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 13 * * *, 0 17 * * *, 0 21 * * *
+    fork-per-release-cron: 0 17 * * *, 0 21 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.34-500
   cluster: k8s-infra-prow-build
-  cron: 0 7 * * *
+  cron: 0 13 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -878,14 +878,14 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.34'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
+    fork-per-release-cron: 0 8-20/12 * * *, 0 8-20/24 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com,
       release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.34-blocking, sig-scalability-gce
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.34-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 0/12 * * *
+  cron: 0 4-16/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -961,7 +961,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.34-blocking
     testgrid-tab-name: cmd-1.34
@@ -972,7 +972,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -998,7 +998,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.34-blocking
     testgrid-tab-name: integration-1.34
@@ -1009,7 +1009,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -1035,7 +1035,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.34-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -1049,7 +1049,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
   name: ci-kubernetes-e2e-kind-1-34
@@ -1078,7 +1078,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.34-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -1092,7 +1092,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
   name: ci-kubernetes-e2e-kind-ipv6-1-34
@@ -1160,7 +1160,7 @@ periodics:
       runAsGroup: 2010
       runAsUser: 2001
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io,
       release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.34-blocking
@@ -1172,7 +1172,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -3882,56 +3882,56 @@ presubmits:
           requests:
             cpu: "5"
             memory: 12Gi
-  # - always_run: false
-  #   branches:
-  #   - release-1.34
-  #   cluster: eks-prow-build-cluster
-  #   context: pull-kubernetes-e2e-capz-windows-1.34
-  #   decorate: true
-  #   extra_refs:
-  #   - base_ref: main
-  #     org: kubernetes-sigs
-  #     path_alias: sigs.k8s.io/cluster-api-provider-azure
-  #     repo: cluster-api-provider-azure
-  #   - base_ref: master
-  #     org: kubernetes-sigs
-  #     path_alias: sigs.k8s.io/cloud-provider-azure
-  #     repo: cloud-provider-azure
-  #   - base_ref: master
-  #     org: kubernetes-sigs
-  #     path_alias: k8s.io/windows-testing
-  #     repo: windows-testing
-  #     workdir: true
-  #   labels:
-  #     preset-azure-community: "true"
-  #     preset-capz-containerd-1-7-latest: "true"
-  #     preset-capz-windows-2022: "true"
-  #     preset-capz-windows-common-pull: "true"
-  #     preset-dind-enabled: "true"
-  #     preset-kind-volume-mounts: "true"
-  #   name: pull-kubernetes-e2e-capz-windows-master
-  #   optional: true
-  #   path_alias: k8s.io/kubernetes
-  #   run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
-  #   spec:
-  #     containers:
-  #     - command:
-  #       - runner.sh
-  #       - env
-  #       - KUBERNETES_VERSION=latest-1.34
-  #       - ./capz/run-capz-e2e.sh
-  #       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-1.34
-  #       name: ""
-  #       resources:
-  #         limits:
-  #           cpu: "2"
-  #           memory: 9Gi
-  #         requests:
-  #           cpu: "2"
-  #           memory: 9Gi
-  #       securityContext:
-  #         privileged: true
-  #     serviceAccountName: azure
+  - always_run: false
+    branches:
+    - release-1.34
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-e2e-capz-windows-1.34
+    decorate: true
+    extra_refs:
+    - base_ref: main
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      repo: cluster-api-provider-azure
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      repo: cloud-provider-azure
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: k8s.io/windows-testing
+      repo: windows-testing
+      workdir: true
+    labels:
+      preset-azure-community: "true"
+      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-windows-common-pull: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kubernetes-e2e-capz-windows-master
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - env
+        - KUBERNETES_VERSION=latest-1.34
+        - ./capz/run-capz-e2e.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250717-57d1ca3de9-1.34
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 9Gi
+          requests:
+            cpu: "2"
+            memory: 9Gi
+        securityContext:
+          privileged: true
+      serviceAccountName: azure
   kubernetes/perf-tests:
   - always_run: false
     branches:
