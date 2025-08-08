@@ -169,34 +169,34 @@ jobs:
     testSuite: alphafeatures-eventedpleg
 
   # stable4
-  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-    testSuite: alphafeatures-eventedpleg
+  # ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+  #   interval: 24h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  # ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+  #   interval: 24h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  # ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+  #   interval: 24h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  #   testgridNumFailuresToAlert: 6
+  # ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+  #   interval: 24h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseInforming: true
+  #   testgridNumFailuresToAlert: 6
+  # ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+  #   interval: 24h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseInforming: true
+  #   testgridNumFailuresToAlert: 6
+  # ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+  #   interval: 24h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  #   testSuite: alphafeatures-eventedpleg
 
 # The following settings are used by cluster e2e tests.
 
@@ -262,10 +262,10 @@ k8sVersions:
     args:
     - --extract=ci/latest-1.31
     version: '1.31'
-  stable4:
-    args:
-    - --extract=ci/latest-1.30
-    version: '1.30'
+  # stable4:
+  #   args:
+  #   - --extract=ci/latest-1.30
+  #   version: '1.30'
 
 testSuites:
   alphafeatures:
@@ -462,10 +462,10 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250807-7b202b3ee9-1.31
-  stable4:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.30
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+  # stable4:
+  #   args:
+  #   - --repo=k8s.io/kubernetes=release-1.30
+  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
 
 nodeTestSuites:
   default:
