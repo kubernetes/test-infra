@@ -903,7 +903,7 @@ def generate_misc():
         build_test(name_override="kops-aws-selinux",
                    # RHEL8 VM image is enforcing SELinux by default.
                    cloud="aws",
-                   distro="rhel8",
+                   distro="rhel9",
                    networking="cilium",
                    k8s_version="ci",
                    kops_channel="alpha",
@@ -924,7 +924,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - FeatureGate:SELinuxMount: the feature gate is alpha / disabled by default
                    #   in v1.32.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[FeatureGate:SELinuxMount\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
@@ -940,7 +940,7 @@ def generate_misc():
         build_test(name_override="kops-aws-selinux-alpha",
                    # RHEL8 VM image is enforcing SELinux by default.
                    cloud="aws",
-                   distro="rhel8",
+                   distro="rhel9",
                    networking="cilium",
                    k8s_version="ci",
                    kops_channel="alpha",
@@ -962,7 +962,7 @@ def generate_misc():
                    #   that multiply nr. of tests.
                    # - Feature:SELinuxMountReadWriteOncePodOnly: these tests require SELinuxMount
                    #   feature gate off.
-                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]",
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]",
                    # [Serial] and [Disruptive] are intentionally not skipped, therefore run
                    # everything as serial.
                    test_parallelism=1,
