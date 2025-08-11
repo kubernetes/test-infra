@@ -279,7 +279,7 @@ periodics:
       - --timeout=60m
       - --skip-regex=
       - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
+        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
         --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -340,7 +340,7 @@ periodics:
       - --timeout=60m
       - --skip-regex=
       - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
+        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
         --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -402,7 +402,7 @@ periodics:
       - --timeout=60m
       - --skip-regex=
       - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
         --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -460,7 +460,7 @@ periodics:
       - --timeout=60m
       - --skip-regex=
       - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
         --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -1587,7 +1587,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex=
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
+          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
           --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -1645,7 +1645,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex=
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
+          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
           --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -1703,7 +1703,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex=
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
           --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -1757,7 +1757,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex=
         - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/stable2=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
           --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
