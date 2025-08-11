@@ -254,7 +254,7 @@ presubmits:
         - name: ZONE
           value: us-central1-a
         - name: IMAGE_FAMILY
-          value: pipeline-1-24
+          value: pipeline-1-33-amd64
         - name: IMAGE_PROJECT
           value: ubuntu-os-gke-cloud
         - name: BOSKOS_PROJECT_TYPE
