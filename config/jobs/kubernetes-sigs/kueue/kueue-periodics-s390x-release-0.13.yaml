@@ -34,7 +34,7 @@ periodics:
           args:
             - make
             - image-build
-            - PLATFORMS=linux/s390x,linux/ppc64le
+            - PLATFORMS=linux/s390x
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
