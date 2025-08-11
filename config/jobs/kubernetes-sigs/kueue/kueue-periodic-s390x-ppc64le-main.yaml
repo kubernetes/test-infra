@@ -32,16 +32,8 @@ periodics:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
           args:
-            - bash
-            - -c
-            - |
-              # Setup buildx driver for multi-arch builds
-              docker buildx create --use --name multiarch-builder || true
-              docker buildx inspect --bootstrap
-              docker buildx ls
-
-              # Build the images
-              make image-build PLATFORMS=linux/s390x,linux/ppc64le
+            - make 
+            - make image-local-build 
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
