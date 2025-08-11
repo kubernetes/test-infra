@@ -33,7 +33,7 @@ periodics:
             - runner.sh
           args:
             - make 
-            - make image-local-build 
+            - image-local-build 
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
