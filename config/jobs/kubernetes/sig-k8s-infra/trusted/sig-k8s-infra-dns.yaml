@@ -14,12 +14,12 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      # proxy for sig-k8s-infra-oncall
-      - org: kubernetes
-        slug: sig-k8s-infra-leads
-      # TODO(spiffxp): team specifically for this service
-      # - org: kubernetes
-      #   slug: k8s-infra-dns-admins
+        # proxy for sig-k8s-infra-oncall
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        # TODO(spiffxp): team specifically for this service
+        # - org: kubernetes
+        #   slug: k8s-infra-dns-admins
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
@@ -47,12 +47,12 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
     github_team_slugs:
-    # proxy for sig-k8s-infra-oncall
-    - org: kubernetes
-      slug: sig-k8s-infra-leads
-    # TODO(spiffxp): team specifically for this service
-    # - org: kubernetes
-    #   slug: k8s-infra-dns-admins
+      # proxy for sig-k8s-infra-oncall
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+      # TODO(spiffxp): team specifically for this service
+      # - org: kubernetes
+      #   slug: k8s-infra-dns-admins
   spec:
     serviceAccountName: k8s-infra-dns-updater
     containers:
