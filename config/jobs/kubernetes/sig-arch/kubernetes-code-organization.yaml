@@ -405,6 +405,12 @@ periodics:
           - |
             export HOME="$(mktemp -d)"
             export GOROOT_BOOTSTRAP="$(go env GOROOT)"
+
+            atexit () {
+              find "$HOME/.gimme" -name "*.log" -exec cp {} "${ARTIFACTS}" \;
+            }
+            trap 'atexit' EXIT
+
             GIMME_DEBUG=true third_party/gimme/gimme master
         resources:
           limits:
