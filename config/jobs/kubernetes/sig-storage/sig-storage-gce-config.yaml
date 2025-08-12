@@ -263,7 +263,7 @@ presubmits:
                 --admin-access=0.0.0.0/0 \
                 --kubernetes-feature-gates=SELinuxMount,SELinuxChangePolicy \
                 --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
-                --create-args "--image='rhel-cloud/rhel-9-v20240815' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers='*' --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
+                --create-args "--image='rhel-cloud/rhel-8-v20250709' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers='*' --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --gce-service-account=default --set=spec.nodeProblemDetector.enabled=true --set=cluster.spec.cloudProvider.gce.useStartupScript=true" \
                 --test=kops \
                 -- \
                 --ginkgo-args="--debug -v" \
