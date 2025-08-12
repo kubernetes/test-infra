@@ -1,10 +1,10 @@
 periodics:
   - interval: 12h
-    name: periodic-kueue-build-s390x-ppc64le-release-0-13-multiarch
+    name: periodic-kueue-build-s390x-ppc64le-release-0-13
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-build-s390x-ppc64le-release-0-13-multiarch
+      testgrid-tab-name: periodic-kueue-build-s390x-ppc64le-release-0-13
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run s390x & power periodic to build kueue image"
