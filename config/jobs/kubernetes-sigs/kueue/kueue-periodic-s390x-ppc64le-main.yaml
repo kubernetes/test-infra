@@ -32,9 +32,9 @@ periodics:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
           args:
-            - make 
+            - make
             - image-local-build
-            - PLATFORMS=linux/s390x,linux/ppc64le 
+            - PLATFORMS=linux/s390x,linux/ppc64le
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
