@@ -370,3 +370,45 @@ periodics:
         requests:
           cpu: 7.2
           memory: "43Gi"
+
+- interval: 4h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-build-golang-tip
+  annotations:
+    testgrid-dashboards: sig-arch-code-organization
+    testgrid-tab-name: unit-master-build-golang-tip
+    description: Build golang tip
+    testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '6'
+  decorate: true
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    # unit tests have no business requiring root or doing privileged operations
+    securityContext:
+      # NOTE: these are arbitrary non-root values. They don't exist in the
+      # image and don't need to, the unit tests should only write to TMPDIR
+      runAsUser: 2001
+      runAsGroup: 2010
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250808-38ff9ff2bd-master
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - |
+            export GOROOT_BOOTSTRAP=$(readlink -f $(dirname $(readlink -f $(which go)))/../..)
+            GIMME_DEBUG=true third_party/gimme/gimme master
+        resources:
+          limits:
+            cpu: 4
+            memory: "8Gi"
+          requests:
+            cpu: 4
+            memory: "8Gi"
