@@ -403,7 +403,8 @@ periodics:
           - bash
           - -c
           - |
-            export GOROOT_BOOTSTRAP=$(readlink -f $(dirname $(readlink -f $(which go)))/../..)
+            export HOME="$(mktemp -d)"
+            export GOROOT_BOOTSTRAP="$(go env GOROOT)"
             GIMME_DEBUG=true third_party/gimme/gimme master
         resources:
           limits:
