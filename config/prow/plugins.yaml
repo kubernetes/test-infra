@@ -286,6 +286,41 @@ lgtm:
 
 blockades:
 - repos:
+  - kubernetes/api
+  - kubernetes/apiextensions-apiserver
+  - kubernetes/apimachinery
+  - kubernetes/apiserver
+  - kubernetes/cli-runtime
+  - kubernetes/client-go
+  - kubernetes/cloud-provider
+  - kubernetes/cluster-bootstrap
+  - kubernetes/code-generator
+  - kubernetes/component-base
+  - kubernetes/component-helpers
+  - kubernetes/controller-manager
+  - kubernetes/cri-api
+  - kubernetes/cri-client
+  - kubernetes/csi-translation-lib
+  - kubernetes/dynamic-resource-allocation
+  - kubernetes/endpointslice
+  - kubernetes/externaljwt
+  - kubernetes/kms
+  - kubernetes/kube-aggregator
+  - kubernetes/kube-controller-manager
+  - kubernetes/kube-proxy
+  - kubernetes/kube-scheduler
+  - kubernetes/kubectl
+  - kubernetes/kubelet
+  - kubernetes/metrics
+  - kubernetes/mount-utils
+  - kubernetes/pod-security-admission
+  - kubernetes/sample-apiserver
+  - kubernetes/sample-cli-plugin
+  - kubernetes/sample-controller
+  blockregexps:
+  - .*
+  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+- repos:
   - kubernetes/kubernetes
   blockregexps:
   - ^examples/
@@ -332,20 +367,10 @@ blockades:
   - ^push-build.sh
   explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
 - repos:
-  - kubernetes/client-go
-  blockregexps:
-  - .*
-  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
-- repos:
   - kubernetes/k8s.io
   blockregexps:
   - ^k8s.gcr.io/
   explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead"
-- repos:
-  - kubernetes/cri-api
-  blockregexps:
-  - .*
-  explanation: "We do not accept changes directly against this repository. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 
 blunderbuss:
   max_request_count: 2
