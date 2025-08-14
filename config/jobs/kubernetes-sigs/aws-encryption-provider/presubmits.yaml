@@ -7,7 +7,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250808-38ff9ff2bd-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250814-46947602a3-master
         command:
         - runner.sh
         args:
@@ -35,7 +35,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250808-38ff9ff2bd-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250814-46947602a3-master
         command:
         - runner.sh
         args:

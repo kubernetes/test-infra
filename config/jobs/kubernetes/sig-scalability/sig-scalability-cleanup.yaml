@@ -23,7 +23,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/issues/2854
     serviceAccountName: boskos-janitor
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250808-38ff9ff2bd-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250814-46947602a3-master
       command:
       - runner.sh
       args:
