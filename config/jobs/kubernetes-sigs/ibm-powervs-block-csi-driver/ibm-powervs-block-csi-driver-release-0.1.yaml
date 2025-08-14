@@ -13,7 +13,7 @@ presubmits:
        description: Build test in ibm-powervs-block-csi-driver repo.
      branches:
       # The script this job runs is not in all branches.
-      - ^release-0.1
+      - ^release-0\.1$
      spec:
        containers:
        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
@@ -45,7 +45,7 @@ presubmits:
        description: Build image test in ibm-powervs-block-csi-driver repo.
      branches:
       # The script this job runs is not in all branches.
-      - ^release-0.1
+      - ^release-0\.1$
      spec:
        containers:
        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
@@ -75,7 +75,7 @@ presubmits:
        description: Unit tests in ibm-powervs-block-csi-driver repo.
      branches:
       # The script this job runs is not in all branches.
-      - ^release-0.1
+      - ^release-0\.1$
      spec:
        containers:
        - image: public.ecr.aws/docker/library/golang:1.17
@@ -102,7 +102,7 @@ presubmits:
        description: ibm-powervs-block-csi-driver basic code verification.
      branches:
       # The script this job runs is not in all branches.
-      - ^release-0.1
+      - ^release-0\.1$
      spec:
        containers:
        - image: public.ecr.aws/docker/library/golang:1.17
