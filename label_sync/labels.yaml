@@ -585,6 +585,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG AI Conformance.
+      name: wg/ai-conformance
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG API Expression.
       name: wg/api-expression
       target: both
