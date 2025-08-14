@@ -85,7 +85,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -128,7 +128,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-master
-- name: ci-kubernetes-e2e-capz-master-windows-containerd2
+- name: ci-kubernetes-e2e-capz-master-windows-containerd17
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
@@ -139,7 +139,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-containerd-2-0-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -192,7 +192,7 @@ periodics:
     preset-azure-community: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
   extra_refs:
@@ -415,9 +415,9 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-community: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
-    preset-capz-containerd-1-7-latest: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -471,9 +471,9 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-capz-containerd-2-0-latest: "true"
     preset-capz-windows-common: "true"
     preset-capz-windows-2025: "true"
-    preset-capz-containerd-1-7-latest: "true"
     preset-azure-community: "true"
   extra_refs:
   - org: kubernetes-sigs

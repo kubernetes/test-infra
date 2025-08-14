@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-capz-windows-2022: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-common-pull: "true"
       preset-azure-community: "true"
     extra_refs:
@@ -82,7 +82,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-capz-windows-2022: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-common-pull: "true"
       preset-azure-community: "true"
     extra_refs:
@@ -141,7 +141,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-capz-windows-2022: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-common-pull: "true"
       preset-azure-community: "true"
     extra_refs:
@@ -256,9 +256,9 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-azure-community: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-2022: "true"
       preset-capz-windows-common-pull: "true"
-      preset-capz-containerd-1-7-latest: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -319,9 +319,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-common: "true"
       preset-capz-windows-2022: "true"
-      preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -381,7 +381,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-capz-windows-common: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-azure-community: "true"
       preset-capz-windows-2022: "true"
     extra_refs:
@@ -433,7 +433,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-capz-windows-common: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-azure-community: "true"
       preset-capz-windows-2025: "true"
     extra_refs:
@@ -484,7 +484,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-capz-windows-common: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-2022: "true"
       preset-azure-community: "true"
     extra_refs:
@@ -535,7 +535,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-capz-windows-common: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-2022: "true"
       preset-azure-community: "true"
     extra_refs:
@@ -589,7 +589,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
       preset-capz-windows-common: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-2022: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -646,7 +646,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
       preset-capz-windows-common: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-2022: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -704,7 +704,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
-      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-containerd-2-0-latest: "true"
       preset-capz-windows-common: "true"
       preset-capz-windows-2022: "true"
     extra_refs:
