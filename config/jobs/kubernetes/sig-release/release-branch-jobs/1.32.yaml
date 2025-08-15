@@ -43,7 +43,7 @@ periodics:
   cluster: k8s-infra-prow-build
   decorate: true
   decoration_config:
-    timeout: 3h40m0s
+    timeout: 2h30m
   extra_refs:
   - base_ref: release-1.32
     org: kubernetes
