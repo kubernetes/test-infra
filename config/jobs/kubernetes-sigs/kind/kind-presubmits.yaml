@@ -10,7 +10,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
@@ -33,7 +33,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
         command:
         - wrapper.sh
         - make
@@ -93,7 +93,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -136,7 +136,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -183,7 +183,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
         command:
         - wrapper.sh
         - bash
@@ -228,7 +228,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
         command:
         - wrapper.sh
         - bash
@@ -310,7 +310,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-1.33
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-1.33
         command:
         - wrapper.sh
         - bash
@@ -355,7 +355,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-1.32
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-1.32
         command:
         - wrapper.sh
         - bash
@@ -400,7 +400,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250814-46947602a3-1.31
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-1.31
         command:
         - wrapper.sh
         - bash
