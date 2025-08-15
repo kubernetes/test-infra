@@ -1183,6 +1183,13 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		if !isCritical(job.Cluster) {
 			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
 		}
+		// Allow some buffer over the 120m target in the release blocking job policy:
+		// "Have the average of 75% percentile duration of all runs for a week finishing in 120 minutes or less"
+		// "Run at least every 3 hours"
+		// https://github.com/kubernetes/sig-release/blob/master/release-blocking-jobs.md
+		if job.DecorationConfig.Timeout.Duration > (time.Hour*2 + time.Minute*30) {
+			errs = append(errs, fmt.Errorf("release-blocking job must have timeout <= 2h30m and nominally run in <=2h, yet timeout is: %v", job.DecorationConfig.Timeout))
+		}
 		if len(errs) > 0 {
 			jobsToFix++
 		}
