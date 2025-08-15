@@ -462,6 +462,7 @@ networking_options = [
 distro_options = [
     'al2023',
     'deb12',
+    'deb13',
     'flatcar',
     'rhel8',
     'u2004',
