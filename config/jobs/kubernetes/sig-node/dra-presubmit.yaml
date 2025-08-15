@@ -341,7 +341,7 @@ presubmits:
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 1))
-          # Test with the lastest stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
           previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
           curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
@@ -456,7 +456,7 @@ presubmits:
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 2))
-          # Test with the lastest stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
           previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
           curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
