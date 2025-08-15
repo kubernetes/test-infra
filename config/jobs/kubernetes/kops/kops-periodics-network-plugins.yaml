@@ -130,7 +130,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico
 
-# {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "gce", "distro": "cosdev", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-gce-cni-calico
   cron: '26 1-23/3 * * *'
   labels:
@@ -160,7 +160,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=calico --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-dev-129-19226-0-0' --channel=alpha --networking=calico --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -184,13 +184,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: gce
-    test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/distro: cosdev
     test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2404, kops-gce, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-cosdev, kops-gce, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-gce-cni-calico
 
@@ -319,7 +319,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-azure-cni-cilium
 
-# {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "cosdev", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-gce-cni-cilium
   cron: '16 1-23/3 * * *'
   labels:
@@ -349,7 +349,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-dev-129-19226-0-0' --channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -373,13 +373,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: gce
-    test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/distro: cosdev
     test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2404, kops-gce, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-cosdev, kops-gce, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-gce-cni-cilium
 
@@ -639,7 +639,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-kindnet
 
-# {"cloud": "gce", "distro": "u2404", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "cosdev", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-cni-kindnet
   cron: '39 2-23/3 * * *'
   labels:
@@ -669,7 +669,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=kindnet --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-dev-129-19226-0-0' --channel=alpha --networking=kindnet --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -693,13 +693,13 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: gce
-    test.kops.k8s.io/distro: u2404
+    test.kops.k8s.io/distro: cosdev
     test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: kindnet
-    testgrid-dashboards: kops-distro-u2404, kops-gce, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-cosdev, kops-gce, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-gce-cni-kindnet
 
