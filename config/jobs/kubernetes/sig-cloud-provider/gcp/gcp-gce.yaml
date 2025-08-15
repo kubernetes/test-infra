@@ -1041,7 +1041,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 200m
+    timeout: 1h20m
   spec:
     containers:
     - command:
@@ -1054,7 +1054,7 @@ periodics:
       - --gcp-region=us-central1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
-      - --timeout=180m
+      - --timeout=60m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
       resources:
         limits:
