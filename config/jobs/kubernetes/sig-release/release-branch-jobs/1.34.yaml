@@ -1172,7 +1172,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 3h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
