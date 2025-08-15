@@ -1,3 +1,6 @@
+gce://images/cos-cloud/cos-dev:X86_64=cos-dev-129-19226-0-0
+gce://images/cos-cloud/cos-arm64-dev:ARM64=cos-arm64-dev-129-19226-0-0
+gce://images/cos-cloud/cos-109-lts:X86_64=cos-109-17800-570-26
 aws://images/137112412989/al2023-ami-2*-kernel-6.1-x86_64:x86_64=137112412989/al2023-ami-2023.8.20250808.1-kernel-6.1-x86_64
 aws://images/137112412989/amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2:x86_64=137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20250808.1-x86_64-gp2
 aws://images/136693071363/debian-10-amd64-*:x86_64=136693071363/debian-10-amd64-20240703-1797
