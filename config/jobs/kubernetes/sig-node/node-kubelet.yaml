@@ -1,7 +1,7 @@
 periodics:
 - name: ci-kubernetes-node-e2e-containerd
   cluster: k8s-infra-prow-build
-  interval: 4h
+  interval: 3h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
