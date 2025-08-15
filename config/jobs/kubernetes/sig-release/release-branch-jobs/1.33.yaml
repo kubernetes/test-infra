@@ -90,7 +90,7 @@ periodics:
   cron: 0 8-23/24 * * *
   decorate: true
   decoration_config:
-    timeout: 5h0m0s
+    timeout: 1h20m
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
@@ -108,7 +108,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --timeout=180m
+      - --timeout=60m
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       command:
       - runner.sh
