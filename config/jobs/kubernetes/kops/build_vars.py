@@ -29,6 +29,11 @@ networking_options = [
     "kopeio",
 ]
 
+# GCE distributions
+gce_distro_options = [
+    "u2204",
+]
+
 # AWS distributions
 distro_options = [
     "al2023",

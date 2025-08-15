@@ -1,3 +1,4 @@
+gce://images/ubuntu-os-cloud/ubuntu-2204-lts:X86_64=ubuntu-2204-jammy-v20250826
 aws://images/137112412989/al2023-ami-2*-kernel-6.1-x86_64:x86_64=137112412989/al2023-ami-2023.8.20250818.0-kernel-6.1-x86_64
 aws://images/137112412989/amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2:x86_64=137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20250818.2-x86_64-gp2
 aws://images/136693071363/debian-11-amd64-*:x86_64=136693071363/debian-11-amd64-20250801-2191

@@ -43,6 +43,7 @@ from build_vars import ( # pylint: disable=import-error, no-name-in-module
     skip_jobs,
     image,
     networking_options,
+    gce_distro_options,
     distro_options,
     k8s_versions,
     kops_versions,
@@ -485,7 +486,7 @@ def generate_grid():
     # TODO(justinsb): merge into above block when we can
     # pylint: disable=too-many-nested-blocks
     for networking in ['kubenet', 'calico', 'cilium', 'gce']: # TODO: all networking_options:
-        for distro in ['u2204']: # TODO: all distro_options:
+        for distro in gce_distro_options: # TODO: all distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
                     results.append(
