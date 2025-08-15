@@ -33,6 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
     build_cron,
     create_args,
     distro_images,
+    gce_distro_images,
     distros_ssh_user,
     k8s_version_info,
     should_skip_newer_k8s,
@@ -114,6 +115,7 @@ def build_test(cloud='aws',
 
     elif cloud == 'gce':
         kops_image = None
+        kops_image = gce_distro_images[distro]
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
         if build_cluster is None:
@@ -469,6 +471,12 @@ distro_options = [
     'u2204',
 ]
 
+gce_distro_options = [
+    'cosdev',
+    'cosdevarm64',
+    'cos109',
+]
+
 k8s_versions = [
     "1.29",
     "1.30",
@@ -512,7 +520,7 @@ def generate_grid():
     # TODO(justinsb): merge into above block when we can
     # pylint: disable=too-many-nested-blocks
     for networking in ['kubenet', 'calico', 'cilium', 'gce']: # TODO: all networking_options:
-        for distro in ['u2004']: # TODO: all distro_options:
+        for distro in gce_distro_options: # TODO: all distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
                     results.append(
@@ -570,6 +578,7 @@ def generate_misc():
                    extra_dashboards=['kops-network-plugins']),
         build_test(name_override="kops-gce-cni-cilium-k8s-ci",
                    cloud="gce",
+                   distro="cosdev",
                    k8s_version="ci",
                    networking="cilium",
                    runs_per_day=1,
@@ -1000,7 +1009,7 @@ def generate_misc():
         # test kube-up to kops jobs migration
         build_test(name_override="ci-kubernetes-e2e-cos-gce-canary",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="kubenet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1050,7 +1059,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-slow-canary",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="kubenet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1085,7 +1094,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-conformance-canary",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="kubenet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1205,7 +1214,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-disruptive-canary",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="kubenet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1224,7 +1233,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-reboot-canary",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="gce",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1269,7 +1278,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-serial-canary",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="kubenet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1333,7 +1342,7 @@ def generate_misc():
 
         build_test(name_override="ci-kubernetes-e2e-cos-gce-alpha-features",
                    cloud="gce",
-                   distro="cos105",
+                   distro="cos109",
                    networking="kubenet",
                    k8s_version="ci",
                    kops_version=marker_updown_green("master"),
@@ -1521,7 +1530,7 @@ def generate_network_plugins():
             results.append(
                 build_test(
                     cloud="gce",
-                    # distro="ubuntu2404",
+                    distro="cosdev",
                     k8s_version=k8s_version,
                     kops_channel='alpha',
                     name_override=f"kops-gce-cni-{plugin}",
