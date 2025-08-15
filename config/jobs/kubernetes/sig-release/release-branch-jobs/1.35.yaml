@@ -57,7 +57,7 @@ periodics:
   cron: 0 0-23/2 * * *
   decorate: true
   decoration_config:
-    timeout: 5h0m0s
+    timeout: 1h20m
   extra_refs:
   - base_ref: release-1.35
     org: kubernetes
@@ -88,6 +88,7 @@ periodics:
       - --test-args=--minStartupPods=8
       - --test-package-marker=latest-1.35.txt
       - --focus-regex=\[Feature:GPUDevicePlugin\]
+      - --timeout=60m
       command:
       - runner.sh
       - kubetest2

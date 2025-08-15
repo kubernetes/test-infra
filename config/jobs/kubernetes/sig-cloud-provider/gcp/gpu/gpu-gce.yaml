@@ -31,7 +31,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 300m
+    timeout: 1h20m
   spec:
     serviceAccountName: prow-build
     containers:
@@ -59,6 +59,7 @@ periodics:
       - --test-args=--minStartupPods=8
       - --test-package-marker=latest.txt
       - --focus-regex=\[Feature:GPUDevicePlugin\]
+      - --timeout=60m
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20260217-29ba10ecec-master
       resources:
         limits:
