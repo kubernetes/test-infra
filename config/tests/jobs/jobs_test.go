@@ -1170,12 +1170,14 @@ func TestClusterName(t *testing.T) {
 	}
 	t.Logf("summary: %4d/%4d jobs fail to meet sig-k8s-infra cluster name policy", jobsToFix, len(jobs))
 }
+
 func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
-	jobs := allStaticJobs()
-	for _, job := range jobs {
+	numJobs := len(allStaticJobs())
+
+	for _, job := range c.AllPeriodics() {
 		// Only consider Pods that are release-blocking
-		if job.Spec == nil || !isKubernetesReleaseBlocking(job) {
+		if job.Spec == nil || !isKubernetesReleaseBlocking(job.JobBase) {
 			continue
 		}
 		// job Pod must qualify for Guaranteed QoS
@@ -1190,6 +1192,17 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		if job.DecorationConfig.Timeout.Duration > (time.Hour*2 + time.Minute*30) {
 			errs = append(errs, fmt.Errorf("release-blocking job must have timeout <= 2h30m and nominally run in <=2h, yet timeout is: %v", job.DecorationConfig.Timeout))
 		}
+		// periodics must run with minimum frequency, but this is reduced on older release branches
+		branch := kubernetesBranch(job.ExtraRefs)
+		if branch == "master" || branch == "main" {
+			// TODO: cron ...
+			if job.Interval != "" {
+				interval := job.GetInterval()
+				if interval > (time.Hour * 3) {
+					errs = append(errs, fmt.Errorf("release-blocking job must have interval <= 3h, yet interval is: %v", interval))
+				}
+			}
+		}
 		if len(errs) > 0 {
 			jobsToFix++
 		}
@@ -1197,7 +1210,53 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 			t.Errorf("%v: %v", job.Name, err)
 		}
 	}
-	t.Logf("summary: %4d/%4d jobs fail to meet kubernetes/kubernetes release-blocking CI policy", jobsToFix, len(jobs))
+
+	for repo, postsubmits := range c.PostsubmitsStatic {
+		for _, job := range postsubmits {
+			// postsubmits triggering against repos other than kubernetes/kubernetes
+			// should not be release-blocking
+			if repo != "kubernetes/kubernetes" {
+				if job.Spec != nil && isKubernetesReleaseBlocking(job.JobBase) {
+					t.Errorf("%v: postsubmit should not be release-blocking when it does not trigger against kubernetes/kubernetes", job)
+				}
+				continue
+			}
+			// only consider release-blocking jobs
+			if job.Spec == nil || !isKubernetesReleaseBlocking(job.JobBase) {
+				continue
+			}
+			// release blocking jobs must follow policy
+			// job Pod must qualify for Guaranteed QoS
+			errs := verifyPodQOSGuaranteed(job.Spec, true)
+			if !isCritical(job.Cluster) {
+				errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
+			}
+			// Allow some buffer over the 120m target in the release blocking job policy:
+			// "Have the average of 75% percentile duration of all runs for a week finishing in 120 minutes or less"
+			// "Run at least every 3 hours"
+			// https://github.com/kubernetes/sig-release/blob/master/release-blocking-jobs.md
+			if job.DecorationConfig.Timeout.Duration > (time.Hour*2 + time.Minute*30) {
+				errs = append(errs, fmt.Errorf("release-blocking job must have timeout <= 2h30m and nominally run in <=2h, yet timeout is: %v", job.DecorationConfig.Timeout))
+			}
+			if len(errs) > 0 {
+				jobsToFix++
+			}
+			for _, err := range errs {
+				t.Errorf("%v: %v", job.Name, err)
+			}
+		}
+	}
+
+	t.Logf("summary: %4d/%4d jobs fail to meet kubernetes/kubernetes release-blocking CI policy", jobsToFix, numJobs)
+}
+
+func kubernetesBranch(refs []prowapi.Refs) string {
+	for _, ref := range refs {
+		if ref.Org == "kubernetes" && ref.Repo == "kubernetes" {
+			return ref.BaseRef
+		}
+	}
+	return ""
 }
 
 func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
