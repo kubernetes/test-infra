@@ -127,14 +127,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9
+    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9
+    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -154,14 +154,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9-fips
+    name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9-fips
+    test_group_name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1576,10 +1576,10 @@ test_groups:
   name: periodic-ci-RedHatQE-interop-testing-master-cnv-odf-ocp4.19-lp-interop-cnv-odf-tests-aws-ipi-ocp419
 - gcs_prefix: test-platform-results/logs/periodic-ci-RedHatQE-interop-testing-master-cnv-odf-ocp4.19-lp-interop-cnv-odf-tests-aws-ipi-ocp419-fips
   name: periodic-ci-RedHatQE-interop-testing-master-cnv-odf-ocp4.19-lp-interop-cnv-odf-tests-aws-ipi-ocp419-fips
-- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9
-  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9
-- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9-fips
-  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-2-9-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0
+  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0
+- gcs_prefix: test-platform-results/logs/periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0-fips
+  name: periodic-ci-amq-streams-qe-strimzi-kafka-operator-main-amq-streams-ocp4.19-lp-interop-amq-streams-3-0-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-ansible-tower-qa-devel-ocp4.19-lp-interop-aap-interop-aws
   name: periodic-ci-ansible-tower-qa-devel-ocp4.19-lp-interop-aap-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-ansible-tower-qa-devel-ocp4.19-lp-interop-aap-interop-aws-fips
