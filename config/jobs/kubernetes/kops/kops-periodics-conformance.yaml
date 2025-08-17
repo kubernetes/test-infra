@@ -64,7 +64,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.33'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.33, kops-conformance, kops-distro-u2404, kops-k8s-1.33, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, kops-1.33, kops-conformance, kops-distro-u2404, kops-k8s-1.33, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-33
 
@@ -130,7 +130,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.33'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.33, kops-conformance, kops-distro-u2404, kops-k8s-1.33, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, conformance-arm64, kops-1.33, kops-conformance, kops-distro-u2404, kops-k8s-1.33, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-33
 
@@ -196,7 +196,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.32'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.32, kops-conformance, kops-distro-u2404, kops-k8s-1.32, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, kops-1.32, kops-conformance, kops-distro-u2404, kops-k8s-1.32, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-32
 
@@ -262,7 +262,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.32'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.32, kops-conformance, kops-distro-u2404, kops-k8s-1.32, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, conformance-arm64, kops-1.32, kops-conformance, kops-distro-u2404, kops-k8s-1.32, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-32
 
@@ -328,7 +328,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.31'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.31, kops-conformance, kops-distro-u2404, kops-k8s-1.31, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, kops-1.31, kops-conformance, kops-distro-u2404, kops-k8s-1.31, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-31
 
@@ -394,7 +394,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.31'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.31, kops-conformance, kops-distro-u2404, kops-k8s-1.31, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, conformance-arm64, kops-1.31, kops-conformance, kops-distro-u2404, kops-k8s-1.31, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-31
 
@@ -460,7 +460,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.30'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.30, kops-conformance, kops-distro-u2404, kops-k8s-1.30, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, kops-1.30, kops-conformance, kops-distro-u2404, kops-k8s-1.30, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-30
 
@@ -526,6 +526,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.30'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-1.30, kops-conformance, kops-distro-u2404, kops-k8s-1.30, sig-cluster-lifecycle-kops
+    testgrid-dashboards: conformance-all, conformance-arm64, kops-1.30, kops-conformance, kops-distro-u2404, kops-k8s-1.30, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-30
