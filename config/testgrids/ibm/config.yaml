@@ -5,19 +5,19 @@ dashboard_groups:
     - ibm-node-e2e
     - ibm-k8s-ppc64le
     - ibm-periodics
-    # - ibm-k8s-s390x
+    - ibm-k8s-s390x
     - ibm-cluster-api
     - ibm-etcd-ppc64le
-    # - ibm-etcd-s390x
+    - ibm-etcd-s390x
     - ibm-presubmits
 
 dashboards:
 - name: ibm-k8s-e2e
 - name: ibm-node-e2e
 - name: ibm-k8s-ppc64le
-# - name: ibm-k8s-s390x
+- name: ibm-k8s-s390x
 - name: ibm-etcd-ppc64le
-# - name: ibm-etcd-s390x
+- name: ibm-etcd-s390x
 - name: ibm-cluster-api
 - name: ibm-presubmits
 - name: ibm-periodics

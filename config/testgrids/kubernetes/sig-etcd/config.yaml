@@ -4,6 +4,7 @@ dashboard_groups:
   - sig-etcd-amd64
   - sig-etcd-arm64
   - sig-etcd-ppc64le
+  - sig-etcd-s390x
   - sig-etcd-presubmits
   - sig-etcd-periodics
   - sig-etcd-postsubmits
@@ -18,6 +19,7 @@ dashboards:
   - name: sig-etcd-amd64
   - name: sig-etcd-arm64
   - name: sig-etcd-ppc64le
+  - name: sig-etcd-s390x
   - name: sig-etcd-presubmits
   - name: sig-etcd-periodics
   - name: sig-etcd-postsubmits
