@@ -3,6 +3,9 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
+  annotations:
+    testgrid-dashboards: ibm-periodics, ibm-cluster-api
+    testgrid-tab-name: periodic-cluster-api-provider-ibmcloud-coverage
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-ibmcloud

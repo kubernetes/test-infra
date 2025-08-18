@@ -9,7 +9,7 @@ periodics:
         base_ref: master
         path_alias: k8s.io/kubernetes
     annotations:
-      testgrid-dashboards: ibm-k8s-unit-tests-ppc64le
+      testgrid-dashboards: ibm-k8s-ppc64le, ibm-periodics
       testgrid-tab-name: ci-kubernetes-unit-ppc64le
     spec:
       # unit tests have no business requiring root or doing privileged operations
@@ -51,7 +51,7 @@ periodics:
         workdir: true
     annotations:
       description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM powervs
-      testgrid-dashboards: ibm-k8s-conformance-ppc64le, conformance-ppc64le
+      testgrid-dashboards: ibm-k8s-e2e, ibm-k8s-ppc64le, conformance-ppc64le
       testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     spec:
       containers:
@@ -148,7 +148,7 @@ periodics:
         workdir: true
     annotations:
       description: Runs e2e-node tests using kubetest2 on IBM powervs
-      testgrid-dashboards: ibm-k8s-e2e-node-ppc64le, sig-node-ppc64le
+      testgrid-dashboards: ibm-node-e2e, ibm-k8s-ppc64le, sig-node-ppc64le
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     spec:
       containers:
@@ -224,7 +224,7 @@ periodics:
         workdir: true
     annotations:
       description: Runs e2e tests with alpha enabled feature gates against kubernetes ci latest on IBM powervs
-      testgrid-dashboards: ibm-k8s-e2e-alpha-enabled-default
+      testgrid-dashboards: ibm-k8s-e2e, ibm-k8s-ppc64le
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
     spec:
       containers:
@@ -306,7 +306,7 @@ periodics:
         workdir: true
     annotations:
       description: Runs e2e tests with against kubernetes ci latest on IBM powervs
-      testgrid-dashboards: ibm-k8s-e2e-default
+      testgrid-dashboards: ibm-k8s-e2e, ibm-k8s-ppc64le
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-default
     spec:
       containers:
@@ -384,7 +384,7 @@ periodics:
         workdir: true
     annotations:
       description: Runs E2E slow tests using kubetest2 against kubernetes ci latest on IBM powervs
-      testgrid-dashboards: ibm-k8s-e2e-slow-ppc64le
+      testgrid-dashboards: ibm-k8s-e2e, ibm-k8s-ppc64le
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-slow-kubetest2
     spec:
       containers:
@@ -463,7 +463,7 @@ periodics:
         workdir: true
     annotations:
       description: Runs E2E serial tests using kubetest2 against kubernetes ci latest on IBM powervs
-      testgrid-dashboards: ibm-k8s-e2e-serial-ppc64le
+      testgrid-dashboards: ibm-k8s-e2e, ibm-k8s-ppc64le
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
     spec:
       containers:
