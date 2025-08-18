@@ -21,9 +21,6 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
         command:
         - runner.sh
-        env:
-        - name: KUBE_TIMEOUT
-          value: "-timeout=1h30m"
         args:
         - ./hack/jenkins/test-integration-dockerized.sh
         # docker-in-docker needs privileged mode
@@ -96,7 +93,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBE_TIMEOUT
-          value: "-timeout=1h30m"
+          value: "-timeout=15m"
         - name: KUBE_RACE
           value: "-race"
         args:
@@ -248,6 +245,8 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
+      - name: KUBE_TIMEOUT
+        value: "-timeout=15m"
       - name: KUBE_RACE
         value: "-race"
       # docker-in-docker needs privileged mode
