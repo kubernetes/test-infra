@@ -76,12 +76,8 @@ periodics:
             - bash
             - -c
             - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
               set -o xtrace
 
-              RESOURCE_TYPE="powervs"
               #Call to boskos to checkout resource
               source "./hack/boskos.sh"
 
@@ -89,40 +85,29 @@ periodics:
               make install-deployer-tf
               go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              #Install ansible required to bring up k8s cluster on infra
-              apt-get update && apt-get install -y ansible
-
-              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
-
-              TIMESTAMP=$(date +%s)
+              CLUSTER_NAME="config1-$(date +%s)"
 
               set +o errexit
               set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name config1-$TIMESTAMP \
-                --workers-count 2 \
+                --workers-count 2 --cluster-name $CLUSTER_NAME \
                 --up --auto-approve --retry-on-tf-failure 3 \
                 --break-kubetest-on-upfail true \
-                --powervs-memory 32 \
-                --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='\[Conformance\]' --skip-regex='\[Serial\]'; rc1=$?
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
+                --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]' --skip-regex='\[Serial\]'; rc1=$?
 
-              export KUBECONFIG="$(pwd)/config1-$TIMESTAMP/kubeconfig"
+              export KUBECONFIG="$(pwd)/$CLUSTER_NAME/kubeconfig"
               export ARTIFACTS=$ARTIFACTS/serial_tests_artifacts
               #Run Serial Conformance tests
               kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} \
                 --ignore-cluster-dir true \
-                --cluster-name config1-$TIMESTAMP \
+                --cluster-name $CLUSTER_NAME \
                 --down --auto-approve --ignore-destroy-errors \
-                --test=ginkgo -- \
-                --test-package-dir ci \
-                --test-package-version $K8S_BUILD_VERSION --focus-regex='\[Serial\].*\[Conformance\]'; rc2=$?
+                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Serial\].*\[Conformance\]'; rc2=$?
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
 
@@ -171,41 +156,36 @@ periodics:
             - bash
             - -c
             - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
               set -o xtrace
 
-              RESOURCE_TYPE="powervs"
               source "./hack/boskos.sh"
 
               make install-deployer-tf
 
-              apt-get update && apt-get install -y ansible
-
-              TIMESTAMP=$(date +%s)
-              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
+              CLUSTER_NAME="config2-$(date +%s)"
 
               set +o errexit
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --cluster-name config2-$TIMESTAMP \
-                --up --set-kubeconfig=false --auto-approve \
-                --build-version $K8S_BUILD_VERSION --retry-on-tf-failure 3 \
-                --break-kubetest-on-upfail true --powervs-memory 32 \
+                --cluster-name $CLUSTER_NAME \
+                --up --set-kubeconfig=false --auto-approve --retry-on-tf-failure 3 \
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
+                --break-kubetest-on-upfail true \
                 --playbook k8s-node-remote.yml
-              EXTERNAL_IP=`grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' $(pwd)/config2-$TIMESTAMP/hosts`
+
+              EXTERNAL_IP=`grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' $(pwd)/$CLUSTER_NAME/hosts`
+
               # Skipping test related to https://github.com/kubernetes/kubernetes/issues/124791
               kubetest2 tf --test=exec -- ssh -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP \
                 "export SKIP='\[Flaky\]|\[Slow\]|\[Serial\]|should.execute.readiness.probe.while.in.preStop' && /make-test-e2e-node.sh"; \
                 rc=$?; scp -r -i /etc/secret-volume/ssh-privatekey root@$EXTERNAL_IP:/tmp/_artifacts $ARTIFACTS
+
               kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} \
                 --ignore-cluster-dir true \
-                --cluster-name config2-$TIMESTAMP \
+                --cluster-name $CLUSTER_NAME\
                 --down --auto-approve --ignore-destroy-errors
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
@@ -249,12 +229,8 @@ periodics:
             - bash
             - -c
             - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
               set -o xtrace
 
-              RESOURCE_TYPE="powervs"
               #Call to boskos to checkout resource
               source "./hack/boskos.sh"
 
@@ -262,30 +238,18 @@ periodics:
               make install-deployer-tf
               go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              #Install ansible required to bring up k8s cluster on infra
-              apt-get update && apt-get install -y ansible
-
-              K8S_BUILD_VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
-
-              TIMESTAMP=$(date +%s)
-
               set +o errexit
               set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name alpha-enabled-$TIMESTAMP \
-                --workers-count 2 \
-                --up --down --auto-approve  --ignore-destroy-errors \
-                --retry-on-tf-failure 3 \
+                --workers-count 2 --cluster-name alpha-enabled-$(date +%s) \
+                --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
                 --break-kubetest-on-upfail true \
                 --extra-vars=feature_gates:AllAlpha=true,EventedPLEG=false \
                 --extra-vars=runtime_config:api/all=true \
-                --powervs-memory 32 \
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
                 --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
 
@@ -329,12 +293,8 @@ periodics:
             - bash
             - -c
             - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
               set -o xtrace
 
-              RESOURCE_TYPE="powervs"
               #Call to boskos to checkout resource
               source "./hack/boskos.sh"
 
@@ -342,28 +302,16 @@ periodics:
               make install-deployer-tf
               go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              #Install ansible required to bring up k8s cluster on infra
-              apt-get update && apt-get install -y ansible
-
-              K8S_BUILD_VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
-
-              TIMESTAMP=$(date +%s)
-
               set +o errexit
               set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name e2e-default-$TIMESTAMP \
-                --workers-count 2 \
-                --up --down --auto-approve --ignore-destroy-errors \
-                --retry-on-tf-failure 3 \
+                --workers-count 2 --cluster-name e2e-default-$(date +%s) \
+                --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
                 --break-kubetest-on-upfail true \
-                --powervs-memory 32 \
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
                 --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
 
@@ -409,12 +357,8 @@ periodics:
             - bash
             - -c
             - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
               set -o xtrace
 
-              RESOURCE_TYPE="powervs"
               #Call to boskos to checkout resource
               source "./hack/boskos.sh"
 
@@ -422,29 +366,17 @@ periodics:
               make install-deployer-tf
               go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              #Install ansible required to bring up k8s cluster on infra
-              apt-get update && apt-get install -y ansible
-
-              K8S_BUILD_VERSION=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
-
-              TIMESTAMP=$(date +%s)
-
               set +o errexit
               set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name e2e-slow-$TIMESTAMP \
-                --workers-count 2 \
-                --up --down --auto-approve  --ignore-destroy-errors \
-                --retry-on-tf-failure 3 \
+                --workers-count 2 --cluster-name e2e-slow-$(date +%s) \
+                --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
                 --break-kubetest-on-upfail true \
-                --powervs-memory 32 \
-                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-version $K8S_BUILD_VERSION --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:' ; rc=$?
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
+                --test=ginkgo -- --parallel 30 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Slow\]' --skip-regex='\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:' ; rc=$?
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2e Slow tests exited with code: $rc"; exit $rc
@@ -486,12 +418,7 @@ periodics:
             - bash
             - -c
             - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
               set -o xtrace
-
-              RESOURCE_TYPE="powervs"
 
               #Call to boskos to checkout resource
               source "./hack/boskos.sh"
@@ -500,29 +427,17 @@ periodics:
               make install-deployer-tf
               go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest
 
-              #Install ansible required to bring up k8s cluster on infra
-              apt-get update && apt-get install -y ansible
-
-              K8S_BUILD_VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
-
-              TIMESTAMP=$(date +%s)
-
               set +o errexit
               set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-9 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --powervs-ssh-key k8s-prow-sshkey \
+                --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
-                --build-version $K8S_BUILD_VERSION \
-                --release-marker $K8S_BUILD_VERSION \
-                --cluster-name e2e-serial-$TIMESTAMP \
-                --workers-count 2 \
-                --up --down --auto-approve  --ignore-destroy-errors \
-                --retry-on-tf-failure 3 \
+                --workers-count 2 --cluster-name e2e-serial-$(date +%s) \
+                --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
                 --break-kubetest-on-upfail true \
-                --powervs-memory 32 \
                 --extra-vars=container_runtime_test_handler:true \
+                --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 1 --test-package-dir ci --test-package-marker latest.txt \
                 --focus-regex='\[Serial\]|\[Disruptive\]' --skip-regex='\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]'; rc=$?
 
