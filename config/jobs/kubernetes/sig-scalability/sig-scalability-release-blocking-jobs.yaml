@@ -20,7 +20,7 @@ periodics:
     testgrid-tab-name: gce-master-scale-correctness
     # exclude-filter-by-regex=^(kubetest\.Test|ci-kubernetes-e2e-gce-scale-correctness\.Overall)$
     testgrid-base-options: 'exclude-filter-by-regex=%5E(kubetest%5C.Test%7Cci-kubernetes-e2e-gce-scale-correctness%5C.Overall)%24'
-    description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run correctness tests against a 2000-node cluster created with cluster/kube-up.sh"
   spec:
     volumes:
     - name: cache-secret
