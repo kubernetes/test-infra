@@ -213,7 +213,6 @@ presubmits:
           curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           {%- else %}
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
-          {%- if canary %}
           # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
           # Then parse the output using Bash parameter expansion:
           #   ${response% *}  → everything before the last space (the body)
@@ -231,9 +230,6 @@ presubmits:
               echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
               exit 1
           fi
-          {%- else %}
-          previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
-          {%- endif %}
           curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           {%- endif %}
           chmod a+rx /tmp/kubelet

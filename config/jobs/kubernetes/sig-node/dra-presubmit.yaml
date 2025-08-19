@@ -342,7 +342,23 @@ presubmits:
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 1))
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
-          previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
+          # Then parse the output using Bash parameter expansion:
+          #   ${response% *}  → everything before the last space (the body)
+          #   ${response##* } → everything after the last space (the HTTP code)
+          response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          previous="${response% *}"
+          status="${response##* }"
+          if [ "$status" == 404 ] ; then
+              # if stable doesn't exist - use latest
+              response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
+              previous="${response% *}"
+              status="${response##* }"
+          fi
+          if [ "$status" -ne 200 ] ; then
+              echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
+              exit 1
+          fi
           curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
           /tmp/kubelet --version
@@ -457,7 +473,23 @@ presubmits:
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 2))
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
-          previous=$(curl --silent -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
+          # Then parse the output using Bash parameter expansion:
+          #   ${response% *}  → everything before the last space (the body)
+          #   ${response##* } → everything after the last space (the HTTP code)
+          response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          previous="${response% *}"
+          status="${response##* }"
+          if [ "$status" == 404 ] ; then
+              # if stable doesn't exist - use latest
+              response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
+              previous="${response% *}"
+              status="${response##* }"
+          fi
+          if [ "$status" -ne 200 ] ; then
+              echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
+              exit 1
+          fi
           curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
           chmod a+rx /tmp/kubelet
           /tmp/kubelet --version
