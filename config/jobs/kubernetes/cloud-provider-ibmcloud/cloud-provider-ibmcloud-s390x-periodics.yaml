@@ -1,0 +1,37 @@
+periodics:
+  - name: ci-kubernetes-unit-s390x
+    interval: 1h
+    cluster: k8s-infra-s390x-prow-build
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    annotations:
+      testgrid-dashboards: ibm-s390x-periodics, ibm-s390x-k8s
+      testgrid-tab-name: ci-kubernetes-unit-s390x
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsGroup: 2010
+        runAsUser: 2001
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
+          command:
+            - make
+            - test
+          env:
+            - name: KUBE_TIMEOUT
+              value: "-timeout=300s"
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 6
+              memory: "28Gi"
+            limits:
+              cpu: 6
+              memory: "28Gi"
