@@ -39,7 +39,7 @@ periodics:
         value: "{{ index (index $.versions $upgrade.To) "etcd" }}"
       - name: COREDNS_VERSION_UPGRADE_TO
         value: "{{ index (index $.versions $upgrade.To) "coreDNS" }}"
-{{- if eq $.branch "release-1.8" "release-1.9" }}
+{{- if eq $.branch "release-1.9" }}
       - name: GINKGO_FOCUS
         value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
 {{- else }}
