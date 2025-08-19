@@ -8,7 +8,7 @@ presubmits:
       timeout: 220m
     annotations:
       description: Optional presubmit job to test changes in kubernetes-sigs/provider-ibmcloud-test-infra repo
-      testgrid-dashboards: ibm-presubmits
+      testgrid-dashboards: ibm-ppc64le-presubmits
       testgrid-tab-name: pull-provider-ibmcloud-test-infra-kubernetes
     labels:
       preset-ibmcloud-cred: "true"
