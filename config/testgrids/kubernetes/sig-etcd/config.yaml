@@ -51,6 +51,32 @@ dashboards:
           value: <test-url>
         - key: etcdVersion
           value: v3.6
+    - name: ci-etcd-robustness-main-s390x
+      test_group_name: ci-etcd-robustness-main-s390x
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: template
+          value: bug-report.yml
+        - key: title
+          value: '[robustness tests] main-s390x: <test-name>'
+        - key: problem
+          value: <test-url>
+        - key: etcdVersion
+          value: v3.6
+    - name: ci-etcd-robustness-main-ppc64le
+      test_group_name: ci-etcd-robustness-main-ppc64le
+      file_bug_template:
+        url: https://github.com/etcd-io/etcd/issues/new
+        options:
+        - key: template
+          value: bug-report.yml
+        - key: title
+          value: '[robustness tests] main-ppc64le: <test-name>'
+        - key: problem
+          value: <test-url>
+        - key: etcdVersion
+          value: v3.6
     - name: ci-etcd-robustness-release36-amd64
       test_group_name: ci-etcd-robustness-release36-amd64
       file_bug_template:
