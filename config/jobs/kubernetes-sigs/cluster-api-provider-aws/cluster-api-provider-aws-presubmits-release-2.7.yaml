@@ -193,51 +193,6 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-conformance-release-2-7
       testgrid-num-columns-recent: '20'
-  # conformance test against kubernetes main branch with `kind` + cluster-api-provider-aws
-  - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts-release-2-7
-    cluster: eks-prow-build-cluster
-    branches:
-    # The script this job runs is not in all branches.
-    - ^release-2.7$
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 5h
-    max_concurrency: 1
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
-          command:
-            - "runner.sh"
-            - "./scripts/ci-conformance.sh"
-          env:
-            - name: BOSKOS_HOST
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: AWS_REGION
-              value: "us-west-2"
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
-            limits:
-              cpu: 2
-              memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance-release-2-7-k8s-main
-      testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-blocking-release-2-7
     cluster: eks-prow-build-cluster
     branches:
