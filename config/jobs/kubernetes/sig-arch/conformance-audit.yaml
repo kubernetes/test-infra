@@ -1,3 +1,54 @@
+presubmits:
+  kubernetes/kubernetes:
+    # same as ci-audit-kind-conformance, but a presubmit job
+    - name: pull-audit-kind-conformance
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      decorate: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release settings
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      decoration_config:
+        timeout: 150m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              -
+                  curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
+                  && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
+                  && bash e2e-k8s.sh
+            env:
+              - name: BUILD_TYPE
+                value: docker
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              # these are both a bit below peak usage during build
+              # this is mostly for building kubernetes
+              limits:
+                cpu: 2000m
+                memory: "9000Mi"
+              requests:
+                # during the tests more like 3-20m is used
+                cpu: 2000m
+                memory: "9000Mi"
+      annotations:
+        testgrid-dashboards: sig-arch-conformance
+        testgrid-tab-name: presubmit-kind-conformance-audit
+        test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+        testgrid-num-failures-to-alert: '1'
+
 periodics:
 # conformance test against kubernetes master branch with `kind` and auditlogs
 # Other than annotations and modified ci-audit-logging e2e-k8s.sh
