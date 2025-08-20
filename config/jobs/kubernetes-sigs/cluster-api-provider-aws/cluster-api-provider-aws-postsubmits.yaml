@@ -9,6 +9,10 @@ postsubmits:
       decorate: true
       decoration_config:
         timeout: 5h
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: cluster-api-provider-aws-maintainers
       max_concurrency: 1
       labels:
         preset-dind-enabled: "true"
@@ -53,6 +57,10 @@ postsubmits:
       decorate: true
       decoration_config:
         timeout: 5h
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: cluster-api-provider-aws-maintainers
       max_concurrency: 1
       labels:
         preset-dind-enabled: "true"
@@ -95,6 +103,10 @@ postsubmits:
       decorate: true
       decoration_config:
         timeout: 5h
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: cluster-api-provider-aws-maintainers
       max_concurrency: 1
       labels:
         preset-dind-enabled: "true"

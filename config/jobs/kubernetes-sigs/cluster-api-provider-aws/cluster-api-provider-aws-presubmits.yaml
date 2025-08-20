@@ -8,6 +8,10 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
@@ -27,6 +31,10 @@ presubmits:
   - name: pull-cluster-api-provider-aws-apidiff-main
     cluster: eks-prow-build-cluster
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     path_alias: sigs.k8s.io/cluster-api-provider-aws
     always_run: true
     optional: true
@@ -80,6 +88,10 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
@@ -150,6 +162,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 1
     extra_refs:
     - org: kubernetes-sigs
@@ -199,6 +215,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
@@ -244,6 +264,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 2h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 3
     labels:
       preset-dind-enabled: "true"
@@ -291,6 +315,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
@@ -333,6 +361,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 2
     labels:
       preset-dind-enabled: "true"
@@ -375,6 +407,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
@@ -417,6 +453,10 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 5h
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-aws-maintainers
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"

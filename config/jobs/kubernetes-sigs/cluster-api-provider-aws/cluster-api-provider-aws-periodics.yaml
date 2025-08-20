@@ -4,6 +4,10 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
   interval: 12h
   labels:
     preset-dind-enabled: "true"
@@ -49,6 +53,10 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
   interval: 12h
   labels:
     preset-dind-enabled: "true"
@@ -93,6 +101,10 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
   interval: 12h
   labels:
     preset-dind-enabled: "true"
@@ -135,6 +147,10 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
   interval: 12h
   labels:
     preset-dind-enabled: "true"
@@ -187,6 +203,10 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
   interval: 12h
   extra_refs:
     - org: kubernetes-sigs
@@ -238,6 +258,10 @@ periodics:
   cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
   path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   extra_refs:
     - org: kubernetes-sigs
