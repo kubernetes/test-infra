@@ -272,8 +272,7 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-nightly-4.15-overall-analysis-all
   name: redhat-openshift-ocp-release-4.15-blocking
 test_groups:
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-arm64
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-heterogeneous
   name: periodic-ci-openshift-multiarch-master-nightly-4.15-ocp-e2e-aws-ovn-heterogeneous

@@ -5451,7 +5451,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.14-e2e-azure-cilium
   name: periodic-ci-openshift-release-master-ci-4.14-e2e-azure-cilium
-- days_of_results: 8
+- days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.14-e2e-azure-ovn
   name: periodic-ci-openshift-release-master-ci-4.14-e2e-azure-ovn
 - days_of_results: 60
@@ -5570,7 +5570,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-csi
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-cgroupsv1
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-cgroupsv1
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-cpu-partitioning
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-cpu-partitioning
 - days_of_results: 60
@@ -5593,7 +5593,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-proxy
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-shared-vpc-localzones
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-shared-vpc-localzones
-- days_of_results: 33
+- days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-shared-vpc-phz-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-shared-vpc-phz-techpreview
 - days_of_results: 60
