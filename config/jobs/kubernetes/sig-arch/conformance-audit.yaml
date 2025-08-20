@@ -32,9 +32,10 @@ presubmits:
                   curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
                   && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
                   && bash e2e-k8s.sh
-                  && python3 ./../test-infra/experiment/audit/audit_log_parser.py ${ARTIFACTS}/audit/audit*.log \
+                  && python3 ./../test-infra/experiment/audit/audit_log_parser.py \
                       --output "${ARTIFACTS}/audit/audit-endpoints.txt" \
-                      --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
+                      --swagger-url "file://$PWD/api/openapi-spec/swagger.json" \
+                      --audit-logs ${ARTIFACTS}/audit/audit*.log
             env:
               - name: BUILD_TYPE
                 value: docker
