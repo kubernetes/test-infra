@@ -32,7 +32,6 @@ presubmits:
                   curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
                   && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
                   && bash e2e-k8s.sh
-                  && set -x
                   && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
             env:
               - name: BUILD_TYPE
@@ -75,6 +74,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
@@ -86,6 +89,7 @@ periodics:
             curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
             && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
             && bash e2e-k8s.sh
+            && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
       env:
       - name: BUILD_TYPE
         value: docker
