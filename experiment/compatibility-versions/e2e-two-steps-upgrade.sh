@@ -115,14 +115,14 @@ main() {
 
   # Clone the previous versions Kubernetes release branch
   # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
-  export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
+  export RELEASE_BRANCH="release-${CURRENT_VERSION}"
   # Define the path within the temp directory for the cloned repo
-  PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s"
-  echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
-  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
+  RELEASE_REPO_PATH="${TMP_DIR}/release-k8s"
+  echo "Cloning branch ${RELEASE_BRANCH} into ${RELEASE_REPO_PATH}"
+  git clone --filter=blob:none --single-branch --branch "${RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${RELEASE_REPO_PATH}"
 
   # enter the cloned prev repo branch (in temp) and run tests
-  pushd "${PREV_RELEASE_REPO_PATH}"
+  pushd "${RELEASE_REPO_PATH}"
   build_prev_version_bins || res=$?
   run_prev_version_tests || res=$?
   popd
