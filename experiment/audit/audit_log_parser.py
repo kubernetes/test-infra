@@ -23,7 +23,7 @@ This script parses a Kubernetes audit log file and generates a list of
 Kubernetes API endpoints using the official Swagger/OpenAPI specification
 for accurate endpoint naming.
 
-Usage: python3 audit_log_parser.py <audit_log_file> [--output <output_file>] [--swagger-url <url>]
+Usage: python3 audit_log_parser.py --audit-logs <audit_log_file>... [--output <output_file>] [--swagger-url <url>]
 """
 
 import json
@@ -602,15 +602,15 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 audit_log_parser_swagger.py audit.log
-  python3 audit_log_parser_swagger.py audit1.log audit2.log
-  python3 audit_log_parser_swagger.py audit.log --output results.txt
-  python3 audit_log_parser_swagger.py audit*.log --sort count --output results.txt
-  python3 audit_log_parser_swagger.py audit.log --swagger-url https://custom-swagger.json
+  python3 audit_log_parser_swagger.py --audit-logs audit.log
+  python3 audit_log_parser_swagger.py --audit-logs audit1.log audit2.log
+  python3 audit_log_parser_swagger.py --audit-logs audit.log --output results.txt
+  python3 audit_log_parser_swagger.py --audit-logs audit*.log --sort count --output results.txt
+  python3 audit_log_parser_swagger.py --audit-logs audit.log --swagger-url https://custom-swagger.json
         """
     )
 
-    parser.add_argument('audit_logs', nargs='+', help='Path(s) to Kubernetes audit log file(s)')
+    parser.add_argument('--audit-logs', nargs='+', required=True, help='Path(s) to Kubernetes audit log file(s)')
     parser.add_argument('-o', '--output', help='Output file (default: print to stdout)')
     parser.add_argument('--swagger-url', help='Custom Swagger/OpenAPI specification URL')
     parser.add_argument('--sort', choices=['count', 'name'], default='name',
