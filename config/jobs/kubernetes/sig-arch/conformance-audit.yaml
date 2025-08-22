@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
-    # same as ci-audit-kind-conformance, but a presubmit job
-    - name: pull-audit-kind-conformance
+    # same as ci-kubernetes-audit-kind-conformance, but a presubmit job
+    - name: pull-kubernetes-audit-kind-conformance
       cluster: k8s-infra-prow-build
       optional: true
       always_run: false
@@ -62,7 +62,7 @@ periodics:
 # Other than annotations and modified ci-audit-logging e2e-k8s.sh
 # This should be the same as ci-kubernetes-kind-conformance
 - interval: 3h
-  name: ci-audit-kind-conformance
+  name: ci-kubernetes-audit-kind-conformance
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
