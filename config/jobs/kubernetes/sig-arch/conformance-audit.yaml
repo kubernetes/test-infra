@@ -33,6 +33,8 @@ presubmits:
                   && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
                   && bash e2e-k8s.sh
                   && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
+                  && set -x
+                  && python3 ./../test-infra/experiment/audit/kubernetes_api_analysis.py --pull-audit-endpoints "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
             env:
               - name: BUILD_TYPE
                 value: docker
