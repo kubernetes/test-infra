@@ -124,6 +124,8 @@ presubmits:
       - ^main$
     optional: false
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
     spec:
       containers:
