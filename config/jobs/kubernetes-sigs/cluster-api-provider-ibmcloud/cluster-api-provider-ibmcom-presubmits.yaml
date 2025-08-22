@@ -133,6 +133,9 @@ presubmits:
           command:
             - "make"
             - "verify"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
           resources:
             limits:
               cpu: "2"
