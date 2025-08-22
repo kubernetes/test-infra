@@ -1408,7 +1408,7 @@ def generate_conformance():
 ###############################
 # kops-periodics-distros.yaml #
 ###############################
-distros = ['debian10', 'debian11', 'debian12',
+distros = ['debian10', 'debian11', 'debian12', 'debian13',
            'ubuntu2004', 'ubuntu2004arm64',
            'ubuntu2204', 'ubuntu2204arm64',
            'ubuntu2404', 'ubuntu2404arm64',
