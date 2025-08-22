@@ -196,12 +196,12 @@ presubmits:
           make install-all;
           cd ${GOPATH}/src/sigs.k8s.io/provider-aws-test-infra;
           AMI_ID=$(aws ssm get-parameters --names \;
-            /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id \;
+            /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id \;
             --query 'Parameters[0].[Value]' --output text);
           kubetest2 noop --test=node -- \;
             --provider=aws --repo-root=. --instance-type=m6a.large --focus-regex="\[NodeConformance\]" \;
             --test-args='--kubelet-flags="--cgroup-driver=systemd"' \;
-            --images=$AMI_ID --user-data-file=config/ubuntu2204.yaml
+            --images=$AMI_ID --user-data-file=config/ubuntu2404.yaml
 
   - name: pull-kubetest2-gce-node-e2e
     decorate: true
