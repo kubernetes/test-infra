@@ -57,18 +57,9 @@ def extract_swagger_operations(swagger_url, output_file):
     print(f"Output file: {output_file}")
 
     try:
-        # Check if it's a URL or local file path
-        if swagger_url.startswith(('http://', 'https://')):
-            print("Downloading swagger specification...")
-            with urllib.request.urlopen(swagger_url) as response:
-                swagger_data = json.loads(response.read().decode())
-        else:
-            # Local file path
-            if not os.path.exists(swagger_url):
-                print(f"Error: Swagger file not found at {swagger_url}")
-                sys.exit(1)
-            with open(swagger_url, 'r') as f:
-                swagger_data = json.load(f)
+        print("Downloading swagger specification...")
+        with urllib.request.urlopen(swagger_url) as response:
+            swagger_data = json.loads(response.read().decode())
     except (json.JSONDecodeError, IOError, urllib.error.URLError) as e:
         print(f"Error reading swagger specification: {e}")
         sys.exit(1)
