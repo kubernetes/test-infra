@@ -131,6 +131,7 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.31
           command:
+            - "runner.sh"
             - "make"
             - "verify"
           # docker-in-docker needs privileged mode
