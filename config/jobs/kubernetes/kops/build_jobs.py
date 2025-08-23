@@ -1421,11 +1421,16 @@ def generate_distros():
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn')
         extra_flags = []
         if 'arm64' in distro:
-            extra_flags = [
+            extra_flags.extend([
                 "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
-            ]
+            ])
+        if distro in ['amazonlinux2', 'debian10', 'debian11', 'rhel8', 'ubuntu2004']:
+            extra_flags.extend([
+                "--set=cluster.spec.containerd.version=1.7.28",
+                "--set=cluster.spec.containerd.runc.version=1.3.0",
+            ])
         results.append(
             build_test(distro=distro_short,
                        networking='cilium',
@@ -1448,11 +1453,16 @@ def generate_presubmits_distros():
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn')
         extra_flags = []
         if 'arm64' in distro:
-            extra_flags = [
+            extra_flags.extend([
                 "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
-            ]
+            ])
+        if distro in ['amazonlinux2', 'debian10', 'debian11', 'rhel8', 'ubuntu2004']:
+            extra_flags.extend([
+                "--set=cluster.spec.containerd.version=1.7.28",
+                "--set=cluster.spec.containerd.runc.version=1.3.0",
+            ])
         results.append(
             presubmit_test(
                 distro=distro_short,
