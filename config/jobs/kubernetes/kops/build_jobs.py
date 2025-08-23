@@ -2328,6 +2328,15 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            name="pull-kops-scenario-aws-karpenter",
+            cloud="aws",
+            networking="cilium",
+            kops_channel="alpha",
+            k8s_version="stable",
+            scenario='karpenter',
+            extra_dashboards=['kops-misc'],
+        ),
+        presubmit_test(
             distro='u2404arm64',
             name="pull-kops-e2e-aws-karpenter",
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
