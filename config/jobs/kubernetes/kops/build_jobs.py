@@ -2328,9 +2328,18 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            name="pull-kops-scenario-aws-karpenter",
+            cloud="aws",
+            networking="cilium",
+            kops_channel="alpha",
+            k8s_version="stable",
+            scenario='karpenter',
+            extra_dashboards=['kops-misc'],
+        ),
+        presubmit_test(
             distro='u2404arm64',
             name="pull-kops-e2e-aws-karpenter",
-            run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
+            # run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
             kops_channel="alpha",
             extra_flags=[
@@ -2357,40 +2366,7 @@ def generate_presubmits_e2e():
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k129-ko129-to-k130-kolatest",
-            optional=True,
-            distro='u2204',
-            networking='cilium',
-            k8s_version='stable',
-            kops_channel='alpha',
-            scenario='upgrade-ab',
-            env={
-                'KOPS_VERSION_A': "1.29",
-                'K8S_VERSION_A': "v1.29.0",
-                'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "1.30.0",
-            }
-        ),
-        presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k130-kolatest-to-k131-kolatest",
-            optional=True,
-            distro='u2204',
-            networking='cilium',
-            k8s_version='stable',
-            kops_channel='alpha',
-            scenario='upgrade-ab',
-            env={
-                'KOPS_VERSION_A': "latest",
-                'K8S_VERSION_A': "v1.30.0",
-                'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.31.0",
-                'KOPS_SKIP_E2E': '1',
-                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_SIZE': '3',
-            }
-        ),
-        presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k132-ko132-to-klatest-kolatest-many-addons",
+            name="pull-kops-e2e-aws-upgrade-k133-ko133-to-klatest-kolatest-many-addons",
             optional=True,
             distro='u2204',
             networking='cilium',
@@ -2400,35 +2376,12 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)',
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.32",
-                'K8S_VERSION_A': "v1.32.0",
+                'KOPS_VERSION_A': "1.33",
+                'K8S_VERSION_A': "v1.33.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE_SIZE': '3',
-            }
-        ),
-        presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k129-ko129-to-k130-kolatest-karpenter",
-            optional=True,
-            distro='u2204arm64',
-            networking='cilium',
-            k8s_version='stable',
-            kops_channel='alpha',
-            test_timeout_minutes=150,
-            run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
-            scenario='upgrade-ab',
-            extra_flags=[
-                "--instance-manager=karpenter",
-                "--master-size=c6g.xlarge",
-            ],
-            env={
-                'KOPS_VERSION_A': "1.29",
-                'K8S_VERSION_A': "v1.29.0",
-                'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.30.0",
-                'KOPS_SKIP_E2E': '1',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }
         ),
