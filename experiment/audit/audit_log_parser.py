@@ -35,6 +35,42 @@ from collections import Counter
 from pathlib import Path
 import argparse
 import time
+def load_ineligible_endpoints(ineligible_endpoints_url=None):
+    """
+    Load the list of ineligible endpoints from URL or local file.
+
+    Args:
+        ineligible_endpoints_url (str, optional): URL or local path to ineligible endpoints YAML file
+
+    Returns:
+        set: Set of ineligible endpoint operation IDs to filter out
+    """
+    if ineligible_endpoints_url is None:
+        ineligible_endpoints_url = ("https://raw.githubusercontent.com/kubernetes/kubernetes/"
+                                    "master/test/conformance/testdata/ineligible_endpoints.yaml")
+
+    try:
+        print(f"Loading ineligible endpoints from: {ineligible_endpoints_url}")
+        with urllib.request.urlopen(ineligible_endpoints_url, timeout=30) as response:
+            content = response.read().decode()
+
+        # Parse the YAML manually since it's simple structure
+        ineligible_endpoints = set()
+        for line in content.split('\n'):
+            line = line.strip()
+            if line.startswith('- endpoint:'):
+                # Extract endpoint name after "- endpoint: "
+                endpoint = line.replace('- endpoint:', '').strip()
+                if endpoint:
+                    ineligible_endpoints.add(endpoint)
+
+        print(f"Loaded {len(ineligible_endpoints)} ineligible endpoints")
+        return ineligible_endpoints
+
+    except Exception as e:  # pylint: disable=broad-except
+        print(f"Warning: Failed to load ineligible endpoints: {e}")
+        print("Proceeding without filtering ineligible endpoints")
+        return set()
 
 
 class SwaggerEndpointMapper:
@@ -184,9 +220,22 @@ class SwaggerEndpointMapper:
         # Remove query parameters
         uri = uri.split('?')[0]
 
+        # Handle API group discovery paths - these should not be normalized
+        # Patterns like /apis/apps/, /apis/networking.k8s.io/, etc.
+        if re.match(r'^/apis/[^/]+/?$', uri):
+            return uri
+
+        # Handle core API discovery paths
+        if uri in ['/api/', '/apis/']:
+            return uri
+
         # Replace actual values with parameter placeholders
         normalized = re.sub(r'/namespaces/[^/]+', '/namespaces/{namespace}', uri)
         normalized = re.sub(r'/nodes/[^/]+(?=/|$)', '/nodes/{node}', normalized)
+
+        # Handle proxy paths with additional path segments
+        # Convert /proxy/anything/else to /proxy/{path}
+        normalized = re.sub(r'/proxy/.*$', '/proxy/{path}', normalized)
 
         # Replace resource names with {name} placeholder
         # Split the path and process each segment
@@ -232,6 +281,43 @@ class SwaggerEndpointMapper:
 
         return '/'.join(result_parts)
 
+    def _normalize_watch_path(self, uri):
+        """Normalize watch operation URI to match Swagger watch path format."""
+        # Remove query parameters
+        uri = uri.split('?')[0]
+
+        # Convert regular resource path to watch path
+        # /apis/group/version/resources -> /apis/group/version/watch/resources
+        # /apis/group/version/namespaces/{namespace}/resources -> /apis/group/version/watch/namespaces/{namespace}/resources
+        # /api/v1/resources -> /api/v1/watch/resources
+        # /api/v1/namespaces/{namespace}/resources -> /api/v1/watch/namespaces/{namespace}/resources
+
+        if uri.startswith('/apis/'):
+            # Pattern: /apis/group/version/...
+            parts = uri.split('/')
+            if len(parts) >= 4:  # /apis/group/version/...
+                if len(parts) >= 5 and parts[4] == 'namespaces':
+                    # /apis/group/version/namespaces/... -> /apis/group/version/watch/namespaces/...
+                    watch_uri = '/'.join(parts[:4]) + '/watch/' + '/'.join(parts[4:])
+                else:
+                    # /apis/group/version/resources -> /apis/group/version/watch/resources
+                    watch_uri = '/'.join(parts[:4]) + '/watch/' + '/'.join(parts[4:])
+            else:
+                watch_uri = uri
+        elif uri.startswith('/api/v1/'):
+            # Pattern: /api/v1/...
+            if '/namespaces/' in uri:
+                # /api/v1/namespaces/... -> /api/v1/watch/namespaces/...
+                watch_uri = uri.replace('/api/v1/', '/api/v1/watch/')
+            else:
+                # /api/v1/resources -> /api/v1/watch/resources
+                watch_uri = uri.replace('/api/v1/', '/api/v1/watch/')
+        else:
+            watch_uri = uri
+
+        # Now apply normal normalization to the watch path
+        return self._normalize_audit_path(watch_uri)
+
     def _k8s_verb_to_http_method(self, k8s_verb, uri):  # pylint: disable=unused-argument,no-self-use
         """Convert Kubernetes audit verb to HTTP method for Swagger lookup."""
         k8s_verb = k8s_verb.lower()
@@ -256,9 +342,14 @@ class SwaggerEndpointMapper:
         if not self.swagger_spec:
             return None
 
+        # Handle watch operations - convert to watch path format
+        if method.lower() == 'watch':
+            normalized_uri = self._normalize_watch_path(uri)
+        else:
+            normalized_uri = self._normalize_audit_path(uri)
+
         # Convert Kubernetes verb to HTTP method
         http_method = self._k8s_verb_to_http_method(method, uri).lower()
-        normalized_uri = self._normalize_audit_path(uri)
         key = f"{http_method}:{normalized_uri}"
 
         # Direct match
@@ -454,6 +545,12 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
                         total_entries += 1
                         file_entries += 1
 
+                        # Only process RequestReceived stage entries
+                        stage = entry.get('stage', '')
+                        if stage != 'RequestReceived':
+                            skipped_entries += 1
+                            continue
+
                         verb = entry.get('verb', '')
                         request_uri = entry.get('requestURI', '')
 
@@ -510,7 +607,7 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
     return endpoint_counts, stats
 
 
-def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None, sort_by='count'):  # pylint: disable=too-many-statements
+def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None, sort_by='count', ineligible_endpoints=None):  # pylint: disable=too-many-statements
     """
     Write results to file or stdout.
 
@@ -520,25 +617,47 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
         swagger_mapper (SwaggerEndpointMapper): Mapper for finding missing endpoints
         output_file (str, optional): Output file path
         sort_by (str): Sort method - 'count' (descending) or 'name' (alphabetical)
+        ineligible_endpoints (set, optional): Set of ineligible endpoints to filter out
     """
+    if ineligible_endpoints is None:
+        ineligible_endpoints = set()
+
+    # Filter out ineligible endpoints from results
+    filtered_endpoint_counts = Counter()
+    ineligible_found_count = 0
+    for endpoint, count in endpoint_counts.items():
+        if endpoint not in ineligible_endpoints:
+            filtered_endpoint_counts[endpoint] = count
+        else:
+            ineligible_found_count += count
+
+    # Update stats to reflect filtering
+    filtered_stats = stats.copy()
+    filtered_stats['unique_endpoints'] = len(filtered_endpoint_counts)
+    filtered_stats['total_api_calls'] = sum(filtered_endpoint_counts.values())
+    filtered_stats['ineligible_endpoints_filtered'] = len(endpoint_counts) - len(filtered_endpoint_counts)
+    filtered_stats['ineligible_api_calls_filtered'] = ineligible_found_count
     if sort_by == 'count':
-        sorted_endpoints = endpoint_counts.most_common()
+        sorted_endpoints = filtered_endpoint_counts.most_common()
         sort_desc = "sorted by count (descending)"
     elif sort_by == 'name':
-        sorted_endpoints = sorted(endpoint_counts.items(), key=lambda x: x[0].lower())
+        sorted_endpoints = sorted(filtered_endpoint_counts.items(), key=lambda x: x[0].lower())
         sort_desc = "sorted alphabetically"
     else:
-        sorted_endpoints = endpoint_counts.most_common()
+        sorted_endpoints = filtered_endpoint_counts.most_common()
         sort_desc = "sorted by count (descending)"
 
     output = []
     output.append("Kubernetes API Endpoints Found in Audit Log (Swagger-Enhanced)")
     output.append("=" * 70)
-    output.append(f"Total unique endpoints: {stats['unique_endpoints']}")
-    output.append(f"Total API calls: {stats['total_api_calls']}")
-    output.append(f"Swagger-based matches: {stats['swagger_matches']}")
-    output.append(f"Fallback matches: {stats['fallback_matches']}")
-    output.append(f"Skipped entries: {stats['skipped_entries']}")
+    output.append(f"Total unique endpoints: {filtered_stats['unique_endpoints']}")
+    output.append(f"Total API calls: {filtered_stats['total_api_calls']}")
+    output.append(f"Swagger-based matches: {filtered_stats['swagger_matches']}")
+    output.append(f"Fallback matches: {filtered_stats['fallback_matches']}")
+    output.append(f"Skipped entries: {filtered_stats['skipped_entries']}")
+    if ineligible_endpoints:
+        output.append(f"Ineligible endpoints filtered: {filtered_stats['ineligible_endpoints_filtered']}")
+        output.append(f"Ineligible API calls filtered: {filtered_stats['ineligible_api_calls_filtered']}")
     output.append(f"Results {sort_desc}")
     output.append("")
     output.append("Endpoint Name (OpenAPI Operation ID) | Count")
@@ -561,6 +680,10 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
             op for op in missing_operations
             if not any(version in op for version in ['V1alpha', 'V1beta', 'V2alpha', 'V2beta', 'V3alpha', 'V3beta', 'alpha', 'beta'])
         }
+
+        # Filter out ineligible endpoints from missing operations
+        if ineligible_endpoints:
+            stable_missing_operations = stable_missing_operations - ineligible_endpoints
 
         if stable_missing_operations:
             filtered_count = len(missing_operations) - len(stable_missing_operations)
@@ -615,8 +738,14 @@ Examples:
     parser.add_argument('--swagger-url', help='Custom Swagger/OpenAPI specification URL')
     parser.add_argument('--sort', choices=['count', 'name'], default='name',
                         help='Sort results by count (descending) or name (alphabetical). Default: name')
+    parser.add_argument('--ineligible-endpoints-url',
+                        help='URL or local path to ineligible endpoints YAML file '
+                             '(default: https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/conformance/testdata/ineligible_endpoints.yaml)')
 
     args = parser.parse_args()
+
+    # Load ineligible endpoints for filtering
+    ineligible_endpoints = load_ineligible_endpoints(args.ineligible_endpoints_url)
 
     # Initialize Swagger mapper
     swagger_mapper = SwaggerEndpointMapper(args.swagger_url)
@@ -634,7 +763,7 @@ Examples:
         sys.exit(1)
 
     # Write results
-    write_results(endpoint_counts, stats, swagger_mapper, args.output, args.sort)
+    write_results(endpoint_counts, stats, swagger_mapper, args.output, args.sort, ineligible_endpoints)
 
 
 if __name__ == '__main__':
