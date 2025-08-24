@@ -282,41 +282,23 @@ class SwaggerEndpointMapper:
         return '/'.join(result_parts)
 
     def _normalize_watch_path(self, uri):
-        """Normalize watch operation URI to match Swagger watch path format."""
-        # Remove query parameters
-        uri = uri.split('?')[0]
+        """Normalize watch operation URI to match Swagger watch path format.
 
-        # Convert regular resource path to watch path
-        # /apis/group/version/resources -> /apis/group/version/watch/resources
-        # /apis/group/version/namespaces/{namespace}/resources -> /apis/group/version/watch/namespaces/{namespace}/resources
-        # /api/v1/resources -> /api/v1/watch/resources
-        # /api/v1/namespaces/{namespace}/resources -> /api/v1/watch/namespaces/{namespace}/resources
+        NOTE: Modern Kubernetes clients use regular resource endpoints with ?watch=true,
+        but the OpenAPI spec still defines deprecated /watch/ paths. We need to convert
+        from the actual audit log format to the OpenAPI spec format.
+        """
+        # Remove query parameters first
+        clean_uri = uri.split('?')[0]
 
-        if uri.startswith('/apis/'):
-            # Pattern: /apis/group/version/...
-            parts = uri.split('/')
-            if len(parts) >= 4:  # /apis/group/version/...
-                if len(parts) >= 5 and parts[4] == 'namespaces':
-                    # /apis/group/version/namespaces/... -> /apis/group/version/watch/namespaces/...
-                    watch_uri = '/'.join(parts[:4]) + '/watch/' + '/'.join(parts[4:])
-                else:
-                    # /apis/group/version/resources -> /apis/group/version/watch/resources
-                    watch_uri = '/'.join(parts[:4]) + '/watch/' + '/'.join(parts[4:])
-            else:
-                watch_uri = uri
-        elif uri.startswith('/api/v1/'):
-            # Pattern: /api/v1/...
-            if '/namespaces/' in uri:
-                # /api/v1/namespaces/... -> /api/v1/watch/namespaces/...
-                watch_uri = uri.replace('/api/v1/', '/api/v1/watch/')
-            else:
-                # /api/v1/resources -> /api/v1/watch/resources
-                watch_uri = uri.replace('/api/v1/', '/api/v1/watch/')
-        else:
-            watch_uri = uri
+        # For watch operations, we try both approaches:
+        # 1. First try to match the actual path as a regular resource operation
+        # 2. Then try the deprecated /watch/ path format
 
-        # Now apply normal normalization to the watch path
-        return self._normalize_audit_path(watch_uri)
+        # The watch parameter in query indicates this is a watch operation,
+        # but the path itself is a regular resource path. Most watch operations
+        # should be matched as regular GET operations on collections.
+        return self._normalize_audit_path(clean_uri)
 
     def _k8s_verb_to_http_method(self, k8s_verb, uri):  # pylint: disable=unused-argument,no-self-use
         """Convert Kubernetes audit verb to HTTP method for Swagger lookup."""
@@ -342,13 +324,38 @@ class SwaggerEndpointMapper:
         if not self.swagger_spec:
             return None
 
-        # Handle watch operations - convert to watch path format
-        if method.lower() == 'watch':
-            normalized_uri = self._normalize_watch_path(uri)
-        else:
-            normalized_uri = self._normalize_audit_path(uri)
+        # Check if this is a watch operation by looking at query parameters
+        is_watch_operation = 'watch=true' in uri.lower()
 
-        # Convert Kubernetes verb to HTTP method
+        # Normalize the URI (removes query parameters)
+        normalized_uri = self._normalize_audit_path(uri)
+
+        # For watch operations, try multiple approaches
+        if method.lower() == 'watch' or is_watch_operation:
+            # Approach 1: Try the deprecated /watch/ path format from OpenAPI spec
+            watch_uri = SwaggerEndpointMapper._convert_to_deprecated_watch_path(normalized_uri)
+            watch_key = f"get:{watch_uri}"
+            if watch_key in self.path_to_operation:
+                return self.path_to_operation[watch_key]
+
+            # Approach 2: Try as a regular GET operation (most common)
+            # Watch operations are typically GET requests on collections
+            get_key = f"get:{normalized_uri}"
+            if get_key in self.path_to_operation:
+                return self.path_to_operation[get_key]
+
+            # Approach 3: Try list operations which are often used for watching
+            list_variations = [
+                get_key,
+                f"get:{normalized_uri.rstrip('/')}",
+                f"get:{normalized_uri}/" if not normalized_uri.endswith('/') else get_key,
+            ]
+
+            for variation in list_variations:
+                if variation in self.path_to_operation:
+                    return self.path_to_operation[variation]
+
+        # For non-watch operations or if watch matching failed, use regular approach
         http_method = self._k8s_verb_to_http_method(method, uri).lower()
         key = f"{http_method}:{normalized_uri}"
 
@@ -356,11 +363,9 @@ class SwaggerEndpointMapper:
         if key in self.path_to_operation:
             return self.path_to_operation[key]
 
-        # Try some common variations
+        # Try common variations
         variations = [
-            # Try without trailing slash
             key.rstrip('/'),
-            # Try with trailing slash if not present
             key if key.endswith('/') else key + '/',
         ]
 
@@ -370,7 +375,6 @@ class SwaggerEndpointMapper:
 
         # For specific resource instance operations, try with {name} placeholder
         if '/{name}' not in normalized_uri and http_method == 'get':
-            # Try adding {name} for individual resource gets
             name_variation = f"{http_method}:{normalized_uri}/{{name}}"
             if name_variation in self.path_to_operation:
                 return self.path_to_operation[name_variation]
@@ -413,18 +417,51 @@ class SwaggerEndpointMapper:
 
         return matches / len(parts1) if parts1 else 0
 
+    @staticmethod
+    def _convert_to_deprecated_watch_path(uri):
+        """Convert a regular resource path to the deprecated /watch/ path format.
+
+        This converts:
+        /api/v1/namespaces/{namespace}/pods -> /api/v1/watch/namespaces/{namespace}/pods
+        /apis/apps/v1/namespaces/{namespace}/deployments -> /apis/apps/v1/watch/namespaces/{namespace}/deployments
+        """
+        if uri.startswith('/apis/'):
+            # Pattern: /apis/group/version/...
+            parts = uri.split('/')
+            if len(parts) >= 4:  # /apis/group/version/...
+                # Insert 'watch' after version
+                new_parts = parts[:4] + ['watch'] + parts[4:]
+                return '/'.join(new_parts)
+        elif uri.startswith('/api/v1/'):
+            # Pattern: /api/v1/...
+            # Insert 'watch' after /api/v1
+            return uri.replace('/api/v1/', '/api/v1/watch/')
+
+        return uri
+
 
 def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-branches,too-many-statements,too-many-return-statements
     """
     Fallback method: Convert HTTP verb and URI to Kubernetes endpoint format.
     Used when Swagger specification is not available.
     """
-    # This is the same logic as the original script
-    uri = uri.split('?')[0]
-    uri = re.sub(r'/namespaces/[^/]+', '/namespaces/{namespace}', uri)
-    uri = re.sub(r'/nodes/[^/]+', '/nodes/{node}', uri)
+    # Check if this is a watch operation from query parameters
+    is_watch_operation = 'watch=true' in uri.lower()
 
+    # Clean the URI by removing query parameters
+    clean_uri = uri.split('?')[0]
+    clean_uri = re.sub(r'/namespaces/[^/]+', '/namespaces/{namespace}', clean_uri)
+    clean_uri = re.sub(r'/nodes/[^/]+', '/nodes/{node}', clean_uri)
+
+    # For watch operations, we prefix with 'watch'
     verb = verb.lower()
+    if is_watch_operation or verb == 'watch':
+        verb_prefix = 'watch'
+        # Use the clean URI for processing
+        uri = clean_uri
+    else:
+        verb_prefix = verb
+        uri = clean_uri
 
     # Handle core API v1
     if uri.startswith('/api/v1/'):
@@ -441,10 +478,10 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                     if subresource in ['status', 'scale', 'log', 'exec', 'attach', 'portforward', 'proxy', 'binding', 'eviction', 'ephemeralcontainers']:
                         resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
                         subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
-                        return f'{verb}CoreV1Namespaced{resource_name}{subresource_name}'
+                        return f'{verb_prefix}CoreV1Namespaced{resource_name}{subresource_name}'
 
                 resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                return f'{verb}CoreV1Namespaced{resource_name}'
+                return f'{verb_prefix}CoreV1Namespaced{resource_name}'
 
         else:
             resource = resource_part.split('/')[0]
@@ -455,10 +492,10 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                     if subresource in ['status', 'scale']:
                         resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
                         subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
-                        return f'{verb}CoreV1{resource_name}{subresource_name}'
+                        return f'{verb_prefix}CoreV1{resource_name}{subresource_name}'
 
                 resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                return f'{verb}CoreV1{resource_name}'
+                return f'{verb_prefix}CoreV1{resource_name}'
 
     # Handle APIs group
     elif uri.startswith('/apis/'):
@@ -481,10 +518,10 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                         if subresource in ['status', 'scale', 'binding']:
                             resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
                             subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
-                            return f'{verb}{group_clean.capitalize()}{version_clean}Namespaced{resource_name}{subresource_name}'
+                            return f'{verb_prefix}{group_clean.capitalize()}{version_clean}Namespaced{resource_name}{subresource_name}'
 
                     resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                    return f'{verb}{group_clean.capitalize()}{version_clean}Namespaced{resource_name}'
+                    return f'{verb_prefix}{group_clean.capitalize()}{version_clean}Namespaced{resource_name}'
 
             else:
                 resource = rest.split('/')[0]
@@ -495,10 +532,10 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                         if subresource in ['status', 'scale']:
                             resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
                             subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
-                            return f'{verb}{group_clean.capitalize()}{version_clean}{resource_name}{subresource_name}'
+                            return f'{verb_prefix}{group_clean.capitalize()}{version_clean}{resource_name}{subresource_name}'
 
                     resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                    return f'{verb}{group_clean.capitalize()}{version_clean}{resource_name}'
+                    return f'{verb_prefix}{group_clean.capitalize()}{version_clean}{resource_name}'
 
     return None
 
@@ -555,14 +592,18 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
                         request_uri = entry.get('requestURI', '')
 
                         if verb and request_uri:
+                            # Check if this is a watch operation based on query parameters
+                            # Modern Kubernetes watch operations use ?watch=true parameter
+                            is_watch_via_query = 'watch=true' in request_uri.lower()
+                            effective_verb = 'watch' if is_watch_via_query else verb
                             # Use Swagger-based mapping (required)
-                            operation_id = swagger_mapper.get_operation_id(verb, request_uri)
+                            operation_id = swagger_mapper.get_operation_id(effective_verb, request_uri)
                             if operation_id:
                                 endpoint_counts[operation_id] += 1
                                 swagger_matches += 1
                             else:
                                 # Try fallback parsing for edge cases
-                                fallback_endpoint = convert_to_k8s_endpoint_fallback(verb, request_uri)
+                                fallback_endpoint = convert_to_k8s_endpoint_fallback(effective_verb, request_uri)
                                 if fallback_endpoint:
                                     endpoint_counts[fallback_endpoint] += 1
                                     fallback_matches += 1
