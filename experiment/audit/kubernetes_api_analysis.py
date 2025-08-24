@@ -164,7 +164,7 @@ def find_latest_ci_audit_file():
     Requires:
         gsutil command-line tool (Google Cloud SDK)
     """
-    bucket_path = "gs://kubernetes-ci-logs/logs/ci-audit-kind-conformance"
+    bucket_path = "gs://kubernetes-ci-logs/logs/ci-kubernetes-audit-kind-conformance"
 
     print("Searching for latest CI audit run...")
     print(f"Enumerating directories in {bucket_path}...")
