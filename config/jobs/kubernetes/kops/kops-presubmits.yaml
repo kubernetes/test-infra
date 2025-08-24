@@ -420,7 +420,7 @@ presubmits:
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 20m
+      timeout: 30m
     path_alias: k8s.io/kops
     spec:
       containers:
@@ -432,11 +432,11 @@ presubmits:
         - "verify-terraform"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: 2
+            memory: "4Gi"
+            cpu: 4
           limits:
-            memory: "2Gi"
-            cpu: 2
+            memory: "4Gi"
+            cpu: 4
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
