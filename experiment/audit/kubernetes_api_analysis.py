@@ -126,6 +126,37 @@ def extract_operations_from_audit_file(audit_file, swagger_operations):
     return sorted(operations)
 
 
+def extract_not_found_operations_from_audit_file(audit_file, swagger_operations):
+    """
+    Extract "NOT FOUND" operations from Kubernetes audit log file and filter
+    by valid swagger operations.
+
+    Args:
+        audit_file (str): Path to the audit log file
+        swagger_operations (set): Set of valid operation IDs from swagger spec
+
+    Returns:
+        list: Sorted list of "NOT FOUND" operations that exist in swagger
+    """
+    if not os.path.exists(audit_file):
+        return []
+
+    not_found_operations = set()
+
+    with open(audit_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            # Look for lines with " | NOT FOUND" pattern
+            if " | NOT FOUND" in line:
+                # Extract operation name (first column before |)
+                operation = line.split('|')[0].strip()
+                # Only include operations that are defined in the swagger specification
+                if operation and operation in swagger_operations:
+                    not_found_operations.add(operation)
+
+    return sorted(not_found_operations)
+
+
 def compare_operations(ci_operations, pull_operations):
     """
     Compare API operations between CI baseline and Pull Request changes.
@@ -254,13 +285,14 @@ Examples:
 
 
 def display_results(swagger_operations, ci_operations, pull_operations,
-                    added_operations, removed_operations, output_file):
+                    added_operations, removed_operations, operations_not_found, output_file):
     """Display the analysis results."""
     swagger_count = len(swagger_operations)
     ci_count = len(ci_operations)
     pull_count = len(pull_operations)
     added_count = len(added_operations)
     removed_count = len(removed_operations)
+    not_found_count = len(operations_not_found)
     net_change = added_count - removed_count
 
     print("SUMMARY")
@@ -293,6 +325,20 @@ def display_results(swagger_operations, ci_operations, pull_operations,
             print(f"{i:3d}. {operation}")
     else:
         print("No operations removed.")
+    print()
+
+    print("STABLE ENDPOINTS NOT FOUND IN PULL AUDIT LOG")
+    print("============================================")
+    print(f"Count: {not_found_count}")
+    print()
+    if operations_not_found:
+        print("These are stable, non-deprecated API endpoints defined in the Swagger spec")
+        print("but not exercised in the pull request audit log:")
+        print()
+        for i, operation in enumerate(operations_not_found, 1):
+            print(f"{i:3d}. {operation}")
+    else:
+        print("All stable swagger operations were found in the pull request audit log.")
     print()
 
     print("Analysis complete!")
@@ -335,10 +381,14 @@ def main():
     pull_operations = extract_operations_from_audit_file(args.pull_audit_endpoints,
                                                          swagger_operations_set)
 
+    # Extract NOT FOUND operations from pull request audit file
+    operations_not_found = extract_not_found_operations_from_audit_file(args.pull_audit_endpoints,
+                                                                        swagger_operations_set)
+
     # Analyze differences and display results
     added_operations, removed_operations = compare_operations(ci_operations, pull_operations)
     display_results(swagger_operations, ci_operations, pull_operations,
-                    added_operations, removed_operations, args.output_file)
+                    added_operations, removed_operations, operations_not_found, args.output_file)
 
 
 if __name__ == "__main__":
