@@ -557,9 +557,10 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
         swagger_mapper (SwaggerEndpointMapper): Mapper for converting to operation IDs
 
     Returns:
-        tuple: (Counter of endpoint counts, stats dict)
+        tuple: (Counter of endpoint counts, dict of operation samples, stats dict)
     """
     endpoint_counts = Counter()
+    operation_samples = {}  # Store up to 5 audit entries per operation
     total_entries = 0
     skipped_entries = 0
     swagger_matches = 0
@@ -609,12 +610,24 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
                             if operation_id:
                                 endpoint_counts[operation_id] += 1
                                 swagger_matches += 1
+
+                                # Store up to 5 audit samples for this operation
+                                if operation_id not in operation_samples:
+                                    operation_samples[operation_id] = []
+                                if len(operation_samples[operation_id]) < 5:
+                                    operation_samples[operation_id].append(entry)
                             else:
                                 # Try fallback parsing for edge cases
                                 fallback_endpoint = convert_to_k8s_endpoint_fallback(effective_verb, request_uri)
                                 if fallback_endpoint:
                                     endpoint_counts[fallback_endpoint] += 1
                                     fallback_matches += 1
+
+                                    # Store up to 5 audit samples for this fallback operation
+                                    if fallback_endpoint not in operation_samples:
+                                        operation_samples[fallback_endpoint] = []
+                                    if len(operation_samples[fallback_endpoint]) < 5:
+                                        operation_samples[fallback_endpoint].append(entry)
                                 else:
                                     skipped_entries += 1
                         else:
@@ -653,20 +666,22 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
     print(f"  Total API calls: {sum(endpoint_counts.values())}")
     print(f"  Skipped entries: {skipped_entries}")
 
-    return endpoint_counts, stats
+    return endpoint_counts, operation_samples, stats
 
 
-def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None, sort_by='count', ineligible_endpoints=None):  # pylint: disable=too-many-statements
+def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None, output_file=None, sort_by='count', ineligible_endpoints=None, audit_operations_json='audit-operations.json'):  # pylint: disable=too-many-statements
     """
     Write results to file or stdout.
 
     Args:
         endpoint_counts (Counter): Endpoint counts
+        operation_samples (dict): Sample audit entries for each operation
         stats (dict): Parsing statistics
         swagger_mapper (SwaggerEndpointMapper): Mapper for finding missing endpoints
         output_file (str, optional): Output file path
         sort_by (str): Sort method - 'count' (descending) or 'name' (alphabetical)
         ineligible_endpoints (set, optional): Set of ineligible endpoints to filter out
+        audit_operations_json (str): Output path for audit operations JSON file
     """
     if ineligible_endpoints is None:
         ineligible_endpoints = set()
@@ -780,6 +795,43 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
         print("\nResults:")
         print(result_text)
 
+    # Generate audit-operations.json JSON file with sample audit entries
+    _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints, deprecated_operations, audit_operations_json)
+
+
+def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints, deprecated_operations, json_output_path='audit-operations.json'):
+    """
+    Write audit-operations.json JSON file with sample audit entries for each operation.
+
+    Args:
+        filtered_endpoint_counts (Counter): Filtered endpoint counts
+        operation_samples (dict): Sample audit entries for each operation
+        ineligible_endpoints (set): Set of ineligible endpoints
+        deprecated_operations (set): Set of deprecated operations
+        json_output_path (str): Output path for JSON file
+    """
+    # Build final JSON with samples for operations that passed filtering
+    audit_operations_json = {}
+
+    for operation_id in filtered_endpoint_counts:
+        # Skip operations that are ineligible or deprecated
+        if operation_id in ineligible_endpoints or operation_id in deprecated_operations:
+            continue
+
+        # Get sample audit entries for this operation (up to 5)
+        samples = operation_samples.get(operation_id, [])
+        audit_operations_json[operation_id] = samples
+
+    # Write to JSON file
+    try:
+        with open(json_output_path, 'w', encoding='utf-8') as f:
+            json.dump(audit_operations_json, f, indent=2, ensure_ascii=False)
+
+        total_samples = sum(len(samples) for samples in audit_operations_json.values())
+        print(f"Generated {json_output_path} with {len(audit_operations_json)} operations and {total_samples} sample audit entries")
+    except IOError as e:
+        print(f"Error writing {json_output_path}: {e}")
+
 
 def main():
     """Main function to parse command line arguments and run the parser."""
@@ -804,6 +856,9 @@ Examples:
     parser.add_argument('--ineligible-endpoints-url',
                         help='URL or local path to ineligible endpoints YAML file '
                              '(default: https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/conformance/testdata/ineligible_endpoints.yaml)')
+    parser.add_argument('--audit-operations-json',
+                        default='audit-operations.json',
+                        help='Output path for audit operations JSON file (default: %(default)s)')
 
     args = parser.parse_args()
 
@@ -819,14 +874,14 @@ Examples:
         sys.exit(1)
 
     # Parse the audit log(s)
-    endpoint_counts, stats = parse_audit_logs(args.audit_logs, swagger_mapper)
+    endpoint_counts, operation_samples, stats = parse_audit_logs(args.audit_logs, swagger_mapper)
 
     if not endpoint_counts:
         print("No endpoints found or error parsing file")
         sys.exit(1)
 
     # Write results
-    write_results(endpoint_counts, stats, swagger_mapper, args.output, args.sort, ineligible_endpoints)
+    write_results(endpoint_counts, operation_samples, stats, swagger_mapper, args.output, args.sort, ineligible_endpoints, args.audit_operations_json)
 
 
 if __name__ == '__main__':
