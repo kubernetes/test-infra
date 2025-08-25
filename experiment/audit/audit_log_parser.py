@@ -83,6 +83,7 @@ class SwaggerEndpointMapper:
         self.swagger_url = swagger_url or "https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/master/api/openapi-spec/swagger.json"
         self.swagger_spec = None
         self.path_to_operation = {}
+        self.deprecated_operations = set()
         self.known_resource_types = set()
         self.load_swagger_spec()
 
@@ -140,12 +141,19 @@ class SwaggerEndpointMapper:
                 if method.lower() in ['get', 'post', 'put', 'patch', 'delete'] and 'operationId' in operation:
                     operation_id = operation['operationId']
 
+                    # Check if operation is deprecated
+                    description = operation.get('description', '').lower()
+                    if 'deprecated' in description:
+                        self.deprecated_operations.add(operation_id)
+
                     # Normalize the path for matching
                     normalized_path = self._normalize_swagger_path(path)
                     key = f"{method.lower()}:{normalized_path}"
                     self.path_to_operation[key] = operation_id
 
         print(f"Loaded {len(self.path_to_operation)} API operations from Swagger spec")
+        if self.deprecated_operations:
+            print(f"Found {len(self.deprecated_operations)} deprecated operations")
 
     def _extract_resource_types(self):
         """Extract resource types from Swagger paths to avoid hardcoding."""
@@ -663,21 +671,28 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
     if ineligible_endpoints is None:
         ineligible_endpoints = set()
 
-    # Filter out ineligible endpoints from results
+    # Filter out ineligible endpoints and deprecated operations from results
     filtered_endpoint_counts = Counter()
     ineligible_found_count = 0
+    deprecated_found_count = 0
+    deprecated_operations = swagger_mapper.deprecated_operations if swagger_mapper else set()
+
     for endpoint, count in endpoint_counts.items():
-        if endpoint not in ineligible_endpoints:
-            filtered_endpoint_counts[endpoint] = count
-        else:
+        if endpoint in ineligible_endpoints:
             ineligible_found_count += count
+        elif endpoint in deprecated_operations:
+            deprecated_found_count += count
+        else:
+            filtered_endpoint_counts[endpoint] = count
 
     # Update stats to reflect filtering
     filtered_stats = stats.copy()
     filtered_stats['unique_endpoints'] = len(filtered_endpoint_counts)
     filtered_stats['total_api_calls'] = sum(filtered_endpoint_counts.values())
-    filtered_stats['ineligible_endpoints_filtered'] = len(endpoint_counts) - len(filtered_endpoint_counts)
+    filtered_stats['ineligible_endpoints_filtered'] = len([ep for ep in endpoint_counts if ep in ineligible_endpoints])
     filtered_stats['ineligible_api_calls_filtered'] = ineligible_found_count
+    filtered_stats['deprecated_endpoints_filtered'] = len([ep for ep in endpoint_counts if ep in deprecated_operations])
+    filtered_stats['deprecated_api_calls_filtered'] = deprecated_found_count
     if sort_by == 'count':
         sorted_endpoints = filtered_endpoint_counts.most_common()
         sort_desc = "sorted by count (descending)"
@@ -699,6 +714,9 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
     if ineligible_endpoints:
         output.append(f"Ineligible endpoints filtered: {filtered_stats['ineligible_endpoints_filtered']}")
         output.append(f"Ineligible API calls filtered: {filtered_stats['ineligible_api_calls_filtered']}")
+    if deprecated_operations:
+        output.append(f"Deprecated endpoints filtered: {filtered_stats['deprecated_endpoints_filtered']}")
+        output.append(f"Deprecated API calls filtered: {filtered_stats['deprecated_api_calls_filtered']}")
     output.append(f"Results {sort_desc}")
     output.append("")
     output.append("Endpoint Name (OpenAPI Operation ID) | Count")
@@ -726,6 +744,10 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
         if ineligible_endpoints:
             stable_missing_operations = stable_missing_operations - ineligible_endpoints
 
+        # Filter out deprecated operations from missing operations
+        if deprecated_operations:
+            stable_missing_operations = stable_missing_operations - deprecated_operations
+
         if stable_missing_operations:
             filtered_count = len(missing_operations) - len(stable_missing_operations)
 
@@ -735,8 +757,8 @@ def write_results(endpoint_counts, stats, swagger_mapper=None, output_file=None,
             output.append("=" * 70)
             output.append(f"Total missing stable endpoints: {len(stable_missing_operations)}")
             if filtered_count > 0:
-                output.append(f"(Filtered out {filtered_count} alpha/beta endpoints)")
-            output.append(f"These are stable API endpoints defined in the Swagger spec but not exercised in this audit log:")
+                output.append(f"(Filtered out {filtered_count} alpha/beta/deprecated endpoints)")
+            output.append(f"These are stable, non-deprecated API endpoints defined in the Swagger spec but not exercised in this audit log:")
             output.append("")
 
             # Sort missing operations alphabetically
