@@ -2,7 +2,7 @@
 # 5 jobs, total of 840 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kopsmaster
   cron: '54 0-23/1 * * *'
   labels:
@@ -35,11 +35,11 @@ periodics:
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250821' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-marker=latest.txt \
+          --test-package-marker=stable.txt \
           --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
           --skip-regex="\[Slow\]|\[Serial\]" \
           --parallel=25
@@ -61,11 +61,11 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
     test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
-    test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: kops-distro-u2404, kops-k8s-latest, kops-latest, kops-versions, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kopsmaster
 

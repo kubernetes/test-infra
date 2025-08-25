@@ -1875,7 +1875,7 @@ def generate_pipeline():
         results.append(
             build_test(
                 cloud="aws",
-                k8s_version=version.replace('master', 'latest'),
+                k8s_version=version.replace('master', 'stable'),
                 kops_version=kops_version,
                 kops_channel='alpha',
                 name_override=f"kops-pipeline-updown-kops{version.replace('.', '')}",
