@@ -8,7 +8,7 @@ Welcome! If you haven't seen them already, the Kubernetes project has:
 ## Contact
 
 This repo is owned by [SIG Testing][sig-testing], and the people most directly
-involved are listed in [/OWNERS]. We are most responsive on our slack channel
+involved are listed in [/OWNERS]. We are most responsive on our slack channel.
 
 - Community Site: [kubernetes/community/sig-testing][sig-testing]
 - Slack: [#sig-testing]
