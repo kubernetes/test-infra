@@ -84,8 +84,8 @@ done
 CRIO_SCRIPT_COMMIT=$(grep "CRIO_SCRIPT_COMMIT" "$BASE_PATH/env.yaml" | sed -rn 's/^.*CRIO_SCRIPT_COMMIT=([0-9a-f]+).*$/\1/p')
 CRIO_SCRIPT_URL="https://raw.githubusercontent.com/cri-o/packaging/$CRIO_SCRIPT_COMMIT/get"
 curl -fs "$CRIO_SCRIPT_URL" -o /dev/null || {
-  echo "Error: CRIO_SCRIPT_COMMIT in $BASE_PATH/env.yaml is wrong. The get script was not found at: $CRIO_SCRIPT_URL" 1>&2
-  exit 1
+    echo "Error: CRIO_SCRIPT_COMMIT in $BASE_PATH/env.yaml is wrong. The get script was not found at: $CRIO_SCRIPT_URL" 1>&2
+    exit 1
 }
 
 CRIO_COMMIT=$(grep "CRIO_COMMIT" "$BASE_PATH/env.yaml" | sed -rn 's/^.*CRIO_COMMIT=([0-9a-f]+).*$/\1/p')
