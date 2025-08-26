@@ -57,7 +57,7 @@ presubmits:
 
               set +o errexit
               set -o xtrace
-              kubetest2 tf --powervs-image-name CentOS-Stream-9 \
+              kubetest2 tf --powervs-image-name CentOS-Stream-10 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} \
                 --powervs-ssh-key k8s-prow-sshkey \
