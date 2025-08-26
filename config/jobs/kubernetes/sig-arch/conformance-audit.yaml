@@ -5,6 +5,7 @@ presubmits:
       cluster: k8s-infra-prow-build
       optional: true
       always_run: false
+      run_if_changed: '^(test/conformance/testdata/|api/openapi-spec/)'
       decorate: true
       skip_branches:
         - release-\d+\.\d+ # per-release settings
@@ -33,7 +34,6 @@ presubmits:
                   && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
                   && bash e2e-k8s.sh
                   && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
-                  && set -x
                   && python3 ./../test-infra/experiment/audit/kubernetes_api_analysis.py --pull-audit-endpoints "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
             env:
               - name: BUILD_TYPE
