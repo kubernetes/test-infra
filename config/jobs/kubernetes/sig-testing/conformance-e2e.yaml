@@ -145,7 +145,7 @@ periodics:
 
 - name: ci-kubernetes-conformance-kind-ga-only
   cluster: k8s-infra-prow-build
-  interval: 12h
+  interval: 3h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -155,7 +155,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 200m # allow plenty of time for a serial conformance run
+    timeout: 2h30m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
