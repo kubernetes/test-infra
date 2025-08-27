@@ -26,15 +26,145 @@ for accurate endpoint naming.
 Usage: python3 audit_log_parser.py --audit-logs <audit_log_file>... [--output <output_file>] [--swagger-url <url>]
 """
 
+import argparse
 import json
 import re
 import sys
-import urllib.request
+import time
 import urllib.parse
+import urllib.request
 from collections import Counter
 from pathlib import Path
-import argparse
-import time
+
+try:
+    import yaml
+
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
+
+
+def load_endpoint_list_from_yaml(url, endpoint_type="endpoints"):
+    """
+    Load endpoint lists from Kubernetes conformance YAML files.
+
+    Args:
+        url (str): URL or local path to YAML file
+        endpoint_type (str): Type of endpoints being loaded (for logging)
+
+    Returns:
+        set: Set of endpoint operation IDs
+    """
+    try:
+        print(f"Loading {endpoint_type} from: {url}")
+        with urllib.request.urlopen(url, timeout=30) as response:
+            content = response.read().decode()
+
+        # Parse YAML content - use PyYAML if available, otherwise manual parsing
+        if HAS_YAML:
+            try:
+                yaml_data = yaml.safe_load(content)
+                return _process_yaml_data(yaml_data, endpoint_type)
+            except yaml.YAMLError as e:
+                print(f"Error: Failed to parse YAML content from {url}")
+                print(f"YAML parsing error: {e}")
+                print(f"Content preview (first 500 chars):")
+                print(content[:500])
+                print(f"Cannot proceed with malformed YAML for {endpoint_type}")
+                sys.exit(1)
+        else:
+            print(f"Warning: PyYAML not available, using manual YAML parsing for {endpoint_type}")
+            return _manual_yaml_parse(content, endpoint_type)
+
+    except urllib.error.URLError as e:
+        print(f"Error: Failed to download {endpoint_type} from {url}")
+        print(f"Network error: {e}")
+        print(f"Cannot proceed without {endpoint_type} configuration")
+        sys.exit(1)
+    except Exception as e:  # pylint: disable=broad-except
+        print(f"Error: Unexpected failure loading {endpoint_type} from {url}")
+        print(f"Error details: {e}")
+        print(f"Cannot proceed without {endpoint_type} configuration")
+        sys.exit(1)
+
+
+def _process_yaml_data(yaml_data, endpoint_type):
+    """
+    Process parsed YAML data to extract endpoint names.
+
+    Args:
+        yaml_data: Parsed YAML data structure
+        endpoint_type (str): Type of endpoints being loaded
+        url (str): URL for error reporting
+
+    Returns:
+        set: Set of endpoint operation IDs
+    """
+    endpoints = set()
+
+    if isinstance(yaml_data, list):
+        for item in yaml_data:
+            if isinstance(item, dict):
+                # Format: list of objects with 'endpoint' key (ineligible_endpoints.yaml)
+                if 'endpoint' in item:
+                    endpoints.add(item['endpoint'])
+            elif isinstance(item, str):
+                # Format: simple list of strings (pending_eligible_endpoints.yaml)
+                endpoints.add(item)
+    else:
+        print(f"Error: Expected YAML list format for {endpoint_type}, got {type(yaml_data)}")
+        print(f"YAML data structure: {yaml_data}")
+        print(f"Cannot proceed with unexpected YAML format for {endpoint_type}")
+        sys.exit(1)
+
+    print(f"Loaded {len(endpoints)} {endpoint_type}")
+    return endpoints
+
+
+def _manual_yaml_parse(content, endpoint_type):
+    """
+    Manual YAML parsing for simple structures when PyYAML is not available.
+
+    Handles two formats:
+    1. List of objects: - endpoint: name
+    2. Simple list: - name
+
+    Args:
+        content (str): YAML content as string
+        endpoint_type (str): Type of endpoints being loaded
+
+    Returns:
+        set: Set of endpoint operation IDs
+    """
+    endpoints = set()
+
+    for line in content.split('\n'):
+        line = line.strip()
+
+        # Skip empty lines, comments, and document separators
+        if not line or line.startswith('#') or line == '---':
+            continue
+
+        if line.startswith('- endpoint:'):
+            # Format: - endpoint: endpointName (ineligible_endpoints.yaml)
+            endpoint = line.replace('- endpoint:', '').strip()
+            if endpoint:
+                endpoints.add(endpoint)
+        elif line.startswith('- ') and ':' not in line:
+            # Format: - endpointName (pending_eligible_endpoints.yaml)
+            # Only if no colon (to avoid matching other object keys)
+            endpoint = line.replace('- ', '').strip()
+            if endpoint:
+                endpoints.add(endpoint)
+
+    if not endpoints:
+        print(f"Warning: No endpoints found using manual YAML parsing for {endpoint_type}")
+        print("This might indicate a parsing issue or unexpected YAML format")
+
+    print(f"Loaded {len(endpoints)} {endpoint_type} (manual parsing)")
+    return endpoints
+
+
 def load_ineligible_endpoints(ineligible_endpoints_url=None):
     """
     Load the list of ineligible endpoints from URL or local file.
@@ -49,28 +179,24 @@ def load_ineligible_endpoints(ineligible_endpoints_url=None):
         ineligible_endpoints_url = ("https://raw.githubusercontent.com/kubernetes/kubernetes/"
                                     "master/test/conformance/testdata/ineligible_endpoints.yaml")
 
-    try:
-        print(f"Loading ineligible endpoints from: {ineligible_endpoints_url}")
-        with urllib.request.urlopen(ineligible_endpoints_url, timeout=30) as response:
-            content = response.read().decode()
+    return load_endpoint_list_from_yaml(ineligible_endpoints_url, "ineligible endpoints")
 
-        # Parse the YAML manually since it's simple structure
-        ineligible_endpoints = set()
-        for line in content.split('\n'):
-            line = line.strip()
-            if line.startswith('- endpoint:'):
-                # Extract endpoint name after "- endpoint: "
-                endpoint = line.replace('- endpoint:', '').strip()
-                if endpoint:
-                    ineligible_endpoints.add(endpoint)
 
-        print(f"Loaded {len(ineligible_endpoints)} ineligible endpoints")
-        return ineligible_endpoints
+def load_pending_eligible_endpoints(pending_eligible_endpoints_url=None):
+    """
+    Load the list of pending eligible endpoints from URL or local file.
 
-    except Exception as e:  # pylint: disable=broad-except
-        print(f"Warning: Failed to load ineligible endpoints: {e}")
-        print("Proceeding without filtering ineligible endpoints")
-        return set()
+    Args:
+        pending_eligible_endpoints_url (str, optional): URL or local path to pending eligible endpoints YAML file
+
+    Returns:
+        set: Set of pending eligible endpoint operation IDs to filter out
+    """
+    if pending_eligible_endpoints_url is None:
+        pending_eligible_endpoints_url = ("https://raw.githubusercontent.com/kubernetes/kubernetes/"
+                                          "refs/heads/master/test/conformance/testdata/pending_eligible_endpoints.yaml")
+
+    return load_endpoint_list_from_yaml(pending_eligible_endpoints_url, "pending eligible endpoints")
 
 
 class SwaggerEndpointMapper:
@@ -187,7 +313,7 @@ class SwaggerEndpointMapper:
                                         'ephemeralcontainers', 'finalize', 'watch']):
 
                     # Check if this looks like a resource type (plural noun at end of path or before {name})
-                    next_segment = segments[i+1] if i+1 < len(segments) else None
+                    next_segment = segments[i + 1] if i + 1 < len(segments) else None
 
                     # It's likely a resource type if:
                     # 1. It's the last segment in the path (collection operations)
@@ -272,7 +398,7 @@ class SwaggerEndpointMapper:
             is_resource_name = False
 
             if i > 0:
-                prev_part = parts[i-1]
+                prev_part = parts[i - 1]
 
                 # This is a resource name if the previous part is a known resource type
                 if prev_part in self.known_resource_types:
@@ -448,7 +574,8 @@ class SwaggerEndpointMapper:
         return uri
 
 
-def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-branches,too-many-statements,too-many-return-statements
+def convert_to_k8s_endpoint_fallback(verb,
+                                     uri):  # pylint: disable=too-many-branches,too-many-statements,too-many-return-statements
     """
     Fallback method: Convert HTTP verb and URI to Kubernetes endpoint format.
     Used when Swagger specification is not available.
@@ -483,9 +610,11 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                 parts = remaining.split('/')
                 if len(parts) > 2 and parts[1] and not re.match(r'[0-9a-f-]{20,}', parts[1]):
                     subresource = parts[2]
-                    if subresource in ['status', 'scale', 'log', 'exec', 'attach', 'portforward', 'proxy', 'binding', 'eviction', 'ephemeralcontainers']:
+                    if subresource in ['status', 'scale', 'log', 'exec', 'attach', 'portforward', 'proxy', 'binding',
+                                       'eviction', 'ephemeralcontainers']:
                         resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                        subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
+                        subresource_name = subresource[0].upper() + subresource[1:] if len(
+                            subresource) > 1 else subresource.upper()
                         return f'{verb_prefix}CoreV1Namespaced{resource_name}{subresource_name}'
 
                 resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
@@ -499,7 +628,8 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                     subresource = parts[2]
                     if subresource in ['status', 'scale']:
                         resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                        subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
+                        subresource_name = subresource[0].upper() + subresource[1:] if len(
+                            subresource) > 1 else subresource.upper()
                         return f'{verb_prefix}CoreV1{resource_name}{subresource_name}'
 
                 resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
@@ -524,8 +654,10 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                     if len(parts) > 2 and parts[1] and not re.match(r'[0-9a-f-]{20,}', parts[1]):
                         subresource = parts[2]
                         if subresource in ['status', 'scale', 'binding']:
-                            resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                            subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
+                            resource_name = resource[0].upper() + resource[1:] if len(
+                                resource) > 1 else resource.upper()
+                            subresource_name = subresource[0].upper() + subresource[1:] if len(
+                                subresource) > 1 else subresource.upper()
                             return f'{verb_prefix}{group_clean.capitalize()}{version_clean}Namespaced{resource_name}{subresource_name}'
 
                     resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
@@ -538,8 +670,10 @@ def convert_to_k8s_endpoint_fallback(verb, uri):  # pylint: disable=too-many-bra
                     if len(parts) > 2 and parts[1] and not re.match(r'[0-9a-f-]{20,}', parts[1]):
                         subresource = parts[2]
                         if subresource in ['status', 'scale']:
-                            resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
-                            subresource_name = subresource[0].upper() + subresource[1:] if len(subresource) > 1 else subresource.upper()
+                            resource_name = resource[0].upper() + resource[1:] if len(
+                                resource) > 1 else resource.upper()
+                            subresource_name = subresource[0].upper() + subresource[1:] if len(
+                                subresource) > 1 else subresource.upper()
                             return f'{verb_prefix}{group_clean.capitalize()}{version_clean}{resource_name}{subresource_name}'
 
                     resource_name = resource[0].upper() + resource[1:] if len(resource) > 1 else resource.upper()
@@ -669,7 +803,9 @@ def parse_audit_logs(file_paths, swagger_mapper=None):  # pylint: disable=too-ma
     return endpoint_counts, operation_samples, stats
 
 
-def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None, output_file=None, sort_by='count', ineligible_endpoints=None, audit_operations_json='audit-operations.json'):  # pylint: disable=too-many-statements
+def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None, output_file=None, sort_by='count',
+                  ineligible_endpoints=None, pending_eligible_endpoints=None,
+                  audit_operations_json='audit-operations.json'):  # pylint: disable=too-many-statements
     """
     Write results to file or stdout.
 
@@ -681,20 +817,26 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
         output_file (str, optional): Output file path
         sort_by (str): Sort method - 'count' (descending) or 'name' (alphabetical)
         ineligible_endpoints (set, optional): Set of ineligible endpoints to filter out
+        pending_eligible_endpoints (set, optional): Set of pending eligible endpoints to filter out
         audit_operations_json (str): Output path for audit operations JSON file
     """
     if ineligible_endpoints is None:
         ineligible_endpoints = set()
+    if pending_eligible_endpoints is None:
+        pending_eligible_endpoints = set()
 
-    # Filter out ineligible endpoints and deprecated operations from results
+    # Filter out ineligible endpoints, pending eligible endpoints, and deprecated operations from results
     filtered_endpoint_counts = Counter()
     ineligible_found_count = 0
+    pending_eligible_found_count = 0
     deprecated_found_count = 0
     deprecated_operations = swagger_mapper.deprecated_operations if swagger_mapper else set()
 
     for endpoint, count in endpoint_counts.items():
         if endpoint in ineligible_endpoints:
             ineligible_found_count += count
+        elif endpoint in pending_eligible_endpoints:
+            pending_eligible_found_count += count
         elif endpoint in deprecated_operations:
             deprecated_found_count += count
         else:
@@ -706,6 +848,9 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
     filtered_stats['total_api_calls'] = sum(filtered_endpoint_counts.values())
     filtered_stats['ineligible_endpoints_filtered'] = len([ep for ep in endpoint_counts if ep in ineligible_endpoints])
     filtered_stats['ineligible_api_calls_filtered'] = ineligible_found_count
+    filtered_stats['pending_eligible_endpoints_filtered'] = len(
+        [ep for ep in endpoint_counts if ep in pending_eligible_endpoints])
+    filtered_stats['pending_eligible_api_calls_filtered'] = pending_eligible_found_count
     filtered_stats['deprecated_endpoints_filtered'] = len([ep for ep in endpoint_counts if ep in deprecated_operations])
     filtered_stats['deprecated_api_calls_filtered'] = deprecated_found_count
     if sort_by == 'count':
@@ -729,6 +874,9 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
     if ineligible_endpoints:
         output.append(f"Ineligible endpoints filtered: {filtered_stats['ineligible_endpoints_filtered']}")
         output.append(f"Ineligible API calls filtered: {filtered_stats['ineligible_api_calls_filtered']}")
+    if pending_eligible_endpoints:
+        output.append(f"Pending eligible endpoints filtered: {filtered_stats['pending_eligible_endpoints_filtered']}")
+        output.append(f"Pending eligible API calls filtered: {filtered_stats['pending_eligible_api_calls_filtered']}")
     if deprecated_operations:
         output.append(f"Deprecated endpoints filtered: {filtered_stats['deprecated_endpoints_filtered']}")
         output.append(f"Deprecated API calls filtered: {filtered_stats['deprecated_api_calls_filtered']}")
@@ -752,12 +900,17 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
         # Filter out alpha and beta versions from missing operations
         stable_missing_operations = {
             op for op in missing_operations
-            if not any(version in op for version in ['V1alpha', 'V1beta', 'V2alpha', 'V2beta', 'V3alpha', 'V3beta', 'alpha', 'beta'])
+            if not any(version in op for version in
+                       ['V1alpha', 'V1beta', 'V2alpha', 'V2beta', 'V3alpha', 'V3beta', 'alpha', 'beta'])
         }
 
         # Filter out ineligible endpoints from missing operations
         if ineligible_endpoints:
             stable_missing_operations = stable_missing_operations - ineligible_endpoints
+
+        # Filter out pending eligible endpoints from missing operations
+        if pending_eligible_endpoints:
+            stable_missing_operations = stable_missing_operations - pending_eligible_endpoints
 
         # Filter out deprecated operations from missing operations
         if deprecated_operations:
@@ -772,8 +925,10 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
             output.append("=" * 70)
             output.append(f"Total missing stable endpoints: {len(stable_missing_operations)}")
             if filtered_count > 0:
-                output.append(f"(Filtered out {filtered_count} alpha/beta/deprecated endpoints)")
-            output.append(f"These are stable, non-deprecated API endpoints defined in the Swagger spec but not exercised in this audit log:")
+                output.append(
+                    f"(Filtered out {filtered_count} alpha/beta/deprecated/ineligible/pending eligible endpoints)")
+            output.append(
+                f"These are stable, non-deprecated API endpoints defined in the Swagger spec but not exercised in this audit log:")
             output.append("")
 
             # Sort missing operations alphabetically
@@ -796,10 +951,13 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
         print(result_text)
 
     # Generate audit-operations.json JSON file with sample audit entries
-    _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints, deprecated_operations, audit_operations_json)
+    _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints,
+                                 pending_eligible_endpoints, deprecated_operations, audit_operations_json)
 
 
-def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints, deprecated_operations, json_output_path='audit-operations.json'):
+def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints,
+                                 pending_eligible_endpoints, deprecated_operations,
+                                 json_output_path='audit-operations.json'):
     """
     Write audit-operations.json JSON file with sample audit entries for each operation.
 
@@ -807,6 +965,7 @@ def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, in
         filtered_endpoint_counts (Counter): Filtered endpoint counts
         operation_samples (dict): Sample audit entries for each operation
         ineligible_endpoints (set): Set of ineligible endpoints
+        pending_eligible_endpoints (set): Set of pending eligible endpoints
         deprecated_operations (set): Set of deprecated operations
         json_output_path (str): Output path for JSON file
     """
@@ -814,8 +973,10 @@ def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, in
     audit_operations_json = {}
 
     for operation_id in filtered_endpoint_counts:
-        # Skip operations that are ineligible or deprecated
-        if operation_id in ineligible_endpoints or operation_id in deprecated_operations:
+        # Skip operations that are ineligible, pending eligible, or deprecated
+        if (operation_id in ineligible_endpoints or
+                operation_id in pending_eligible_endpoints or
+                operation_id in deprecated_operations):
             continue
 
         # Get sample audit entries for this operation (up to 5)
@@ -828,7 +989,8 @@ def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, in
             json.dump(audit_operations_json, f, indent=2, ensure_ascii=False)
 
         total_samples = sum(len(samples) for samples in audit_operations_json.values())
-        print(f"Generated {json_output_path} with {len(audit_operations_json)} operations and {total_samples} sample audit entries")
+        print(
+            f"Generated {json_output_path} with {len(audit_operations_json)} operations and {total_samples} sample audit entries")
     except IOError as e:
         print(f"Error writing {json_output_path}: {e}")
 
@@ -856,6 +1018,9 @@ Examples:
     parser.add_argument('--ineligible-endpoints-url',
                         help='URL or local path to ineligible endpoints YAML file '
                              '(default: https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/conformance/testdata/ineligible_endpoints.yaml)')
+    parser.add_argument('--pending-eligible-endpoints-url',
+                        help='URL or local path to pending eligible endpoints YAML file '
+                             '(default: https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/master/test/conformance/testdata/pending_eligible_endpoints.yaml)')
     parser.add_argument('--audit-operations-json',
                         default='audit-operations.json',
                         help='Output path for audit operations JSON file (default: %(default)s)')
@@ -864,6 +1029,9 @@ Examples:
 
     # Load ineligible endpoints for filtering
     ineligible_endpoints = load_ineligible_endpoints(args.ineligible_endpoints_url)
+
+    # Load pending eligible endpoints for filtering
+    pending_eligible_endpoints = load_pending_eligible_endpoints(args.pending_eligible_endpoints_url)
 
     # Initialize Swagger mapper
     swagger_mapper = SwaggerEndpointMapper(args.swagger_url)
@@ -881,7 +1049,8 @@ Examples:
         sys.exit(1)
 
     # Write results
-    write_results(endpoint_counts, operation_samples, stats, swagger_mapper, args.output, args.sort, ineligible_endpoints, args.audit_operations_json)
+    write_results(endpoint_counts, operation_samples, stats, swagger_mapper, args.output, args.sort,
+                  ineligible_endpoints, pending_eligible_endpoints, args.audit_operations_json)
 
 
 if __name__ == '__main__':
