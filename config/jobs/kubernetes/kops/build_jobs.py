@@ -470,11 +470,10 @@ distro_options = [
 ]
 
 k8s_versions = [
-    "1.29",
-    "1.30",
     "1.31",
     "1.32",
     "1.33",
+    "1.34",
 ]
 
 kops_versions = [
@@ -1362,7 +1361,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.33', '1.32', '1.31', '1.30']:
+    for version in ['1.34', '1.33', '1.32', '1.31']:
         results.append(
             build_test(
                 cloud='aws',
@@ -1849,7 +1848,7 @@ def generate_versions():
             runs_per_day=8,
         )
     ]
-    for version in ['1.33', '1.32', '1.31', '1.30', '1.29', '1.28', '1.27']:
+    for version in ['1.34', '1.33', '1.32', '1.31', '1.30', '1.29', '1.28', '1.27']:
         results.append(
             build_test(
                 cloud='aws',
