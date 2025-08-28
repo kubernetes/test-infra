@@ -67,10 +67,13 @@ RUN echo "Installing Packages ..." \
             pkg-config \
             procps \
             python3 \
+            python3-pip \
             rsync \
             software-properties-common \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
+    && echo "Installing Python packages ..." \
+        && pip3 install --no-cache-dir --break-system-packages pyyaml \
     && echo "Installing Go ..." \
         && if [ -z "${GO_VERSION}" ]; then GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | grep -oP "go\K(.*)"); fi \
         && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" \
