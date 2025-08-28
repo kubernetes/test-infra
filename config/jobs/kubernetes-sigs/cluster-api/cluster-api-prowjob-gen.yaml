@@ -35,11 +35,9 @@ prow_ignored:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.33"
       interval: "3h"
       upgradesInterval: "24h"
-      kubernetesVersionManagement: "v1.30.10"
-      kubebuilderEnvtestKubernetesVersion: "1.30.3"
+      kubernetesVersionManagement: "v1.31.12"
+      kubebuilderEnvtestKubernetesVersion: "1.31.0"
       upgrades:
-        - from: "1.28"
-          to: "1.29"
         - from: "1.29"
           to: "1.30"
         - from: "1.30"
@@ -50,6 +48,8 @@ prow_ignored:
           to: "1.33"
         - from: "1.33"
           to: "1.34"
+        - from: "1.34"
+          to: "1.35"
     release-1.11:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.33"
       interval: "4h"
@@ -157,6 +157,10 @@ prow_ignored:
       coreDNS: "v1.12.0"
       k8sRelease: "stable-1.33"
     "1.34":
-      etcd: "3.6.1-1"
+      etcd: "3.6.4-0"
       coreDNS: "v1.12.1"
-      k8sRelease: "ci/latest-1.34"
+      k8sRelease: "stable-1.34"
+    "1.35":
+      etcd: "3.6.4-0"
+      coreDNS: "v1.12.1"
+      k8sRelease: "ci/latest-1.35"
