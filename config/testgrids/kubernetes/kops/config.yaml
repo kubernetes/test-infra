@@ -31,13 +31,14 @@ dashboard_groups:
   - kops-k8s-1.31
   - kops-k8s-1.32
   - kops-k8s-1.33
+  - kops-k8s-1.34
   - kops-k8s-ci
   - kops-k8s-latest
   - kops-k8s-stable
-  - kops-1.30
   - kops-1.31
   - kops-1.32
   - kops-1.33
+  - kops-1.34
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -73,13 +74,14 @@ dashboards:
 - name: kops-k8s-1.31
 - name: kops-k8s-1.32
 - name: kops-k8s-1.33
+- name: kops-k8s-1.34
 - name: kops-k8s-ci
 - name: kops-k8s-latest
 - name: kops-k8s-stable
-- name: kops-1.30
 - name: kops-1.31
 - name: kops-1.32
 - name: kops-1.33
+- name: kops-1.34
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons
