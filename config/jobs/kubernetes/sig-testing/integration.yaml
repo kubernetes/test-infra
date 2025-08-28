@@ -1,8 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
-  # this replaces the bootstrap / scenario based job going forward
   - name: pull-kubernetes-integration
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
@@ -18,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
         command:
         - runner.sh
         args:
@@ -51,7 +50,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
         command:
         - runner.sh
         env:
@@ -70,7 +69,7 @@ presubmits:
             cpu: 7
             memory: 20Gi
   - name: pull-kubernetes-integration-race
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     always_run: false # Has known failures.
     optional: true
     decorate: true
@@ -88,7 +87,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
         command:
         - runner.sh
         env:
@@ -103,10 +102,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
@@ -125,7 +124,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
         command:
         - runner.sh
         env:
@@ -178,7 +177,7 @@ presubmits:
             memory: 15Gi
 periodics:
 - interval: 1h
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-integration-master
   decorate: true
   extra_refs:
@@ -198,7 +197,7 @@ periodics:
     description: "Ends up running: make test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
       command:
       - runner.sh
       args:
@@ -217,7 +216,7 @@ periodics:
           cpu: 6
           memory: 20Gi
 - interval: 6h
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-integration-race-master
   decorate: true
   extra_refs:
@@ -237,7 +236,7 @@ periodics:
     description: "Ends up running: make test-integration with race detection"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
       command:
       - runner.sh
       args:
