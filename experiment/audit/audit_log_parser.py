@@ -35,13 +35,7 @@ import urllib.parse
 import urllib.request
 from collections import Counter
 from pathlib import Path
-
-try:
-    import yaml
-
-    HAS_YAML = True
-except ImportError:
-    HAS_YAML = False
+import yaml
 
 
 def load_endpoint_list_from_yaml(url, endpoint_type="endpoints"):
@@ -60,21 +54,17 @@ def load_endpoint_list_from_yaml(url, endpoint_type="endpoints"):
         with urllib.request.urlopen(url, timeout=30) as response:
             content = response.read().decode()
 
-        # Parse YAML content - use PyYAML if available, otherwise manual parsing
-        if HAS_YAML:
-            try:
-                yaml_data = yaml.safe_load(content)
-                return _process_yaml_data(yaml_data, endpoint_type)
-            except yaml.YAMLError as e:
-                print(f"Error: Failed to parse YAML content from {url}")
-                print(f"YAML parsing error: {e}")
-                print(f"Content preview (first 500 chars):")
-                print(content[:500])
-                print(f"Cannot proceed with malformed YAML for {endpoint_type}")
-                sys.exit(1)
-        else:
-            print(f"Warning: PyYAML not available, using manual YAML parsing for {endpoint_type}")
-            return _manual_yaml_parse(content, endpoint_type)
+        # Parse YAML content using PyYAML
+        try:
+            yaml_data = yaml.safe_load(content)
+            return _process_yaml_data(yaml_data, endpoint_type)
+        except yaml.YAMLError as e:
+            print(f"Error: Failed to parse YAML content from {url}")
+            print(f"YAML parsing error: {e}")
+            print(f"Content preview (first 500 chars):")
+            print(content[:500])
+            print(f"Cannot proceed with malformed YAML for {endpoint_type}")
+            sys.exit(1)
 
     except urllib.error.URLError as e:
         print(f"Error: Failed to download {endpoint_type} from {url}")
@@ -118,50 +108,6 @@ def _process_yaml_data(yaml_data, endpoint_type):
         sys.exit(1)
 
     print(f"Loaded {len(endpoints)} {endpoint_type}")
-    return endpoints
-
-
-def _manual_yaml_parse(content, endpoint_type):
-    """
-    Manual YAML parsing for simple structures when PyYAML is not available.
-
-    Handles two formats:
-    1. List of objects: - endpoint: name
-    2. Simple list: - name
-
-    Args:
-        content (str): YAML content as string
-        endpoint_type (str): Type of endpoints being loaded
-
-    Returns:
-        set: Set of endpoint operation IDs
-    """
-    endpoints = set()
-
-    for line in content.split('\n'):
-        line = line.strip()
-
-        # Skip empty lines, comments, and document separators
-        if not line or line.startswith('#') or line == '---':
-            continue
-
-        if line.startswith('- endpoint:'):
-            # Format: - endpoint: endpointName (ineligible_endpoints.yaml)
-            endpoint = line.replace('- endpoint:', '').strip()
-            if endpoint:
-                endpoints.add(endpoint)
-        elif line.startswith('- ') and ':' not in line:
-            # Format: - endpointName (pending_eligible_endpoints.yaml)
-            # Only if no colon (to avoid matching other object keys)
-            endpoint = line.replace('- ', '').strip()
-            if endpoint:
-                endpoints.add(endpoint)
-
-    if not endpoints:
-        print(f"Warning: No endpoints found using manual YAML parsing for {endpoint_type}")
-        print("This might indicate a parsing issue or unexpected YAML format")
-
-    print(f"Loaded {len(endpoints)} {endpoint_type} (manual parsing)")
     return endpoints
 
 

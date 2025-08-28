@@ -33,6 +33,7 @@ presubmits:
                   curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
                   && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
                   && bash e2e-k8s.sh
+                  && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml
                   && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json" --ineligible-endpoints-url "file://$PWD/test/conformance/testdata/ineligible_endpoints.yaml" --pending-eligible-endpoints-url "file://$PWD/test/conformance/testdata/pending_eligible_endpoints.yaml"
                   && python3 ./../test-infra/experiment/audit/kubernetes_api_analysis.py --pull-audit-endpoints "${ARTIFACTS}/audit/audit-endpoints.txt" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
             env:
@@ -91,6 +92,7 @@ periodics:
             curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/"
             && curl -sO https://raw.githubusercontent.com/ii/kind/ci-audit-logging/hack/ci/e2e-k8s.sh
             && bash e2e-k8s.sh
+            && apt-get update && apt-get install -y --no-install-recommends python3-pip && pip3 install --no-cache-dir --break-system-packages pyyaml
             && python3 ./../test-infra/experiment/audit/audit_log_parser.py --audit-logs ${ARTIFACTS}/audit/audit*.log --output "${ARTIFACTS}/audit/audit-endpoints.txt" --audit-operations-json "${ARTIFACTS}/audit/audit-operations.json" --swagger-url "file://$PWD/api/openapi-spec/swagger.json"
       env:
       - name: BUILD_TYPE
