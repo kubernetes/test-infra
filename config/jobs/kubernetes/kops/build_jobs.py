@@ -465,8 +465,8 @@ distro_options = [
     'deb13',
     'flatcar',
     'rhel8',
-    'u2004',
     'u2204',
+    'u2404',
 ]
 
 k8s_versions = [
@@ -511,7 +511,7 @@ def generate_grid():
     # TODO(justinsb): merge into above block when we can
     # pylint: disable=too-many-nested-blocks
     for networking in ['kubenet', 'calico', 'cilium', 'gce']: # TODO: all networking_options:
-        for distro in ['u2004']: # TODO: all distro_options:
+        for distro in ['u2204']: # TODO: all distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
                     results.append(
@@ -1407,8 +1407,7 @@ def generate_conformance():
 ###############################
 # kops-periodics-distros.yaml #
 ###############################
-distros = ['debian10', 'debian11', 'debian12', 'debian13',
-           'ubuntu2004', 'ubuntu2004arm64',
+distros = ['debian11', 'debian12', 'debian13',
            'ubuntu2204', 'ubuntu2204arm64',
            'ubuntu2404', 'ubuntu2404arm64',
            'amazonlinux2', 'al2023',
@@ -1425,7 +1424,7 @@ def generate_distros():
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ])
-        if distro in ['amazonlinux2', 'debian10', 'debian11', 'rhel8', 'ubuntu2004']:
+        if distro in ['amazonlinux2', 'debian11', 'rhel8']:
             extra_flags.extend([
                 "--set=cluster.spec.containerd.version=1.7.28",
                 "--set=cluster.spec.containerd.runc.version=1.3.0",
@@ -1457,7 +1456,7 @@ def generate_presubmits_distros():
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ])
-        if distro in ['amazonlinux2', 'debian10', 'debian11', 'rhel8', 'ubuntu2004']:
+        if distro in ['amazonlinux2', 'debian11', 'rhel8']:
             extra_flags.extend([
                 "--set=cluster.spec.containerd.version=1.7.28",
                 "--set=cluster.spec.containerd.runc.version=1.3.0",
@@ -2146,7 +2145,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-load-balancer-controller",
             cloud="aws",
-            distro="u2004",
+            distro="u2204",
             networking="calico",
             scenario="aws-lb-controller",
             tab_name="pull-kops-e2e-aws-load-balancer-controller",
