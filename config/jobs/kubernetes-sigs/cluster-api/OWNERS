@@ -5,23 +5,23 @@ reviewers:
 - fabriziopandini
 - JoelSpeed
 - justinsb
-- sbueringer
 - neolit123
-- vincepri
+- sbueringer
 - sivchari
+- vincepri
 approvers:
 - chrischdi
 - fabriziopandini
 - justinsb
-- sbueringer
 - neolit123
+- sbueringer
 - vincepri
 emeritus_approvers:
+- CecileRobertMichon
+- davidewatson
+- detiber
 - luxas
 - ncdc
 - timothysc
-- detiber
-- davidewatson
-- CecileRobertMichon
 labels:
 - sig/cluster-lifecycle
