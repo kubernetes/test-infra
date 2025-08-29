@@ -998,6 +998,36 @@ Examples:
     write_results(endpoint_counts, operation_samples, stats, swagger_mapper, args.output, args.sort,
                   ineligible_endpoints, pending_eligible_endpoints, args.audit_operations_json)
 
+    warn_on_pending_operations(args, endpoint_counts, pending_eligible_endpoints)
+
+
+def warn_on_pending_operations(args, endpoint_counts, pending_eligible_endpoints):
+    # Check if any pending eligible endpoints are already being exercised in audit logs
+    exercised_pending_eligible = []
+    for operation in pending_eligible_endpoints:
+        if operation in endpoint_counts:
+            exercised_pending_eligible.append((operation, endpoint_counts[operation]))
+    if exercised_pending_eligible:
+        print("\nERROR: Found pending eligible endpoints that are already being exercised in audit logs!")
+        print("=" * 80)
+        print("The following operations are marked as 'pending eligible' but are actually being used:")
+        print()
+        for operation, count in sorted(exercised_pending_eligible, key=lambda x: x[0]):
+            print(f"  {operation} | {count} calls")
+        print()
+        print(f"Total exercised pending eligible operations: {len(exercised_pending_eligible)}")
+        print()
+        print("ACTION REQUIRED:")
+        print("Please update the pending_eligible_endpoints.yaml file to remove these operations")
+        print("since they are now being actively tested in the audit logs.")
+        if args.pending_eligible_endpoints_url:
+            print(f"File location: {args.pending_eligible_endpoints_url}")
+        else:
+            print(
+                "Default file: https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/master/test/conformance/testdata/pending_eligible_endpoints.yaml")
+        print()
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
