@@ -247,20 +247,16 @@ dashboards:
 test_groups:
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.14-ocp-e2e-aws-ovn-heterogeneous
   name: periodic-ci-openshift-multiarch-master-nightly-4.14-ocp-e2e-aws-ovn-heterogeneous
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.14-ocp-e2e-sdn-serial-aws-arm64
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.14-ocp-e2e-sdn-serial-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.14-ocp-e2e-sdn-serial-aws-arm64
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.14-e2e-aws-sdn-serial
   name: periodic-ci-openshift-release-master-ci-4.14-e2e-aws-sdn-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-serial
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-serial
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-ovn-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-metal-ipi-ovn-ipv6
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-metal-ipi-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-metal-ipi-ovn-ipv6
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-metal-ipi-sdn-bm
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-metal-ipi-sdn-bm
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-metal-ipi-sdn-bm
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.14-fips-payload-scan
   name: periodic-ci-openshift-release-master-nightly-4.14-fips-payload-scan
