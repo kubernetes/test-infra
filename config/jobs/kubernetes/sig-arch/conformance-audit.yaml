@@ -55,7 +55,7 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-arch-conformance
         testgrid-tab-name: presubmit-kind-conformance-audit
-        test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+        testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com, davanum@gmail.com
         testgrid-num-failures-to-alert: '1'
 
 periodics:
@@ -113,6 +113,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-arch-conformance
     testgrid-tab-name: kind-conformance-audit
-    test-grid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-arch-conformance-test-failures@googlegroups.com, davanum@gmail.com
     testgrid-num-failures-to-alert: '1'
     description: 'Uses patched ci-kubernetes-kind-conformance job to generate ARTIFACT/audit/audit.log'
