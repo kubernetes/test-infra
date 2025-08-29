@@ -710,7 +710,6 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
     labels:
@@ -875,6 +874,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
+    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     optional: true
     skip_report: false
     labels:
