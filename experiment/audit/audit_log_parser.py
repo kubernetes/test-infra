@@ -834,53 +834,6 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
     for endpoint, count in sorted_endpoints:
         output.append(f"{endpoint} | {count}")
 
-    # Find and display missing endpoints from Swagger spec
-    if swagger_mapper and swagger_mapper.path_to_operation:
-        all_swagger_operations = set(swagger_mapper.path_to_operation.values())
-        found_operations = set(endpoint_counts.keys())
-
-        # Only count operations that are actually from Swagger (not fallback)
-        swagger_found = found_operations & all_swagger_operations
-        missing_operations = all_swagger_operations - swagger_found
-
-        # Filter out alpha and beta versions from missing operations
-        stable_missing_operations = {
-            op for op in missing_operations
-            if not any(version in op for version in
-                       ['V1alpha', 'V1beta', 'V2alpha', 'V2beta', 'V3alpha', 'V3beta', 'alpha', 'beta'])
-        }
-
-        # Filter out ineligible endpoints from missing operations
-        if ineligible_endpoints:
-            stable_missing_operations = stable_missing_operations - ineligible_endpoints
-
-        # Filter out pending eligible endpoints from missing operations
-        if pending_eligible_endpoints:
-            stable_missing_operations = stable_missing_operations - pending_eligible_endpoints
-
-        # Filter out deprecated operations from missing operations
-        if deprecated_operations:
-            stable_missing_operations = stable_missing_operations - deprecated_operations
-
-        if stable_missing_operations:
-            filtered_count = len(missing_operations) - len(stable_missing_operations)
-
-            output.append("")
-            output.append("=" * 70)
-            output.append("STABLE ENDPOINTS NOT FOUND IN AUDIT LOG")
-            output.append("=" * 70)
-            output.append(f"Total missing stable endpoints: {len(stable_missing_operations)}")
-            if filtered_count > 0:
-                output.append(
-                    f"(Filtered out {filtered_count} alpha/beta/deprecated/ineligible/pending eligible endpoints)")
-            output.append(
-                f"These are stable, non-deprecated API endpoints defined in the Swagger spec but not exercised in this audit log:")
-            output.append("")
-
-            # Sort missing operations alphabetically
-            for operation in sorted(stable_missing_operations):
-                output.append(f"{operation} | NOT FOUND")
-
     result_text = "\n".join(output)
 
     if output_file:
@@ -899,6 +852,61 @@ def write_results(endpoint_counts, operation_samples, stats, swagger_mapper=None
     # Generate audit-operations.json JSON file with sample audit entries
     _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints,
                                  pending_eligible_endpoints, deprecated_operations, audit_operations_json)
+
+    # Find and display missing endpoints from Swagger spec
+    if swagger_mapper and swagger_mapper.path_to_operation:
+        warn_on_missing_stable_endpoints(deprecated_operations, endpoint_counts, ineligible_endpoints,
+                                         pending_eligible_endpoints, swagger_mapper)
+
+
+def warn_on_missing_stable_endpoints(deprecated_operations, endpoint_counts, ineligible_endpoints,
+                                     pending_eligible_endpoints, swagger_mapper):
+    all_swagger_operations = set(swagger_mapper.path_to_operation.values())
+    found_operations = set(endpoint_counts.keys())
+    # Only count operations that are actually from Swagger (not fallback)
+    swagger_found = found_operations & all_swagger_operations
+    missing_operations = all_swagger_operations - swagger_found
+    # Filter out alpha and beta versions from missing operations
+    stable_missing_operations = {
+        op for op in missing_operations
+        if not any(version in op for version in
+                   ['V1alpha', 'V1beta', 'V2alpha', 'V2beta', 'V3alpha', 'V3beta', 'alpha', 'beta'])
+    }
+    # Filter out ineligible endpoints from missing operations
+    if ineligible_endpoints:
+        stable_missing_operations = stable_missing_operations - ineligible_endpoints
+    # Filter out pending eligible endpoints from missing operations
+    if pending_eligible_endpoints:
+        stable_missing_operations = stable_missing_operations - pending_eligible_endpoints
+    # Filter out deprecated operations from missing operations
+    if deprecated_operations:
+        stable_missing_operations = stable_missing_operations - deprecated_operations
+    if stable_missing_operations:
+        filtered_count = len(missing_operations) - len(stable_missing_operations)
+
+        # Log stable missing operations directly to stdout (not to output file)
+        print("")
+        print("=" * 70)
+        print("STABLE ENDPOINTS NOT FOUND IN AUDIT LOG")
+        print("=" * 70)
+        print(f"Total missing stable endpoints: {len(stable_missing_operations)}")
+        if filtered_count > 0:
+            print(f"(Filtered out {filtered_count} alpha/beta/deprecated/ineligible/pending eligible endpoints)")
+        print(
+            "These are stable, non-deprecated API endpoints defined in the Swagger spec but not exercised in this audit log:")
+        print()
+
+        # Sort missing operations alphabetically
+        for operation in sorted(stable_missing_operations):
+            print(f"{operation} | NOT FOUND")
+
+        print()
+        print("ACTION REQUIRED:")
+        print("For each missing stable endpoint, please either:")
+        print("1. Add conformance tests to exercise these API operations, OR")
+        print("2. Add them to pending_eligible_endpoints.yaml if they should be excluded from conformance testing")
+        print()
+        sys.exit(1)
 
 
 def _write_audit_operations_json(filtered_endpoint_counts, operation_samples, ineligible_endpoints,
@@ -997,6 +1005,36 @@ Examples:
     # Write results
     write_results(endpoint_counts, operation_samples, stats, swagger_mapper, args.output, args.sort,
                   ineligible_endpoints, pending_eligible_endpoints, args.audit_operations_json)
+
+    warn_on_pending_operations(args, endpoint_counts, pending_eligible_endpoints)
+
+
+def warn_on_pending_operations(args, endpoint_counts, pending_eligible_endpoints):
+    # Check if any pending eligible endpoints are already being exercised in audit logs
+    exercised_pending_eligible = []
+    for operation in pending_eligible_endpoints:
+        if operation in endpoint_counts:
+            exercised_pending_eligible.append((operation, endpoint_counts[operation]))
+    if exercised_pending_eligible:
+        print("\nERROR: Found pending eligible endpoints that are already being exercised in audit logs!")
+        print("=" * 80)
+        print("The following operations are marked as 'pending eligible' but are actually being used:")
+        print()
+        for operation, count in sorted(exercised_pending_eligible, key=lambda x: x[0]):
+            print(f"  {operation} | {count} calls")
+        print()
+        print(f"Total exercised pending eligible operations: {len(exercised_pending_eligible)}")
+        print()
+        print("ACTION REQUIRED:")
+        print("Please update the pending_eligible_endpoints.yaml file to remove these operations")
+        print("since they are now being actively tested in the audit logs.")
+        if args.pending_eligible_endpoints_url:
+            print(f"File location: {args.pending_eligible_endpoints_url}")
+        else:
+            print(
+                "Default file: https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/master/test/conformance/testdata/pending_eligible_endpoints.yaml")
+        print()
+        sys.exit(1)
 
 
 if __name__ == '__main__':
