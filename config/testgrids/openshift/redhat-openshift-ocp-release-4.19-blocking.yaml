@@ -411,13 +411,11 @@ test_groups:
   name: periodic-ci-openshift-microshift-release-4.19-periodics-e2e-aws-ovn-ocp-conformance
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-microshift-release-4.19-periodics-e2e-aws-ovn-ocp-conformance-serial
   name: periodic-ci-openshift-microshift-release-4.19-periodics-e2e-aws-ovn-ocp-conformance-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-arm64
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-arm64
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-ax
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.19-e2e-aws-ovn-techpreview
@@ -425,8 +423,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-ci-4.19-e2e-aws-ovn-techpreview-serial
   name: periodic-ci-openshift-release-master-ci-4.19-e2e-aws-ovn-techpreview-serial
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-driver-toolkit
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-driver-toolkit
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-driver-toolkit
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-serial

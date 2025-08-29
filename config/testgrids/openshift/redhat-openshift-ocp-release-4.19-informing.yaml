@@ -532,14 +532,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -559,14 +559,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -721,33 +721,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-p-p
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-p-p
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -802,14 +775,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-powervs-capi-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-powervs-capi-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -829,14 +802,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-powervs-capi-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-powervs-capi-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -910,14 +883,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-ppc64le
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-s390x
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-ppc64le
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-s390x
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -937,14 +910,41 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-s390x
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-s390x
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-multi-p-p
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1045,14 +1045,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1072,14 +1072,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1288,33 +1288,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-p-p
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-p-p
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1342,14 +1315,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1423,14 +1396,41 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-ppc64le
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-ppc64le
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-multi-p-p
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-ppc64le
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1477,14 +1477,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-z-z
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1504,14 +1504,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-z-z
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-z-z
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1558,14 +1558,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-p-p
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-z-z
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-p-p
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-z-z
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1585,14 +1585,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-z-z
+    name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-s2s-libvirt-multi-p-p
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-z-z
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-s2s-libvirt-multi-p-p
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -5716,6 +5716,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y-age-90d
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -5778,33 +5805,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-30d
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-360d
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-360d
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6094,14 +6094,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-30d
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-1y
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-30d
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-1y
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6121,14 +6121,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-360d
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-30d
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-360d
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-30d
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6391,6 +6391,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y-age-90d
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -6453,33 +6480,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-30d
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-360d
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-360d
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6796,14 +6796,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-30d
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-1y
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-30d
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-1y
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -6823,14 +6823,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-360d
+    name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-30d
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-360d
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-30d
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -8523,42 +8523,32 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-install-analysis-all-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-install-analysis-all-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-install-analysis-all-s390x
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-a-a-to-x-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-a-a-to-x-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-a-a-to-x-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-day-0-x-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-day-0-x-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-day-0-x-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x-to-a-x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x-to-a-x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-multi-x-x-to-a-x
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-sno-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-sno-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-sno-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-techpreview-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-techpreview-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-techpreview-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-techpreview-serial-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-techpreview-serial-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-techpreview-serial-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-upgrade-multi-x-ax
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-upgrade-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-ovn-upgrade-multi-x-ax
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-upi-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-upi-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-aws-upi-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-azure-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-azure-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-azure-ovn-multi-a-a
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-azure-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-azure-ovn-multi-x-ax
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-libvirt-multi-z-z
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-compact-ovn-remote-s2s-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-gcp-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-gcp-ovn-multi-a-a
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-gcp-ovn-multi-day-0-x-ax
@@ -8569,96 +8559,81 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ibmcloud-ovn-multi-x-px
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ibmcloud-ovn-multi-x-xz
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ibmcloud-ovn-multi-x-xz
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-multi-z-z
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-libvirt-s390x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-agent-remote-s2s-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-powervs-capi-multi-p-p
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-powervs-capi-multi-p-p
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-z-xz
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-z-xz
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-multi-z-z
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-ppc64le
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-ppc64le
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-libvirt-s390x
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-serial-aws-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-remote-s2s-libvirt-ppc64le
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-serial-aws-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-ovn-serial-aws-multi-a-a
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-powervs-ovn-multi-p-px
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-powervs-ovn-multi-p-px
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-aws-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-aws-ovn-multi-x-ax
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-arm64
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-serial-ovn-remote-s2s-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-arm64
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-multi-x-x
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-multi-x-x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-aws-ovn-multi-x-x
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-azure-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-azure-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-azure-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-azure-ovn-multi-x-ax
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-azure-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-azure-ovn-multi-x-ax
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-gcp-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-gcp-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-gcp-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-gcp-ovn-multi-x-ax
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-gcp-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-e2e-upgrade-gcp-ovn-multi-x-ax
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-libvirt-multi-z-z
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-fips-ovn-remote-s2s-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-s390x
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-multi-z-z
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-ppc64le
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-libvirt-ppc64le
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-aws-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-heavy-build-ovn-remote-s2s-libvirt-ppc64le
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-aws-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-aws-ovn-multi-a-a
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-libvirt-multi-z-z
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-installer-e2e-aws-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-image-ecosystem-ovn-remote-s2s-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-installer-e2e-aws-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-installer-e2e-aws-ovn-multi-a-a
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-p-p
-  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-p-p
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-libvirt-multi-z-z
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-aws-ovn-upgrade-multi-x-ax
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-s2s-libvirt-multi-p-p
+  name: periodic-ci-openshift-multiarch-master-nightly-4.19-ocp-jenkins-e2e-ovn-remote-s2s-libvirt-multi-p-p
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-aws-ovn-upgrade-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-aws-ovn-upgrade-multi-x-ax
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-azure-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-azure-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-azure-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-azure-ovn-multi-x-ax
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-azure-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-azure-ovn-multi-x-ax
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-gcp-ovn-multi-a-a
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-gcp-ovn-multi-a-a
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-gcp-ovn-multi-a-a
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-gcp-ovn-multi-x-ax
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-gcp-ovn-multi-x-ax
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-e2e-upgrade-gcp-ovn-multi-x-ax
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-ovn-remote-libvirt-multi-z-z
   name: periodic-ci-openshift-multiarch-master-nightly-4.19-upgrade-from-nightly-4.18-ocp-ovn-remote-libvirt-multi-z-z
@@ -8856,8 +8831,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-fips-serial
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-ha-cert-rotation-suspend-30d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-ha-cert-rotation-suspend-30d
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-kube-apiserver-rollout
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-kube-apiserver-rollout
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-kube-apiserver-rollout
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-aws-ovn-local-gateway
@@ -8918,8 +8892,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-etcd-scaling
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-etcd-scaling
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-kube-apiserver-rollout
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-kube-apiserver-rollout
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-kube-apiserver-rollout
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-runc
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-azure-ovn-runc
@@ -8981,8 +8954,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-ibmcloud-csi
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-ibmcloud-csi
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-ibmcloud-ovn
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-ibmcloud-ovn
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-ibmcloud-ovn
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-dualstack
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-dualstack
@@ -8999,8 +8971,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-ipv6-techpreview
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-ipv6-techpreview
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-kube-apiserver-rollout
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-kube-apiserver-rollout
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-kube-apiserver-rollout
 - days_of_results: 60
   gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ipi-ovn-serial-ipv4
@@ -9041,14 +9012,14 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-10y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-180d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-180d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y
+  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-1y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-2y-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-2y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-30d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-30d
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-360d
-  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-360d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-3y-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-3y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-4y-age-90d
@@ -9069,10 +9040,10 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-shutdown-9y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-180d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-180d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-1y
+  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-1y
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-30d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-30d
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-360d
-  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-360d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-60d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-60d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-ha-cert-rotation-suspend-90d
@@ -9095,14 +9066,14 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-180d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-180d-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-180d-age-90d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y
+  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-1y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-2y-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-2y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-30d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-30d
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-360d
-  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-360d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-3y-age-90d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-3y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-4y-age-90d
@@ -9125,10 +9096,10 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-shutdown-9y-age-90d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-180d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-180d
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-1y
+  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-1y
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-30d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-30d
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-360d
-  name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-360d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-60d
   name: periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-60d
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.19-e2e-metal-ovn-sno-cert-rotation-suspend-90d
@@ -9255,6 +9226,5 @@ test_groups:
   name: periodic-ci-stackrox-stackrox-master-ocp-4-19-lp-interop-acs-tests-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-stackrox-stackrox-master-ocp-4-19-lp-interop-acs-tests-aws-fips
   name: periodic-ci-stackrox-stackrox-master-ocp-4-19-lp-interop-acs-tests-aws-fips
-- days_of_results: 60
-  gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.16-to-4.17-to-4.18-to-4.19-ci
+- gcs_prefix: test-platform-results/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.16-to-4.17-to-4.18-to-4.19-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.16-to-4.17-to-4.18-to-4.19-ci
