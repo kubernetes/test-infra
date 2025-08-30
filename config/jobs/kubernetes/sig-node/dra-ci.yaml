@@ -409,6 +409,123 @@ periodics:
             cpu: 2
             memory: 6Gi
 
+  - name: ci-kind-dra-n-3
+    cluster: eks-prow-build-cluster
+    interval: 6h
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation
+      description: Runs E2E tests for Dynamic Resource Allocation beta features against a Kubernetes master cluster created with sigs.k8s.io/kind with kubelet from the "current - 3" release.
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+      fork-per-release: "true"
+      fork-per-release-periodic-interval: 24h
+      fork-per-release-replacements: latest-fast.txt -> latest-{{.Version}}.txt, https://dl.k8s.io/ci/fast -> https://dl.k8s.io/ci
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+        command:
+        - runner.sh
+        args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+          revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/fast/latest-fast.txt)
+          # Report what was tested.
+          echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+          # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+          hash=${revision/*+/}
+          kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+          kind_node_source="https://dl.k8s.io/ci/fast/$revision/kubernetes-server-linux-amd64.tar.gz"
+          features=( )
+          curl --fail --silent --show-error --location "https://dl.k8s.io/ci/fast/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+          ginkgo=kubernetes/test/bin/ginkgo
+          e2e_test=kubernetes/test/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 3))
+          # Test with the most recent CI build, doesn't even need to be released yet.
+          # We want to know if those are broken.
+          previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+          curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We need support for disabling tests which need a recent kubelet.
+          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+          # when the deployed kubelet is 1.32. This is enforced by
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          # Running tests which only cover control plane behavior are not useful
+          # in a kubelet version skew job. We can filter them out by including
+          # only tests which have the DynamicResourceAllocation feature because
+          # only those cover kubelet behavior.
+          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
   - name: ci-dra-integration
     cluster: eks-prow-build-cluster
     interval: 6h
@@ -468,7 +585,7 @@ periodics:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
-      description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v1
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O using cgroup v1
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
@@ -499,10 +616,10 @@ periodics:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
@@ -527,7 +644,7 @@ periodics:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
-      description: Runs E2E node tests for Dynamic Resource Allocation beta features with CRI-O using cgroup v2
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O using cgroup v2
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
@@ -558,10 +675,10 @@ periodics:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
@@ -586,7 +703,7 @@ periodics:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
-      description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd 1.7
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 1.7
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
@@ -617,10 +734,10 @@ periodics:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
         resources:
           limits:
@@ -638,7 +755,7 @@ periodics:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd, sig-release-master-informing
-      description: Runs E2E node tests for Dynamic Resource Allocation beta features with containerd 2.0
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.0
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
@@ -672,10 +789,62 @@ periodics:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky'
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+
+  - name: ci-node-e2e-containerd-2-0-dra-alpha-beta-features
+    cluster: k8s-infra-prow-build
+    interval: 6h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd
+      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.0 and with all feature gates enabled (including non-DRA feature gates)
+      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    - org: containerd
+      repo: containerd
+      base_ref: release/2.0
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-zone=us-central1-b
+        - --parallelism=1
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation } && !Flaky'
+        - --timeout=60m
+        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
+        - '--test-args=--feature-gates="AllBeta=true,AllAlpha=true" --service-feature-gates="AllBeta=true,AllAlpha=true" --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
         resources:
           limits:
