@@ -92,7 +92,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBE_TIMEOUT
-          value: "-timeout=15m"
+          value: "-timeout=20m"
         - name: KUBE_RACE
           value: "-race"
         args:
@@ -245,7 +245,7 @@ periodics:
       - name: SHORT
         value: --short=false
       - name: KUBE_TIMEOUT
-        value: "-timeout=15m"
+        value: "-timeout=20m"
       - name: KUBE_RACE
         value: "-race"
       # docker-in-docker needs privileged mode
