@@ -1866,7 +1866,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.33', '1.32', '1.31', '1.30']:
+    for version in ['master', '1.34', '1.33', '1.32', '1.31']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
