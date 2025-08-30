@@ -858,7 +858,7 @@ periodics:
     testgrid-tab-name: sig-network-kind, detect-local-interface-name-prefix
     description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=InterfaceNamePrefix
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
-- interval: 12h
+- interval: 3h
   name: ci-kubernetes-kind-cloud-provider-loadbalancer
   cluster: k8s-infra-prow-build
   labels:
