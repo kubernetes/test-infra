@@ -11,6 +11,7 @@ dashboard_groups:
       - provider-azure-cloud-provider-azure-1-31
       - provider-azure-cloud-provider-azure-1-32
       - provider-azure-cloud-provider-azure-1-33
+      - provider-azure-cloud-provider-azure-1-34
       - provider-azure-presubmit
 
 dashboards:
@@ -24,4 +25,5 @@ dashboards:
   - name: provider-azure-cloud-provider-azure-1-31
   - name: provider-azure-cloud-provider-azure-1-32
   - name: provider-azure-cloud-provider-azure-1-33
+  - name: provider-azure-cloud-provider-azure-1-34
   - name: provider-azure-presubmit
