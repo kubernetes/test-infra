@@ -414,6 +414,66 @@ presubmits:
             cpu: 7
             memory: 9000Mi
 
+  - name: pull-kubernetes-e2e-kind-alpha-beta-features-race
+    annotations:
+      description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled and control plane components are built with race detection.
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+    cluster: k8s-infra-prow-build
+    optional: true
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+        - name: FEATURE_GATES
+          value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
+        - name: RUNTIME_CONFIG
+          value: '{"api/all":"true"}'
+        - name: LABEL_FILTER
+          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+        - name: SKIP
+          value: PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+        - name: PARALLEL
+          value: "true"
+        # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
+        - name: KUBE_RACE
+          value: -race
+        # Normally control plane components are linked statically, which does not work with -race (needs CGO).
+        # We need to override the default for components of interest.
+        - name: KUBE_CGO_OVERRIDES
+          value: kube-apiserver kube-controller-manager kube-scheduler
+        # KUBE_GORUNNER_IMAGE is the default for the images of those components.
+        # We need something with libc. The same kubekins as for the job is used
+        # because it is expected to get updated automatically.
+        - name: KUBE_GORUNNER_IMAGE
+          value: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7
+            memory: 9000Mi
+          requests:
+            cpu: 7
+            memory: 9000Mi
+
   - name: pull-kubernetes-e2e-kind-evented-pleg
     cluster: k8s-infra-prow-build
     optional: true
