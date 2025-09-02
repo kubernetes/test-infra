@@ -14,26 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package main
 
 import (
+	"fmt"
 	"os"
 )
 
-// DirExists checks if a path exists and is a directory.
-func DirExists(path string) bool {
-	info, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return info.IsDir()
+// ExitError is a custom error type which stores a message and status code.
+type ExitError struct {
+	Code    int
+	Message string
 }
 
-// FileExists checks if a path exists and is a regular file.
-func FileExists(path string) bool {
-	info, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return false
+func (err ExitError) Error() string {
+	return err.Message
+}
+
+// PrintErrAndExit prints an error message to stderr and exits with a status code.
+func PrintErrAndExit(err error) {
+	_, _ = fmt.Fprintln(os.Stderr, err.Error())
+
+	exitErr, ok := err.(*ExitError)
+	if ok {
+		os.Exit(exitErr.Code)
+	} else {
+		os.Exit(1)
 	}
-	return info.Mode().IsRegular()
 }
