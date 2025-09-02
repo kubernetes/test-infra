@@ -24,14 +24,14 @@ steps:
     - us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:$_GIT_TAG-$_CONFIG
     - us-central1-docker.pkg.dev/$PROJECT_ID/images/kubekins-e2e:latest-$_CONFIG
 substitutions:
-  _CFSSL_VERSION: 1.6.4
+  _CFSSL_VERSION: 1.6.5
   _CONFIG: master
   _GIT_TAG: '12345'
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
-  _KIND_VERSION: '0.22.0'
+  _KIND_VERSION: '0.30.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.40.7
+  _YQ_VERSION: v4.47.1
 timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE
