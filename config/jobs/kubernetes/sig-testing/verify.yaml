@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-verify
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
         command:
         - make
         args:
@@ -95,7 +95,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-go-canary
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -124,7 +124,7 @@ presubmits:
             memory: 12Gi
 periodics:
 - interval: 1h
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-verify-master
   labels:
     preset-service-account: "true"
@@ -144,7 +144,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -166,10 +166,10 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 6
+          cpu: 7
           memory: 24Gi
         requests:
-          cpu: 6
+          cpu: 7
           memory: 24Gi
 - interval: 6h
   name: kubernetes-verify-go-licenses-periodical
@@ -192,7 +192,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
       imagePullPolicy: Always
       command:
       - runner.sh
