@@ -39,11 +39,19 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
     script_dir,
 )
 
-# These are job tab names of unsupported grid combinations
-skip_jobs = [
-]
-
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master"
+from build_vars import ( # pylint: disable=import-error, no-name-in-module
+    skip_jobs,
+    image,
+    networking_options,
+    distro_options,
+    k8s_versions,
+    kops_versions,
+    distros,
+    network_plugins_periodics,
+    network_plugins_presubmits,
+    upgrade_versions_list,
+    kops29,
+)
 
 loader = jinja2.FileSystemLoader(searchpath=os.path.join(script_dir, "templates"))
 
@@ -446,41 +454,7 @@ def presubmit_test(branch='master',
         output += f"    {line}\n"
     return output
 
-####################
-# Grid Definitions #
-####################
 
-networking_options = [
-    'kubenet',
-    'calico',
-    'cilium',
-    'cilium-etcd',
-    'cilium-eni',
-    'kopeio',
-]
-
-distro_options = [
-    'al2023',
-    'deb12',
-    'deb13',
-    'flatcar',
-    'rhel8',
-    'u2204',
-    'u2404',
-]
-
-k8s_versions = [
-    "1.31",
-    "1.32",
-    "1.33",
-    "1.34",
-]
-
-kops_versions = [
-    None, # maps to latest
-    "1.30",
-    "1.31",
-]
 
 
 ############################
@@ -1407,12 +1381,6 @@ def generate_conformance():
 ###############################
 # kops-periodics-distros.yaml #
 ###############################
-distros = ['debian11', 'debian12', 'debian13',
-           'ubuntu2204', 'ubuntu2204arm64',
-           'ubuntu2404', 'ubuntu2404arm64',
-           'amazonlinux2', 'al2023',
-           'rhel8', 'rhel9', 'rocky9',
-           'flatcar']
 def generate_distros():
     results = []
     for distro in distros:
@@ -1479,10 +1447,9 @@ def generate_presubmits_distros():
 # kops-periodics-network-plugins.yaml #
 #######################################
 def generate_network_plugins():
-
-    plugins = ['amazon-vpc', 'calico', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kindnet', 'kopeio', 'kuberouter']
-    supports_gce = {'calico', 'cilium', 'kindnet'}
-    supports_azure = {'cilium'}
+    plugins = network_plugins_periodics['plugins']
+    supports_gce = network_plugins_periodics['supports_gce']
+    supports_azure = network_plugins_periodics['supports_azure']
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
@@ -1546,51 +1513,12 @@ def generate_network_plugins():
 # kops-periodics-upgrades.yaml #
 ################################
 def generate_upgrades():
-
-    kops29 = 'v1.29.2'
-    kops30 = 'v1.30.3'
-    kops31 = 'v1.31.0'
-
-    versions_list = [
-        #  kops    k8s          kops      k8s
-        # 1.29 release branch
-        ((kops29, 'v1.29.8'), ('1.29', 'v1.29.9')),
-        # 1.30 release branch
-        ((kops29, 'v1.29.9'), ('1.30', 'v1.30.5')),
-        ((kops30, 'v1.30.4'), ('1.30', 'v1.30.5')),
-        # kOps 1.29 upgrade to latest
-        ((kops29, 'v1.26.0'), ('latest', 'v1.27.0')),
-        ((kops29, 'v1.27.0'), ('latest', 'v1.28.0')),
-        ((kops29, 'v1.28.0'), ('latest', 'v1.29.0')),
-        ((kops29, 'v1.29.0'), ('latest', 'v1.30.0')),
-        # kOps 1.30 upgrade to latest
-        ((kops30, 'v1.26.0'), ('latest', 'v1.27.0')),
-        ((kops30, 'v1.27.0'), ('latest', 'v1.28.0')),
-        ((kops30, 'v1.28.0'), ('latest', 'v1.29.0')),
-        ((kops30, 'v1.29.0'), ('latest', 'v1.30.0')),
-        # kOps 1.31 upgrade to latest
-        ((kops31, 'v1.28.0'), ('latest', 'v1.29.0')),
-        ((kops31, 'v1.29.0'), ('latest', 'v1.30.0')),
-        ((kops31, 'v1.30.0'), ('latest', 'v1.31.0')),
-        ((kops31, 'v1.31.0'), ('latest', 'v1.32.0')),
-        # we should have an upgrade test for every supported K8s version
-        (('latest', 'v1.32.0'), ('latest', 'latest')),
-        (('latest', 'v1.31.0'), ('latest', 'v1.32.0')),
-        (('latest', 'v1.30.0'), ('latest', 'v1.31.0')),
-        (('latest', 'v1.29.0'), ('latest', 'v1.30.0')),
-        (('latest', 'v1.28.0'), ('latest', 'v1.29.0')),
-        (('latest', 'v1.27.0'), ('latest', 'v1.28.0')),
-        (('latest', 'v1.26.0'), ('latest', 'v1.27.0')),
-        # kOps latest should always be able to upgrade from stable to latest and stable to ci
-        (('latest', 'stable'), ('latest', 'latest')),
-        (('latest', 'stable'), ('latest', 'ci')),
-    ]
     def shorten(version):
         version = re.sub(r'^v', '', version)
         version = re.sub(r'^(\d+\.\d+)\.\d+$', r'\g<1>', version)
         return version.replace('.', '')
     results = []
-    for versions in versions_list:
+    for versions in upgrade_versions_list:
         kops_a = versions[0][0]
         k8s_a = versions[0][1]
         kops_b = versions[1][0]
@@ -1891,19 +1819,10 @@ def generate_pipeline():
 # kops-presubmits-network-plugins.yaml #
 ########################################
 def generate_presubmits_network_plugins():
-    plugins = {
-        'amazonvpc': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)',
-        'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)',
-        'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
-        'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
-        'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)',
-        'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)',
-        'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)',
-        'kindnet': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)',
-    }
-    supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kindnet'}
-    supports_gce = {'calico', 'cilium', 'kindnet'}
-    supports_azure = {'cilium'}
+    plugins = network_plugins_presubmits['plugins']
+    supports_ipv6 = network_plugins_presubmits['supports_ipv6']
+    supports_gce = network_plugins_presubmits['supports_gce']
+    supports_azure = network_plugins_presubmits['supports_azure']
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
