@@ -174,6 +174,51 @@ def latest_aws_image(owner, name, arch='x86_64'):
     set_pinned(pin, image)
     return image
 
+# latest_gce_image returns the latest GCE image for the given project, family, and arch
+# If the image is pinned, it returns the pinned image
+# Otherwise, it fetches the latest image from the specified family
+def latest_gce_image(project, family, arch="X86_64"):
+    pin = f"gce://images/{project}/{family}:{arch}"
+    image = get_pinned(pin)
+    if image:
+        return image
+
+    import googleapiclient.discovery  # pylint: disable=import-error, import-outside-toplevel
+
+    compute = googleapiclient.discovery.build("compute", "v1", cache_discovery=False)
+    try:
+        # Get the latest image from the specified family
+        # pylint: disable=no-member
+        image_response = (
+            compute.images().getFromFamily(project=project, family=family).execute()
+        )
+        # pylint: enable=no-member
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to get image from family {family} in project {project}: {str(e)}"
+        )
+
+    # Verify architecture matches
+    if "architecture" not in image_response:
+        raise RuntimeError(
+            f"Image {image_response['name']} has no architecture specified"
+        )
+
+    if arch not in image_response["architecture"]:
+        raise RuntimeError(
+            f"Image family {family} has architecture {image_response['architecture']} "
+            f"which doesn't match requested {arch}"
+        )
+
+    image_name = image_response["name"]
+    set_pinned(pin, image_name)
+    return f"{project}/{image_name}"
+
+# Get latest images from some public images families
+gce_distro_images = {
+    "u2204": latest_gce_image("ubuntu-os-cloud", "ubuntu-2204-lts"),
+}
+
 distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.1-x86_64'),
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
