@@ -216,7 +216,13 @@ def latest_gce_image(project, family, arch="X86_64"):
 
 # Get latest images from some public images families
 gce_distro_images = {
+    "deb12": latest_gce_image("debian-cloud", "debian-12"),
+    "deb12arm64": latest_gce_image("debian-cloud", "debian-12-arm64", "ARM64"),
     "u2204": latest_gce_image("ubuntu-os-cloud", "ubuntu-2204-lts"),
+    "u2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-amd64"),
+    "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
+    "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
+    "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
 }
 
 distro_images = {
