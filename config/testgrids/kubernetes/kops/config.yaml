@@ -5,6 +5,7 @@ dashboard_groups:
   - kops-conformance
   - kops-distros
   - kops-network-plugins
+  - kops-nftables
   - kops-versions
   - kops-misc
   - kops-ipv6
@@ -47,6 +48,7 @@ dashboards:
 - name: kops-conformance
 - name: kops-distros
 - name: kops-network-plugins
+- name: kops-nftables
 - name: kops-versions
 - name: kops-misc
 - name: kops-ipv6
