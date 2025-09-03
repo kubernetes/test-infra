@@ -140,7 +140,7 @@ presubmits:
   - name: pull-alibaba-cloud-csi-driver-verify-helm
     cluster: k8s-infra-prow-build
     always_run: false
-    run_if_changed: "^deploy/chart/"
+    run_if_changed: "^deploy/charts/"
     optional: true  # TODO: testing
     decorate: true
     labels:
