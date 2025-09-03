@@ -463,6 +463,11 @@ presubmits:
         # because it is expected to get updated automatically.
         - name: KUBE_GORUNNER_IMAGE
           value: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+        # At the default verbosity level 4 some logs become so large (for example, kube-apiserver
+        # logs each HTTP request) that a post-run analysis only sees an incomplete tail of the
+        # logs. Let's use the "recommended default log level for most systems" (https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md#what-method-to-use).
+        - name: KIND_CLUSTER_LOG_LEVEL
+          value: "2"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
