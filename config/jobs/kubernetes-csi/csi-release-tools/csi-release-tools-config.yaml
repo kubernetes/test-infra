@@ -122,6 +122,8 @@ presubmits:
           value: "1.32"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.17.0"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.33"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -173,6 +175,8 @@ presubmits:
           value: "1.32"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.17.0"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.33"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -224,6 +228,8 @@ presubmits:
           value: "1.32"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.17.0"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-1.33"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION

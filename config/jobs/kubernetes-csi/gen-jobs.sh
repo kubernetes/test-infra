@@ -827,6 +827,8 @@ EOF
           value: "$latest_stable_k8s_version"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
+        - name: CSI_PROW_E2E_VERSION
+          value: "release-$deployment"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
