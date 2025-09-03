@@ -1,0 +1,193 @@
+periodics:
+- name: periodic-cluster-api-provider-aws-e2e-release-2-9
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
+  interval: 12h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-2.9
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+      command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+      env:
+      - name: BOSKOS_HOST
+        value: "boskos.test-pods.svc.cluster.local"
+      - name: AWS_REGION
+        value: "us-west-2"
+      # Parallelize tests
+      - name: GINKGO_ARGS
+        value: "-nodes 20 -skip='\\[ClusterClass\\]'"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "9Gi"
+        limits:
+          cpu: 2
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: periodic-e2e-release-2-9
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-aws-e2e-eks-canary-release-2-9
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
+  interval: 12h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-2.9
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+      command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+      env:
+      - name: BOSKOS_HOST
+        value: "boskos.test-pods.svc.cluster.local"
+      - name: AWS_REGION
+        value: "us-west-2"
+      # Parallelize tests
+      - name: GINKGO_ARGS
+        value: "-nodes 20 -skip='\\[ClusterClass\\]'"
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 2
+          memory: "9Gi"
+        requests:
+          cpu: 2
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: periodic-aws-e2e-release-2-9-canary
+    testgrid-num-columns-recent: "6"
+- name: periodic-cluster-api-provider-aws-eks-e2e-release-2-9
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
+  interval: 12h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-2.9
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+      command:
+        - "runner.sh"
+        - "./scripts/ci-e2e-eks.sh"
+      env:
+      - name: BOSKOS_HOST
+        value: "boskos.test-pods.svc.cluster.local"
+      - name: AWS_REGION
+        value: "us-west-2"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "9Gi"
+        limits:
+          cpu: 2
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: periodic-eks-e2e-release-2-9
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-aws-e2e-conformance-release-2-9
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-aws-maintainers
+  interval: 12h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-aws
+      base_ref: release-2.9
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        env:
+          - name: BOSKOS_HOST
+            value: "boskos.test-pods.svc.cluster.local"
+          - name: AWS_REGION
+            value: "us-west-2"
+          # Parallelize tests
+          - name: GINKGO_ARGS
+            value: "-nodes 20"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: periodic-conformance-release-2-9
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
