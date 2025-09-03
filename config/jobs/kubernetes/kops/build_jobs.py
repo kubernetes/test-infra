@@ -1761,6 +1761,44 @@ def generate_presubmits_scale():
     ]
     return results
 
+#################################
+# kops-periodics-nftables.yaml #
+#################################
+def generate_nftables():
+    results = []
+    for distro in distro_options:
+        results.append(
+            build_test(
+                cloud="aws",
+                distro=distro,
+                k8s_version="stable",
+                networking="cilium",
+                kops_channel="alpha",
+                name_override=f"kops-aws-nftables-{distro}",
+                extra_flags=["--set=cluster.spec.kubeProxy.proxyMode=nftables"],
+                extra_dashboards=["kops-nftables"],
+                runs_per_day=3,
+            )
+        )
+    for distro in gce_distro_options:
+        results.append(
+            build_test(
+                cloud="gce",
+                distro=distro,
+                k8s_version="stable",
+                networking="cilium",
+                kops_channel="alpha",
+                name_override=f"kops-gce-nftables-{distro}",
+                extra_flags=[
+                    "--set=cluster.spec.kubeProxy.proxyMode=nftables",
+                    "--gce-service-account=default",
+                ],
+                extra_dashboards=["kops-nftables"],
+                runs_per_day=3,
+            )
+        )
+    return results
+
 ################################
 # kops-periodics-versions.yaml #
 ################################
@@ -2399,6 +2437,7 @@ periodics_files = {
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
     'kops-periodics-network-plugins.yaml': generate_network_plugins,
+    'kops-periodics-nftables.yaml': generate_nftables,
     'kops-periodics-upgrades.yaml': generate_upgrades,
     'kops-periodics-versions.yaml': generate_versions,
     'kops-periodics-pipeline.yaml': generate_pipeline,
