@@ -31,7 +31,13 @@ networking_options = [
 
 # GCE distributions
 gce_distro_options = [
+    "deb12",
+    "deb12arm64",
     "u2204",
+    "u2404",
+    "u2404arm64",
+    "umini2404",
+    "umini2404arm64",
 ]
 
 # AWS distributions

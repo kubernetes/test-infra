@@ -1,4 +1,10 @@
+gce://images/debian-cloud/debian-12:X86_64=debian-12-bookworm-v20250812
+gce://images/debian-cloud/debian-12-arm64:ARM64=debian-12-bookworm-arm64-v20250812
 gce://images/ubuntu-os-cloud/ubuntu-2204-lts:X86_64=ubuntu-2204-jammy-v20250826
+gce://images/ubuntu-os-cloud/ubuntu-2404-lts-amd64:X86_64=ubuntu-2404-noble-amd64-v20250828
+gce://images/ubuntu-os-cloud/ubuntu-2404-lts-arm64:ARM64=ubuntu-2404-noble-arm64-v20250828
+gce://images/ubuntu-os-cloud/ubuntu-minimal-2404-lts-amd64:X86_64=ubuntu-minimal-2404-noble-amd64-v20250828
+gce://images/ubuntu-os-cloud/ubuntu-minimal-2404-lts-arm64:ARM64=ubuntu-minimal-2404-noble-arm64-v20250828
 aws://images/137112412989/al2023-ami-2*-kernel-6.1-x86_64:x86_64=137112412989/al2023-ami-2023.8.20250818.0-kernel-6.1-x86_64
 aws://images/137112412989/amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2:x86_64=137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20250818.2-x86_64-gp2
 aws://images/136693071363/debian-11-amd64-*:x86_64=136693071363/debian-11-amd64-20250801-2191
