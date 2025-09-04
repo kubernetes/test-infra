@@ -47,7 +47,7 @@ periodics:
       base_ref: main
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250902-2613a23300-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-2613a23300-master
         command:
           - runner.sh
         args:
@@ -151,7 +151,7 @@ periodics:
       base_ref: release/1.7
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250902-2613a23300-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-2613a23300-master
         command:
           - runner.sh
         args:
@@ -221,7 +221,7 @@ periodics:
       base_ref: release/2.0
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250902-2613a23300-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-2613a23300-master
         command:
           - runner.sh
         args:
@@ -291,7 +291,7 @@ periodics:
       base_ref: release/2.1
   spec:
     containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250902-2613a23300-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-2613a23300-master
         command:
           - runner.sh
         args:
