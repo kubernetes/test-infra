@@ -4,6 +4,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    decoration_config:
+      timeout: 3h
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     cluster: eks-prow-build-cluster
     branches:
@@ -27,6 +29,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    decoration_config:
+      timeout: 3h
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     cluster: eks-prow-build-cluster
     branches:
@@ -51,6 +55,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    decoration_config:
+      timeout: 3h
     labels:
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
@@ -79,6 +85,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    decoration_config:
+      timeout: 3h
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     cluster: eks-prow-build-cluster
     labels:
@@ -307,6 +315,8 @@ presubmits:
       testgrid-tab-name: pr-e2e-upgrade
   - name: pull-cluster-api-provider-gcp-apidiff
     decorate: true
+    decoration_config:
+      timeout: 3h
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
     optional: true
@@ -336,6 +346,8 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 3h
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     cluster: eks-prow-build-cluster
     extra_refs:
