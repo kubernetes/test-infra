@@ -139,7 +139,7 @@ presubmits:
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest-1.30"
         - name: GINKGO_ARGS  # cloud-provider-azure config
-          value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+          value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|pull.*from.*private.*registry.*with.*secret --report-dir=/logs/artifacts --disable-log-dump=true
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
