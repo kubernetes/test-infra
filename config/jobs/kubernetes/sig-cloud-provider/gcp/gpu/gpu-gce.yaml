@@ -34,7 +34,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
   decorate: true
   decoration_config:
-    timeout: 300m
+    timeout: 1h20m
   spec:
     containers:
     - command:
@@ -52,7 +52,7 @@ periodics:
       - --gcp-zone=us-central1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --timeout=180m
+      - --timeout=60m
       # TODO: drop this once it's in the defaults
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
