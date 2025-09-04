@@ -15,7 +15,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -89,7 +89,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -134,7 +134,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -178,7 +178,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -222,7 +222,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -260,7 +260,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
         - "runner.sh"
         - "make"
@@ -297,7 +297,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -340,7 +340,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -390,7 +390,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -434,7 +434,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -480,7 +480,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -525,7 +525,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -578,7 +578,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -614,7 +614,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -652,7 +652,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -693,7 +693,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -732,7 +732,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
         command:
           - runner.sh
         args:
@@ -785,7 +785,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -834,7 +834,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           command:
             - runner.sh
           args:
@@ -893,7 +893,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -998,7 +998,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -1099,7 +1099,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -1192,7 +1192,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250815-171060767f-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
