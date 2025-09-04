@@ -62,7 +62,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -158,7 +158,7 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
       command:
       - wrapper.sh
       - bash
