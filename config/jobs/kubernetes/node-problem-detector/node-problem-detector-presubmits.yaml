@@ -4,8 +4,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
-    - release-1.34
-    - release-0.8
+    - ^release-.*$
     always_run: true
     decorate: true
     path_alias: k8s.io/node-problem-detector
