@@ -33,7 +33,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/test-infra/experiment/clustersecretbackup/secretmanager"
-	"k8s.io/test-infra/gencred/pkg/util"
 
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -239,7 +238,7 @@ func (c *client) loadClusterSecrets(ctx context.Context) error {
 func main() {
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.validateFlags(); err != nil {
-		util.PrintErrAndExit(err)
+		PrintErrAndExit(err)
 	}
 	defaultSecretLabels["source"] = o.clusterContext
 
