@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-aws-e2e
+- name: periodic-cluster-api-provider-aws-e2e{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -18,11 +18,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+    - image: {{ $.config.TestImage }}
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -45,10 +45,10 @@ periodics:
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-e2e-main
+    testgrid-tab-name: periodic-e2e-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-eks-canary
+- name: periodic-cluster-api-provider-aws-e2e-eks-canary{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -67,11 +67,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+    - image: {{ $.config.TestImage }}
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -94,9 +94,9 @@ periodics:
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-k8s-infra-canaries
-    testgrid-tab-name: periodic-aws-e2e-main-canary
+    testgrid-tab-name: periodic-aws-e2e-{{ ReplaceAll $.branch "." "-" }}-canary
     testgrid-num-columns-recent: "6"
-- name: periodic-cluster-api-provider-aws-eks-e2e
+- name: periodic-cluster-api-provider-aws-eks-e2e{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -115,11 +115,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
-    base_ref: main
+    base_ref: {{ $.branch }}
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+    - image: {{ $.config.TestImage }}
       command:
         - "runner.sh"
         - "./scripts/ci-e2e-eks.sh"
@@ -139,10 +139,10 @@ periodics:
           memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-eks-e2e-main
+    testgrid-tab-name: periodic-eks-e2e-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-conformance
+- name: periodic-cluster-api-provider-aws-e2e-conformance{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
@@ -161,11 +161,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
-      base_ref: main
+      base_ref: {{ $.branch }}
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+      - image: {{ $.config.TestImage }}
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -188,10 +188,10 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-conformance-main
+    testgrid-tab-name: periodic-conformance-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-conformance-with-k8s-ci-artifacts
+- name: periodic-cluster-api-provider-aws-e2e-conformance-with-k8s-ci-artifacts{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
   cluster: eks-prow-build-cluster
   max_concurrency: 1
   labels:
@@ -211,7 +211,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
-      base_ref: main
+      base_ref: {{ $.branch }}
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     - org: kubernetes-sigs
       repo: image-builder
@@ -223,7 +223,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+      - image: {{ $.config.TestImage }}
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -251,9 +251,10 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-conformance-main-k8s-main
+    testgrid-tab-name: periodic-conformance-{{ ReplaceAll $.branch "." "-" }}-k8s-main
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: release-team@kubernetes.io, sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
+{{- if eq $.branch "main" }}
 - name: periodic-cluster-api-provider-aws-coverage
   cluster: eks-prow-build-cluster
   interval: 24h
@@ -266,7 +267,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
-      base_ref: main
+      base_ref: {{ $.branch }}
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     - org: kubernetes
       repo: test-infra
@@ -274,7 +275,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
+      - image: {{ $.config.TestImage }}
         command:
           - runner.sh
           - bash
@@ -299,3 +300,4 @@ periodics:
             memory: "16Gi"
         securityContext:
           privileged: true
+{{- end }}
