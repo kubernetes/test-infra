@@ -26,8 +26,8 @@ periodics:
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
-            - name: BUILDER_IMAGE
-              value: public.ecr.aws/docker/library/golang:1.25
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
