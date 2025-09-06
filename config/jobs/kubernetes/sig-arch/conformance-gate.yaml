@@ -12,7 +12,7 @@ periodics:
   spec:
     containers:
     - name: apisnoop-gate
-      image: gcr.io/k8s-staging-apisnoop/snoopdb:v20250903-auditlogger-1.2.13-122-g9479e2f
+      image: gcr.io/k8s-staging-apisnoop/snoopdb:v20250906-auditlogger-1.2.13-125-ga6fd3d3
       env:
         - name: LOAD_K8S_DATA
           value: "true"
