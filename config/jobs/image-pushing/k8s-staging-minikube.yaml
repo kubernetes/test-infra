@@ -1,0 +1,33 @@
+postsubmits:
+  kubernetes/minikube:
+    - name: push-minikube-prow-image
+      branches:
+        - ^main$
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-minikube, sig-k8s-infra-gcb
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      decoration_config:
+        timeout: 180m
+        grace_period: 10m
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
+            command:
+              - /run.sh
+            args:
+              - --project=kubernetes/minikube
+              - --scratch-bucket=gs://k8s-staging-minikube-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --build-dir=.
+              - --with-git-dir
+              - deploy/prow/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 3925239 # https://github.com/orgs/kubernetes-sigs/teams/kubetest2-maintainers
