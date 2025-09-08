@@ -1909,7 +1909,6 @@ def generate_presubmits_network_plugins():
                     tab_name=f"e2e-azure-cni-{plugin}",
                     networking=networking_arg,
                     run_if_changed=run_if_changed,
-                    optional=True,
                 )
             )
         if plugin in supports_gce:
