@@ -69,7 +69,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.33.0
+              value: kindest/node:v1.33.1
           command:
             - runner.sh
           args:
