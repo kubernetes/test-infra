@@ -1,9 +1,0 @@
-presets:
-- labels:
-    preset-ibmcloud-apikey: "true"
-  env:
-    - name: IBMCLOUD_API_KEY
-      valueFrom:
-        secretKeyRef:
-          name: prow-job-api-key
-          key: key
