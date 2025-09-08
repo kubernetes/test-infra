@@ -70,6 +70,8 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/container-object-storage-interface
+    labels:
+      preset-dind-enabled: "true" # build uses docker, requires DinD
     annotations:
       testgrid-dashboards: sig-storage-container-object-storage-interface
       testgrid-tab-name: lint
@@ -88,6 +90,9 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         env:
         - name: GOMAXPROCS # workaround for go not respecting cgroup resource limits/requests
           valueFrom:
