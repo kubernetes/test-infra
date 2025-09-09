@@ -58,6 +58,7 @@ presubmits:
     decorate: true
     branches:
     - master
+    - ^release-
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes-sigs
@@ -111,6 +112,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
+    - ^release-
     optional: true
     always_run: false
     skip_report: false
