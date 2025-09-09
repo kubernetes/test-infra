@@ -77,3 +77,29 @@ presubmits:
                   echo "ERROR: k8s setup and quick run exited with code: $rc"
                   exit $rc
               fi
+
+  - name: pull-provider-ibmcloud-test-infra-kubetest2-secretmanager-build
+    cluster: k8s-infra-ppc64le-prow-build
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    annotations:
+      testgrid-dashboards: ibm-ppc64le-presubmits
+      testgrid-tab-name: kubetest2-tf-secretmanager-build
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250815-171060767f-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - build-deployer-tf
+            - build-secret-manager
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
