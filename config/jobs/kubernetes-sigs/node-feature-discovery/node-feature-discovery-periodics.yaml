@@ -15,7 +15,7 @@ periodics:
       testgrid-alert-email: markus.lehtonen@intel.com,eduardoa@nvidia.com
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.24.0
+      - image: public.ecr.aws/docker/library/golang:1.25.0
         command:
         - scripts/test-infra/verify.sh
         env:
