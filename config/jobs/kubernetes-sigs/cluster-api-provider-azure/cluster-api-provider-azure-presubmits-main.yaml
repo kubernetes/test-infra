@@ -591,6 +591,8 @@ presubmits:
               value: ${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-dra-ginkgo-v2.yaml
             - name: KUBERNETES_VERSION
               value: latest
+            - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+              value: Standard_D8s_v3
           securityContext:
             privileged: true
           resources:
