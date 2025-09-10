@@ -63,6 +63,7 @@ livenessprobe
 node-driver-registrar
 lib-volume-populator
 volume-data-source-validator
+external-health-monitor
 "
 
 # All kubernetes-csi repos for which want to define pull tests for
@@ -88,7 +89,6 @@ single_kubernetes_repos="
 
 # kubernetes-csi repos which only need unit testing.
 unit_testing_repos="
-external-health-monitor
 csi-test
 csi-release-tools
 csi-lib-utils
