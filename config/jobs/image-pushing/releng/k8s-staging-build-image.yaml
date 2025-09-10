@@ -71,7 +71,7 @@ postsubmits:
         testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
       decorate: true
       decoration_config:
-        timeout: 240m
+        timeout: 480m
         grace_period: 10m
       run_if_changed: '^images\/build\/go-runner\/'
       branches:
