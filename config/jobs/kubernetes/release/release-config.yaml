@@ -236,7 +236,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
-      timeout: 240m
+      timeout: 480m
       grace_period: 10m
     run_if_changed: '^images\/build\/go-runner\/'
     path_alias: k8s.io/release
