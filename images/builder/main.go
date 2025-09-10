@@ -25,6 +25,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -202,6 +203,13 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		}
 	}
 
+	if o.pollingInterval > 0 {
+		args = append(args, "--polling-interval", strconv.Itoa(o.pollingInterval))
+	}
+	if o.suppressLogs {
+		args = append(args, "--suppress-logs")
+	}
+
 	cmd := exec.Command("gcloud", args...)
 
 	var logFilePath string
@@ -338,6 +346,8 @@ type options struct {
 	variant          string
 	versionTagFilter string
 	envPassthrough   string
+	pollingInterval  int
+	suppressLogs     bool
 
 	// withGitDirectory will include the .git directory when uploading the source to GCB
 	withGitDirectory bool
@@ -366,6 +376,8 @@ func parseFlags() options {
 	flag.StringVar(&o.versionTagFilter, "version-tag-filter", "", "If specified, only tags that match the specified glob pattern are used in version detection.")
 	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as substitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
 	flag.BoolVar(&o.withGitDirectory, "with-git-dir", o.withGitDirectory, "If true, upload the .git directory to GCB, so we can e.g. get the git log and tag.")
+	flag.IntVar(&o.pollingInterval, "polling-interval", 10, "Amount of time in seconds to wait between polling build status. (default=10)")
+	flag.BoolVar(&o.suppressLogs, "suppress-logs", o.suppressLogs, "If true, build logs not streamed to stdout.")
 
 	flag.Parse()
 
