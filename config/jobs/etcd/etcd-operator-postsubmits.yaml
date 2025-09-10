@@ -58,14 +58,14 @@ postsubmits:
           limits:
             cpu: "4"
             memory: "4Gi"
-  - name: post-etcd-operator-lint
+  - name: post-etcd-operator-verify
     cluster: eks-prow-build-cluster
     branches:
     - main
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-postsubmits
-      testgrid-tab-name: post-etcd-operator-lint
+      testgrid-tab-name: post-etcd-operator-verify
     spec:
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
@@ -74,7 +74,7 @@ postsubmits:
         args:
         - bash
         - -c
-        - make lint
+        - make verify
         resources:
           requests:
             cpu: "4"
