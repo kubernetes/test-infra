@@ -59,7 +59,7 @@ presubmits:
           limits:
             cpu: "4"
             memory: "4Gi"
-  - name: pull-etcd-operator-lint
+  - name: pull-etcd-operator-verify
     cluster: eks-prow-build-cluster
     always_run: true
     branches:
@@ -67,7 +67,7 @@ presubmits:
     decorate: true
     annotations:
       testgrid-dashboards: sig-etcd-operator-presubmits
-      testgrid-tab-name: pull-etcd-operator-lint
+      testgrid-tab-name: pull-etcd-operator-verify
     spec:
       containers:
       - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
@@ -76,7 +76,7 @@ presubmits:
         args:
         - bash
         - -c
-        - make lint
+        - make verify
         resources:
           requests:
             cpu: "4"
