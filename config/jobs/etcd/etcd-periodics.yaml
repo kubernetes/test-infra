@@ -2122,3 +2122,61 @@ periodics:
             memory: "3Gi"
     nodeSelector:
       kubernetes.io/arch: amd64
+
+- name: ci-etcd-k8s-coverage-amd64
+  interval: 24h
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+    - org: etcd-io
+      repo: etcd
+      base_ref: main
+      workdir: true
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      clone_depth: 128
+      path_alias: k8s.io/kubernetes
+  labels:
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-dashboards: sig-etcd-periodics
+  spec:
+    volumes:
+      - name: tmpdir
+        emptyDir:
+          sizeLimit: 200Mi
+          medium: Memory
+    containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          (cd tests/robustness && make k8s-coverage) || echo
+          export ETCD_VERIFY=all
+          export JUNIT_REPORT_DIR=${ARTIFACTS}
+          source ./scripts/test_lib.sh
+          run_for_module "tests" go_test "./robustness/coverage/..." "keep_going" : -timeout=60s -run="^TestInterfaceUse/"
+        volumeMounts:
+          - mountPath: /etcd-data
+            name: tmpdir
+        env:
+          - name: DATA_DIR
+            value: /etcd-data
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        securityContext:
+          privileged: true
+    nodeSelector:
+      kubernetes.io/arch: amd64
