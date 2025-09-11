@@ -20,4 +20,5 @@ postsubmits:
               - --project=k8s-staging-npd
               - --scratch-bucket=gs://k8s-staging-npd-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
