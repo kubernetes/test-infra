@@ -2331,7 +2331,7 @@ def generate_presubmits_e2e():
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|HostPort|two.untainted.nodes',
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k133-ko133-to-klatest-kolatest-many-addons",
+            name="pull-kops-e2e-aws-upgrade-k133-ko133-to-kstable-kolatest-many-addons",
             optional=True,
             distro='u2204',
             networking='cilium',
@@ -2344,7 +2344,7 @@ def generate_presubmits_e2e():
                 'KOPS_VERSION_A': "1.33",
                 'K8S_VERSION_A': "v1.33.5",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "latest",
+                'K8S_VERSION_B': "stable",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
