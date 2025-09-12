@@ -1,9 +1,0 @@
-{
-  "ExampleStruct": {
-    "exampleKey": {
-      "Type": "bool",
-      "IsObj": false,
-      "Doc": "Some comment"
-    }
-  }
-}
