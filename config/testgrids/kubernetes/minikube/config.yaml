@@ -1,0 +1,9 @@
+dashboard_groups:
+- name: minikube
+  dashboard_names:
+  - minikube-presubmits
+  - minikube-postsubmits
+  
+dashboards:
+- name: minikube-presubmits
+- name: minikube-postsubmits

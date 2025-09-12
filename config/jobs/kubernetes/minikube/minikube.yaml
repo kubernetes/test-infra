@@ -22,6 +22,8 @@ presubmits:
     always_run: true
     labels:
       preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: minikube-presubmits
     spec:
       containers:
       - image: gcr.io/k8s-minikube/prow-test:v0.0.7
@@ -45,8 +47,10 @@ presubmits:
   - name: pull-minikube-platform-tests
     cluster: eks-prow-build-cluster
     labels:
-        preset-minikube-e2e-creds: "true"
-        preset-k8s-ssh: "true"
+      preset-minikube-e2e-creds: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: minikube-presubmits
     always_run: false
     optional: true
     decorate: true
