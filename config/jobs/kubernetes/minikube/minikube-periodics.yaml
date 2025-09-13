@@ -1,0 +1,32 @@
+periodics:
+- name: ci-minikube-integration
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-dashboards: minikube-periodics
+  extra_refs:
+  - org: kubernetes
+    repo: minikube
+    base_ref: master
+    path_alias: k8s.io/minikube
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - integration-kvm-prow
+      resources:
+        limits:
+          cpu: 7
+          memory: 20Gi
+        requests:
+          cpu: 7
+          memory: 20Gi
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
