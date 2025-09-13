@@ -47,14 +47,10 @@ type SQConfig struct {
 var (
 	companies = []string{
 		"amazon",
-		"canonical",
 		"cos",
 		"containerd",
-		"cri-o",
 		"istio",
-		"googleoss",
 		"google",
-		"kopeio",
 		"redhat",
 		"ibm",
 		"vmware",
@@ -64,6 +60,7 @@ var (
 	}
 	orgs = []string{
 		"conformance",
+		"minikube",
 		"cluster-api-core",
 		"kops",
 		"presubmits",
