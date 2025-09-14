@@ -129,7 +129,7 @@ presubmits:
           value: "true"
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
-            # TODO: Should use a 1.29 K8s version
+          # TODO: Should use a 1.29 K8s version
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest"
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config

@@ -30,7 +30,7 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-check-1-28
       description: "Run lint check tests for cloud-provider-azure release-1.28."
       testgrid-num-columns-recent: "30"
-    # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
+  # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
@@ -90,7 +90,7 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-28
       description: "Runs Azure specific tests with cloud-provider-azure release-1.28 (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: "30"
-    # pull-cloud-provider-azure-e2e-capz-1-28 runs kubernetes conformance tests.
+  # pull-cloud-provider-azure-e2e-capz-1-28 runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz-1-28
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
@@ -158,7 +158,7 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-28
       description: "Runs Kubernetes conformance tests with cloud-provider-azure release-1.28 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: "30"
-    # pull-cloud-provider-azure-e2e-ccm-1-28
+  # pull-cloud-provider-azure-e2e-ccm-1-28
   - name: pull-cloud-provider-azure-e2e-ccm-capz-1-28
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$|go.sum"
@@ -214,7 +214,7 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-28
       description: "Runs Azure specific tests with cloud-provider-azure release-1.28 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: "30"
-    # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28 runs Azure specific e2e tests with cloud controller manager v1.28 and IP-based load balancer backend pools.
+  # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28 runs Azure specific e2e tests with cloud controller manager v1.28 and IP-based load balancer backend pools.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
@@ -288,7 +288,7 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz-1-28
       description: "Runs Azure specific e2e tests with cloud controller manager v1.28 and IP-based load balancer backend pools."
       testgrid-num-columns-recent: '30'
-    # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-28 runs Azure specific e2e tests with cloud controller manager v1.28 and multiple standard load balancers.
+  # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-28 runs Azure specific e2e tests with cloud controller manager v1.28 and multiple standard load balancers.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz-1-28
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"

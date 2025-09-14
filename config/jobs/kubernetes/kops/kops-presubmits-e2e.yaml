@@ -2390,7 +2390,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-ipv6-karpenter
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-aws-upgrade-k133-ko133-to-kstable-kolatest-many-addons
+  - name: pull-kops-e2e-aws-upgrade-k133-ko133-to-klatest-kolatest-many-addons
     cluster: k8s-infra-kops-prow-build
     branches:
     - master
