@@ -1,10 +1,11 @@
 periodics:
 - name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
   cluster: k8s-infra-prow-build
-  interval: 6h
+  interval: 24h
   tags:
     - "perfDashPrefix: networkpolicies"
-    - "perfDashJobType: networkpolicies"
+    - "perfDashJobType: performance"
+    - "perfDashBuildsCount: 500"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -182,12 +183,20 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 480m
-  path_alias: k8s.io/kops
   extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: perf-tests
     base_ref: master
     path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
   spec:
     serviceAccountName: k8s-kops-test
     containers:
