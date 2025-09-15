@@ -19,6 +19,7 @@ readonly OUTPUT="$(dirname $0)/k8s-staging-perf-tests.yaml"
 readonly IMAGES=(
     access-tokens
     containerd
+    network/netperfbenchmark
     probes
     request-benchmark
     scratch
@@ -54,7 +55,7 @@ for image in "${IMAGES[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20241224-fe22c549c1
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20250914-3092127382
             command:
               - /run.sh
             args:
