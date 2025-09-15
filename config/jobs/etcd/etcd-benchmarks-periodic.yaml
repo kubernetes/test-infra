@@ -34,3 +34,6 @@ periodics:
             memory: "8Gi"
     nodeSelector:
       kubernetes.io/arch: amd64
+  tags:
+    - "perfDashPrefix: etcd"
+    - "perfDashJobType: etcdAPIBenchmark"
