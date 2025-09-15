@@ -31,7 +31,6 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 ### Job and PR Dashboards
 
 - [Deck](https://prow.k8s.io) shows what jobs are running or have recently run in prow ([`prow/cmd/deck`])
-- [Gubernator's PR Dashboard](https://gubernator.k8s.io/pr) shows which PRs need your review ([`gubernator`])
 - [PR Status](https://prow.k8s.io/pr) shows what needs to be done to get PRs matching a GitHub Query to merge ([`prow/cmd/tide`])
 - [Tide History](https://prow.k8s.io/tide-history) shows what actions tide has taken over time to trigger tests and merge PRs ([`prow/cmd/tide`])
 - [Tide Status](https://prow.k8s.io/tide) shows what PRs are in tide pools to be tested and merged ([`prow/cmd/tide`])
@@ -61,7 +60,6 @@ Please see [CONTRIBUTING.MD](CONTRIBUTING.md)
 
 [bot commands]: https://go.k8s.io/bot-commands
 [`config/jobs`]: /config/jobs
-[`gubernator`]: /gubernator
 [`metrics`]: /metrics
 [`prow`]: https://github.com/kubernetes-sigs/prow
 [`prow/cmd/tide`]: https://github.com/kubernetes-sigs/prow/tree/main/cmd/tide
