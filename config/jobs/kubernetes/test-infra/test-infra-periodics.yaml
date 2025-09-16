@@ -10,9 +10,10 @@ periodics:
     labels:
       # Enable dind for linters that required docker to run, for example typescript.
       preset-dind-enabled: "true"
+      preset-enable-multiarch-support: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-c89b045f57-master
           command:
             - runner.sh
           args:
