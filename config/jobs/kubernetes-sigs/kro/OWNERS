@@ -1,0 +1,22 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - sig-cloud-provider-leads
+  - a-hilaly
+  - barney-s
+  - bridgetkromhout
+  - cheftako
+  # Not yet members of org
+  # - jlbutler
+  # - matthchr
+  # - nicslatts
+
+reviewers:
+  # Not yet members of org
+  # - jakobmoellerdev
+  # - michaelhtm
+  # - n3wscott
+
+labels:
+- sig/cloud-provider
+- area/kro

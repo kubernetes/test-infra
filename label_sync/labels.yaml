@@ -81,6 +81,11 @@ default:
         - name: sig/vmware
         - name: vmware
     - color: 0052cc
+      description: Issues or PRs related to KRO
+      name: area/kro
+      target: both
+      addedBy: label
+    - color: 0052cc
       description: Issues or PRs that should potentially be discussed in a Kubernetes community meeting.
       name: area/community-meeting
       target: both
