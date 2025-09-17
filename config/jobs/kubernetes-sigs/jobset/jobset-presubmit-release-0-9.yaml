@@ -3,7 +3,7 @@ presubmits:
   - name: pull-jobset-test-unit-release-0-9
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/jobset
@@ -37,7 +37,7 @@ presubmits:
   - name: pull-jobset-test-integration-release-0-9
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/jobset
@@ -62,7 +62,7 @@ presubmits:
   - name: pull-jobset-test-e2e-release-0-9-1-31
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/jobset
@@ -99,7 +99,7 @@ presubmits:
   - name: pull-jobset-test-e2e-release-0-9-1-32
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/jobset
@@ -136,7 +136,7 @@ presubmits:
   - name: pull-jobset-test-e2e-release-0-9-1-33
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/jobset
@@ -173,7 +173,7 @@ presubmits:
   - name: pull-jobset-test-e2e-release-0-9-1-34
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/jobset
@@ -210,7 +210,7 @@ presubmits:
   - name: pull-jobset-verify-release-0-9
     cluster: eks-prow-build-cluster
     branches:
-    - ^release-0-9
+    - ^release-0.9
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/jobset
