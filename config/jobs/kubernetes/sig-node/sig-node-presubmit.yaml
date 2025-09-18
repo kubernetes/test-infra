@@ -756,7 +756,7 @@ presubmits:
           - --deployment=node
           - --gcp-zone=us-central1-b
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
-          - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false --service-feature-gates=AllAlpha=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--node-test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/all=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
           # Feature:DynamicResourceAllocation has it's own test jobs with the proper conditions set
@@ -1035,7 +1035,7 @@ presubmits:
               kubetest2 ec2 \
                --stage https://dl.k8s.io/ci/fast/ \
                --version $VERSION \
-               --feature-gates="AllAlpha=true,EventedPLEG=false,StorageVersionAPI=true,APIServerIdentity=true" \
+               --feature-gates="AllAlpha=true,AllBeta=true,EventedPLEG=false,StorageVersionAPI=true,APIServerIdentity=true" \
                --runtime-config="api/all=true" \
                --up \
                --down \
@@ -3302,7 +3302,7 @@ presubmits:
         - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
         - --deployment=node
         - --gcp-zone=us-central1-b
-        - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+        - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
