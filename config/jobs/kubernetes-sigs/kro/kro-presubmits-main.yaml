@@ -1,0 +1,27 @@
+presubmits:
+  kubernetes-sigs/kro:
+  - name: presubmits-unit-tests
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.33
+        command:
+        - scripts/ci/presubmits/unit-tests
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-unit-tests

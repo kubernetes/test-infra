@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: sig-cloud-provider-kro
+  dashboard_names:
+    - sig-cloud-provider-kro-presubmits
+
+dashboards:
+- name: sig-cloud-provider-kro-presubmits
