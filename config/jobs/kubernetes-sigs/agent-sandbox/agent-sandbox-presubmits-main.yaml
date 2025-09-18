@@ -1,2 +1,25 @@
 presubmits:
   kubernetes-sigs/agent-sandbox:
+  - name: presubmit-test-autogen-up-to-date
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: 'true'
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-c89b045f57-master
+        command:
+        - dev/ci/presubmits/test-autogen-up-to-date
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-test-autogen-up-to-date
+      description: presubmit-test-autogen-up-to-date
+      testgrid-num-columns-recent: '30'
