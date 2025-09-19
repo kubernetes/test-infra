@@ -48,7 +48,6 @@ readonly IMAGES=(
     sample-apiserver
     sample-device-plugin
     volume/iscsi
-    volume/rbd
     volume/nfs
     volume/gluster
     windows-servercore-cache
