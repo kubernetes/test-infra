@@ -5,6 +5,7 @@
   "kernelArguments": {
     "shouldExist": [
       "SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1"
+      systemd.unified_cgroup_hierarchy=0
     ],
     "shouldNotExist": [
       "mitigations=auto,nosmt"
