@@ -236,7 +236,6 @@ main() {
   # Set original paths with fallbacks
   export VERSIONED_FEATURE_LIST=${VERSIONED_FEATURE_LIST:-"test/featuregates_linter/test_data/versioned_feature_list.yaml"}
   export PREV_VERSIONED_FEATURE_LIST=${PREV_VERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/versioned_feature_list.yaml"}
-  export PREV_UNVERSIONED_FEATURE_LIST=${PREV_UNVERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/unversioned_feature_list.yaml"}
 
   # Create and validate previous cluster
   git clone --filter=blob:none --single-branch --branch "release-${EMULATED_VERSION}" https://github.com/kubernetes/kubernetes.git "release-${EMULATED_VERSION}"
@@ -269,16 +268,9 @@ main() {
     fi
   fi
 
-  if [ ! -f "$PREV_UNVERSIONED_FEATURE_LIST" ]; then
-    alt_path="release-${EMULATED_VERSION}/test/compatibility_lifecycle/reference/unversioned_feature_list.yaml"
-    if [ -f "$alt_path" ]; then
-      export PREV_UNVERSIONED_FEATURE_LIST="$alt_path"
-      echo "Using alternative path for PREV_UNVERSIONED_FEATURE_LIST: $alt_path"
-    fi
-  fi
 
   VALIDATE_SCRIPT="${VALIDATE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/validate-compatibility-versions-feature-gates.sh}"
-  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${CURRENT_VERSION}" "${LATEST_METRICS}" "${VERSIONED_FEATURE_LIST}" "${PREV_VERSIONED_FEATURE_LIST}" "${PREV_UNVERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
+  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${CURRENT_VERSION}" "${LATEST_METRICS}" "${VERSIONED_FEATURE_LIST}" "${PREV_VERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
 
   # Report results
   echo "=== Latest Cluster (${EMULATED_VERSION}) Validation ==="
