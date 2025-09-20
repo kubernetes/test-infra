@@ -37,14 +37,14 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 
 ## Other Tools
 
-- [`boskos`](/boskos) manages pools of resources; our CI leases GCP projects from these pools
+- [`boskos`](https://github.com/kubernetes-sigs/boskos) manages pools of resources; our CI leases GCP projects from these pools
 - [`experiment`](/experiment) is a catchall directory for one-shot tools or scripts
 - [`gcsweb`](/gcsweb) is a UI we use to display test artifacts stored in public GCS buckets
-- [`ghproxy`](/ghproxy) is a GitHub-aware reverse proxy cache to help keep our GitHub API token usage within rate limits
+- [`ghproxy`](https://github.com/kubernetes-sigs/prow/tree/main/cmd/ghproxy) is a GitHub-aware reverse proxy cache to help keep our GitHub API token usage within rate limits
 - [`gopherage`](/gopherage) is a tool for manipulating Go coverage files
 - [`label_sync`](/label_sync) creates, updates and migrates GitHub labels across orgs and repos based on `labels.yaml` file
 - [`kettle`](/kettle) extracts test results from GCS and puts them into bigquery
-- [`kubetest`](/kubetest) is how our CI creates and e2e tests kubernetes clusters
+- [`kubetest2`](https://github.com/kubernetes-sigs/kubetest2) is how our CI creates and e2e tests kubernetes clusters
 - [`metrics`](/metrics) runs queries against bigquery to generate metrics based on test results
 - [`robots/commenter`](/robots/commenter) is used by some of our jobs to comment on GitHub issues
 
@@ -58,7 +58,7 @@ Please see [CONTRIBUTING.MD](CONTRIBUTING.md)
 [prow.k8s.io]: https://prow.k8s.io
 [kubernetes/kubernetes]: https://github.com/kubernetes/kubernetes
 
-[bot commands]: https://go.k8s.io/bot-commands
+[bot commands]: https://prow.k8s.io/command-help
 [`config/jobs`]: /config/jobs
 [`metrics`]: /metrics
 [`prow`]: https://github.com/kubernetes-sigs/prow
