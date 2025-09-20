@@ -1,7 +1,0 @@
-# Animals is an array of animals of the zoo
-animals:
-  - # Name of lion
-    name: Leo
-
-  - # Name of cheetah
-    name: Charles
