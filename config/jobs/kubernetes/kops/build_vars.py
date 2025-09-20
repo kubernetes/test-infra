@@ -33,6 +33,8 @@ networking_options = [
 gce_distro_options = [
     "deb12",
     "deb12arm64",
+    "deb13",
+    "deb13arm64",
     "u2204",
     "u2404",
     "u2404arm64",
