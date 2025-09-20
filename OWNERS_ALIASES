@@ -113,9 +113,9 @@ aliases:
     - shyamjvs
     - wojtek-t
   sig-scheduling-leads:
-    - Huang-Wei
-    - ahg-g
-    - alculquicondor
+    - dom4ha
+    - macsko
+    - sanposhiho
   sig-security-leads:
     - IanColdwater
     - cailyn-codes
@@ -258,6 +258,22 @@ aliases:
     - SergeyKanzhelev
     - endocrimes
     - kannon92
+  sig-scheduling-reviewers:
+    - AxeZhan
+    - damemi
+    - denkensk
+    - dom4ha
+    - macsko
+    - sanposhiho
+    - utam0k
+    - kerthcet
+  sig-scheduling-approvers:
+    - ahg-g
+    - dom4ha
+    - Huang-Wei
+    - kerthcet
+    - macsko
+    - sanposhiho
   # - emeritus
   # - yguo0905
   # - dashpole
