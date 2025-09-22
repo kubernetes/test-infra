@@ -25,7 +25,7 @@ periodics:
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -81,7 +81,7 @@ periodics:
     description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -136,7 +136,7 @@ periodics:
     description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v2"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -191,7 +191,7 @@ periodics:
     description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -247,7 +247,7 @@ periodics:
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -302,7 +302,7 @@ periodics:
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -357,7 +357,7 @@ periodics:
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v1"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -413,7 +413,7 @@ periodics:
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -469,7 +469,7 @@ periodics:
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -525,7 +525,7 @@ periodics:
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -581,7 +581,7 @@ periodics:
     description: "Executes CPU, Memory and Topology manager e2e tests"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -637,7 +637,7 @@ periodics:
     description: "Executes CPU, Memory and Topology manager e2e tests with cgroup v2"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -695,7 +695,7 @@ periodics:
     description: "Executes hugepages e2e tests"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -752,7 +752,7 @@ periodics:
     description: "Executes hugepages e2e tests"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -808,7 +808,7 @@ periodics:
       cgroup v1 and the evented pleg feature enabled"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
       command:
       - runner.sh
       args:
@@ -874,7 +874,7 @@ periodics:
     description: "Executes userns E2E tests with ProcMountType and UserNamespacesSupport feature gates"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
         command:
           - runner.sh
         args:
