@@ -4,12 +4,8 @@
 approvers:
   - sig-cluster-lifecycle-leads
   - EmilienM
-  - jichenjc
   - lentzi90
-  - mdbooth
 
 reviewers:
   - EmilienM
-  - jichenjc
   - lentzi90
-  - mdbooth
