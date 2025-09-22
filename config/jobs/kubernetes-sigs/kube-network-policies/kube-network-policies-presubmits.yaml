@@ -106,6 +106,15 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: kops
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: kubernetes
     always_run: false
     optional: true
     decorate: true
