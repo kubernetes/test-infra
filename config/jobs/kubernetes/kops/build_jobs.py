@@ -1866,8 +1866,6 @@ def generate_presubmits_network_plugins():
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
         networking_arg = plugin
-        master_size = "c6g.large"
-        node_size = "t4g.large"
         optional = False
         distro = 'u2404arm64'
         if plugin == 'flannel':
@@ -1876,10 +1874,16 @@ def generate_presubmits_network_plugins():
             networking_arg = 'kube-router'
             k8s_version = 'ci'
             optional = True
+        aws_extra_flags = [
+            "--master-size=c6g.large",
+            "--node-size=t4g.large"
+        ]
         if plugin == 'amazonvpc':
-            distro = 'al2023arm64'
-            master_size = "r6g.xlarge"
-            node_size = "r6g.xlarge"
+            aws_extra_flags.extend([
+                "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
+                "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
+                "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
+            ])
         if plugin in ['cilium-eni']:
             distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
         results.append(
@@ -1890,10 +1894,7 @@ def generate_presubmits_network_plugins():
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
-                extra_flags=[
-                    f"--master-size={master_size}",
-                    f"--node-size={node_size}"
-                ],
+                extra_flags=aws_extra_flags,
                 run_if_changed=run_if_changed,
                 optional=optional,
             )
