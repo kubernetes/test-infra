@@ -111,12 +111,8 @@ presubmits:
       repo: kops
       base_ref: master
       path_alias: kops
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: kubernetes
-    always_run: false
-    optional: true
+    always_run: true
+    optional: false
     decorate: true
     path_alias: sigs.k8s.io/kube-network-policies
     decoration_config:
