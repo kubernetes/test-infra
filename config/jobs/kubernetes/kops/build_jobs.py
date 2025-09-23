@@ -1433,7 +1433,7 @@ def generate_presubmits_distros():
         results.append(
             presubmit_test(
                 distro=distro_short,
-                networking='calico',
+                networking='cilium',
                 k8s_version='stable',
                 kops_channel='alpha',
                 name=f"pull-kops-aws-distro-{distro}",
