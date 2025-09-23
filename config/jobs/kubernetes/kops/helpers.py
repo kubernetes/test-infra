@@ -228,8 +228,8 @@ gce_distro_images = {
 }
 
 distro_images = {
-    'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.1-x86_64'),
-    'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.1-arm64', 'arm64'),
+    'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
+    'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
