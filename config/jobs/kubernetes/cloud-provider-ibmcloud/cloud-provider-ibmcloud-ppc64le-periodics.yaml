@@ -351,7 +351,7 @@ periodics:
                 --workers-count 2 --cluster-name alpha-enabled-$(date +%s) \
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
                 --break-kubetest-on-upfail true \
-                --extra-vars=feature_gates:AllAlpha=true,EventedPLEG=false \
+                --extra-vars=feature_gates:AllAlpha=true,AllBeta=true,EventedPLEG=false \
                 --extra-vars=runtime_config:api/all=true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
