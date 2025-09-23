@@ -21,7 +21,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -42,7 +42,7 @@ presubmits:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
-            value: "1.32" # latest available in AKS
+            value: "1.33" # latest available in AKS
           - name: CLUSTER_TEMPLATE
             value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
         # docker-in-docker needs privileged mode
@@ -76,7 +76,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -131,7 +131,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -152,7 +152,7 @@ presubmits:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
-            value: "1.32"
+            value: "1.33"
           - name: CLUSTER_TEMPLATE
             value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
         # docker-in-docker needs privileged mode
@@ -186,7 +186,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -241,7 +241,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -296,7 +296,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -351,7 +351,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.16
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -406,7 +406,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.16
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
