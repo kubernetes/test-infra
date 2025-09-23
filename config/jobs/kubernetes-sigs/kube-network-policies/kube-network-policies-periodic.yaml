@@ -102,3 +102,42 @@ periodics:
     testgrid-dashboards: sig-network-policy-api
     testgrid-tab-name: kube-network-policies (IPv6), master (dev) [non-serial]
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+- interval: 24h
+  name: ci-kubernetes-kube-network-policies-conformance-parallel-iptracker
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: kube-network-policies
+    base_ref: main
+    path_alias: sigs.k8s.io/kube-network-policies
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      - sigs.k8s.io/kube-network-policies/hack/e2e-kops.sh
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: sig-network-policy-api
+    testgrid-tab-name: kube-network-policies-iptracker conformance, master (dev) [non-serial]
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
