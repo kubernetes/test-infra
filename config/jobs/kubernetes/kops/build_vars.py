@@ -79,6 +79,7 @@ distros = [
     "ubuntu2404arm64",
     "amazonlinux2",
     "al2023",
+    "al2023arm64",
     "rhel8",
     "rhel9",
     "rocky9",
