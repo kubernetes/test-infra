@@ -299,6 +299,10 @@ presubmits:
           value: '{"AllBeta":true}'
         - name: RUNTIME_CONFIG
           value: '{"api/beta":"true", "api/ga":"true"}'
+        - name: SKIP
+          value: ""
+        - name: FOCUS
+          value: ""
         - name: LABEL_FILTER
           value: "Feature: isSubsetOf OffByDefault && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
@@ -346,6 +350,10 @@ presubmits:
           value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
+        - name: SKIP
+          value: ""
+        - name: FOCUS
+          value: ""
         - name: LABEL_FILTER
           value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
@@ -392,6 +400,10 @@ presubmits:
           value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG":false}'
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
+        - name: SKIP
+          value: ""
+        - name: FOCUS
+          value: ""
         - name: LABEL_FILTER
           value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
