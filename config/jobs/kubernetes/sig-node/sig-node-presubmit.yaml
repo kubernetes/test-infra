@@ -1571,9 +1571,9 @@ presubmits:
             value: core
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
-  - name: pull-kubernetes-node-crio-cgrpv1-evented-pleg-e2e
+  - name: pull-kubernetes-node-crio-cgrpv2-evented-pleg-e2e
     cluster: k8s-infra-prow-build
-    # explicitly needs /test pull-kubernetes-node-crio-cgrpv1-evented-pleg-e2e to run
+    # explicitly needs /test pull-kubernetes-node-crio-cgrpv2-evented-pleg-e2e to run
     always_run: false
     optional: true
     skip_branches:
@@ -1594,7 +1594,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-crio-cgrpv1-evented-pleg-gce-e2e
+      testgrid-tab-name: pr-crio-cgrpv2-evented-pleg-gce-e2e
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
@@ -1611,7 +1611,7 @@ presubmits:
         - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --feature-gates=EventedPLEG=true --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1-evented-pleg.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-evented-pleg.yaml
         resources:
           limits:
             cpu: 4
@@ -1795,62 +1795,6 @@ presubmits:
             value: core
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
-  - name: pull-kubernetes-node-crio-e2e
-    cluster: k8s-infra-prow-build
-    # explicitly needs /test pull-kubernetes-node-crio-e2e to run
-    always_run: false
-    # if at all it is run and fails, don't block the PR
-    optional: true
-    branches:
-    # TODO(releng): Remove once repo default branch has been renamed
-    - master
-    - main
-    decorate: true
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    decoration_config:
-      timeout: 180m
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    annotations:
-      testgrid-dashboards: sig-node-cri-o, sig-node-presubmits
-      testgrid-tab-name: pr-crio-gce-e2e
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        env:
-          - name: KUBE_SSH_USER
-            value: core
-          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-            value: "1"
-        command:
-        - runner.sh
-        args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=8
-        - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:PodLifecycleSleepActionAllowZero\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
   - name: pull-crio-cgroupv2-node-e2e-hugepages
     cluster: k8s-infra-prow-build
     always_run: false

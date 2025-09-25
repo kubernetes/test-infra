@@ -4,8 +4,6 @@ version: 1.4.0
 kernel_arguments:
   should_not_exist:
     - mitigations=auto,nosmt
-  should_exist:
-    - SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1
 storage:
   files:
     - path: /etc/zincati/config.d/90-disable-auto-updates.toml
@@ -36,6 +34,10 @@ storage:
           [Manager]
           DefaultEnvironment="CRIO_SCRIPT_COMMIT=0936ec4f6d77fba3a42432adaf8aa57b629c06cf"
           DefaultEnvironment="CRIO_COMMIT=5655aea0470e126bbb0dd9a5092efb32fb4e12d1"
+    - path: /etc/crio/crio.conf.d/40-evented-pleg.conf
+      contents:
+        local: 40-evented-pleg.conf
+      mode: 0644
 systemd:
   units:
     - name: configure-sysctl.service
@@ -126,20 +128,6 @@ systemd:
             >> /home/core/.ssh/authorized_keys && \
           /usr/bin/chown -R core:core /home/core/.ssh && \
           /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: allocate-1G-hugepages.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Allocate 1G hugepages.
-        After=network-online.target
-
-        [Service]
-        Type=oneshot
-        ExecStart=/bin/sh -c '/usr/bin/echo 1 > \
-          /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages'
 
         [Install]
         WantedBy=multi-user.target

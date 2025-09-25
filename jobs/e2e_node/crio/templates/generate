@@ -25,10 +25,8 @@ fi
 
 # Change the following configurations to adapt the resulting ignitions files.
 declare -A CONFIGURATIONS=(
-    ["crio_cgroupv1"]="root env cgroupv1 criu-enabled"
-    ["crio_cgroupv1_eventedpleg"]="root env cgroupv1 eventedpleg"
-    ["crio_cgroupv1_hugepages"]="root env cgroupv1 hugepages"
     ["crio_cgroupv2"]="root env"
+    ["crio_cgroupv2_eventedpleg"]="root env eventedpleg"
     ["crio_cgroupv2_canary"]="root env-canary"
     ["crio_cgroupv2_drop_infra_ctr"]="root env drop-infra-ctr"
     ["crio_cgroupv2_swap1g"]="root env swap-1G"
