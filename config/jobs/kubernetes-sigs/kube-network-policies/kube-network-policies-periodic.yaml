@@ -127,7 +127,7 @@ periodics:
       args:
       - "/bin/bash"
       - "-c"
-      - sigs.k8s.io/kube-network-policies/hack/e2e-kops.sh
+      - cd $GOPATH/src/sigs.k8s.io/kube-network-policies && hack/e2e-kops.sh
       securityContext:
         privileged: true
       resources:
