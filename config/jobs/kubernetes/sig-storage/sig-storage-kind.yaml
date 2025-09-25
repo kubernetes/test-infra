@@ -97,6 +97,62 @@ presubmits:
             cpu: "2"
             memory: "6Gi"
 
+  # This temporary job used for refine the vgs tests fast iterations
+  - name: pull-kubernetes-e2e-storage-kind-vgs
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    cluster: eks-prow-build-cluster
+    skip_branches:
+    - release-\d+\.\d+
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-vgs
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run storage tests volume group snapshots in a KIND cluster.
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20250815-171060767f-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - |
+          set -ex
+          # Download prow.sh from csi-release-tools
+          # TODO: Back to use the official repo after finish fast iterations
+          curl -fsSL https://raw.githubusercontent.com/Phaow/csi-release-tools/dev/prow.sh -o prow.sh
+          chmod +x prow.sh
+          ./prow.sh
+        env:
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.17.0"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v8.3.0"
+        - name: CSI_PROW_ENABLE_GROUP_SNAPSHOT
+          value: "true"
+        - name: CSI_PROW_E2E_FOCUS
+          value: \[Feature:volumegroupsnapshot\]
+        - name: CSI_PROW_TESTS
+          value: "serial parallel"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+
   # This jobs runs e2e.test with a focus on tests for vac on a kind cluster
   - name: pull-kubernetes-e2e-storage-kind-vac
     always_run: false
