@@ -435,7 +435,7 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
 
 # ATTN: RELEASE MANAGERS
 # There must be a stable[#] group for EACH release
@@ -449,19 +449,19 @@ nodeK8sVersions:
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.34
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-1.34
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-1.34
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.33
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-1.33
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-1.33
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.32
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-1.32
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-1.32
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250922-af75983448-1.31
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-1.31
   # stable4:
   #   args:
   #   - --repo=k8s.io/kubernetes=release-1.30
