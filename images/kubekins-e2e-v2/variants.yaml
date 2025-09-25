@@ -6,17 +6,17 @@ variants:
     BAZEL_VERSION: 3.4.1
   master:
     CONFIG: master
-    GO_VERSION: 1.24.6
+    GO_VERSION: 1.25.1
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
   '1.34':
     CONFIG: '1.34'
-    GO_VERSION: 1.24.6
+    GO_VERSION: 1.24.7
     K8S_RELEASE: latest-1.34
     BAZEL_VERSION: 3.4.1
   '1.33':
     CONFIG: '1.33'
-    GO_VERSION: 1.24.6
+    GO_VERSION: 1.24.7
     K8S_RELEASE: latest-1.33
     BAZEL_VERSION: 3.4.1
   '1.32':
