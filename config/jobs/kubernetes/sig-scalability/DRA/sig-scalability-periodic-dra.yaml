@@ -300,7 +300,7 @@ periodics:
             - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
             - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
             - --test-cmd-args=--testconfig=testing/dra/config.yaml
-            - --test-cmd-args=--report-dir=${ARTIFACTS}
+            - --test-cmd-args=--report-dir=$(ARTIFACTS)
             - --test-cmd-name=ClusterLoaderV2
             - --use-logexporter
           resources:
