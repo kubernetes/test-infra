@@ -42,11 +42,11 @@ presubmits:
         - test
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-network-external-dns
       testgrid-tab-name: unit test
