@@ -1520,6 +1520,8 @@ plugins:
     plugins:
     - release-note
     - override
+    - merge-method-comment
+    - mergecommitblocker
 
   kubernetes-sigs/cloud-provider-azure:
     plugins:
@@ -1845,6 +1847,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/aws-ebs-csi-driver:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/cloud-provider-azure:
   - name: cherrypicker
     events:
