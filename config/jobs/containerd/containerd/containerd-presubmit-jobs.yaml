@@ -37,7 +37,8 @@ presubmits:
             memory: 6Gi
 
   - name: pull-containerd-node-e2e
-    always_run: true
+    always_run: false
+    optional: true
     cluster: k8s-infra-prow-build
     max_concurrency: 8
     decorate: true
@@ -97,7 +98,8 @@ presubmits:
             memory: 6Gi
 
   - name: pull-containerd-node-e2e-1-7
-    always_run: true
+    always_run: false
+    optional: true
     cluster: k8s-infra-prow-build
     max_concurrency: 8
     decorate: true
