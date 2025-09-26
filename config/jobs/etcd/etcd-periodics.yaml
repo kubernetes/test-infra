@@ -2143,6 +2143,8 @@ periodics:
     preset-dind-enabled: "true"
   annotations:
     testgrid-dashboards: sig-etcd-periodics
+    testgrid-alert-email: kubernetes-scalability-tickets@google.com
+    testgrid-num-failures-to-alert: "3"
   spec:
     volumes:
       - name: tmpdir
