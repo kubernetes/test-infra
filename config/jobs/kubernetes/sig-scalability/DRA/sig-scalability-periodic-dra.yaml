@@ -8,7 +8,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 3h
-    interval: 3h
+    interval: 12h
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     labels:
       preset-dind-enabled: "true"
