@@ -214,6 +214,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         api:
@@ -474,6 +475,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         python:
@@ -492,6 +494,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
     kubernetes-sigs:
       protect: true
@@ -501,6 +504,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         apisnoop:
