@@ -127,14 +127,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws
+    name: periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws
+    test_group_name: periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -154,14 +154,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws-fips
+    name: periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws-fips
+    test_group_name: periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws-fips
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -496,10 +496,10 @@ test_groups:
   name: periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.20-lp-interop-camel-k-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.20-lp-interop-camel-k-interop-aws-fips
   name: periodic-ci-jboss-fuse-camel-k-test-container-main-camel-k-ocp4.20-lp-interop-camel-k-interop-aws-fips
-- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws
-  name: periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws
-- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws-fips
-  name: periodic-ci-konveyor-tackle-ui-tests-release-0.6-mta-ocp4.20-lp-interop-mta-interop-aws-fips
+- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws
+  name: periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws
+- gcs_prefix: test-platform-results/logs/periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws-fips
+  name: periodic-ci-konveyor-tackle-ui-tests-release-0.7-mta-ocp4.20-lp-interop-mta-interop-aws-fips
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.20-lp-interop-servicemesh-interop-aws
   name: periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.20-lp-interop-servicemesh-interop-aws
 - gcs_prefix: test-platform-results/logs/periodic-ci-maistra-maistra-test-tool-main-servicemesh-ocp4.20-lp-interop-servicemesh-interop-aws-fips
