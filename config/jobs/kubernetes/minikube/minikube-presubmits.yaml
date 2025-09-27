@@ -7,6 +7,8 @@ presubmits:
     always_run: true
     labels:
       preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: minikube-presubmits
     spec:

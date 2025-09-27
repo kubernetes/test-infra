@@ -5,6 +5,8 @@ periodics:
   decorate: true
   labels:
     preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
