@@ -23,3 +23,22 @@ presubmits:
       testgrid-tab-name: presubmit-test-autogen-up-to-date
       description: presubmit-test-autogen-up-to-date
       testgrid-num-columns-recent: '30'
+  - name: presubmit-agent-sandbox-unit-test
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.24
+        command:
+        - dev/ci/presubmits/test-unit
+        resources:
+          requests:
+            cpu: 1
+            memory: 4Gi
+          limits:
+            cpu: 1
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-unit-test
