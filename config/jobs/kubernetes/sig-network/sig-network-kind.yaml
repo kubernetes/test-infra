@@ -965,3 +965,47 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+- interval: 24h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-kind-network-deprecate-endpoints
+  annotations:
+    testgrid-dashboards: sig-network-kind
+    testgrid-tab-name: sig-network-kind, deprecate-endpoints
+    description: Uses kind to run e2e sig-network tests against latest kubernetes master with the Endpoints and EndpointSlice mirroring controllers disabled
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20250925-95b5a2c7a5-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-noendpoints-e2e.sh
+      env:
+      - name: LABEL_FILTER
+        value: "(Conformance || sig-network ) && !EndpointsController && !EndpointSliceMirroring && !Disruptive && !Flaky"
+      - name: SKIP
+        value: SCTPConnectivity
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
