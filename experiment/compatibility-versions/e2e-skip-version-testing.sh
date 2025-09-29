@@ -49,8 +49,8 @@ run_skip_version_tests() {
       return 1
     fi
     pushd "${PREV_RELEASE_REPO_PATH}"
-    build_prev_version_bins || ret=$?
-    run_prev_version_tests || ret=$?
+    build_test_bins "${PREV_RELEASE_BRANCH}" || ret=$?
+    run_e2e_tests || ret=$?
     if [[ "$ret" -ne 0 ]]; then
       echo "Failed running skip version tests for emulated version $EMULATED_VERSION"
       return 1
@@ -66,8 +66,8 @@ run_skip_version_tests() {
   # Test removal of emulated version entirely.
   export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
   delete_emulation_version || ret=$?
-  build_prev_version_bins || ret=$?
-  run_prev_version_tests || ret=$?
+  build_test_bins "${PREV_RELEASE_BRANCH}" || ret=$?
+  run_e2e_tests || ret=$?
   return $ret
 }
 

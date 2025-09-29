@@ -224,19 +224,20 @@ EOF
   return 0
 }
 
-build_prev_version_bins() {
+build_test_bins() {
+  local release_branch=$1
   GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/v2/ginkgo"
 
-  echo "Building e2e.test binary from release branch ${PREV_RELEASE_BRANCH}..."
+  echo "Building e2e.test binary from release branch ${release_branch}..."
   make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_SRC_DIR}"
 
   # Ensure the built kubectl is used instead of system
   export PATH="${PWD}/_output/bin:$PATH"
-  echo "Finished building e2e.test binary from ${PREV_RELEASE_BRANCH}."
+  echo "Finished building e2e.test binary from ${release_branch}."
 }
 
 # run e2es with ginkgo-e2e.sh
-run_prev_version_tests() {
+run_e2e_tests() {
   # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
   # 1. k8s CI doesn´t offer IPv6 connectivity, so CoreDNS should be configured
   # to work in an offline environment:

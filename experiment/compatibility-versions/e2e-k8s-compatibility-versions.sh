@@ -119,8 +119,8 @@ main() {
 
   # enter the cloned prev repo branch (in temp) and run tests
   pushd "${PREV_RELEASE_REPO_PATH}"
-  build_prev_version_bins || res=$?
-  run_prev_version_tests || res=$?
+  build_test_bins "${PREV_RELEASE_BRANCH}" || res=$?
+  run_e2e_tests || res=$?
   popd
 
 
