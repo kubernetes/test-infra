@@ -153,7 +153,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-features
   annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
+    testgrid-dashboards: sig-testing-kind
     testgrid-tab-name: kind-master-alpha-beta
     description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
@@ -175,7 +175,9 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # Modified e2e-k8s.sh from https://github.com/kubernetes-sigs/kind/pull/4015/files.
+      # It gets pulled here to try out that modification for a while *before* merging it.
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && curl -sSLO https://raw.githubusercontent.com/pohly/kind/46d774ce34846c9522efd9de1150b0d3cfa585c8/hack/ci/e2e-k8s.sh && chmod u+x e2e-k8s.sh && ./e2e-k8s.sh
       env:
       - name: FEATURE_GATES
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
