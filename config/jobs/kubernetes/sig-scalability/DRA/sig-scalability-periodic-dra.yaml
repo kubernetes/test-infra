@@ -323,3 +323,85 @@ periodics:
               value: "true"
             - name: NODE_PRELOAD_IMAGES
               value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+
+  - name: ci-kubernetes-e2e-gce-100-node-dra-extended-resources-with-workload
+    cluster: k8s-infra-prow-build
+    tags:
+      - "perfDashPrefix: gce-dra-extended-resources-100Nodes-with-workload"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
+    interval: 4h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-periodics: "true"
+      preset-e2e-scalability-periodics-master: "true"
+    annotations:
+      testgrid-dashboards: sig-scalability-dra
+      testgrid-tab-name: gce-dra-extended-resources-with-workload-master-scalability-100
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: alaypatel07
+        repo: perf-tests
+        base_ref: dra-extended-resources
+        path_alias: k8s.io/perf-tests
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --check-leaked-resources
+            - --cluster=
+            - --extract=ci/latest
+            - --gcp-node-size=e2-standard-4
+            - --gcp-node-image=gci
+            - --gcp-project-type=scalability-project
+            - --gcp-nodes=100
+            - --provider=gce
+            - --env=KUBE_FEATURE_GATES=DynamicResourceAllocation=true,DRAExtendedResource=true
+            - --runtime-config=api/all=true
+            - --test=false
+            - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+            - --test-cmd-args=cluster-loader2
+            - --test-cmd-args=--nodes=100
+            - --test-cmd-args=--provider=gce
+            - --test-cmd-args=--enable-prometheus-server=true
+            - --test-cmd-args=--prometheus-scrape-node-exporter
+            - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+            - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+            - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+            - --test-cmd-args=--testconfig=testing/dra-extended-resources/config.yaml
+            - --test-cmd-args=--report-dir=$(ARTIFACTS)
+            - --test-cmd-name=ClusterLoaderV2
+            - --use-logexporter
+          resources:
+            requests:
+              cpu: 6
+              memory: "16Gi"
+            limits:
+              cpu: 6
+              memory: "16Gi"
+          env:
+            - name: CL2_MODE
+              value: "Indexed"
+            - name: CL2_NODES_PER_NAMESPACE
+              value: "10"
+            - name: CL2_JOB_RUNNING_TIME
+              value: "3s"
+            - name: CL2_LONG_JOB_RUNNING_TIME
+              value: "45m"
+            - name: CL2_EXTENDED_RESOURCE_NAME
+              value: "example.com/gpu"
+            - name: PROMETHEUS_SCRAPE_KUBELETS
+              value: "true"
+            - name: NODE_PRELOAD_IMAGES
+              value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
