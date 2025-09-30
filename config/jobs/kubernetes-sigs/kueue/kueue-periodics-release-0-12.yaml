@@ -27,17 +27,17 @@ periodics:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
             - name: GOMAXPROCS
-              value: "2"
+              value: "4"
           command:
             - make
           args:
             - test
           resources:
             requests:
-              cpu: "2"
+              cpu: "4"
               memory: "6Gi"
             limits:
-              cpu: "2"
+              cpu: "4"
               memory: "6Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-release-0-12
