@@ -18,17 +18,17 @@ presubmits:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
         - name: GOMAXPROCS
-          value: "4"
+          value: "6"
         command:
         - make
         args:
         - test
         resources:
           requests:
-            cpu: "4"
+            cpu: "6"
             memory: "6Gi"
           limits:
-            cpu: "4"
+            cpu: "6"
             memory: "6Gi"
   - name: pull-kueue-test-integration-baseline-main
     cluster: eks-prow-build-cluster
@@ -481,13 +481,13 @@ presubmits:
           - verify
         env:
         - name: GOMAXPROCS
-          value: "6"
+          value: "8"
         resources:
           requests:
-            cpu: "6"
+            cpu: "8"
             memory: "8Gi"
           limits:
-            cpu: "6"
+            cpu: "8"
             memory: "8Gi"
   - name: pull-kueue-build-image-main
     cluster: eks-prow-build-cluster
