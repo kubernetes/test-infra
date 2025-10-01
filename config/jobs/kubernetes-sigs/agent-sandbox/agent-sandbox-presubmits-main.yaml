@@ -42,3 +42,22 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-unit-test
+  - name: presubmit-agent-sandbox-lint-go
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.24
+        command:
+        - dev/ci/presubmits/lint-go
+        resources:
+          requests:
+            cpu: 1
+            memory: 4Gi
+          limits:
+            cpu: 1
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-apps-agent-sandbox
+      testgrid-tab-name: presubmit-lint-go
