@@ -34,10 +34,10 @@ presubmits:
         - dev/ci/presubmits/test-unit
         resources:
           requests:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
           limits:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
@@ -53,10 +53,10 @@ presubmits:
         - dev/ci/presubmits/lint-go
         resources:
           requests:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
           limits:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
