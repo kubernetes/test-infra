@@ -892,16 +892,13 @@ def generate_misc():
         build_test(name_override="kops-aws-selinux",
                    # RHEL8 VM image is enforcing SELinux by default.
                    cloud="aws",
-                   distro="rhel8",
+                   distro="rhel9",
                    networking="cilium",
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
                    extra_flags=[
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
-                       # Use older containerd that still works on RHEL8
-                       "--set=cluster.spec.containerd.version=1.7.28",
-                       "--set=cluster.spec.containerd.runc.version=1.3.0",
                        # Run all default controllers ("*") + selinux-warning-controller.
                        "--set=cluster.spec.kubeControllerManager.controllers=*",
                        "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"
@@ -934,7 +931,7 @@ def generate_misc():
         build_test(name_override="kops-aws-selinux-alpha",
                    # RHEL8 VM image is enforcing SELinux by default.
                    cloud="aws",
-                   distro="rhel8",
+                   distro="rhel9",
                    networking="cilium",
                    k8s_version="ci",
                    kops_channel="alpha",
@@ -942,9 +939,6 @@ def generate_misc():
                    kubernetes_feature_gates="SELinuxMount,SELinuxChangePolicy",
                    extra_flags=[
                        "--set=cluster.spec.containerd.selinuxEnabled=true",
-                       # Use older containerd that still works on RHEL8
-                       "--set=cluster.spec.containerd.version=1.7.28",
-                       "--set=cluster.spec.containerd.runc.version=1.3.0",
                        # Run all default controllers ("*") + selinux-warning-controller.
                        "--set=cluster.spec.kubeControllerManager.controllers=*",
                        "--set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller"

@@ -2079,7 +2079,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-hostname-bug121018
 
-# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "rhel9", "extra_flags": "--set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-selinux
   cron: '38 1-23/8 * * *'
   labels:
@@ -2109,7 +2109,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-9.6.0_HVM-20250910-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2138,20 +2138,20 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: rhel8
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/distro: rhel9
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: SELinuxMount
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    testgrid-dashboards: kops-distro-rhel8, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-rhel9, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-num-failures-to-alert: '10'
     testgrid-tab-name: kops-aws-selinux
 
-# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "rhel9", "extra_flags": "--set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-selinux-alpha
   cron: '8 0-23/8 * * *'
   labels:
@@ -2181,7 +2181,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-9.6.0_HVM-20250910-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kubernetes-feature-gates=SELinuxMount,SELinuxChangePolicy \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
@@ -2211,15 +2211,15 @@ periodics:
           memory: 6Gi
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: rhel8
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0 --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/distro: rhel9
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: SELinuxMount
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    testgrid-dashboards: kops-distro-rhel8, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-distro-rhel9, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-num-failures-to-alert: '10'
     testgrid-tab-name: kops-aws-selinux-alpha
