@@ -202,7 +202,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa
       testgrid-tab-name: autoscaling-vpa-full-presubmits
-    optional: true
+    optional: false
     decorate: true
     decoration_config:
       timeout: 120m
