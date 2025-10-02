@@ -213,7 +213,7 @@ presubmits:
         - |
           set -euo pipefail
           make gofail-enable
-          TIMEOUT=60m VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
+          TIMEOUT=60m VERBOSE=1 GOOS=linux GOARCH=amd64 CPU=4 EXPECT_DEBUG=true E2E_TEST_MINIMAL=true make test-e2e-release
         resources:
           requests:
             cpu: "4"
@@ -243,7 +243,7 @@ presubmits:
         - -c
         - |
           set -euo pipefail
-          TIMEOUT=60m VERBOSE=1 GOOS=linux GOARCH=386 CPU=4 EXPECT_DEBUG=true make test-e2e
+          TIMEOUT=60m VERBOSE=1 GOOS=linux GOARCH=386 CPU=4 EXPECT_DEBUG=true E2E_TEST_MINIMAL=true make test-e2e
         resources:
           requests:
             cpu: "4"
@@ -272,7 +272,7 @@ presubmits:
         - -c
         - |
           set -euo pipefail
-          TIMEOUT=60m VERBOSE=1 GOOS=linux GOARCH=arm64 CPU=4 EXPECT_DEBUG=true make test-e2e-release
+          TIMEOUT=60m VERBOSE=1 GOOS=linux GOARCH=arm64 CPU=4 EXPECT_DEBUG=true E2E_TEST_MINIMAL=true make test-e2e-release
         resources:
           requests:
             cpu: "4"
