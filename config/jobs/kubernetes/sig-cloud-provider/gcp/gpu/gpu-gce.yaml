@@ -24,38 +24,43 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extract=ci/fast/latest-fast -> --extract=ci/latest-{{.Version}}"
+    fork-per-release-replacements: "latest.txt -> latest-{{.Version}}"
     fork-per-release-cron: 0 0-23/2 * * *, 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
     testgrid-dashboards: sig-release-master-blocking, google-gce, sig-node-gpu
     testgrid-tab-name: gce-device-plugin-gpu-master
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io
-    description: "Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest2 to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '24'
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 300m
   spec:
     containers:
     - command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --check-leaked-resources
-      - --extract=ci/fast/latest-fast
-      # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
-      # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-      - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
-      - --gcp-node-image=gci
-      - --gcp-nodes=2
-      - --gcp-project-type=gpu-project
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --timeout=180m
-      # TODO: drop this once it's in the defaults
-      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+      - bash
+      - -c
+      - |
+        kubetest2 gce \
+          --v=9 \
+          --legacy-mode \
+          --up \
+          --down \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
+          --test=ginkgo \
+          -- \
+          --test-package-url=https://dl.k8s.io \
+          --test-package-dir=ci \
+          --test-package-marker=latest.txt \
+          --focus-regex='\[Feature:GPUDevicePlugin\]'
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
       resources:
         limits:
           cpu: 1
