@@ -31,7 +31,7 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
@@ -66,7 +66,7 @@ periodics:
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
@@ -120,7 +120,7 @@ periodics:
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
@@ -165,7 +165,7 @@ periodics:
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
@@ -210,7 +210,7 @@ periodics:
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
@@ -257,7 +257,7 @@ periodics:
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
@@ -304,7 +304,7 @@ periodics:
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
-    testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
