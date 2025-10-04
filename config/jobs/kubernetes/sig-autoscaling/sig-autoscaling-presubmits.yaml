@@ -197,7 +197,7 @@ presubmits:
             memory: 6Gi
 
   kubernetes/autoscaler:
-  - name: pull-kubernetes-e2e-autoscaling-vpa-full
+  - name: pull-autoscaling-e2e-vpa-full
     cluster: k8s-infra-prow-build
     annotations:
       testgrid-dashboards: sig-autoscaling-vpa
@@ -240,7 +240,7 @@ presubmits:
         env:
         - name: FEATURE_GATES
           value: "InPlaceOrRecreate=true"
-  - name: pull-kubernetes-e2e-autoscaling-ca-build
+  - name: pull-autoscaling-e2e-ca-build
     cluster: k8s-infra-prow-build
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
