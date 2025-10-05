@@ -136,7 +136,7 @@ def build_test(cloud='aws',
             build_cluster = 'k8s-infra-prow-build'
 
     validation_wait = None
-    if distro in ('flatcar', 'flatcararm64') or (distro in ('amzn2', 'rhel8') and kops_version in ('1.26', '1.27')):
+    if distro in ('flatcar', 'flatcararm64'):
         validation_wait = '20m'
 
     suffix = ""
@@ -524,9 +524,9 @@ def generate_misc():
                    extra_dashboards=['sig-k8s-infra-canaries'],
                    scenario='smoketest',
                    env={
-                       'KOPS_BASE_URL': "https://artifacts.k8s.io/binaries/kops/1.28.4/",
-                       'KOPS_VERSION': "v1.28.4",
-                       'K8S_VERSION': "v1.28.6",
+                       'KOPS_BASE_URL': "https://artifacts.k8s.io/binaries/kops/1.33.1/",
+                       'KOPS_VERSION': "v1.33.1",
+                       'K8S_VERSION': "v1.33.5",
                        'KOPS_SKIP_E2E': '1',
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),
@@ -1330,7 +1330,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.34', '1.33', '1.32', '1.31']:
+    for version in ['1.35', '1.34', '1.33', '1.32', '1.31']:
         results.append(
             build_test(
                 cloud='aws',
@@ -1808,7 +1808,7 @@ def generate_versions():
             runs_per_day=8,
         )
     ]
-    for version in ['1.34', '1.33', '1.32', '1.31', '1.30', '1.29', '1.28', '1.27']:
+    for version in ['1.35', '1.34', '1.33', '1.32', '1.31', '1.30', '1.29']:
         results.append(
             build_test(
                 cloud='aws',
@@ -1827,7 +1827,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.34', '1.33', '1.32', '1.31']:
+    for version in ['master', '1.35', '1.34', '1.33', '1.32', '1.31']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
@@ -2234,6 +2234,15 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            branch='release-1.34',
+            k8s_version='1.34',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-cilium-1-34',
+            networking='cilium',
+            tab_name='e2e-1-34',
+            always_run=True,
+        ),
+        presubmit_test(
             branch='release-1.31',
             k8s_version='1.31',
             kops_channel='alpha',
@@ -2258,33 +2267,6 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-aws-calico-1-29',
             networking='calico',
             tab_name='e2e-1-29',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.28',
-            k8s_version='1.28',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-28',
-            networking='calico',
-            tab_name='e2e-1-28',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.27',
-            k8s_version='1.27',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-27',
-            networking='calico',
-            tab_name='e2e-1-27',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.26',
-            k8s_version='1.26',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-26',
-            networking='calico',
-            tab_name='e2e-1-26',
             always_run=True,
         ),
 
