@@ -5,8 +5,6 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
     annotations:
       testgrid-dashboards: ibm-ppc64le-presubmits
     path_alias: k8s.io/kubernetes
