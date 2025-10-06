@@ -15,7 +15,6 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
-      preset-dind-enabled: "true"
     max_concurrency: 1
     decorate: true
     decoration_config:
@@ -82,7 +81,6 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
-      preset-dind-enabled: "true"
     max_concurrency: 1
     decorate: true
     decoration_config:
@@ -193,7 +191,6 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential-boskos-scale-001-kops: "true"
-      preset-dind-enabled: "true"
     max_concurrency: 1
     decorate: true
     decoration_config:
