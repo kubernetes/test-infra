@@ -2,7 +2,7 @@
 # 6 jobs, total of 1008 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kopsmaster
   cron: '54 0-23/1 * * *'
   labels:
@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -60,7 +60,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -69,7 +68,7 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kopsmaster
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kops135
   cron: '21 0-23/1 * * *'
   labels:
@@ -99,7 +98,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.35/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.35.txt \
@@ -127,7 +126,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -136,7 +134,7 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops135
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kops134
   cron: '19 0-23/1 * * *'
   labels:
@@ -166,7 +164,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.34/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.34.txt \
@@ -194,7 +192,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -203,7 +200,7 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops134
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.33", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "1.33", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kops133
   cron: '12 0-23/1 * * *'
   labels:
@@ -233,7 +230,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.33/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.33.txt \
@@ -261,7 +258,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.33'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -270,7 +266,7 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops133
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.32", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "1.32", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kops132
   cron: '30 0-23/1 * * *'
   labels:
@@ -300,7 +296,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.32/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.32/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
@@ -328,7 +324,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.32'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -337,7 +332,7 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops132
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.31", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
+# {"cloud": "aws", "distro": "u2404", "k8s_version": "1.31", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kops131
   cron: '12 0-23/1 * * *'
   labels:
@@ -367,7 +362,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci.txt \
           --publish-version-marker=gs://k8s-staging-kops/kops/releases/markers/release-1.31/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
@@ -395,7 +390,6 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.31'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
