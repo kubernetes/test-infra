@@ -154,14 +154,15 @@ def build_test(cloud='aws',
     tab = name_override or (f"kops-grid{suffix}")
     job_name = f"e2e-{tab}"
 
-    if irsa and cloud == "aws" and scenario is None and terraform_version is None:
-        if extra_flags is None:
-            extra_flags = []
-        if build_cluster == "k8s-infra-kops-prow-build":
-            # TODO: migrate to an s3 bucket within the k8s-infra-kops-prow-build cluster's account
-            extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
-        else:
-            extra_flags.append("--discovery-store=s3://k8s-kops-ci-prow/discovery")
+    # TODO: Uncomment when dynamic discovery buckets are available
+    # if irsa and cloud == "aws" and scenario is None and terraform_version is None:
+    #     if extra_flags is None:
+    #         extra_flags = []
+    #     if build_cluster == "k8s-infra-kops-prow-build":
+    #         # TODO: migrate to an s3 bucket within the k8s-infra-kops-prow-build cluster's account
+    #         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
+    #     else:
+    #         extra_flags.append("--discovery-store=s3://k8s-kops-ci-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image)
@@ -354,9 +355,10 @@ def presubmit_test(branch='master',
     if extra_flags is None:
         extra_flags = []
 
-    if (irsa and cloud == "aws" and scenario is None and
-            terraform_version is None and name != "pull-kops-aws-distro-al2023"):
-        extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
+    # TODO: Uncomment when dynamic discovery buckets are available
+    # if (irsa and cloud == "aws" and scenario is None and
+    #         terraform_version is None and name != "pull-kops-aws-distro-al2023"):
+    #     extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_url, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, extra_flags, kops_image)

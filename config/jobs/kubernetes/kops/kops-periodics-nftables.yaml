@@ -2,7 +2,7 @@
 # 16 jobs, total of 336 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-al2023
   cron: '26 7-23/8 * * *'
   labels:
@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.8.20250915.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.8.20250915.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -57,7 +57,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: al2023
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -66,7 +66,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-al2023
 
-# {"cloud": "aws", "distro": "deb12", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "deb12", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-deb12
   cron: '56 0-23/8 * * *'
   labels:
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20250909-2230' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-12-amd64-20250909-2230' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -121,7 +121,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: deb12
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -130,7 +130,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-deb12
 
-# {"cloud": "aws", "distro": "deb13", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "deb13", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-deb13
   cron: '54 6-23/8 * * *'
   labels:
@@ -160,7 +160,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-13-amd64-20250911-2232' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-13-amd64-20250911-2232' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -185,7 +185,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: deb13
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -194,7 +194,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-deb13
 
-# {"cloud": "aws", "distro": "flatcar", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "flatcar", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-flatcar
   cron: '45 7-23/8 * * *'
   labels:
@@ -224,7 +224,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4426.1.0-hvm' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-4426.1.0-hvm' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -250,7 +250,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: flatcar
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -259,7 +259,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-flatcar
 
-# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-rhel8
   cron: '45 5-23/8 * * *'
   labels:
@@ -289,7 +289,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -314,7 +314,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel8
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -323,7 +323,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-rhel8
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-u2204
   cron: '9 5-23/8 * * *'
   labels:
@@ -353,7 +353,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250918' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250918' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -378,7 +378,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -387,7 +387,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2204
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-nftables-u2404
   cron: '19 7-23/8 * * *'
   labels:
@@ -417,7 +417,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250920' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -442,7 +442,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: u2404
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
