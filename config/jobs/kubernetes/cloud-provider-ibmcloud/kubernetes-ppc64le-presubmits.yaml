@@ -5,8 +5,6 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
     annotations:
       testgrid-dashboards: ibm-ppc64le-presubmits
     path_alias: k8s.io/kubernetes
@@ -22,8 +20,8 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 7
+            cpu: 6
             memory: 20Gi
           requests:
-            cpu: 7
+            cpu: 6
             memory: 20Gi
