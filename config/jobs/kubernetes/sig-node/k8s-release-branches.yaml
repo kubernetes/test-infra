@@ -46,7 +46,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.31
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Node conformance tests in release branch 1.31
 - name: ci-kubernetes-node-release-branch-1-32
   cluster: k8s-infra-prow-build
@@ -95,7 +95,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.32
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Node conformance tests in release branch 1.32
 - name: ci-kubernetes-node-release-branch-1-33
   cluster: k8s-infra-prow-build
@@ -147,7 +147,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.33
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Node conformance tests in release branch 1.33
 - name: ci-kubernetes-node-release-branch-1-34
   cluster: k8s-infra-prow-build
@@ -199,5 +199,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-conformance-release-1.34
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Node conformance tests in release branch 1.34

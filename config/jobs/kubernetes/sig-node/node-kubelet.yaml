@@ -51,7 +51,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking, sig-node-containerd
     testgrid-tab-name: ci-node-e2e
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, release-team@kubernetes.io
     description: "Uses kubetest to run node-e2e tests (+NodeConformance, -Flaky|Slow|Serial)"
 
 - name: ci-kubernetes-node-kubelet-serial-containerd
@@ -108,7 +108,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-serial-containerd
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-kubelet-containerd-flaky
@@ -163,7 +163,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-flaky
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Uses kubetest to run serial node-e2e tests (+Serial|+Flaky, (Benchmark|Node*Feature)"
 
 
@@ -217,7 +217,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: node-kubelet-cgroupv2-serial-crio
-    testgrid-alert-email: skclark@redhat.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Uses kubetest to run serial node-e2e tests with cgroupv2 (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-arm64-ubuntu-serial
@@ -226,6 +226,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-arm64-ubuntu-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial node e2e tests on ARM64 environment on Ubuntu"
   decorate: true
   extra_refs:
@@ -331,7 +332,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet, sig-node-cri-o
     testgrid-tab-name: kubelet-gce-e2e-swap-fedora
-    testgrid-alert-email: ehashman@redhat.com, ikema@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Executes E2E suite with swap enabled on Fedora
 
 - name: ci-kubernetes-node-swap-ubuntu-serial
@@ -340,6 +341,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial node e2e tests with swap environment on Ubuntu"
   labels:
     preset-service-account: "true"
@@ -396,6 +398,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet, sig-node-cri-o
     testgrid-tab-name: kubelet-gce-e2e-swap-fedora-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial node e2e tests with swap environment on Fedora"
   labels:
     preset-service-account: "true"
@@ -448,6 +451,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-swap-conformance-ubuntu-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial swap conformance e2e tests with swap environment on Ubuntu"
   labels:
     preset-service-account: "true"
@@ -505,6 +509,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet, sig-node-cri-o
     testgrid-tab-name: kubelet-swap-conformance-fedora-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run serial swap conformance e2e tests with swap environment on Fedora"
   labels:
     preset-service-account: "true"
@@ -560,6 +565,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-fsquota-ubuntu
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Run node e2e tests with fsquota environment on Ubuntu"
   labels:
     preset-service-account: "true"
@@ -665,6 +671,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-containerd-standalone-mode-all-alpha
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Runs kubelet in standalone mode with all alpha features enabled"
 
 - name: ci-kubernetes-node-e2e-containerd-standalone-mode
@@ -723,6 +730,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-containerd-standalone-mode
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Runs kubelet in standalone mode"
 
 - name: ci-kubernetes-node-kubelet-serial-topology-manager
@@ -731,6 +739,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -784,6 +793,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -837,6 +847,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-memory-manager
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -890,6 +901,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-cri-proxy
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Use cri proxy"
   labels:
     preset-service-account: "true"

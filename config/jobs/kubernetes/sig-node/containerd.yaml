@@ -88,6 +88,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-cgroupv1-containerd-node-e2e
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -139,7 +140,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv1-containerd-node-e2e
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-cgroupv1-containerd-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -191,6 +192,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv1-containerd-node-features
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-cgroupv1-containerd-node-e2e-serial
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -242,6 +244,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv1-containerd-node-e2e-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-containerd-node-e2e-1-6
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -293,6 +296,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-1.6
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-containerd-node-e2e-1-7
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -344,6 +348,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-1.7
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-containerd-node-e2e-features-1-6
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -395,6 +400,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-features-1.6
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-containerd-node-e2e-features-1-7
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -446,6 +452,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-features-1.7
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   cluster: k8s-infra-prow-build
@@ -504,6 +511,7 @@ periodics:
     testgrid-tab-name: e2e-cos-device-plugin-gpu
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 
 - name: ci-kubernetes-node-kubelet-containerd-eviction
   cluster: k8s-infra-prow-build
@@ -552,7 +560,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-eviction
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Uses kubetest to run node-e2e Eviction tests"
 
 - name: ci-cri-containerd-node-e2e-features
@@ -606,6 +614,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-features
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cri-containerd-node-e2e-unlabelled
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -658,6 +667,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-unlabelled
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - interval: 1h
   name: ci-cos-containerd-e2e-cos-gce
   cluster: k8s-infra-prow-build
@@ -696,6 +706,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-cos-e2e
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - interval: 1h
   name: ci-cos-containerd-e2e-ubuntu-gce
   cluster: k8s-infra-prow-build
@@ -733,6 +744,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-ubuntu-e2e
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-containerd-node-e2e
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -780,6 +792,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-node-e2e
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-containerd-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -827,6 +840,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-node-features
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-cgroupv2-containerd-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -878,7 +892,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-node-features
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-cgroupv2-containerd-node-e2e
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -930,6 +944,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-node-e2e
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cgroup-systemd-containerd-node-e2e
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -981,7 +996,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cgroup-systemd-containerd-node-e2e
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - interval: 12h
   name: ci-cos-cgroupv2-containerd-e2e-gce
   cluster: k8s-infra-prow-build
@@ -1039,6 +1054,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-e2e
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - interval: 12h
   name: ci-cos-cgroupv1-containerd-e2e-gce
   cluster: k8s-infra-prow-build
@@ -1095,6 +1111,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv1-containerd-e2e
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-cos-cgroupv2-containerd-node-e2e-serial
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -1146,6 +1163,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-node-e2e-serial
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-containerd
   cluster: k8s-infra-prow-build
@@ -1186,6 +1204,7 @@ periodics:
     testgrid-dashboards: google-gce, sig-storage-kubernetes
     testgrid-tab-name: gce-containerd
     description: node gce e2e tests for master branch using containerd
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-kubernetes-node-kubelet-containerd-resource-managers
   interval: 4h
   cluster: k8s-infra-prow-build
@@ -1233,7 +1252,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-resource-managers
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Executes CPU, Memory and Topology manager e2e tests"
 - name: ci-kubernetes-node-kubelet-containerd-hugepages
   cluster: k8s-infra-prow-build
@@ -1282,7 +1301,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-hugepages
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Executes hugepages e2e tests"
 
 - name: ci-kubernetes-node-swap-ubuntu
@@ -1334,7 +1353,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu
-    testgrid-alert-email: ehashman@redhat.com, mkmir@google.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: Executes E2E suite with swap enabled on Ubuntu
 - name: ci-kubernetes-node-kubelet-containerd-performance-test
   cluster: k8s-infra-prow-build
@@ -1387,7 +1406,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-performance-test
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Executes performance e2e tests"
 - name: ci-kubernetes-node-kubelet-lock-contention
   cluster: k8s-infra-prow-build
@@ -1436,6 +1455,7 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-lock-contention
     description: "Contains disruptive tests for the Lock Contention feature."
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-kubernetes-node-kubelet-credential-provider
   cluster: k8s-infra-prow-build
   interval: 6h
@@ -1483,6 +1503,7 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-credential-provider
     description: "tests feature kubelet image credential provider"
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
 - name: ci-kubernetes-e2e-gcp-credential-provider
   cluster: k8s-infra-prow-build
   interval: 24h
@@ -1525,3 +1546,4 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: gcp-kubelet-credential-provider
     description: "tests feature gcp kubelet image credential provider"
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
