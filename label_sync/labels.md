@@ -16,6 +16,7 @@
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-azure-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-gcp, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-gcp-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-vsphere, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-vsphere-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/contributor-playground, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-playground-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-tweets-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontroller-runtime-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for issues](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-issues)
@@ -307,6 +308,27 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="area/govmomi" href="#area/govmomi">`area/govmomi`</a> | Issues or PRs related to the govmomi mode| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 | <a id="area/supervisor" href="#area/supervisor">`area/supervisor`</a> | Issues or PRs related to the supervisor mode| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/contributor-playground, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/aotearoa" href="#area/aotearoa">`area/aotearoa`</a> | Issues or PRs related to Aotearoa region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/australia" href="#area/australia">`area/australia`</a> | Issues or PRs related to Australia region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/austria" href="#area/austria">`area/austria`</a> | Issues or PRs related to Austria region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/barcelona" href="#area/barcelona">`area/barcelona`</a> | Issues or PRs related to Barcelona region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/bay-area" href="#area/bay-area">`area/bay-area`</a> | Issues or PRs related to Bay Area| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/beijing" href="#area/beijing">`area/beijing`</a> | Issues or PRs related to Beijing region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/brazil" href="#area/brazil">`area/brazil`</a> | Issues or PRs related to Brazil region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/czechia" href="#area/czechia">`area/czechia`</a> | Issues or PRs related to Czechia region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/denmark" href="#area/denmark">`area/denmark`</a> | Issues or PRs related to Denmark region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/denver" href="#area/denver">`area/denver`</a> | Issues or PRs related to Denver region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/india" href="#area/india">`area/india`</a> | Issues or PRs related to India region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/japan" href="#area/japan">`area/japan`</a> | Issues or PRs related to Japan region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/paris" href="#area/paris">`area/paris`</a> | Issues or PRs related to Paris region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/remote" href="#area/remote">`area/remote`</a> | Issues or PRs related to remote events or activities| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/sandiego" href="#area/sandiego">`area/sandiego`</a> | Issues or PRs related to San Diego region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
+| <a id="area/seattle" href="#area/seattle">`area/seattle`</a> | Issues or PRs related to Seattle region| anyone |  [label](https://github.com/kubernetes-sigs/prow/tree/main/pkg/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs
 

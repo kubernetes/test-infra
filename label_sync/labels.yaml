@@ -2243,3 +2243,101 @@ repos:
         target: prs
         prowPlugin: label
         addedBy: approvers or reviewers or members
+  kubernetes-sigs/contributor-playground:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to Aotearoa region
+        name: area/aotearoa
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Australia region
+        name: area/australia
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Austria region
+        name: area/austria
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Barcelona region
+        name: area/barcelona
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Bay Area
+        name: area/bay-area
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Beijing region
+        name: area/beijing
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Brazil region
+        name: area/brazil
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Czechia region
+        name: area/czechia
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Denmark region
+        name: area/denmark
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Denver region
+        name: area/denver
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to India region
+        name: area/india
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Japan region
+        name: area/japan
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Paris region
+        name: area/paris
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to remote events or activities
+        name: area/remote
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to San Diego region
+        name: area/sandiego
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Seattle region
+        name: area/seattle
+        target: both
+        prowPlugin: label
+        addedBy: anyone
