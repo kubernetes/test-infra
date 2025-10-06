@@ -53,11 +53,11 @@ presubmits:
         - dev/ci/presubmits/lint-go
         resources:
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-apps-agent-sandbox
       testgrid-tab-name: presubmit-lint-go
