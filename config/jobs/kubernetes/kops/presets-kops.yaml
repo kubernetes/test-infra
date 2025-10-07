@@ -1,0 +1,15 @@
+presets:
+  # Credentials for using community-owned AWS account kops-infra-ci. Used for kOps tests.
+  - labels:
+      preset-k8s-kops-aws-credential: "true"
+    env:
+      - name: AWS_SHARED_CREDENTIALS_FILE
+        value: /etc/aws-cred/credentials
+    volumeMounts:
+      - name: aws-cred
+        mountPath: /etc/aws-cred
+        readOnly: true
+    volumes:
+      - name: aws-cred
+        secret:
+          secretName: kops-ci-user-credentials
