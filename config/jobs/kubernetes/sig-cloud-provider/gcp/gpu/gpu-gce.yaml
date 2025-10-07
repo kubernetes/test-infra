@@ -56,6 +56,7 @@ periodics:
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=ginkgo \
           -- \
+          --provider=gce \
           --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
