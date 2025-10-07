@@ -2403,6 +2403,14 @@ def generate_presubmits_e2e():
             test_timeout_minutes=70,
             optional=True,
         ),
+
+        presubmit_test(
+            name="pull-kops-scenario-clusterapi-gcp",
+            cloud="gce",
+            k8s_version="stable",
+            scenario="clusterapi",
+            optional=True
+        ),
     ]
 
     return jobs
