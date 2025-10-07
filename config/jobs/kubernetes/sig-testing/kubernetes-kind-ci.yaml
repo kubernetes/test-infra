@@ -302,7 +302,7 @@ periodics:
   name: ci-kubernetes-e2e-kind-alpha-beta-features-canary
   annotations:
     testgrid-dashboards: sig-testing-kind
-    testgrid-tab-name: kind-master-alpha-beta
+    testgrid-tab-name: kind-master-alpha-beta-features-canary
     description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled. In contrast to ci-kubernetes-e2e-kind-alpha-beta-features it really runs all such tests, with flaky tests being the only exception.
     testgrid-alert-email: patrick.ohly@intel.com
     testgrid-num-columns-recent: '6'
@@ -332,8 +332,9 @@ periodics:
       - name: RUNTIME_CONFIG
         value: '{"api/all":"true"}'
       - name: LABEL_FILTER
-        # Full coverage. The only exception are known flaky tests.
-        value: "Feature: isSubsetOf OffByDefault && !Flaky"
+        # Full coverage. The only exception are known flaky tests
+        # and deprecated features because those don't get enabled by AllAlpha/Beta.
+        value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Flaky"
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
