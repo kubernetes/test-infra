@@ -8,6 +8,9 @@
     {%- if build_cluster == "default" %}
     preset-aws-credential: "true"
     {%- endif %}
+    {%- if build_cluster == "k8s-infra-kops-prow-build" %}
+    preset-k8s-kops-aws-credential: "true"
+    {%- endif %}
   max_concurrency: 1
   decorate: true
   decoration_config:

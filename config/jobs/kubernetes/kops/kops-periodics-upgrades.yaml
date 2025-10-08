@@ -9,6 +9,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -78,6 +79,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -147,6 +149,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -216,6 +219,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -291,6 +295,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -360,6 +365,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -429,6 +435,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -498,6 +505,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -567,6 +575,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -636,6 +645,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -711,6 +721,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -780,6 +791,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -855,6 +867,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -924,6 +937,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -999,6 +1013,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1068,6 +1083,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1143,6 +1159,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1212,6 +1229,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1287,6 +1305,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1356,6 +1375,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1431,6 +1451,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1500,6 +1521,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1575,6 +1597,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1644,6 +1667,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1719,6 +1743,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1788,6 +1813,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1863,6 +1889,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1932,6 +1959,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2007,6 +2035,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2076,6 +2105,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2151,6 +2181,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2220,6 +2251,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2295,6 +2327,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2364,6 +2397,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2439,6 +2473,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2508,6 +2543,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2583,6 +2619,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2652,6 +2689,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2727,6 +2765,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2796,6 +2835,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2871,6 +2911,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2940,6 +2981,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
