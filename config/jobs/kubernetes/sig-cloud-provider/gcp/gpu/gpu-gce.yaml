@@ -19,9 +19,7 @@ periodics:
   cluster: k8s-infra-prow-build
   cron: "30 1-23/2 * * *"
   labels:
-    preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-ci-gce-device-plugin-gpu: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "latest.txt -> latest-{{.Version}}"
@@ -41,26 +39,28 @@ periodics:
   decoration_config:
     timeout: 300m
   spec:
+    serviceAccountName: prow-build
     containers:
     - command:
       - runner.sh
+      - kubetest2
+      - gce
       args:
-      - bash
-      - -c
-      - |
-        kubetest2 gce \
-          --v=9 \
-          --legacy-mode \
-          --up \
-          --down \
-          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
-          --test=ginkgo \
-          -- \
-          --provider=gce \
-          --test-package-url=https://dl.k8s.io \
-          --test-package-dir=ci \
-          --test-package-marker=latest.txt \
-          --focus-regex='\[Feature:GPUDevicePlugin\]'
+      - --v=9
+      - --legacy-mode
+      - --up
+      - --down
+      - --node-size=g2-standard-24
+      - --num-nodes=2
+      - --env=NODE_ACCELERATORS='type=nvidia-l4,count=2'
+      - --kubernetes-version=https://dl.k8s.io/ci/latest.txt
+      - --test=ginkgo
+      - --
+      - --provider=gce
+      - --test-package-url=https://dl.k8s.io
+      - --test-package-dir=ci
+      - --test-package-marker=latest.txt
+      - --focus-regex=\[Feature:GPUDevicePlugin\]
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
       resources:
         limits:
