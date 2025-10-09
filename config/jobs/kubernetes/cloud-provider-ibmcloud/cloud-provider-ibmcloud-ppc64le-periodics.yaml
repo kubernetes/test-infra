@@ -103,6 +103,8 @@ periodics:
           requests:
             cpu: 6
             memory: 20Gi
+      nodeSelector:
+        feature.node.kubernetes.io/ppc64le.smtlevel: "4"
 
   - name: ci-kubernetes-integration-1-33-ppc64le
     interval: 6h # bump to 24h after initial debugging
@@ -137,7 +139,8 @@ periodics:
           requests:
             cpu: 6
             memory: 20Gi
-
+      nodeSelector:
+        feature.node.kubernetes.io/ppc64le.smtlevel: "4"
 
   - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     interval: 3h
