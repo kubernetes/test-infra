@@ -41,10 +41,10 @@ presubmits:
         - --build
         - --up
         - --down
-        - --target-build-arch=linux/amd64
         - --node-size=g2-standard-24
         - --num-nodes=2
-        - --env=NODE_ACCELERATORS='type=nvidia-l4,count=2'
+        - --boskos-resource-type=gpu-project
+        - --node-accelerators=type=nvidia-l4,count=2
         - --test=ginkgo
         - --
         - --provider=gce
