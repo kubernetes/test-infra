@@ -254,7 +254,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.33
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -287,7 +287,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "latest-1.33"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
@@ -315,7 +315,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.33
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -348,7 +348,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "latest-1.33"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
