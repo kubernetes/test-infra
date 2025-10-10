@@ -102,6 +102,9 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
       decorate: true
+      decoration_config:
+        timeout: 120m
+        grace_period: 10m
       branches:
         - ^main
         - ^release-0.4$
