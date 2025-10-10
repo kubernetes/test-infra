@@ -564,8 +564,8 @@ presubmits:
           env:
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Uniform"
-            - name: TEST_WINDOWS # CAPZ config
-              value: "false"
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
+              value: "windows-2022"
             - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
