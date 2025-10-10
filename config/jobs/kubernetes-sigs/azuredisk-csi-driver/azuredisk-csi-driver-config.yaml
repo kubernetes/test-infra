@@ -536,7 +536,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.34
+        base_ref: release-1.33
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -564,8 +564,6 @@ presubmits:
           env:
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Uniform"
-            - name: WINDOWS_SERVER_VERSION # CAPZ config
-              value: "windows-2022"
             - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
@@ -573,7 +571,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.34.0"
+              value: "v1.33.2"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz
