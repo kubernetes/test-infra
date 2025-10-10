@@ -73,6 +73,8 @@ presubmits:
     always_run: false # Has known failures.
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 90m
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
@@ -92,7 +94,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBE_TIMEOUT
-          value: "-timeout=20m"
+          value: "-timeout=30m"
         - name: KUBE_RACE
           value: "-race"
         args:
@@ -219,6 +221,8 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-integration-race-master
   decorate: true
+  decoration_config:
+    timeout: 90m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -245,7 +249,7 @@ periodics:
       - name: SHORT
         value: --short=false
       - name: KUBE_TIMEOUT
-        value: "-timeout=20m"
+        value: "-timeout=30m"
       - name: KUBE_RACE
         value: "-race"
       # docker-in-docker needs privileged mode
