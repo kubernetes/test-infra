@@ -98,10 +98,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 6
+            cpu: 4
             memory: 20Gi
           requests:
-            cpu: 6
+            cpu: 4
             memory: 20Gi
       nodeSelector:
         feature.node.kubernetes.io/ppc64le.smtlevel: "4"
@@ -134,10 +134,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 6
+            cpu: 4
             memory: 20Gi
           requests:
-            cpu: 6
+            cpu: 4
             memory: 20Gi
       nodeSelector:
         feature.node.kubernetes.io/ppc64le.smtlevel: "4"
