@@ -43,6 +43,7 @@ presubmits:
         - --down
         - --node-size=g2-standard-24
         - --num-nodes=2
+        - --gcp-zone=us-east1-b
         - --boskos-resource-type=gpu-project
         - --node-accelerators=type=nvidia-l4,count=2
         - --test=ginkgo
