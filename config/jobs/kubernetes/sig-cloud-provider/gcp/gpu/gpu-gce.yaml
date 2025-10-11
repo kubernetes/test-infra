@@ -6,13 +6,6 @@ presets:
     value: type=nvidia-tesla-t4,count=2
   - name: NODE_SIZE
     value: n1-standard-2
-- labels:
-    preset-ci-gce-device-plugin-gpu-nvidia-t4: "true"
-  env:
-  - name: NODE_ACCELERATORS
-    value: type=nvidia-tesla-t4,count=2
-  - name: NODE_SIZE
-    value: n1-standard-2
 
 periodics:
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
@@ -24,9 +17,9 @@ periodics:
     fork-per-release: "true"
     fork-per-release-replacements: "latest.txt -> latest-{{.Version}}"
     fork-per-release-cron: 0 0-23/2 * * *, 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24 * * *
-    testgrid-dashboards: sig-release-master-blocking, google-gce, sig-node-gpu
+    testgrid-dashboards: sig-release-master-blocking, google-gce, sig-node-gpu, sig-node-containerd
     testgrid-tab-name: gce-device-plugin-gpu-master
-    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io
+    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io, sig-node-ci+testgrid@kubernetes.io
     description: "Uses kubetest2 to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '24'
@@ -55,19 +48,21 @@ periodics:
       - --gcp-zone=us-east1-b
       - --boskos-resource-type=gpu-project
       - --node-accelerators=type=nvidia-l4,count=2
+      - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
       - --kubernetes-version=https://dl.k8s.io/ci/latest.txt
       - --test=ginkgo
       - --
       - --provider=gce
       - --test-package-url=https://dl.k8s.io
       - --test-package-dir=ci
+      - --test-args=--minStartupPods=8
       - --test-package-marker=latest.txt
       - --focus-regex=\[Feature:GPUDevicePlugin\]
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
       resources:
         limits:
-          cpu: 1
-          memory: 3Gi
+          cpu: 2
+          memory: 6Gi
         requests:
-          cpu: 1
-          memory: 3Gi
+          cpu: 2
+          memory: 6Gi

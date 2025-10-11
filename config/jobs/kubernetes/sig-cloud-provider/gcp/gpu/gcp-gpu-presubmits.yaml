@@ -44,12 +44,14 @@ presubmits:
         - --node-size=g2-standard-24
         - --num-nodes=2
         - --gcp-zone=us-east1-b
+        - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
         - --boskos-resource-type=gpu-project
         - --node-accelerators=type=nvidia-l4,count=2
         - --test=ginkgo
         - --
         - --provider=gce
         - --use-built-binaries=true
+        - --test-args=--minStartupPods=8
         - --focus-regex=\[Feature:GPUDevicePlugin\]
         resources:
           limits:
