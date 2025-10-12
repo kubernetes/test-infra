@@ -567,7 +567,7 @@ presubmits:
               - '--node-test-args=--feature-gates=KubeletPSI=true --service-feature-gates=KubeletPSI=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
               - --node-tests=true
               - --provider=gce
-              - --test_args=--nodes=8 --focus="Summary API"
+              - --test_args=--nodes=8 --focus="Summary API|\[Feature:KubeletPSI\]"
               - --timeout=65m
             env:
               - name: GOPATH
