@@ -77,6 +77,8 @@ distros = [
     "ubuntu2204arm64",
     "ubuntu2404",
     "ubuntu2404arm64",
+    "ubuntu2510",
+    "ubuntu2510arm64",
     "amazonlinux2",
     "al2023",
     "al2023arm64",
