@@ -244,6 +244,8 @@ distro_images = {
     'u2204arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
     'u2404': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2404arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
+    'u2510': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-amd64-server-*'), # pylint: disable=line-too-long
+    'u2510arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
@@ -266,4 +268,6 @@ distros_ssh_user = {
     'u2204arm64': 'ubuntu',
     'u2404': 'ubuntu',
     'u2404arm64': 'ubuntu',
+    'u2510': 'ubuntu',
+    'u2510arm64': 'ubuntu',
 }
