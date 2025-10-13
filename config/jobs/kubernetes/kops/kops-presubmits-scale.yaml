@@ -152,10 +152,6 @@ presubmits:
           value: "false"
         - name: CL2_USE_ADVANCED_DNSTEST
           value: "false"
-        - name: SMALL_STATEFUL_SETS_PER_NAMESPACE
-          value: "0"
-        - name: MEDIUM_STATEFUL_SETS_PER_NAMESPACE
-          value: "0"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
@@ -338,7 +334,9 @@ presubmits:
         - name: CONTROL_PLANE_COUNT
           value: "1"
         - name: CONTROL_PLANE_SIZE
-          value: "c3-standard-88"
+          value: "c4-standard-96"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -363,10 +361,8 @@ presubmits:
           value: "false"
         - name: CL2_USE_ADVANCED_DNSTEST
           value: "false"
-        - name: SMALL_STATEFUL_SETS_PER_NAMESPACE
-          value: "0"
-        - name: MEDIUM_STATEFUL_SETS_PER_NAMESPACE
-          value: "0"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-scale-project"
         - name: CLOUD_PROVIDER
           value: "gce"
         resources:
@@ -434,8 +430,10 @@ presubmits:
           value: "20"
         - name: CONTROL_PLANE_COUNT
           value: "1"
+        - name: KUBE_PROXY_MODE
+          value: "nftables"
         - name: CONTROL_PLANE_SIZE
-          value: "c3-standard-88"
+          value: "c4-standard-48"
         - name: CL2_LOAD_TEST_THROUGHPUT
           value: "50"
         - name: CL2_DELETE_TEST_THROUGHPUT
@@ -460,6 +458,8 @@ presubmits:
           value: "ssd-csi"
         - name: CL2_NETWORK_LATENCY_THRESHOLD
           value: "0.5s"
+        - name: BOSKOS_RESOURCE_TYPE
+          value: "scalability-scale-project"
         - name: CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES
           value: "true"
         - name: CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD

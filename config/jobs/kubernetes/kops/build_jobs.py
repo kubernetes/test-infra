@@ -1619,8 +1619,6 @@ def generate_presubmits_scale():
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
                 'CL2_ENABLE_DNSTESTS': "false",
                 'CL2_USE_ADVANCED_DNSTEST': "false",
-                'SMALL_STATEFUL_SETS_PER_NAMESPACE': 0,
-                'MEDIUM_STATEFUL_SETS_PER_NAMESPACE': 0
             }
         ),
         presubmit_test(
@@ -1665,7 +1663,6 @@ def generate_presubmits_scale():
             always_run=False,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
-            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
                 'CNI_PLUGIN': "gce",
                 'KUBE_NODE_COUNT': "5000",
@@ -1674,7 +1671,8 @@ def generate_presubmits_scale():
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
                 'NODE_MODE': "master",
                 'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c3-standard-88",
+                'CONTROL_PLANE_SIZE': "c4-standard-96",
+                'KUBE_PROXY_MODE': 'nftables',
                 'PROMETHEUS_SCRAPE_KUBE_PROXY': "true",
                 'CL2_ENABLE_DNS_PROGRAMMING': "true",
                 'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
@@ -1687,8 +1685,7 @@ def generate_presubmits_scale():
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s",
                 'CL2_ENABLE_DNSTESTS': "false",
                 'CL2_USE_ADVANCED_DNSTEST': "false",
-                'SMALL_STATEFUL_SETS_PER_NAMESPACE': 0,
-                'MEDIUM_STATEFUL_SETS_PER_NAMESPACE': 0
+                'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
             }
         ),
         presubmit_test(
@@ -1705,7 +1702,8 @@ def generate_presubmits_scale():
                 'KUBE_NODE_COUNT': "500",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "1",
-                'CONTROL_PLANE_SIZE': "c3-standard-88",
+                'KUBE_PROXY_MODE': 'nftables',
+                'CONTROL_PLANE_SIZE': "c4-standard-48",
                 'CL2_LOAD_TEST_THROUGHPUT': "50",
                 'CL2_DELETE_TEST_THROUGHPUT': "50",
                 'CL2_RATE_LIMIT_POD_CREATION': "false",
@@ -1718,6 +1716,7 @@ def generate_presubmits_scale():
                 'ENABLE_PROMETHEUS_SERVER': "true",
                 'PROMETHEUS_PVC_STORAGE_CLASS': "ssd-csi",
                 'CL2_NETWORK_LATENCY_THRESHOLD': "0.5s",
+                'BOSKOS_RESOURCE_TYPE': "scalability-scale-project",
                 'CL2_ENABLE_VIOLATIONS_FOR_NETWORK_PROGRAMMING_LATENCIES': "true",
                 'CL2_NETWORK_PROGRAMMING_LATENCY_THRESHOLD': "20s"
             }
