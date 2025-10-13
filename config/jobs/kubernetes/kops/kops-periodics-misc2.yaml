@@ -8,7 +8,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -143,7 +143,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -275,7 +275,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -338,7 +338,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -402,7 +402,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -466,7 +466,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -530,7 +530,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -594,7 +594,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -659,7 +659,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -724,7 +724,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -788,7 +788,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -852,7 +852,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -916,7 +916,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -981,7 +981,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1046,7 +1046,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1110,7 +1110,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1174,7 +1174,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1240,7 +1240,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1308,7 +1308,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1688,7 +1688,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1752,7 +1752,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1816,7 +1816,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1882,7 +1882,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -1948,7 +1948,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2014,7 +2014,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2080,7 +2080,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2152,7 +2152,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2292,7 +2292,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2359,7 +2359,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2494,7 +2494,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2630,7 +2630,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2698,7 +2698,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2765,7 +2765,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -2834,7 +2834,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -3039,7 +3039,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -3176,7 +3176,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
@@ -3244,7 +3244,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-kops-aws-credential: "true"
   cluster: k8s-infra-kops-prow-build
   decorate: true
   decoration_config:
