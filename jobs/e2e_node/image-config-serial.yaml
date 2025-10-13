@@ -6,8 +6,8 @@ images:
     image: ubuntu-gke-2204-1-24-v20220623
     machine: e2-standard-2 # These tests need a lot of memory
     project: ubuntu-os-gke-cloud
-  cos-stable1:
-    image_family: cos-beta
+  cos:
+    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     machine: e2-standard-2 # These tests need a lot of memory
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"

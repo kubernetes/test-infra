@@ -6,7 +6,7 @@ images:
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
     image_regex: ".*[^-cgroupsv1]$"
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
-  cos-stable:
-    image_family: cos-beta
+  cos:
+    image_family: cos-117-lts # Use cos-117-lts to lock down what COS version is used with containerd 1.7, which aligns with COS's built-in containerd version
     project: cos-cloud
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"

@@ -7,8 +7,8 @@ images:
     project: ubuntu-os-gke-cloud
     # Using `e2-standard-4` to enable CPU manager node e2e tests.
     machine: e2-standard-4
-  cos-stable1:
-    image_family: cos-beta
+  cos:
+    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
     # Using `e2-standard-4` to enable CPU manager node e2e tests.
