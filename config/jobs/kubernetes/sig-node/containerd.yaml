@@ -586,7 +586,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
-      - --image-family=cos-109-lts
+      - --image-family=cos-125-lts
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
@@ -991,7 +991,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel=30
-      - --image-family=cos-stable
+      - --image-family=cos-121-lts # Use cos-121-lts to lock down what COS version is used with cgroupv1
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:NodeSwap\] --minStartupPods=8

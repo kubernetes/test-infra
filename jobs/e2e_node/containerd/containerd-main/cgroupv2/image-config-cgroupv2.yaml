@@ -1,6 +1,5 @@
 images:
-  cos-stable:
-    # Using cos-beta to pick up cgroupv2 enabled by default as of cos-beta-97-16919-0-3.
-    image_family: cos-beta
+  cos:
+    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2,gci-update-strategy=update_disabled"
