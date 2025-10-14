@@ -71,7 +71,7 @@ periodics:
             memory: 20Gi
 
   - name: ci-kubernetes-integration-1-34-ppc64le
-    interval: 6h # bump to 24h after initial debugging
+    cron: "0 0-18/6 * * *" # every 6h starting at 00:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
     decorate: true
     extra_refs:
@@ -107,7 +107,7 @@ periodics:
         feature.node.kubernetes.io/ppc64le.smtlevel: "4"
 
   - name: ci-kubernetes-integration-1-33-ppc64le
-    interval: 6h # bump to 24h after initial debugging
+    cron: "0 1-19/6 * * *" # every 6h starting at 01:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
     decorate: true
     extra_refs:
@@ -143,7 +143,7 @@ periodics:
         feature.node.kubernetes.io/ppc64le.smtlevel: "4"
 
   - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
-    interval: 3h
+    cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
@@ -226,7 +226,7 @@ periodics:
                   exit $rc2
               fi
   - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
-    interval: 6h
+    cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
@@ -297,7 +297,7 @@ periodics:
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2ENode Test suite exited with code:$rc"; exit $rc
   - name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
-    interval: 6h
+    cron: "30 4-22/6 * * *" # every 6h starting at 04:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
@@ -363,7 +363,7 @@ periodics:
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: alpha-enabled-default tests exited with code: $rc"; exit $rc
   - name: ci-kubernetes-e2e-ppc64le-default
-    interval: 8h
+    cron: "0 6-22/8 * * *" # every 8h starting at 06:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
@@ -426,7 +426,7 @@ periodics:
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2e default tests exited with code: $rc"; exit $rc
   - name: ci-kubernetes-ppc64le-e2e-slow-kubetest2
-    interval: 3h
+    cron: "30 7-22/3 * * *" # every 3h starting at 07:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
@@ -489,7 +489,7 @@ periodics:
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2e Slow tests exited with code: $rc"; exit $rc
   - name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
-    interval: 8h
+    cron: "30 9-17/8 * * *" # every 8h starting at 09:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
     labels:
       preset-ibmcloud-cred: "true"
