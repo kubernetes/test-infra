@@ -333,12 +333,12 @@ presubmits:
         args:
           - ./scripts/ci-apidiff.sh
         resources:
-          limits:
-            cpu: 4
-            memory: 4Gi
           requests:
-            cpu: 4
-            memory: 4Gi
+            cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-apidiff-main
