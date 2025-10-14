@@ -405,3 +405,98 @@ periodics:
               value: "true"
             - name: NODE_PRELOAD_IMAGES
               value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+
+  - name: ci-kubernetes-e2e-kops-gce-5000-node-dra-with-workload
+    cluster: k8s-infra-prow-build
+    tags:
+      - "perfDashPrefix: kops-gce-dra-5000Nodes-with-workload"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
+    cron: '0 10,22 * * *' # Run twice a day at 10:00 and 22:00 UTC
+    labels:
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: sig-scalability-dra
+      testgrid-tab-name: kops-gce-dra-with-workload-master-scalability-5000
+      testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
+      testgrid-num-failures-to-alert: '2'
+      description: "Uses kops to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster with DRA enabled"
+    decorate: true
+    decoration_config:
+      timeout: 480m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
+      - org: kubernetes
+        repo: kops
+        base_ref: master
+        path_alias: k8s.io/kops
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+          command:
+          - runner.sh
+          args:
+          - ./tests/e2e/scenarios/scalability/run-test.sh
+          resources:
+            requests:
+              cpu: 6
+              memory: "16Gi"
+            limits:
+              cpu: 6
+              memory: "16Gi"
+          env:
+            - name: KUBE_SSH_KEY_PATH
+              value: /etc/ssh-key-secret/ssh-private
+            - name: KUBE_SSH_USER
+              value: ubuntu
+            - name: GOPATH
+              value: /home/prow/go
+            - name: ARTIFACTS
+              value: $(ARTIFACTS)
+            - name: CNI_PLUGIN
+              value: gce
+            - name: KUBE_NODE_COUNT
+              value: "5000"
+            - name: CL2_MODE
+              value: "Indexed"
+            - name: CL2_NODES_PER_NAMESPACE
+              value: "2500"
+            - name: CL2_JOB_RUNNING_TIME
+              value: "3s"
+            - name: CL2_LONG_JOB_RUNNING_TIME
+              value: "240m"
+            - name: NODE_MODE
+              value: "master"
+            - name: CONTROL_PLANE_COUNT
+              value: "1"
+            - name: CONTROL_PLANE_SIZE
+              value: "c4-standard-96"
+#              TODO: 100 node gce test run with 10 and 5, can increase if needed
+#            - name: CL2_LOAD_TEST_THROUGHPUT
+#              value: "50"
+#            - name: CL2_STEADY_STATE_QPS
+#              value: "25"
+            - name: ENABLE_PROMETHEUS_SERVER
+              value: "true"
+            - name: PROMETHEUS_PVC_STORAGE_CLASS
+              value: "ssd-csi"
+            - name: PROMETHEUS_SCRAPE_KUBELETS
+              value: "true"
+            - name: CLOUD_PROVIDER
+              value: "gce"
+            - name: GCP_PROJECT
+              value: "k8s-infra-e2e-boskos-scale-30"
+            - name: NODE_PRELOAD_IMAGES
+              value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+             # TODO: need to PR this change to kops repo
+            - name: KOPS_CL2_TEST_CONFIG
+              value: testing/dra/config.yaml
