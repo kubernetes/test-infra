@@ -58,8 +58,6 @@ presubmits:
         # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -70,8 +68,6 @@ presubmits:
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
           value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
         # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
@@ -169,8 +165,6 @@ presubmits:
         # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -181,8 +175,6 @@ presubmits:
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
           value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
         # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
@@ -286,8 +278,6 @@ presubmits:
         # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -298,8 +288,6 @@ presubmits:
           value: "Standard_D2s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D2s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
           value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
         # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy

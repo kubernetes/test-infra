@@ -741,11 +741,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        env:
-          - name: TEST_WINDOWS
-            value: "" # disabled
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
         resources:
           limits:
             cpu: 4
@@ -920,8 +915,6 @@ presubmits:
           # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -932,8 +925,6 @@ presubmits:
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         - name: "CONTROL_PLANE_MACHINE_COUNT"
           value: "5"
         - name: WINDOWS_WORKER_MACHINE_COUNT
@@ -1026,8 +1017,6 @@ presubmits:
         # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-load-dra.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -1038,8 +1027,6 @@ presubmits:
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
         - name: DEPLOY_AZURE_CSI_DRIVER
           value: "false"
@@ -1129,8 +1116,6 @@ presubmits:
           # CAPZ variables
         - name: TEST_K8S
           value: "true"
-        - name: WINDOWS
-          value: "false"
         - name: CLUSTER_TEMPLATE
           value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
         - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
@@ -1141,8 +1126,6 @@ presubmits:
           value: "Standard_D8s_v3"
         - name: NODE_MACHINE_TYPE
           value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
         - name: "CONTROL_PLANE_MACHINE_COUNT"
           value: "5"
         - name: WINDOWS_WORKER_MACHINE_COUNT
