@@ -110,8 +110,6 @@ presubmits:
             env:
               - name: E2E_KIND_VERSION
                 value: kindest/node:v1.31.6
-              - name: BUILDER_IMAGE
-                value: public.ecr.aws/docker/library/golang:1.25
             command:
               # generic runner script, handles DIND, bazelrc for caching, etc.
               - runner.sh
@@ -147,8 +145,6 @@ presubmits:
             env:
               - name: E2E_KIND_VERSION
                 value: kindest/node:v1.32.3
-              - name: BUILDER_IMAGE
-                value: public.ecr.aws/docker/library/golang:1.25
             command:
               # generic runner script, handles DIND, bazelrc for caching, etc.
               - runner.sh
@@ -184,8 +180,6 @@ presubmits:
             env:
               - name: E2E_KIND_VERSION
                 value: kindest/node:v1.33.1
-              - name: BUILDER_IMAGE
-                value: public.ecr.aws/docker/library/golang:1.25
             command:
               # generic runner script, handles DIND, bazelrc for caching, etc.
               - runner.sh
@@ -221,8 +215,6 @@ presubmits:
             env:
               - name: E2E_KIND_VERSION
                 value: kindest/node:v1.34.0
-              - name: BUILDER_IMAGE
-                value: public.ecr.aws/docker/library/golang:1.25
             command:
               # generic runner script, handles DIND, bazelrc for caching, etc.
               - runner.sh
