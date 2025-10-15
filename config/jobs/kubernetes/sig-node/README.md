@@ -115,8 +115,6 @@
     * serial-release-(N-1)
     * serial-release-(N)
     * serial-release-main
-* Additional Node Conformance CRI-O cgroupv1 test
-    * crio-cgroupv1-node-conformance
 
 **Release responsibility for new version (with k8s release cycle)**
 * Add a new image for a new K8s version.
