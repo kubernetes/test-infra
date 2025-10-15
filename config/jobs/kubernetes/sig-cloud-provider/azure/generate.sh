@@ -75,7 +75,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
 installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
@@ -759,7 +759,7 @@ $(generate_preset_labels 2 ${capz_release})
   spec:
 $(generate_serviceaccount_name 4 ${capz_release})
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -814,7 +814,7 @@ $(generate_preset_labels 2 ${capz_release})
   spec:
 $(generate_serviceaccount_name 4 ${capz_release})
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -871,7 +871,7 @@ $(generate_preset_labels 2 ${capz_release})
   spec:
 $(generate_serviceaccount_name 4 ${capz_release})
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -925,7 +925,7 @@ $(generate_preset_labels 2 ${capz_release})
   spec:
 $(generate_serviceaccount_name 4 ${capz_release})
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250925-95b5a2c7a5-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
