@@ -31,7 +31,7 @@ substitutions:
   _K8S_RELEASE: stable
   _KIND_VERSION: '0.30.0'
   _KUBETEST2_VERSION: 'master'
-  _YQ_VERSION: v4.47.1
+  _YQ_VERSION: v4.47.2
 timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE
