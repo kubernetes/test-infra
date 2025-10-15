@@ -25,5 +25,3 @@ presubmits:
           requests:
             cpu: 4
             memory: 20Gi
-      nodeSelector:
-        feature.node.kubernetes.io/ppc64le.smtlevel: "4"
