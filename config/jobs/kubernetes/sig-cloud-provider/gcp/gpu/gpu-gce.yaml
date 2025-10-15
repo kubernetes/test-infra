@@ -58,7 +58,7 @@ periodics:
       - --test-args=--minStartupPods=8
       - --test-package-marker=latest.txt
       - --focus-regex=\[Feature:GPUDevicePlugin\]
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
       resources:
         limits:
           cpu: 2

@@ -21,7 +21,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -56,7 +56,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -96,7 +96,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-go-canary
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-go-canary
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -136,7 +136,7 @@ periodics:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
           securityContext:
             allowPrivilegeEscalation: false
           command:
