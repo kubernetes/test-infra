@@ -1,7 +1,10 @@
 images:
   ubuntu:
-    image: ubuntu-gke-2204-1-24-v20220623
+    image_family: pipeline-1-29
     project: ubuntu-os-gke-cloud
+    # the image regex is added so that only cgroupv2 images are selected.
+    # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
+    image_regex: ".*[^-cgroupsv1]$"
     metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/env"
   cos:
     image_family: cos-125-lts # Use cos-125-lts to lock down what COS version is used with containerd 2.1, which aligns with COS's built-in containerd version
