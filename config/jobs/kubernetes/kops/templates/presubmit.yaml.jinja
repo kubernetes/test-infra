@@ -14,7 +14,7 @@
       preset-service-account: "true"
       preset-aws-ssh: "true"
       {%- if not boskos_resource_type %}
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
       {%- endif %}
       {%- elif cloud == "azure" %}
       preset-service-account: "true"

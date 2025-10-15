@@ -14,7 +14,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -80,7 +80,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -145,7 +145,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -210,7 +210,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -275,7 +275,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -341,7 +341,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -406,7 +406,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -472,7 +472,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -537,7 +537,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -603,7 +603,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -669,7 +669,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -734,7 +734,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -800,7 +800,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -866,7 +866,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -931,7 +931,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
@@ -996,7 +996,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
     decorate: true
     decoration_config:
       timeout: 90m
