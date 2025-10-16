@@ -842,7 +842,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-93386f3fd4-07e7d.test-cncf-aws.k8s.io"
+          value: "e2e-93386f3fd4-07e7d.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -901,7 +901,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-12ade267b4-0e701.test-cncf-aws.k8s.io"
+          value: "e2e-12ade267b4-0e701.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -960,7 +960,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-8851f75f16-e46fe.test-cncf-aws.k8s.io"
+          value: "e2e-8851f75f16-e46fe.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -2073,7 +2073,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-d3f5571021-549a1.test-cncf-aws.k8s.io"
+          value: "e2e-d3f5571021-549a1.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -2283,7 +2283,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-1727ac1946-2023e.test-cncf-aws.k8s.io"
+          value: "e2e-1727ac1946-2023e.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -2341,7 +2341,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-fc5e1ab149-22fa7.test-cncf-aws.k8s.io"
+          value: "e2e-fc5e1ab149-22fa7.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
