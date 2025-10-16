@@ -1168,7 +1168,7 @@ periodics:
           memory: "8Gi"
 
 # Exploratory tests for resource size limit as proposed in https://github.com/kubernetes/kubernetes/issues/134375
-- cron: '1 17 2-31/2 * *' # Run on even days at 9:01PST (17:01 UTC)
+- cron: '1 5 2-31/2 * *' # Run on even days at 5:01 UTC
   name: ci-kubernetes-e2e-gce-scale-resource-size
   tags:
   - "perfDashPrefix: gce-5000Nodes-ResourceSize"
