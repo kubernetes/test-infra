@@ -77,7 +77,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       resources:
         limits:
           cpu: 4
@@ -114,7 +114,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -166,7 +166,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -218,7 +218,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -267,7 +267,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -321,7 +321,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -373,7 +373,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -428,7 +428,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       resources:
         limits:
           cpu: 4
@@ -452,7 +452,7 @@ periodics:
     timeout: 70m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -499,7 +499,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -547,7 +547,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -599,7 +599,7 @@ periodics:
     path_alias: github.com/containerd/containerd
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -651,7 +651,7 @@ periodics:
     path_alias: github.com/containerd/containerd
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -703,7 +703,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -756,7 +756,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -813,7 +813,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -868,7 +868,7 @@ periodics:
       # uses cloud-provider-gcp. see issue https://github.com/kubernetes/cloud-provider-gcp/issues/293
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\]|\[Feature:NodeSwap\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
       resources:
         limits:
           cpu: 4
@@ -902,7 +902,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -951,7 +951,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1001,7 +1001,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1056,7 +1056,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1105,7 +1105,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -1153,7 +1153,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
@@ -1210,7 +1210,7 @@ periodics:
         - --gcp-nodes=1
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:KubeletCredentialProviders\]
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-master
         resources:
           limits:
             cpu: 4

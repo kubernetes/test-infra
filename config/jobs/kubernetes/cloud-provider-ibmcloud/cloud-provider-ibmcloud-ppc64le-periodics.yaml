@@ -19,7 +19,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           command:
             - make
             - test
@@ -51,7 +51,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         args:
@@ -85,7 +85,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         args:
@@ -119,7 +119,7 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
         command:
         - runner.sh
         args:
@@ -158,7 +158,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           securityContext:
             privileged: true
           env:
@@ -241,7 +241,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -312,7 +312,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           securityContext:
             privileged: true
           env:
@@ -378,7 +378,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-default
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -441,7 +441,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-slow-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           securityContext:
             privileged: true
           env:
@@ -504,7 +504,7 @@ periodics:
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251015-a2dc851e09-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
