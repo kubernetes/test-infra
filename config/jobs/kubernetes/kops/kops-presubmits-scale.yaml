@@ -47,7 +47,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-ed860ed5de-2df82.test-cncf-aws.k8s.io"
+          value: "e2e-ed860ed5de-2df82.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -155,7 +155,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-ff02749ef8-a423a.test-cncf-aws.k8s.io"
+          value: "e2e-ff02749ef8-a423a.tests-kops-aws.k8s.io"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -259,7 +259,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-fa029a0ba8-a2033.test-cncf-aws.k8s.io"
+          value: "e2e-fa029a0ba8-a2033.tests-kops-aws.k8s.io"
         - name: KOPS_IRSA
           value: "true"
         resources:
