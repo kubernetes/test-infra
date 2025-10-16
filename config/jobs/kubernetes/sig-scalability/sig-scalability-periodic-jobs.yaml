@@ -1181,6 +1181,7 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+  job_queue_name: "5k-gce-scale-test" # DON'T REMOVE THIS
   decorate: true
   decoration_config:
     timeout: 450m
