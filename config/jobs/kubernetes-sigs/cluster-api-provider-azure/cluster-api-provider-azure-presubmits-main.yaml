@@ -187,6 +187,8 @@ presubmits:
             value: \[WINDOWS\]
           - name: GINKGO_SKIP
             value: ""
+          - name: TEST_WINDOWS
+            value: "true"
         resources:
           limits:
             cpu: 4
