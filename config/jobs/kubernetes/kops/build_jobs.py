@@ -373,7 +373,7 @@ def presubmit_test(branch='master',
         name_hash = hashlib.md5(name.encode()).hexdigest()
         env['CLOUD_PROVIDER'] = cloud
         if cloud == "aws":
-            env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
+            env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.tests-kops-aws.k8s.io"
         if 'KOPS_STATE_STORE' not in env and cloud == "aws":
             env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         if extra_flags:
