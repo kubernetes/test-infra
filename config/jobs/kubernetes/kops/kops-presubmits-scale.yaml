@@ -49,7 +49,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-ed860ed5de-2df82.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
