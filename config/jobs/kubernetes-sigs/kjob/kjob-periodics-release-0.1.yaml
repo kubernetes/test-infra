@@ -102,8 +102,8 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
           env:
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.31.6
+            - name: E2E_K8S_VERSION
+              value: "1.31"
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -145,8 +145,8 @@ periodics:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-master
           env:
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.32.3
+            - name: E2E_K8S_VERSION
+              value: "1.32"
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
