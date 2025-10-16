@@ -12,7 +12,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251015-a2dc851e09-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251016-39cf27682d-1.33
         command:
         - scripts/ci/presubmits/unit-tests
         resources:
