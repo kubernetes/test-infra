@@ -7,7 +7,7 @@ presets:
   - name: CREATE_CUSTOM_NETWORK
     value: "true"
   - name: NODE_SIZE
-    value: e2-standard-2
+    value: n1-standard-2
 
 presubmits:
   kubernetes/kubernetes:
@@ -41,12 +41,12 @@ presubmits:
         - --build
         - --up
         - --down
-        - --node-size=g2-standard-24
+        - --node-size=n1-standard-2
         - --num-nodes=2
         - --gcp-zone=us-east1-b
         - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
         - --boskos-resource-type=gpu-project
-        - --node-accelerators=type=nvidia-l4,count=2
+        - --node-accelerators=type=nvidia-tesla-t4,count=2
         - --test=ginkgo
         - --
         - --provider=gce
