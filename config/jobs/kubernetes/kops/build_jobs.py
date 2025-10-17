@@ -375,7 +375,7 @@ def presubmit_test(branch='master',
         if cloud == "aws":
             env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.tests-kops-aws.k8s.io"
         if 'KOPS_STATE_STORE' not in env and cloud == "aws":
-            env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+            env['KOPS_STATE_STORE'] = 's3://k8s-kops-ci-prow-state-store'
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":

@@ -844,7 +844,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-93386f3fd4-07e7d.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -903,7 +903,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-12ade267b4-0e701.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -962,7 +962,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-8851f75f16-e46fe.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2075,7 +2075,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-d3f5571021-549a1.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2285,7 +2285,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-1727ac1946-2023e.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
@@ -2343,7 +2343,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-fc5e1ab149-22fa7.tests-kops-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-kops-ci-prow-state-store"
         - name: KOPS_IRSA
           value: "true"
         resources:
