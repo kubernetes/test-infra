@@ -67,6 +67,7 @@ var (
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
 	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default", "DataKey":"my-data-key"}]`)
 	gkeDumpAdditionalLogsCmd       = flag.String("gke-dump-additional-logs-cmd", "", "(gke-only) if set, run this command to dump cluster logs.")
+	gkeMscAdditionalSubnet         = flag.String("gke-msc-additional-subnet", "", "(gke-only) if specified, we create an additional subnet with the specified options. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
 
 	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -105,6 +106,8 @@ type gkeDeployer struct {
 	subnetwork                  string
 	subnetMode                  string
 	subnetworkRegion            string
+	addtnlSubnetwork            string
+	addtnlSubnetworkRegion      string
 	createNat                   bool
 	natMinPortsPerVm            int
 	image                       string
@@ -349,6 +352,18 @@ func (g *gkeDeployer) Up() error {
 		}
 		g.subnetwork = customSubnetFields[0]
 		g.subnetworkRegion = customSubnetFields[1]
+	}
+
+	if *gkeMscAdditionalSubnet != "" {
+		addtnlSubnetFields := strings.Fields(*gkeMscAdditionalSubnet)
+		createSubnetCommand := []string{"compute", "networks", "subnets", "create"}
+		createSubnetCommand = append(createSubnetCommand, "--project="+g.project, "--network="+g.network)
+		createSubnetCommand = append(createSubnetCommand, addtnlSubnetFields...)
+		if err := control.FinishRunning(exec.Command("gcloud", createSubnetCommand...)); err != nil {
+			return err
+		}
+		g.addtnlSubnetwork = addtnlSubnetFields[0]
+		g.addtnlSubnetworkRegion = addtnlSubnetFields[1]
 	}
 
 	if *gkeCreateNatBeforeCluster {
@@ -1004,6 +1019,10 @@ func (g *gkeDeployer) Down() error {
 	if g.subnetwork != "" {
 		errSubnet = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "subnets", "delete", "-q", g.subnetwork,
 			g.subnetworkRegion, "--project="+g.project))
+	}
+	if g.addtnlSubnetwork != "" {
+		errSubnet = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "subnets", "delete", "-q", g.addtnlSubnetwork,
+			g.addtnlSubnetworkRegion, "--project="+g.project))
 	}
 	var errNetwork error
 	if *gkeRemoveNetwork {
