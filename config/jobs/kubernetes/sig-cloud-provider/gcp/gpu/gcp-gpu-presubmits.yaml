@@ -43,7 +43,7 @@ presubmits:
         - --down
         - --node-size=n1-standard-2
         - --num-nodes=2
-        - --gcp-zone=us-east1-b
+        - --gcp-zone=us-central1-b
         - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
         - --boskos-resource-type=gpu-project
         - --node-accelerators=type=nvidia-tesla-t4,count=2
