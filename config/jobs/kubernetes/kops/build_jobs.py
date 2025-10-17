@@ -1463,6 +1463,10 @@ def generate_network_plugins():
                 "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                 "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
             ]
+        if plugin == 'calico':
+            extra_flags.extend([
+                "--set=cluster.spec.networking.calico.wireguardEnabled=false",
+            ])
         results.append(
             build_test(
                 distro=distro,
@@ -1878,6 +1882,10 @@ def generate_presubmits_network_plugins():
                 "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
                 "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
                 "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
+            ])
+        if plugin == 'calico':
+            aws_extra_flags.extend([
+                "--set=cluster.spec.networking.calico.wireguardEnabled=false",
             ])
         if plugin in ['cilium-eni']:
             distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
