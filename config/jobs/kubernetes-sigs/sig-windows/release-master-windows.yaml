@@ -464,7 +464,7 @@ periodics:
     testgrid-tab-name: capz-master-windows-nodelogquery
 - name: ci-kubernetes-e2e-capz-master-windows-2025
   cluster: eks-prow-build-cluster
-  interval: 48h
+  interval: 24h
   decorate: true
   decoration_config:
     timeout: 4h
