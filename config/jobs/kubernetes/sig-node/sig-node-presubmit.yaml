@@ -53,11 +53,6 @@ presubmits:
                 memory: "6Gi"
             securityContext:
               privileged: true
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd
       skip_branches:
         - release-\d+\.\d+ # per-release image
@@ -104,11 +99,6 @@ presubmits:
               requests:
                 cpu: "4"
                 memory: "6Gi"
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd-ec2
       skip_branches:
         - release-\d+\.\d+ # per-release image
@@ -324,11 +314,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd-kubetest2
       cluster: k8s-infra-prow-build
       always_run: false
@@ -378,11 +363,6 @@ presubmits:
               - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
               - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd-features
       cluster: k8s-infra-prow-build
       branches:
@@ -436,11 +416,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-node-e2e-containerd-features-kubetest2 to run
@@ -496,11 +471,6 @@ presubmits:
               - --skip-regex=\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|[\[Feature:PodLevelResources\]|\[Alpha\]
               - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd-alpha-features
       cluster: k8s-infra-prow-build
       branches:
@@ -555,11 +525,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-containerd-kubelet-psi
       cluster: k8s-infra-prow-build
       branches:
@@ -614,11 +579,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-node-kubelet-serial-containerd
       cluster: k8s-infra-prow-build
@@ -667,11 +627,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-containerd-flaky
       always_run: false
       cluster: k8s-infra-prow-build
@@ -719,11 +674,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-containerd-alpha-features
       cluster: k8s-infra-prow-build
       always_run: false
@@ -773,11 +723,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-containerd-sidecar-containers
       cluster: k8s-infra-prow-build
       always_run: false
@@ -825,11 +770,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-containerd-kubetest2
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-node-kubelet-serial-containerd-kubetest2 to run
@@ -882,11 +822,6 @@ presubmits:
               - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
               - '--test-args=--ginkgo.timeout=3h --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-podlevelresources
       cluster: k8s-infra-prow-build
       always_run: false
@@ -939,11 +874,6 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-podresourcesapi
       cluster: k8s-infra-prow-build
       always_run: false
@@ -995,11 +925,6 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-e2e-alpha-ec2
       # duplicate job of ci-kubernetes-e2e-ec2-alpha-features to test changes in provider-aws-test-infra
       cluster: eks-prow-build-cluster
@@ -1061,11 +986,6 @@ presubmits:
               requests:
                 cpu: 8
                 memory: 10Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-cpu-manager
       cluster: k8s-infra-prow-build
       always_run: false
@@ -1117,11 +1037,6 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2 to run
@@ -1178,11 +1093,6 @@ presubmits:
               - --skip-regex=""
               - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd" --service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true"
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-topology-manager
       cluster: k8s-infra-prow-build
       always_run: false
@@ -1234,11 +1144,6 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2 to run
@@ -1295,11 +1200,6 @@ presubmits:
               - "--label-filter=Feature: containsAny TopologyManager && !Flaky"
               - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd" --service-feature-gates="PodLevelResources=true" --feature-gates="PodLevelResources=true"
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-kubelet-serial-hugepages
       cluster: k8s-infra-prow-build
       always_run: false
@@ -1351,11 +1251,6 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-node-crio-cgrpv2-imagefs-e2e
       cluster: k8s-infra-prow-build
       always_run: false
@@ -1913,11 +1808,6 @@ presubmits:
             env:
               - name: GOPATH
                 value: /go
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-crio-node-memoryqos-cgrpv2
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-crio-node-memoryqos-cgrpv2 to run
@@ -2077,11 +1967,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-node-swap-fedora-serial
       cluster: k8s-infra-prow-build
@@ -2191,11 +2076,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-node-swap-conformance-fedora-serial
       cluster: k8s-infra-prow-build
@@ -2302,11 +2182,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-e2e-gce-kubelet-credential-provider
       cluster: k8s-infra-prow-build
@@ -2363,11 +2238,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-cos-cgroupv2-containerd-node-e2e-features
       skip_branches:
         - release-\d+\.\d+ # per-release image
@@ -2419,11 +2289,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-cos-cgroupv2-containerd-node-e2e
       skip_branches:
         - release-\d+\.\d+ # per-release image
@@ -2475,11 +2340,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-cos-cgroupv2-containerd-node-e2e-serial
       skip_branches:
         - release-\d+\.\d+ # per-release image
@@ -2531,11 +2391,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-kubernetes-cos-cgroupv2-containerd-node-e2e-eviction
       skip_branches:
         - release-\d+\.\d+ # per-release image
@@ -2587,11 +2442,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
     - name: pull-crio-cgroupv2-node-e2e-eviction
       cluster: k8s-infra-prow-build
       always_run: false
@@ -2866,11 +2716,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-node-e2e-containerd-standalone-mode
       cluster: k8s-infra-prow-build
@@ -2926,11 +2771,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-node-e2e-resource-health-status
       cluster: k8s-infra-prow-build
@@ -2980,11 +2820,6 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
 
     - name: pull-kubernetes-node-e2e-containerd-serial-ec2
       skip_branches:
@@ -3088,8 +2923,3 @@ presubmits:
               limits:
                 cpu: 4
                 memory: 6Gi
-        tolerations:
-          - key: "dedicated"
-            operator: "Equal"
-            value: "sig-node"
-            effect: "NoSchedule"
