@@ -21,4 +21,5 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
+              - --build-dir=.
               - dev/ci/builds/push-images/
