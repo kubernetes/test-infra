@@ -2483,11 +2483,6 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
-      tolerations:
-      - effect: NoSchedule
-        key: dedicated
-        operator: Equal
-        value: sig-node
   - always_run: true
     branches:
     - release-1.34
@@ -2534,11 +2529,6 @@ presubmits:
           requests:
             cpu: "4"
             memory: 6Gi
-      tolerations:
-      - effect: NoSchedule
-        key: dedicated
-        operator: Equal
-        value: sig-node
   - always_run: false
     branches:
     - release-1.34
@@ -2743,11 +2733,6 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
-      tolerations:
-      - effect: NoSchedule
-        key: dedicated
-        operator: Equal
-        value: sig-node
   - always_run: false
     branches:
     - release-1.34
@@ -2796,11 +2781,6 @@ presubmits:
           requests:
             cpu: "4"
             memory: 6Gi
-      tolerations:
-      - effect: NoSchedule
-        key: dedicated
-        operator: Equal
-        value: sig-node
   - always_run: false
     branches:
     - release-1.34
