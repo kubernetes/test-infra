@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - make
         args:
@@ -95,7 +95,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-go-canary
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -144,7 +144,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -192,7 +192,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251016-39cf27682d-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
       imagePullPolicy: Always
       command:
       - runner.sh
