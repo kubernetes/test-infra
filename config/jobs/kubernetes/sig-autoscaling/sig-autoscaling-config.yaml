@@ -89,7 +89,7 @@ periodics:
           memory: 6Gi
       env:
       - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
+        value: "InPlaceOrRecreate=true,PerVPAConfig=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -138,7 +138,7 @@ periodics:
           memory: 6Gi
       env:
       - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
+        value: "InPlaceOrRecreate=true,PerVPAConfig=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -187,7 +187,7 @@ periodics:
           memory: 6Gi
       env:
       - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
+        value: "InPlaceOrRecreate=true,PerVPAConfig=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -236,7 +236,7 @@ periodics:
           memory: 6Gi
       env:
       - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
+        value: "InPlaceOrRecreate=true,PerVPAConfig=true"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
