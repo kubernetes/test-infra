@@ -44,6 +44,8 @@ else
       eval "$(hack/third_party/gimme/gimme "${GO_VERSION}")"
   fi
 fi
+# debug go version
+go version
 
 # force go modules
 export GO111MODULE=on
