@@ -1245,10 +1245,10 @@ periodics:
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=5120
-      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=5120
-      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=5120
-      - --env=CL2_JOB_POD_PAYLOAD_SIZE=5120
+      - --env=CL2_DAEMONSET_POD_PAYLOAD_SIZE=14336
+      - --env=CL2_DEPLOYMENT_POD_PAYLOAD_SIZE=14336
+      - --env=CL2_STATEFULSET_POD_PAYLOAD_SIZE=14336
+      - --env=CL2_JOB_POD_PAYLOAD_SIZE=14336
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
