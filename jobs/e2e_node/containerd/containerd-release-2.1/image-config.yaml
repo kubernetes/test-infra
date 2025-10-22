@@ -1,6 +1,6 @@
 images:
   ubuntu:
-    image_family: pipeline-1-29
+    image_family: pipeline-1-34-amd64 # Use pipeline-1-34-amd64 to lock down what Ubuntu version is used with containerd 2.1, which aligns with Ubuntu's built-in containerd version
     project: ubuntu-os-gke-cloud
     # the image regex is added so that only cgroupv2 images are selected.
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
