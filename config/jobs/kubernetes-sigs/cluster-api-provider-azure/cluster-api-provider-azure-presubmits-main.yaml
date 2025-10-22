@@ -683,7 +683,7 @@ presubmits:
       preset-azure-community: "true"
     decorate: true
     run_if_changed: 'go.mod|templates\/test|^scripts\/|test\/e2e|Makefile'
-    optional: true
+    optional: false
     always_run: false
     decoration_config:
       timeout: 4h
