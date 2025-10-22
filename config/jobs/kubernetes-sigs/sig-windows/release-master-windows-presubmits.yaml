@@ -13,6 +13,8 @@ presubmits:
   - name: pull-kubernetes-e2e-capz-windows-master
     cluster: eks-prow-build-cluster
     decorate: true
+    decoration_config:
+      timeout: 2h30m
     always_run: false
     optional: true
     run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
