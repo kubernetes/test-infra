@@ -13,11 +13,11 @@ presets:
       - name: DELETE_INSTANCES
         value: "true"
 periodics:
-  - name: ci-cgroupv2-containerd-node-e2e-ec2
+  - name: ci-containerd-node-e2e-ec2
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd,amazon-ec2-node
-      testgrid-tab-name: ci-cgroupv2-containerd-node-e2e-ec2
+      testgrid-tab-name: ci-containerd-node-e2e-ec2
       testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     labels:
       preset-e2e-containerd-ec2: "true"
@@ -111,11 +111,11 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
-  - name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
+  - name: ci-containerd-node-arm64-e2e-serial-ec2
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd,amazon-ec2-node
-      testgrid-tab-name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
+      testgrid-tab-name: ci-containerd-node-arm64-e2e-serial-ec2
       testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     labels:
       preset-e2e-containerd-ec2: "true"
@@ -166,11 +166,11 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
-  - name: ci-cgroupv2-containerd-node-e2e-serial-ec2
+  - name: ci-containerd-node-e2e-serial-ec2
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd,amazon-ec2-node
-      testgrid-tab-name: ci-cgroupv2-containerd-node-e2e-serial-ec2
+      testgrid-tab-name: ci-containerd-node-e2e-serial-ec2
       testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     labels:
       preset-e2e-containerd-ec2: "true"

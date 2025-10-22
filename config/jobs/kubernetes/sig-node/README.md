@@ -18,12 +18,6 @@
    </td>
   </tr>
   <tr>
-   <td>cgroup
-   </td>
-   <td>cgroupv1, cgroupv2
-   </td>
-  </tr>
-  <tr>
    <td>os
    </td>
    <td>cos, ubuntu, fedora
@@ -41,7 +35,7 @@
 
 ## Naming Convention
 
-(pull|ci)-{$cri}-{$cgroup}-{$os}-{$test-type}-release-{$release-branch}
+(pull|ci)-{$cri}-{$os}-{$test-type}-release-{$release-branch}
 
 **Note:** Specify variable value in the name only if it isn’t set to default in a test tab.
 
@@ -64,13 +58,6 @@
    <td>containerd,  CRI-O
    </td>
   </tr>
-  <tr>
-   <td>cgroup
-   </td>
-   <td>Cgroupv2
-   </td>
-  </tr>
-  <tr>
    <td>os
    </td>
    <td>COS, ubuntu, fedora (create one instance for each OS in a single test job)
@@ -95,7 +82,7 @@
 
 **Test Names as per naming convention**
 
-{cri}-{cgroup}-{os}-{test-type}-release-{release-branch}
+{cri}-{os}-{test-type}-release-{release-branch}
 
 * Node Conformance
     * node-conformance-release-(N-3)
@@ -138,12 +125,6 @@
    </td>
   </tr>
   <tr>
-   <td>cgroup
-   </td>
-   <td>cgroupv2
-   </td>
-  </tr>
-  <tr>
    <td>os
    </td>
    <td>COS
@@ -171,7 +152,7 @@
 
 **Test Names as per naming convention**
 * Unique names to identify the feature.
-* Follow {cri}-{cgroup}-{os}-{test-type|feature-name}-release-{release-branch} for ordering the variables for non-default values in test names i.e. If you’d like to add a test specific to a CRI, say CRIO and cgroupv2 on Fedora OS for main branch (which is default branch for this tab, the test name would be `crio-cgroup2-fedora-feature-name`.
+* Follow {cri}-{os}-{test-type|feature-name}-release-{release-branch} for ordering the variables for non-default values in test names i.e. If you’d like to add a test specific to a CRI, say CRIO and cgroupv2 on Fedora OS for main branch (which is default branch for this tab, the test name would be `crio-fedora-feature-name`.
 
 Examples: node-conformance-alpha-features-enabled, node-conformance-alpha-features-disabled, kubelet-credential-provider, memory-swap, version-skew-1-25-on-1-27, and so on.
 

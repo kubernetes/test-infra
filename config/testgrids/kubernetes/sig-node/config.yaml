@@ -86,17 +86,17 @@ dashboards:
     - name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
       test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
       base_options: width=10
-    - name: ci-cgroupv2-containerd-node-e2e-ec2
-      test_group_name: ci-cgroupv2-containerd-node-e2e-ec2
+    - name: ci-containerd-node-e2e-ec2
+      test_group_name: ci-containerd-node-e2e-ec2
       base_options: width=10
     - name: ci-kubernetes-node-arm64-e2e-containerd-ec2
       test_group_name: ci-kubernetes-node-arm64-e2e-containerd-ec2
       base_options: width=10
-    - name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
-      test_group_name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
+    - name: ci-containerd-node-arm64-e2e-serial-ec2
+      test_group_name: ci-containerd-node-arm64-e2e-serial-ec2
       base_options: width=10
-    - name: ci-cgroupv2-containerd-node-e2e-serial-ec2
-      test_group_name: ci-cgroupv2-containerd-node-e2e-serial-ec2
+    - name: ci-containerd-node-e2e-serial-ec2
+      test_group_name: ci-containerd-node-e2e-serial-ec2
       base_options: width=10
 
 - name: sig-node-ppc64le

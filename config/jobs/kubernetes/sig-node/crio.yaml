@@ -1,5 +1,5 @@
 periodics:
-- name: ci-crio-cgroupv2-node-e2e-features
+- name: ci-crio-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-features
+    testgrid-tab-name: ci-crio-node-e2e-features
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v2"
   spec:
@@ -54,7 +54,7 @@ periodics:
           value: core
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
-- name: ci-crio-cgroupv2-node-e2e-unlabelled
+- name: ci-crio-node-e2e-unlabelled
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -75,7 +75,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-unlabelled
+    testgrid-tab-name: ci-crio-node-e2e-unlabelled
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
   spec:
@@ -109,7 +109,7 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
-- name: ci-crio-cgroupv2-node-e2e-eviction
+- name: ci-crio-node-e2e-eviction
   cluster: k8s-infra-prow-build
   interval: 4h30m
   labels:
@@ -130,7 +130,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-eviction
+    testgrid-tab-name: ci-crio-node-e2e-eviction
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
   spec:
@@ -165,7 +165,7 @@ periodics:
           value: core
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
-- name: ci-node-kubelet-crio-cgroupv2-performance-test
+- name: ci-node-kubelet-crio-performance-test
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -186,7 +186,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: node-kubelet-crio-cgroupv2-performance-test
+    testgrid-tab-name: node-kubelet-crio-performance-test
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
   spec:
@@ -221,7 +221,7 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
-- name: ci-crio-cgroupv2-node-e2e-conformance
+- name: ci-crio-node-e2e-conformance
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -242,7 +242,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-node-cri-o, sig-node-release-blocking
-    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-conformance
+    testgrid-tab-name: ci-crio-node-e2e-conformance
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, release-team@kubernetes.io
     description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
   spec:
@@ -277,7 +277,7 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
-- name: ci-crio-cgroupv2-node-e2e-resource-managers
+- name: ci-crio-node-e2e-resource-managers
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -298,7 +298,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-resource-managers
+    testgrid-tab-name: ci-crio-node-e2e-resource-managers
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Executes CPU, Memory and Topology manager e2e tests with cgroup v2"
   spec:
@@ -333,7 +333,7 @@ periodics:
           value: core
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
-- name: ci-crio-cgroupv2-node-e2e-hugepages
+- name: ci-crio-node-e2e-hugepages
   cluster: k8s-infra-prow-build
   interval: 4h
   labels:
@@ -356,7 +356,7 @@ periodics:
     path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-cgroupv2-node-e2e-hugepages
+    testgrid-tab-name: ci-crio-node-e2e-hugepages
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Executes hugepages e2e tests"
   spec:
@@ -390,7 +390,7 @@ periodics:
           value: core
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
-- name: ci-crio-cgroupv2-userns-e2e-serial
+- name: ci-crio-userns-e2e-serial
   cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
@@ -414,7 +414,7 @@ periodics:
     preset-pull-kubernetes-e2e-gce: "true"
   annotations:
     testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-cgroupv2-userns-e2e-serial
+    testgrid-tab-name: ci-crio-userns-e2e-serial
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Executes userns E2E tests with ProcMountType and UserNamespacesSupport feature gates"
   spec:
