@@ -1,5 +1,5 @@
 steps:
-- name: golang:1.21
+- name: golang:1.24
   entrypoint: /bin/bash
   args:
   - -c

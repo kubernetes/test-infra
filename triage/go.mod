@@ -2,7 +2,7 @@
 
 module k8s.io/test-infra/triage
 
-go 1.21
+go 1.24
 
 // Please DO NOT add any "replace" directives to go.mod files in this repo.
 // See the following for an explanation of why this is problematic for published
