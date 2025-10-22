@@ -24,23 +24,23 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.31
 1.32
 1.33
+1.34
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.31
 1.32
 1.33
+1.34
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.33"
+experimental_k8s_version="1.34"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.32"
+latest_stable_k8s_version="1.33"
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
 hostpath_driver_version="v1.17.0"
