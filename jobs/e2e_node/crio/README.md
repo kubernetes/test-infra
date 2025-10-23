@@ -17,22 +17,21 @@ defines an associative array `CONFIGURATIONS` which defines each ignition file.
 For example the configuration:
 
 ```bash
-    ["crio_cgroupv2"]="root env"
+    ["crio"]="root env"
 ```
 
-Will generate the [`crio_cgroupv2.ign`](./crio_cgroupv2.ign) configuration
+Will generate the [`crio.ign`](./crio.ign) configuration
 containing the following base configurations in order:
 
 1. [root.yaml](./templates/base/root.yaml)
 1. [env.yaml](./templates/base/env.yaml)
 
 When running `make` within this directory, an intermediate
-[`./templates/crio_cgroupv2.yaml`](./templates/crio_cgroupv2.yaml)
+[`./templates/crio.yaml`](./templates/crio.yaml)
 [butane](https://coreos.github.io/butane) configuration will be generated which
-then gets transformed into the resulting ignition file
-[`crio_cgroupv2.ign`](./crio_cgroupv2.ign).
+then gets transformed into the resulting ignition file [`crio.ign`](./crio.ign).
 The ignition file will be then referenced from image configurations like
-[`./latest/image-config-cgroupv2.yaml`](./latest/image-config-cgroupv2.yaml).
+[`./latest/image-config.yaml`](./latest/image-config.yaml).
 
 This means modifying, adding or removing jobs should always result in running
 `make` as well as committing all changes into this repository.
@@ -54,7 +53,7 @@ Then spawn the instance via:
 ```sh
 gcloud compute instances create \
     --zone europe-west1-b \
-    --metadata-from-file user-data=/path/to/crio_cgroupv2.ign \
+    --metadata-from-file user-data=/path/to/crio.ign \
     --image-project fedora-coreos-cloud \
     --image-family fedora-coreos-stable my-instance
 ```
@@ -73,4 +72,4 @@ Make sure the specified cri-o version is uploaded to
 otherwise the tests should fail.
 
 You can test the cri-o version change by changing [env-canary.yaml](./templates/base/env-canary.yaml)
-and run `pull-kubernetes-node-crio-cgrpv2-e2e-canary`.
+and run `pull-kubernetes-node-crio-e2e-canary`.

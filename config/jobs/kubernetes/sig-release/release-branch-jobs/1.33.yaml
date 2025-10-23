@@ -250,7 +250,7 @@ periodics:
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
         --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-serial.yaml
       command:
       - runner.sh
       env:
@@ -1496,7 +1496,7 @@ presubmits:
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
           --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2-serial.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-serial.yaml
         command:
         - runner.sh
         env:
