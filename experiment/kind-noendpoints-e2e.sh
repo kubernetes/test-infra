@@ -181,7 +181,7 @@ kubeadmConfigPatches:
 ${apiServer_extra_args}
   controllerManager:
     extraArgs:
-      controllers: "-endpoints-controller,-endpointslice-mirroring-controller,*"
+      controllers: "-endpoints-controller,-endpointslice-mirroring-controller,*,bootstrapsigner,tokencleaner"
 ${controllerManager_extra_args}
   scheduler:
     extraArgs:
