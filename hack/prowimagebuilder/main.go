@@ -49,6 +49,9 @@ const (
 
 	// noOpKoDocerRepo is used when images are not pushed
 	noOpKoDocerRepo = "ko.local"
+
+	// ko switched to chainguard image at some point, continue using gcr.io/distroless to aling with the rest of kubernetes
+	koDefaultBaseImage = "gcr.io/distroless/static-debian13@sha256:9405bbbc5f8c8373d0a843c4ed8695bd4b6ac170c3f261ae1b9086f2768936d3"
 )
 
 var (
@@ -268,7 +271,7 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	// to subsequent identical docker repo(s) is relatively cheap.
 	for _, dockerRepo := range dockerRepos {
 		logger.WithField("args", publishArgs).Info("Running ko.")
-		if _, err = runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo}, "_bin/ko", publishArgs...); err != nil {
+		if _, err = runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo, "KO_DEFAULTBASEIMAGE=" + koDefaultBaseImage}, "_bin/ko", publishArgs...); err != nil {
 			return fmt.Errorf("running ko: %w", err)
 		}
 	}
