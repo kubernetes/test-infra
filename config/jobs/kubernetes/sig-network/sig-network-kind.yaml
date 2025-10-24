@@ -1005,7 +1005,7 @@ periodics:
         set -o pipefail;
         set -o xtrace;
         cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-noendpoints-e2e.sh
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-noendpoints-e2e.sh
       env:
       - name: LABEL_FILTER
         value: "(Conformance || sig-network ) && !Disruptive && !Flaky"
