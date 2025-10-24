@@ -26,7 +26,7 @@ require (
 	// * We log an error if writing a cache key fails (e.g. because disk is full)
 	// * We inject a header that allows ghproxy to detect if the response was revalidated or a cache miss
 	github.com/cjwagner/httpcache v0.0.0-20230907212505-d4841bbad466 // indirect
-	github.com/clarketm/json v1.13.4
+	github.com/clarketm/json v1.13.4 // indirect
 	github.com/client9/misspell v0.3.4
 	github.com/denormal/go-gitignore v0.0.0-20180930084346-ae8ad1d07817 // indirect
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1 // indirect
