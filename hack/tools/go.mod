@@ -14,7 +14,7 @@ require (
 	// There is no release of golangci-lint with staticcheck for go 1.18 enabled but support for it is
 	// already merged. Use an unreleased version as that is probably the single most important linter.
 	github.com/golangci/golangci-lint v1.54.2
-	github.com/google/ko v0.14.1
+	github.com/google/ko v0.18.0
 	github.com/sethvargo/gcs-cacher v0.1.3
 	gotest.tools/gotestsum v1.7.0
 	k8s.io/code-generator v0.21.4
