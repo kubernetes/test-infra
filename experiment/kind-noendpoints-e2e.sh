@@ -273,8 +273,10 @@ run_tests() {
   # PID, bash will not run traps while waiting on a process, but it will while
   # running a builtin like `wait`, saving the PID also allows us to forward the
   # interrupt
+  # use aws provider to enable cloud-provider tests, aws is just a nullprovider
+  # without any custom logic
   ./hack/ginkgo-e2e.sh \
-    '--provider=skeleton' "--num-nodes=${NUM_NODES}" \
+    '--provider=aws' "--num-nodes=${NUM_NODES}" \
     "--ginkgo.focus=${FOCUS}" "--ginkgo.skip=${SKIP}" "--ginkgo.label-filter=${LABEL_FILTER}" \
     "--report-dir=${ARTIFACTS}" '--disable-log-dump=true' &
   GINKGO_PID=$!
@@ -297,7 +299,17 @@ main() {
   # debug kind version
   kind version
 
+  # build cloud-provider-kind
+  make
+  nohup bin/cloud-provider-kind --enable-log-dumping --logs-dir ${ARTIFACTS}/loadbalancers > ${ARTIFACTS}/ccm-kind.log 2>&1 &
+
   # build kubernetes
+  K8S_PATH=$(find ${GOPATH} -path '*/k8s.io/kubernetes/go.mod' -print -quit)
+  if [ -z "${K8S_PATH}" ]; then
+    K8S_PATH=$(find / -path '*/kubernetes/go.mod' -print -quit)
+  fi
+  cd $(dirname ${K8S_PATH})
+
   build
   # in CI attempt to release some memory after building
   if [ -n "${KUBETEST_IN_DOCKER:-}" ]; then

@@ -988,6 +988,10 @@ periodics:
     repo: test-infra
     base_ref: master
     path_alias: "k8s.io/test-infra"
+  - org: kubernetes-sigs
+    repo: cloud-provider-kind
+    base_ref: main
+    path_alias: sigs.k8s.io/cloud-provider-kind
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20250925-95b5a2c7a5-master
@@ -995,12 +999,18 @@ periodics:
       - wrapper.sh
       - bash
       - -c
+      # compile cloud-provider-kind with kubernetes changes on the PR
+      - set -o errexit;
+        set -o nounset;
+        set -o pipefail;
+        set -o xtrace;
+        cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-noendpoints-e2e.sh
       env:
       - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !EndpointsController && !EndpointSliceMirroring && !Disruptive && !Flaky"
+        value: "(Conformance || sig-network ) && !Disruptive && !Flaky"
       - name: SKIP
-        value: SCTPConnectivity
+        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|IPv6|SCTPConnectivity|EndpointsController|EndpointSliceMirroring
       - name: PARALLEL
         value: "true"
       # we need privileged mode in order to do docker in docker
