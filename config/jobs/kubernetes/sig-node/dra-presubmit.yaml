@@ -705,7 +705,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra
+  - name: pull-kubernetes-node-e2e-crio-dra
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -717,7 +717,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O using cgroup v2
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
     decorate: true

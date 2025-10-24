@@ -577,7 +577,7 @@ periodics:
             cpu: 2
             memory: 6Gi
 
-  - name: ci-node-e2e-crio-cgrpv2-dra
+  - name: ci-node-e2e-crio-dra
     cluster: k8s-infra-prow-build
     interval: 6h
     labels:
@@ -585,7 +585,7 @@ periodics:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-master-informing
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O using cgroup v2
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
       fork-per-release: "true"
       fork-per-release-periodic-interval: 24h
