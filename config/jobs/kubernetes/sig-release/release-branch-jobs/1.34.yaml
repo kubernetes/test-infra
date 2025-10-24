@@ -509,7 +509,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-node-e2e-crio-cgrpv2-dra-1-34
+  name: ci-node-e2e-crio-dra-1-34
   spec:
     containers:
     - args:
@@ -2271,7 +2271,7 @@ presubmits:
     branches:
     - release-1.34
     cluster: k8s-infra-prow-build
-    context: pull-kubernetes-node-e2e-crio-cgrpv2-dra
+    context: pull-kubernetes-node-e2e-crio-dra
     decorate: true
     decoration_config:
       timeout: 1h30m0s
@@ -2283,7 +2283,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-node-e2e-crio-cgrpv2-dra
+    name: pull-kubernetes-node-e2e-crio-dra
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
