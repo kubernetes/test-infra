@@ -1,6 +1,6 @@
 # Images
 
-Each subdirectory corresponds to an image that is automatically built and pushed to registry.k8s.io/k8s-testimages when PRs that touch them merge using [postsubmit prowjobs](https://testgrid.k8s.io/sig-testing-image-pushes) that run the [image-builder](/images/builder)
+Each subdirectory corresponds to an image that is automatically built and pushed to registry.k8s.io/ when PRs that touch them merge using [postsubmit prowjobs](https://testgrid.k8s.io/sig-testing-image-pushes) that run the [image-builder](/images/builder)
 
 ## Updating test-infra images
 
@@ -39,7 +39,7 @@ There is no automated testing pipeline for images:
 
 1. Merge a PR changing something in the image directory.
 
-1. Grep the [prowjob configs](/config/jobs) to find out which jobs are using `registry.k8s.io/k8s-testimages/<image-name>:latest` and monitor [TestGrid](http://testgrid.k8s.io) for new failures corresponding to your change.
+1. Grep the [prowjob configs](/config/jobs) to find out which jobs are using `registry.k8s.io/<image-name>:latest` and monitor [TestGrid](http://testgrid.k8s.io) for new failures corresponding to your change.
 
     * On failure, send a new PR to rollback your last one or a fix if you know immediately.
     * Some of these images might be presubmits; you could monitor them at http://prow.k8s.io

@@ -16,7 +16,7 @@ metadata:
 spec:
   containers:
   - name: k8s-e2e-test
-    image: registry.k8s.io/k8s-testimages/kubekins-e2e-prow:latest
+    image: registry.k8s.io/kubekins-e2e-prow:latest
     args:
     - "--timeout=60"
     env:

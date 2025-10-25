@@ -36,7 +36,7 @@ Some good examples include:
 - [pull-release-notes-lint] uses `node:11` to run `npm ci && npm lint`
 - [pull-org-test-all] uses `launcher.gcr.io/google/bazel:0.26.0` to run `bazel test //...`
 
-Many jobs use `registry.k8s.io/k8s-testimages/foo` images that are built from source in
+Many jobs use `registry.k8s.io/foo` images that are built from source in
 [`images/`]. Some of these have evolved organically, with way more dependencies
 than needed, and will be periodically bumped by PRs. These are sources of
 technical debt that are often not very well maintained. Use at your own risk,
