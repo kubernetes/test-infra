@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
+      - image: registry.k8s.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
         command:
         - ./presubmit.sh
         imagePullPolicy: Always
