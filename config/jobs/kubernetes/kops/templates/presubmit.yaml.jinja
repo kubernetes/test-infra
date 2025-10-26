@@ -70,6 +70,10 @@
             {%- if template_path %}
             --template-path={{template_path}} \
             {%- endif %}
+            {%- for flag in instance_groups_overrides %}
+            --control-plane-instance-group-overrides={{flag}} \
+            --node-instance-group-overrides={{flag}} \
+            {%- endfor %}
             --test=kops \
             -- \
             {%- if test_args %}

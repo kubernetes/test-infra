@@ -90,6 +90,7 @@ def build_test(cloud='aws',
                runs_per_day=0,
                scenario=None,
                env=None,
+               instance_groups_overrides=None,
                kubernetes_feature_gates=None,
                build_cluster=None,
                cluster_name=None,
@@ -113,6 +114,9 @@ def build_test(cloud='aws',
 
     if extra_flags is None:
         extra_flags = []
+
+    if instance_groups_overrides is None:
+        instance_groups_overrides = []
 
     if cloud == 'aws':
         kops_image = distro_images[distro]
@@ -234,6 +238,7 @@ def build_test(cloud='aws',
         test_args=test_args,
         cluster_name=cluster_name,
         storage_e2e_cred=storage_e2e_cred,
+        instance_groups_overrides=instance_groups_overrides,
     )
 
     spec = {
@@ -318,7 +323,8 @@ def presubmit_test(branch='master',
                    cluster_name=None,
                    use_preset_for_account_creds=None,
                    alert_email=None,
-                   alert_num_failures=None):
+                   alert_num_failures=None,
+                   instance_groups_overrides=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
         if distro == "channels":
@@ -355,6 +361,8 @@ def presubmit_test(branch='master',
     if extra_flags is None:
         extra_flags = []
 
+    if instance_groups_overrides is None:
+        instance_groups_overrides = []
     # TODO: Uncomment when dynamic discovery buckets are available
     # if (irsa and cloud == "aws" and scenario is None and
     #         terraform_version is None and name != "pull-kops-aws-distro-al2023"):
@@ -414,6 +422,7 @@ def presubmit_test(branch='master',
         build_cluster=build_cluster,
         test_args=test_args,
         cluster_name=cluster_name,
+        instance_groups_overrides=instance_groups_overrides,
     )
 
     spec = {
@@ -2042,6 +2051,31 @@ def generate_presubmits_e2e():
             tab_name='e2e-gce-cilium',
             always_run=True,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-cilium-hyperdisk',
+            networking='cilium',
+            tab_name='e2e-gce-cilium-hyperdisk',
+            always_run=False,
+            extra_flags=[
+                "--zones=us-east1-b",
+                "--node-size=c4-standard-4",
+                "--master-size=c4-standard-2",
+                "--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000",
+                "--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000",
+                "--set spec.etcdClusters[*].etcdMembers[*].volumeSize=60",
+                "--set spec.etcdClusters[*].etcdMembers[*].volumeType=hyperdisk-balanced",
+                "--gce-service-account=default"
+            ],
+            instance_groups_overrides=[
+                "spec.rootVolume.type=hyperdisk-balanced",
+                "spec.rootVolume.size=60",
+                "spec.rootVolume.iops=10000",
+                "spec.rootVolume.throughput=1000",
+            ]
         ),
         presubmit_test(
             cloud='gce',
