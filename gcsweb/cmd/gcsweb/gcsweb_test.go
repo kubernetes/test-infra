@@ -648,7 +648,7 @@ func TestGetParent(t *testing.T) {
 		t.Run(tc.id, func(t *testing.T) {
 			actual := getParent(tc.path)
 			if !reflect.DeepEqual(tc.expected, actual) {
-				t.Fatalf(cmp.Diff(tc.expected, actual))
+				t.Fatal(cmp.Diff(tc.expected, actual))
 			}
 		})
 	}

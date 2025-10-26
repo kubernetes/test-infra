@@ -42,4 +42,5 @@ echo "Golangci-lint version: $(./_bin/golangci-lint version)"
 export GO111MODULE=on
 export GOPROXY=https://proxy.golang.org
 export GOSUMDB=sum.golang.org
+go mod download
 ./_bin/golangci-lint --config ".golangci.yml" run ./...

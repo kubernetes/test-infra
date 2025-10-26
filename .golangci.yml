@@ -1,10 +1,5 @@
 run:
   deadline: 13m
-  skip-dirs:
-  - .git
-  - .tool
-  - vendor
-  - verify
 
 linters-settings:
   dupl:
@@ -16,6 +11,7 @@ linters-settings:
       - nilness
 
 linters:
+  # TODO: we should be enabling far more linters ...
   enable:
   - govet
   - unused
@@ -23,10 +19,14 @@ linters:
   - ineffassign
   - staticcheck
   - gosimple
-  - exportloopref
   disable-all: true
 
 issues:
+  skip-dirs:
+  - .git
+  - .tool
+  - vendor
+  - verify
   exclude-rules:
   - linters:
     - golint
