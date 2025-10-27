@@ -379,7 +379,7 @@ periodics:
             - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
             - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
             - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
-            - --test-cmd-args=--testconfig=testing/dra-extended-resources/config.yaml
+            - --test-cmd-args=--testconfig=testing/dra/config.yaml
             - --test-cmd-args=--report-dir=$(ARTIFACTS)
             - --test-cmd-name=ClusterLoaderV2
             - --use-logexporter
@@ -405,3 +405,5 @@ periodics:
               value: "true"
             - name: NODE_PRELOAD_IMAGES
               value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+            - name: CL2_ENABLE_EXTENDED_RESOURCES
+              value: "true"
