@@ -27,7 +27,7 @@ fi
 declare -A CONFIGURATIONS=(
     ["crio"]="root env"
     ["crio_eventedpleg"]="root env eventedpleg"
-    ["crio_canary"]="root env-canary"
+    ["crio_canary"]="root env-canary crun-enabled"
     ["crio_drop_infra_ctr"]="root env drop-infra-ctr"
     ["crio_swap1g"]="root env swap-1G"
     ["crio_imagefs"]="root env imagefs"
