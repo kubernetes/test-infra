@@ -1899,7 +1899,7 @@ presubmits:
         - --focus-regex=\[Serial\]
         - --use-dockerized-build=true
         - --target-build-arch=linux/arm64
-        - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:NodeSwap\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
         - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock
           --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/

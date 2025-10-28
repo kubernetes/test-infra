@@ -83,7 +83,7 @@ periodics:
       - --provider=gce
       # *Manager jobs are skipped because they have corresponding test lanes with the right image
       # These jobs in serial get partially skipped and are long jobs.
-      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
       - --timeout=240m
       env:
       - name: GOPATH
@@ -185,7 +185,7 @@ periodics:
           - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-serial.yaml
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --timeout=5h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:NodeSwap\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
+          - --test_args=--nodes=1 --timeout=5h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]"
           - --timeout=300m
       env:
       - name: GOPATH
@@ -246,7 +246,7 @@ periodics:
           - --use-dockerized-build=true
           - --target-build-arch=linux/arm64
           - --timeout=4h0m0s
-          - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:NodeSwap\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
+          - --skip-regex=\[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
           - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
         securityContext:
@@ -457,7 +457,7 @@ periodics:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - --focus-regex=\[Feature:NodeSwap\]|MemoryAllocatableEviction|PriorityMemoryEvictionOrdering
+        - --focus-regex=MemoryAllocatableEviction|PriorityMemoryEvictionOrdering
         - --skip-regex=\[Flaky\]|\[Benchmark\]
         - '--test-args=--feature-gates=NodeSwap=true --service-feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
@@ -510,7 +510,7 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - --focus-regex=\[Feature:NodeSwap\]|MemoryAllocatableEviction|PriorityMemoryEvictionOrdering
+      - --focus-regex=MemoryAllocatableEviction|PriorityMemoryEvictionOrdering
       - --skip-regex=\[Flaky\]|\[Benchmark\]
       - '--test-args=--feature-gates="NodeSwap=true" --service-feature-gates="NodeSwap=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
