@@ -669,53 +669,6 @@ presubmits:
               requests:
                 cpu: 4
                 memory: 6Gi
-    - name: pull-kubernetes-node-kubelet-serial-containerd-sidecar-containers
-      cluster: k8s-infra-prow-build
-      always_run: false
-      optional: true
-      skip_report: false
-      skip_branches:
-        - release-\d+\.\d+ # per-release image
-      annotations:
-        testgrid-dashboards: sig-node-presubmits
-        testgrid-tab-name: pr-node-kubelet-serial-containerd-sidecar-containers
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      decorate: true
-      decoration_config:
-        timeout: 260m
-      path_alias: k8s.io/kubernetes
-      extra_refs:
-        - org: kubernetes
-          repo: test-infra
-          base_ref: master
-          path_alias: k8s.io/test-infra
-      spec:
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
-            command:
-              - runner.sh
-              - /workspace/scenarios/kubernetes_e2e.py
-            args:
-              - --deployment=node
-              - --gcp-zone=us-central1-b
-              - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
-              - '--node-test-args=--feature-gates=SidecarContainers=true --service-feature-gates=SidecarContainers=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-              - --node-tests=true
-              - --provider=gce
-              - '--test_args=--nodes=1 --timeout=4h --label-filter="Serial && Feature: containsAny SidecarContainers && !Flaky && !Benchmark && !(Feature: containsAny Eviction)"'
-              - --timeout=240m
-            env:
-              - name: GOPATH
-                value: /go
-            resources:
-              limits:
-                cpu: 4
-                memory: 6Gi
-              requests:
-                cpu: 4
-                memory: 6Gi
     - name: pull-kubernetes-node-kubelet-serial-containerd-kubetest2
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-node-kubelet-serial-containerd-kubetest2 to run
@@ -916,7 +869,7 @@ presubmits:
                  --test-package-url=https://dl.k8s.io/ \
                  --test-package-dir=ci/fast \
                  --test-package-marker=latest-fast.txt \
-                 --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
+                 --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
                  --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
                  --parallel=25
             env:
