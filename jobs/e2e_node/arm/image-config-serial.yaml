@@ -5,7 +5,7 @@ images:
   ubuntu:
     image_family: pipeline-1-34-arm64
     machine: t2a-standard-2 # These tests need a lot of memory
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml"
     project: ubuntu-os-gke-cloud
     # the image regex is added so that only cgroupv2 images are selected.
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
