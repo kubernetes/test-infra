@@ -1,7 +1,0 @@
----
-storage:
-  files:
-    - path: /etc/crio/crio.conf.d/99-crun.conf
-      contents:
-        local: 99-crun.conf
-      mode: 0644

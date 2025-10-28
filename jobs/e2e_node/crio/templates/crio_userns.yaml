@@ -46,10 +46,6 @@ storage:
         local: 50-subid.toml
       mode: 0644
       overwrite: true
-    - path: /etc/crio/crio.conf.d/99-crun.conf
-      contents:
-        local: 99-crun.conf
-      mode: 0644
 systemd:
   units:
     - name: configure-sysctl.service
