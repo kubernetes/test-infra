@@ -105,7 +105,7 @@ periodics:
             memory: 20Gi
 
   - name: ci-kubernetes-integration-1-33-ppc64le
-    cron: "0 1-19/6 * * *" # every 6h starting at 01:00 UTC
+    cron: "0 1 * * *" # every 24h starting at 01:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
     decorate: true
     extra_refs:
