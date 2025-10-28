@@ -6,9 +6,10 @@ approvers:
   - barney-s
   - bridgetkromhout
   - cheftako
+  - matthchr
+
   # Not yet members of org
   # - jlbutler
-  # - matthchr
   # - nicslatts
 
 reviewers:
