@@ -14,7 +14,6 @@
 # limitations under the License.
 
 set -euo pipefail
-IFS=$'\n\t'
 
 cd "$(dirname "$0")"
 
@@ -36,59 +35,59 @@ declare -A CONFIGURATIONS=(
     ["crio_userns"]="root env-canary userns crun-enabled"
 )
 
-CONTAINER_RUNTIME=$(which podman 2>/dev/null) ||
-    CONTAINER_RUNTIME=$(which nerdctl 2>/dev/null) ||
-    CONTAINER_RUNTIME=$(which docker 2>/dev/null)
+CONTAINER_RUNTIME=$(which podman 2>/dev/null || which nerdctl 2>/dev/null || which docker 2>/dev/null)
 
 if [[ -z "$CONTAINER_RUNTIME" ]]; then
     echo "Neither podman, nerdctl nor docker found in \$PATH"
     exit 1
 fi
 
-YQ_IMAGE=mikefarah/yq:4
-BUTANE_IMAGE=quay.io/coreos/butane:release
-BASE_PATH=base
+readonly YQ_IMAGE=mikefarah/yq:4
+readonly BUTANE_IMAGE=quay.io/coreos/butane:release
+readonly BASE_PATH=base
 
-# Pull the latest image version
-for IMAGE in $YQ_IMAGE $BUTANE_IMAGE; do
-    $CONTAINER_RUNTIME pull "$IMAGE"
-done
+# Helper function to run container commands
+run_container() {
+    local image=$1
+    shift
+    $CONTAINER_RUNTIME run --privileged -i --rm -v "$PWD":/w -w /w "$image" "$@"
+}
 
+# Merge multiple YAML files into one
 merge() {
-    ARGS=()
-    for ARG in "${@:2}"; do
-        ARGS+=("$BASE_PATH/$ARG.yaml")
-    done
+    local output=$1
+    shift
+    local files=("${@/#/$BASE_PATH/}")
+    local files=("${files[@]/%/.yaml}")
 
-    set -x
     # shellcheck disable=SC2016
-    $CONTAINER_RUNTIME run --privileged -i --rm -v "$PWD":/w -w /w $YQ_IMAGE \
-        ea '. as $item ireduce ({}; . *+ $item)' "${ARGS[@]}" >"$1.yaml"
-    { set +x; } 2>/dev/null
+    run_container "$YQ_IMAGE" ea '. as $item ireduce ({}; . *+ $item)' "${files[@]}" >"$output.yaml"
 }
 
-for i in "${!CONFIGURATIONS[@]}"; do
-    echo "Building ${i}"
+# Generate ignition files from configurations
+for name in "${!CONFIGURATIONS[@]}"; do
+    echo "Building $name"
 
-    IFS=' ' read -r -a ARGS <<<"${CONFIGURATIONS[$i]}"
-    merge "$i" "${ARGS[@]}"
-
-    set -x
-    $CONTAINER_RUNTIME run --privileged -i --rm -v "$PWD":/w -w /w $BUTANE_IMAGE \
-        -ps -d $BASE_PATH <"$i.yaml" >../"$i.ign"
-    { set +x; } 2>/dev/null
+    read -ra templates <<<"${CONFIGURATIONS[$name]}"
+    merge "$name" "${templates[@]}"
+    run_container "$BUTANE_IMAGE" -ps -d "$BASE_PATH" <"$name.yaml" >"../$name.ign"
 done
 
-CRIO_SCRIPT_COMMIT=$(grep "CRIO_SCRIPT_COMMIT" "$BASE_PATH/env.yaml" | sed -rn 's/^.*CRIO_SCRIPT_COMMIT=([0-9a-f]+).*$/\1/p')
-CRIO_SCRIPT_URL="https://raw.githubusercontent.com/cri-o/packaging/$CRIO_SCRIPT_COMMIT/get"
-curl -fs "$CRIO_SCRIPT_URL" -o /dev/null || {
-    echo "Error: CRIO_SCRIPT_COMMIT in $BASE_PATH/env.yaml is wrong. The get script was not found at: $CRIO_SCRIPT_URL" 1>&2
-    exit 1
+# Validate CRI-O commit references
+extract_commit() {
+    grep "$1" "$BASE_PATH/env.yaml" | grep -o '[0-9a-f]\{40\}'
 }
 
-CRIO_COMMIT=$(grep "CRIO_COMMIT" "$BASE_PATH/env.yaml" | sed -rn 's/^.*CRIO_COMMIT=([0-9a-f]+).*$/\1/p')
-CRIO_BIN_URL="https://storage.googleapis.com/cri-o/artifacts/cri-o.amd64.$CRIO_COMMIT.tar.gz"
-curl -fs "$CRIO_BIN_URL" -o /dev/null || {
-    echo "Error: CRIO_COMMIT in $BASE_PATH/env.yaml is wrong. The cri-o binary was not found at: $CRIO_BIN_URL" 1>&2
+CRIO_SCRIPT_COMMIT=$(extract_commit "CRIO_SCRIPT_COMMIT")
+CRIO_SCRIPT_URL="https://raw.githubusercontent.com/cri-o/packaging/$CRIO_SCRIPT_COMMIT/get"
+if ! curl -fs "$CRIO_SCRIPT_URL" -o /dev/null; then
+    echo "Error: CRIO_SCRIPT_COMMIT in $BASE_PATH/env.yaml is wrong. The get script was not found at: $CRIO_SCRIPT_URL" >&2
     exit 1
-}
+fi
+
+CRIO_COMMIT=$(extract_commit "CRIO_COMMIT")
+CRIO_BIN_URL="https://storage.googleapis.com/cri-o/artifacts/cri-o.amd64.$CRIO_COMMIT.tar.gz"
+if ! curl -fs "$CRIO_BIN_URL" -o /dev/null; then
+    echo "Error: CRIO_COMMIT in $BASE_PATH/env.yaml is wrong. The cri-o binary was not found at: $CRIO_BIN_URL" >&2
+    exit 1
+fi
