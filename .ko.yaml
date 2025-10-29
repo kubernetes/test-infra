@@ -54,8 +54,3 @@ builds:
     ldflags:
       - -s -w
       - -X k8s.io/test-infra/gcsweb/pkg/version.VERSION={{.Env.VERSION}}
-  - id: analysis
-    dir: .
-    main: experiment/ml/analyze
-    ldflags:
-      - -s -w
