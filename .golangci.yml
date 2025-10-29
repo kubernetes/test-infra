@@ -24,6 +24,9 @@ linters:
       # disable: could remove embedded field "field" from selector
       # explicit selectors can be clearer
       - '-QF1008'
+      # TODO: re-enable. We have a lot of packages without comments and the
+      # diff to upgrade go is already huge
+      - '-ST1000'
   exclusions:
     paths:
       - .git
