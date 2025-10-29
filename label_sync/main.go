@@ -975,7 +975,7 @@ type labelCSSData struct {
 func cssEscape(s string) (escaped string) {
 	var IsAlpha = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
 	for i, c := range s {
-		if (i == 0 && unicode.IsDigit(c)) || !(unicode.IsDigit(c) || IsAlpha(string(c))) {
+		if (i == 0 && unicode.IsDigit(c)) || (!unicode.IsDigit(c) && !IsAlpha(string(c))) {
 			escaped += fmt.Sprintf("x%0.6x", c)
 			continue
 		}
