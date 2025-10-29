@@ -18,6 +18,12 @@ linters:
     govet:
       enable:
         - nilness
+    staticcheck:
+      checks:
+      - all
+      # disable: could remove embedded field "field" from selector
+      # explicit selectors can be clearer
+      - '-QF1008'
   exclusions:
     paths:
       - .git
