@@ -27,6 +27,8 @@ linters:
       # TODO: re-enable. We have a lot of packages without comments and the
       # diff to upgrade go is already huge
       - '-ST1000'
+      # We have a lot of legacy capitalized error strings
+      - '-ST1005'
   exclusions:
     paths:
       - .git
