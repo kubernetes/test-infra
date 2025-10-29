@@ -150,9 +150,9 @@ func ensureUUID(groupsFile, uuid, group string) (string, error) {
 		return "", fmt.Errorf("UUID, %s, already in use for group %s", uuid, value)
 	}
 	// Group name already in use with different UUID
-	for cur_id, groupName := range groupsMap {
+	for curID, groupName := range groupsMap {
 		if groupName == group {
-			return "", fmt.Errorf("%s already used as group name for %s", group, cur_id)
+			return "", fmt.Errorf("%s already used as group name for %s", group, curID)
 		}
 	}
 
@@ -282,12 +282,12 @@ func labelAccessExistsFunc(groupName string) func(map[string][]string) bool {
 	}
 }
 
-func verifyInTree(workDir, host, cur_branch string, configMap map[string][]string, verify func(map[string][]string) bool) (bool, error) {
+func verifyInTree(workDir, host, curBranch string, configMap map[string][]string, verify func(map[string][]string) bool) (bool, error) {
 	if verify(configMap) {
 		return true, nil
 	} else if inheritance := getInheritedRepo(configMap); inheritance != "" {
-		parent_branch := cur_branch + "_parent"
-		if err := fetchMetaConfig(host, inheritance, parent_branch, workDir); err != nil {
+		parentBranch := curBranch + "_parent"
+		if err := fetchMetaConfig(host, inheritance, parentBranch, workDir); err != nil {
 			// This likely won't happen, but if the fail is due to switching branches, we want to fail
 			if strings.Contains(err.Error(), "failed to switch") {
 				return false, fmt.Errorf("unable to fetch refs/meta/config for %s: %w", inheritance, err)
@@ -300,28 +300,28 @@ func verifyInTree(workDir, host, cur_branch string, configMap map[string][]strin
 			return false, fmt.Errorf("failed to read project.config file: %w", err)
 		}
 		newConfig, _ := configToMap(string(data))
-		ret, err := verifyInTree(workDir, host, parent_branch, newConfig, verify)
+		ret, err := verifyInTree(workDir, host, parentBranch, newConfig, verify)
 		if err != nil {
 			return false, fmt.Errorf("failed to check if lines in config for %s/%s: %w", host, inheritance, err)
 		}
-		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "checkout", cur_branch); err != nil {
-			return false, fmt.Errorf("failed to checkout %s, %w", cur_branch, err)
+		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "checkout", curBranch); err != nil {
+			return false, fmt.Errorf("failed to checkout %s, %w", curBranch, err)
 		}
-		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "branch", "-D", parent_branch); err != nil {
-			return false, fmt.Errorf("failed to delete %s branch, %w", parent_branch, err)
+		if err := execInDir(os.Stdout, os.Stderr, workDir, "git", "branch", "-D", parentBranch); err != nil {
+			return false, fmt.Errorf("failed to delete %s branch, %w", parentBranch, err)
 		}
 		return ret, nil
 	}
 	return false, nil
 }
 
-func ensureProjectConfig(workDir, config, host, cur_branch, groupName string) (string, error) {
+func ensureProjectConfig(workDir, config, host, curBranch, groupName string) (string, error) {
 	configMap, orderedKeys := configToMap(config)
 
 	// Check that prow automation robot has access to refs/*
 	accessLines := []string{}
 	readAccessLine := fmt.Sprintf(prowReadAccessFormat, groupName)
-	prowReadAccess, err := verifyInTree(workDir, host, cur_branch, configMap, lineInMatchingHeaderFunc(accessRefsRegex, readAccessLine))
+	prowReadAccess, err := verifyInTree(workDir, host, curBranch, configMap, lineInMatchingHeaderFunc(accessRefsRegex, readAccessLine))
 	if err != nil {
 		return "", fmt.Errorf("failed to check if needed lines in config: %w", err)
 	}
@@ -331,7 +331,7 @@ func ensureProjectConfig(workDir, config, host, cur_branch, groupName string) (s
 
 	// Check that the line "label-verified" = ... group GROUPNAME exists under ANY header
 	labelAccessLine := fmt.Sprintf(prowLabelAccessFormat, groupName)
-	prowLabelAccess, err := verifyInTree(workDir, host, cur_branch, configMap, labelAccessExistsFunc(groupName))
+	prowLabelAccess, err := verifyInTree(workDir, host, curBranch, configMap, labelAccessExistsFunc(groupName))
 	if err != nil {
 		return "", fmt.Errorf("failed to check if needed lines in config: %w", err)
 	}
@@ -341,7 +341,7 @@ func ensureProjectConfig(workDir, config, host, cur_branch, groupName string) (s
 	configMap, orderedKeys = addSection(accessHeader, configMap, orderedKeys, accessLines)
 
 	// We need to be less exact with the Label-Verified header so we are just checking if it exists anywhere:
-	labelExists, err := verifyInTree(workDir, host, cur_branch, configMap, labelExists)
+	labelExists, err := verifyInTree(workDir, host, curBranch, configMap, labelExists)
 	if err != nil {
 		return "", fmt.Errorf("failed to check if needed lines in config: %w", err)
 	}
@@ -352,13 +352,13 @@ func ensureProjectConfig(workDir, config, host, cur_branch, groupName string) (s
 
 }
 
-func updatePojectConfig(workDir, host, cur_branch, groupName string) error {
+func updatePojectConfig(workDir, host, curBranch, groupName string) error {
 	data, err := os.ReadFile(path.Join(workDir, projectConfigFile))
 	if err != nil {
 		return fmt.Errorf("failed to read project.config file: %w", err)
 	}
 
-	newData, err := ensureProjectConfig(workDir, string(data), host, cur_branch, groupName)
+	newData, err := ensureProjectConfig(workDir, string(data), host, curBranch, groupName)
 	if err != nil {
 		return fmt.Errorf("failed to ensure updated project config: %w", err)
 	}

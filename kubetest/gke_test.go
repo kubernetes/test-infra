@@ -24,10 +24,10 @@ import (
 	"testing"
 )
 
-func newGkeDeployerFactory(instance_group_prefix string) (*gkeDeployer, error) {
+func newGkeDeployerFactory(instanceGroupPrefix string) (*gkeDeployer, error) {
 	flag.Set("gke-environment", "staging")
-	if instance_group_prefix != "" {
-		flag.Set("gke-instance-group-prefix", instance_group_prefix)
+	if instanceGroupPrefix != "" {
+		flag.Set("gke-instance-group-prefix", instanceGroupPrefix)
 	} else {
 		flag.Set("gke-instance-group-prefix", "gke")
 	}
@@ -63,7 +63,7 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 	cases := []struct {
 		name                  string
 		input                 string
-		instance_group_prefix string
+		instanceGroupPrefix string
 		expected              []*ig
 		expectedError         bool
 	}{
@@ -71,7 +71,7 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 		{
 			name:                  "One instance group with default prefix",
 			input:                 urlZoneADefault,
-			instance_group_prefix: "",
+			instanceGroupPrefix: "",
 			expected: []*ig{
 				{
 					path: `zones/us-central1-a/instanceGroupManagers/gke-default-pool-6f8ec327-grp`,
@@ -83,16 +83,16 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:                  "One instance group with default prefix, but not matching instance_group_prefix",
+			name:                  "One instance group with default prefix, but not matching instanceGroupPrefix",
 			input:                 urlZoneADefault,
-			instance_group_prefix: "test",
+			instanceGroupPrefix: "test",
 			expected:              nil,
 			expectedError:         true,
 		},
 		{
 			name:                  "One instance group with test prefix",
 			input:                 urlZoneATest,
-			instance_group_prefix: "test",
+			instanceGroupPrefix: "test",
 			expected: []*ig{
 				{
 					path: `zones/us-central1-a/instanceGroupManagers/test-default-pool-6f8ec327-grp`,
@@ -107,7 +107,7 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 		{
 			name:                  "Three instance groups with default prefix",
 			input:                 strings.Join([]string{urlZoneADefault, urlZoneBDefault, urlZoneCDefault}, ";"),
-			instance_group_prefix: "",
+			instanceGroupPrefix: "",
 			expected: []*ig{
 				{
 					path: `zones/us-central1-a/instanceGroupManagers/gke-default-pool-6f8ec327-grp`,
@@ -131,16 +131,16 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:                  "Three instance groups with default prefix, but not matching instance_group_prefix",
+			name:                  "Three instance groups with default prefix, but not matching instanceGroupPrefix",
 			input:                 strings.Join([]string{urlZoneADefault, urlZoneBDefault, urlZoneCDefault}, ";"),
-			instance_group_prefix: "test",
+			instanceGroupPrefix: "test",
 			expected:              nil,
 			expectedError:         true,
 		},
 		{
 			name:                  "Three instance groups with test prefix",
 			input:                 strings.Join([]string{urlZoneATest, urlZoneBTest, urlZoneCTest}, ";"),
-			instance_group_prefix: "test",
+			instanceGroupPrefix: "test",
 			expected: []*ig{
 				{
 					path: `zones/us-central1-a/instanceGroupManagers/test-default-pool-6f8ec327-grp`,
@@ -167,7 +167,7 @@ func TestParseInstanceGroupsFromGcloud(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			deployer, err := newGkeDeployerFactory(tc.instance_group_prefix)
+			deployer, err := newGkeDeployerFactory(tc.instanceGroupPrefix)
 			if err != nil {
 				t.Errorf("Error creating gke deployer: %v", err)
 			}

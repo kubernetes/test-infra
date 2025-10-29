@@ -873,15 +873,15 @@ func parseKubeconfig(kubeconfigPath string) (*kubeconfig, error) {
 }
 
 // setupGCEStateStore is used to create a 1-off state bucket in the active GCP project
-func setupGCEStateStore(projectId string) (*string, error) {
+func setupGCEStateStore(projectID string) (*string, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building storage API client: %w", err)
 	}
-	name := gceBucketName(projectId)
+	name := gceBucketName(projectID)
 	bkt := client.Bucket(name)
-	if err := bkt.Create(ctx, projectId, nil); err != nil {
+	if err := bkt.Create(ctx, projectID, nil); err != nil {
 		return nil, err
 	}
 	log.Printf("Created new GCS bucket for state store: %s\n.", name)
@@ -890,9 +890,9 @@ func setupGCEStateStore(projectId string) (*string, error) {
 }
 
 // gceBucketName generates a name for GCE state store bucket
-func gceBucketName(projectId string) string {
+func gceBucketName(projectID string) string {
 	b := make([]byte, 2)
 	cryptorand.Read(b)
 	s := hex.EncodeToString(b)
-	return strings.Join([]string{projectId, "state", s}, "-")
+	return strings.Join([]string{projectID, "state", s}, "-")
 }
