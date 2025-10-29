@@ -33,7 +33,7 @@ fi
 # build golangci-lint
 echo "Install golangci-lint."
 cd "hack/tools"
-GOBIN="${REPO_ROOT}/_bin" go install github.com/golangci/golangci-lint/cmd/golangci-lint
+GOBIN="${REPO_ROOT}/_bin" go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.7
 cd "${REPO_ROOT}"
 
 echo "Run golangci-lint."
