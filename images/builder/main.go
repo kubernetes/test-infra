@@ -44,7 +44,7 @@ type Step struct {
 	Args []string
 }
 
-// struct for images/<image>/cloudbuild.yaml
+// CloudBuildYAMLFile represents images/<image>/cloudbuild.yaml
 // Example: images/alpine/cloudbuild.yaml
 type CloudBuildYAMLFile struct {
 	Steps         []Step `yaml:"steps"`
