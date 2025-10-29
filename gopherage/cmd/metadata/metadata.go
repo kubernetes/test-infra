@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package metadata implements the metadata command
 package metadata
 
 import (
@@ -31,7 +32,7 @@ import (
 
 const (
 	// From https://github.com/kubernetes/test-infra/blob/master/prow/jobs.md#job-environment-variables
-	repo_owner = "REPO_OWNER"
+	repoOwner = "repoOwner"
 )
 
 type Flags struct {
@@ -74,7 +75,7 @@ type IncMetadata struct {
 	PatchSet  string `json:"patchset_num"`
 }
 
-// MakeCommand returns a `junit` command.
+// MakeCommand returns a `metadata` command.
 func MakeCommand() *cobra.Command {
 	Flags := &Flags{}
 	baseCmd := &cobra.Command{
@@ -106,7 +107,7 @@ func MakeCommand() *cobra.Command {
 				Source:      Flags.source,
 				ReplaceRoot: Flags.replace,
 			}
-			WriteJson(Flags, metadata)
+			WriteJSON(Flags, metadata)
 		},
 	}
 	absCmd.Flags().StringVarP(&Flags.outputFile, "output", "o", "-", "output file")
@@ -136,7 +137,7 @@ func MakeCommand() *cobra.Command {
 				ChangeNum: Flags.changeNum,
 				PatchSet:  Flags.patchSet,
 			}
-			WriteJson(Flags, metadata)
+			WriteJSON(Flags, metadata)
 		},
 	}
 	incCmd.Flags().StringVarP(&Flags.outputFile, "output", "o", "-", "output file")
@@ -166,10 +167,10 @@ func gitCommand(args ...string) (string, error) {
 
 func ValidateBase(Flags *Flags, cmd *cobra.Command, env envFetcher) error {
 	if Flags.project == "" {
-		project := env(repo_owner)
+		project := env(repoOwner)
 		if project == "" {
 			cmd.Usage()
-			return fmt.Errorf("Failed to collect project from ENV: (%s) not found", repo_owner)
+			return fmt.Errorf("failed to collect project from ENV: (%s) not found", repoOwner)
 		}
 		Flags.project = project
 	}
@@ -179,11 +180,11 @@ func ValidateBase(Flags *Flags, cmd *cobra.Command, env envFetcher) error {
 
 func ValidateInc(Flags *Flags) error {
 	if Flags.changeNum == "" {
-		return errors.New("Gerrit change number is required")
+		return errors.New("gerrit change number is required")
 	}
 
 	if Flags.patchSet == "" {
-		return errors.New("Gerrit patchset number is required")
+		return errors.New("gerrit patchset number is required")
 	}
 	return nil
 }
@@ -192,7 +193,7 @@ func ValidateAbs(Flags *Flags, r gitRunner) error {
 	if Flags.commitID == "" {
 		commit, err := r("rev-parse", "HEAD")
 		if err != nil {
-			return fmt.Errorf("Failed to fetch Commit Hash from within covered repo: %v.", err)
+			return fmt.Errorf("failed to fetch Commit Hash from within covered repo: %v", err)
 		}
 		Flags.commitID = commit
 	}
@@ -209,13 +210,13 @@ func ValidateAbs(Flags *Flags, r gitRunner) error {
 	return nil
 }
 
-func WriteJson(Flags *Flags, m Metadata) error {
+func WriteJSON(Flags *Flags, m Metadata) error {
 	var file io.WriteCloser
 
 	j, err := json.Marshal(m)
 
 	if err != nil {
-		return fmt.Errorf("Failed to build json: %v.", err)
+		return fmt.Errorf("failed to build json: %v", err)
 	}
 
 	if Flags.outputFile == "-" {
@@ -223,11 +224,11 @@ func WriteJson(Flags *Flags, m Metadata) error {
 	} else {
 		file, err = os.Create(Flags.outputFile)
 		if err != nil {
-			return fmt.Errorf("Failed to create file: %v.", err)
+			return fmt.Errorf("failed to create file: %v", err)
 		}
 	}
 	if _, err := file.Write(j); err != nil {
-		return fmt.Errorf("Failed to write json: %v.", err)
+		return fmt.Errorf("failed to write json: %v", err)
 	}
 	file.Close()
 	return nil

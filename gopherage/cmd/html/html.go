@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package html implements the html command
 package html
 
 import (
@@ -31,7 +32,7 @@ type flags struct {
 	OutputFile string
 }
 
-// MakeCommand returns a `diff` command.
+// MakeCommand returns a `html` command.
 func MakeCommand() *cobra.Command {
 	flags := &flags{}
 	cmd := &cobra.Command{
