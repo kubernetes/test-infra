@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package version contains version metadata for the binary
 package version
 
 // VERSION is the app-global version string, which should be substituted with a
