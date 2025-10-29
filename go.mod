@@ -8,7 +8,6 @@ module k8s.io/test-infra
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.9 // indirect
-	cloud.google.com/go/secretmanager v1.10.0
 	cloud.google.com/go/storage v1.28.1
 	github.com/Azure/azure-sdk-for-go v67.3.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
@@ -67,7 +66,7 @@ require (
 	golang.org/x/tools v0.38.0
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.121.0
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1
+	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.55.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
@@ -81,7 +80,7 @@ require (
 	k8s.io/klog/v2 v2.90.1
 	k8s.io/utils v0.0.0-20230209194617-a36077c30491 // indirect
 	knative.dev/pkg v0.0.0-20230221145627-8efb3485adcf // indirect
-	sigs.k8s.io/controller-runtime v0.12.3
+	sigs.k8s.io/controller-runtime v0.12.3 // indirect
 	sigs.k8s.io/prow v0.0.0-20240419142743-3cb2506c2ff3
 	sigs.k8s.io/yaml v1.4.0
 )
