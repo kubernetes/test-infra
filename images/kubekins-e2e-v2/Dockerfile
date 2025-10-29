@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm
+FROM debian:bookworm-20251020
 ARG TARGETARCH
 
 WORKDIR /workspace
@@ -67,11 +67,11 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
     if [ "${TARGETARCH}" != "ppc64le" ] && [ "${TARGETARCH}" != "s390x" ]; then \
-        /google-cloud-sdk/install.sh \
-        --disable-installation-options \
-        --bash-completion=false \
-        --path-update=false \
-        --usage-reporting=false; \
+    /google-cloud-sdk/install.sh \
+    --disable-installation-options \
+    --bash-completion=false \
+    --path-update=false \
+    --usage-reporting=false; \
     fi && \
     gcloud components install alpha beta && \
     gcloud info | tee /workspace/gcloud-info.txt
