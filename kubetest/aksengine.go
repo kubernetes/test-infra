@@ -204,7 +204,7 @@ func (c *aksEngineDeployer) SetCustomCloudProfileEnvironment() error {
 	if c.isAzureStackCloud() {
 		env := azure.Environment{}
 		env.Name = c.azureEnvironment
-		azsFQDNSuffix := strings.Replace(c.azureCustomCloudURL, fmt.Sprintf("https://portal.%s.", c.location), "", -1)
+		azsFQDNSuffix := strings.ReplaceAll(c.azureCustomCloudURL, fmt.Sprintf("https://portal.%s.", c.location), "")
 		azsFQDNSuffix = strings.TrimSuffix(azsFQDNSuffix, "/")
 		env.ResourceManagerEndpoint = fmt.Sprintf("https://management.%s.%s/", c.location, azsFQDNSuffix)
 		metadataURL := fmt.Sprintf("%s/metadata/endpoints?api-version=1.0", strings.TrimSuffix(env.ResourceManagerEndpoint, "/"))

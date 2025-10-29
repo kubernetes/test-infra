@@ -190,7 +190,7 @@ func writeTemplate(templatePath string, outputPath string, data interface{}) err
 	// set up template
 	funcMap := template.FuncMap{
 		"anchor": func(input string) string {
-			return strings.Replace(input, ":", " ", -1)
+			return strings.ReplaceAll(input, ":", " ")
 		},
 	}
 	t, err := template.New(filepath.Base(templatePath)).Funcs(funcMap).ParseFiles(templatePath)
@@ -930,7 +930,7 @@ func writeDocs(template string, output string, config Configuration) error {
 // I could not find a proper doc, so rules here a mostly empirical
 func linkify(text string) string {
 	// swap space with dash
-	link := strings.Replace(text, " ", "-", -1)
+	link := strings.ReplaceAll(text, " ", "-")
 	// discard some special characters
 	discard, _ := regexp.Compile("[,/]")
 	link = discard.ReplaceAllString(link, "")
