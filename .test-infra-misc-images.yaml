@@ -6,4 +6,3 @@ images:
   - dir: robots/issue-creator
   - dir: testgrid/cmd/configurator
   - dir: gcsweb/cmd/gcsweb
-  - dir: experiment/ml/analyze
