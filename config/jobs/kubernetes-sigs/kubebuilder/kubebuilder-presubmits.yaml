@@ -3,8 +3,8 @@ presubmits:
   - name: pull-kubebuilder-test
     cluster: eks-prow-build-cluster
     decorate: true
-    always_run: true
     optional: false
+    skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
     branches:
     - ^master$
@@ -29,8 +29,8 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 40m
-    always_run: true
     optional: false
+    skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
     branches:
       - ^master$
@@ -65,8 +65,8 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 40m
-    always_run: true
     optional: false
+    skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
     branches:
       - ^master$
@@ -101,8 +101,8 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 40m
-    always_run: true
     optional: false
+    skip_if_only_changed: "^docs/|^designs/|^roadmap/|^scripts/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/kubebuilder
     branches:
       - ^master$
