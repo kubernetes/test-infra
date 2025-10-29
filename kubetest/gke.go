@@ -62,7 +62,7 @@ var (
 	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
 	gkeCreateNatBeforeCluster      = flag.Bool("gke-create-nat-before-cluster", false, "(gke only) Create NAT before creating the cluster.")
 	gkeNodeTagFromFirewallRules    = flag.Bool("gke-node-tag-from-firewall-rules", false, "(gke only) Get node tag for creating firewall rules from already exisiting firewall rules.")
-	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
+	gkenatMinPortsPerVM            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
 	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default", "DataKey":"my-data-key"}]`)
@@ -106,7 +106,7 @@ type gkeDeployer struct {
 	subnetMode                  string
 	subnetworkRegion            string
 	createNat                   bool
-	natMinPortsPerVm            int
+	natMinPortsPerVM            int
 	image                       string
 	imageFamily                 string
 	imageProject                string
@@ -175,7 +175,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 
 	poolRe, err := regexp.Compile(fmt.Sprintf(poolReTemplate, *gkeInstanceGroupPrefix))
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't compile regex %v. prefix: %s", err, *gkeInstanceGroupPrefix)
+		return nil, fmt.Errorf("couldn't compile regex %v. prefix: %s", err, *gkeInstanceGroupPrefix)
 	}
 	g.poolRe = poolRe
 	g.imageFamily = imageFamily
@@ -186,7 +186,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	g.nodeLocations = *gkeNodeLocations
 	g.nodePorts = *gkeNodePorts
 	g.createNat = *gkeCreateNat
-	g.natMinPortsPerVm = *gkeNatMinPortsPerVm
+	g.natMinPortsPerVM = *gkenatMinPortsPerVM
 
 	err = json.Unmarshal([]byte(*gkeShape), &g.shape)
 	if err != nil {
@@ -885,7 +885,7 @@ func (g *gkeDeployer) ensureNat() error {
 			"--router="+nat,
 			"--router-region="+region,
 			"--auto-allocate-nat-external-ips",
-			"--min-ports-per-vm="+strconv.Itoa(g.natMinPortsPerVm),
+			"--min-ports-per-vm="+strconv.Itoa(g.natMinPortsPerVM),
 			"--nat-primary-subnet-ip-ranges")); err != nil {
 			return fmt.Errorf("error adding NAT to a router: %w", err)
 		}

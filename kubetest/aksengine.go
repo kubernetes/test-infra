@@ -204,7 +204,7 @@ func (c *aksEngineDeployer) SetCustomCloudProfileEnvironment() error {
 	if c.isAzureStackCloud() {
 		env := azure.Environment{}
 		env.Name = c.azureEnvironment
-		azsFQDNSuffix := strings.Replace(c.azureCustomCloudURL, fmt.Sprintf("https://portal.%s.", c.location), "", -1)
+		azsFQDNSuffix := strings.ReplaceAll(c.azureCustomCloudURL, fmt.Sprintf("https://portal.%s.", c.location), "")
 		azsFQDNSuffix = strings.TrimSuffix(azsFQDNSuffix, "/")
 		env.ResourceManagerEndpoint = fmt.Sprintf("https://management.%s.%s/", c.location, azsFQDNSuffix)
 		metadataURL := fmt.Sprintf("%s/metadata/endpoints?api-version=1.0", strings.TrimSuffix(env.ResourceManagerEndpoint, "/"))
@@ -1173,8 +1173,8 @@ func (c *aksEngineDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	}
 
 	logDumperWindows := func() error {
-		const winLogDumpScriptUrl string = "https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/scripts/win-ci-logs-collector.sh"
-		winLogDumpScript, err := downloadFromURL(winLogDumpScriptUrl, path.Join(c.outputDir, "win-ci-logs-collector.sh"), 2)
+		const winLogDumpScriptURL string = "https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/scripts/win-ci-logs-collector.sh"
+		winLogDumpScript, err := downloadFromURL(winLogDumpScriptURL, path.Join(c.outputDir, "win-ci-logs-collector.sh"), 2)
 
 		masterFQDN := fmt.Sprintf("%s.%s.cloudapp.azure.com", c.dnsPrefix, c.location)
 		if err != nil {
@@ -1245,9 +1245,9 @@ func (c *aksEngineDeployer) TestSetup() error {
 	}
 
 	// Download repo-list that defines repositories for Windows test images.
-	downloadUrl, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
+	downloadURL, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
 	if !ok {
-		// Env value for downloadUrl is not set, nothing to do
+		// Env value for downloadURL is not set, nothing to do
 		log.Printf("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION not set. Using default test image repos.")
 		return nil
 	}
@@ -1259,11 +1259,11 @@ func (c *aksEngineDeployer) TestSetup() error {
 	}
 	defer f.Close()
 
-	log.Printf("downloading %v from %v.", downloadPath, downloadUrl)
-	err = httpRead(downloadUrl, f)
+	log.Printf("downloading %v from %v.", downloadPath, downloadURL)
+	err = httpRead(downloadURL, f)
 
 	if err != nil {
-		return fmt.Errorf("url=%s failed get %v: %v.", downloadUrl, downloadPath, err)
+		return fmt.Errorf("url=%s failed get %v: %v.", downloadURL, downloadPath, err)
 	}
 	f.Chmod(0744)
 	if err := os.Setenv("KUBE_TEST_REPO_LIST", downloadPath); err != nil {

@@ -31,7 +31,7 @@ import (
 
 const (
 	// From https://github.com/kubernetes/test-infra/blob/master/prow/jobs.md#job-environment-variables
-	repo_owner = "REPO_OWNER"
+	repoOwner = "REPO_OWNER"
 )
 
 type Flags struct {
@@ -106,7 +106,7 @@ func MakeCommand() *cobra.Command {
 				Source:      Flags.source,
 				ReplaceRoot: Flags.replace,
 			}
-			WriteJson(Flags, metadata)
+			WriteJSON(Flags, metadata)
 		},
 	}
 	absCmd.Flags().StringVarP(&Flags.outputFile, "output", "o", "-", "output file")
@@ -136,7 +136,7 @@ func MakeCommand() *cobra.Command {
 				ChangeNum: Flags.changeNum,
 				PatchSet:  Flags.patchSet,
 			}
-			WriteJson(Flags, metadata)
+			WriteJSON(Flags, metadata)
 		},
 	}
 	incCmd.Flags().StringVarP(&Flags.outputFile, "output", "o", "-", "output file")
@@ -166,10 +166,10 @@ func gitCommand(args ...string) (string, error) {
 
 func ValidateBase(Flags *Flags, cmd *cobra.Command, env envFetcher) error {
 	if Flags.project == "" {
-		project := env(repo_owner)
+		project := env(repoOwner)
 		if project == "" {
 			cmd.Usage()
-			return fmt.Errorf("Failed to collect project from ENV: (%s) not found", repo_owner)
+			return fmt.Errorf("Failed to collect project from ENV: (%s) not found", repoOwner)
 		}
 		Flags.project = project
 	}
@@ -209,7 +209,7 @@ func ValidateAbs(Flags *Flags, r gitRunner) error {
 	return nil
 }
 
-func WriteJson(Flags *Flags, m Metadata) error {
+func WriteJSON(Flags *Flags, m Metadata) error {
 	var file io.WriteCloser
 
 	j, err := json.Marshal(m)

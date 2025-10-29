@@ -211,7 +211,7 @@ func (o *ReloadingOwnerList) reload() error {
 	if err != nil {
 		return err
 	}
-	if info.ModTime() == o.mtime {
+	if info.ModTime().Equal(o.mtime) {
 		return nil
 	}
 	file, err := os.Open(o.path)

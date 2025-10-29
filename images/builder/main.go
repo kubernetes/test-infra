@@ -44,7 +44,7 @@ type Step struct {
 	Args []string
 }
 
-// struct for images/<image>/cloudbuild.yaml
+// CloudBuildYAMLFile represeents images/<image>/cloudbuild.yaml
 // Example: images/alpine/cloudbuild.yaml
 type CloudBuildYAMLFile struct {
 	Steps         []Step `yaml:"steps"`
@@ -214,7 +214,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 
 	var logFilePath string
 	if o.logDir != "" {
-		logFilePath = path.Join(o.logDir, strings.Replace(jobName, "/", "-", -1)+".log")
+		logFilePath = path.Join(o.logDir, strings.ReplaceAll(jobName, "/", "-")+".log")
 		f, err := os.Create(logFilePath)
 
 		if err != nil {

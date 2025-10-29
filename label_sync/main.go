@@ -190,7 +190,7 @@ func writeTemplate(templatePath string, outputPath string, data interface{}) err
 	// set up template
 	funcMap := template.FuncMap{
 		"anchor": func(input string) string {
-			return strings.Replace(input, ":", " ", -1)
+			return strings.ReplaceAll(input, ":", " ")
 		},
 	}
 	t, err := template.New(filepath.Base(templatePath)).Funcs(funcMap).ParseFiles(templatePath)
@@ -765,16 +765,16 @@ func main() {
 		logrus.Fatalf("--only and --orgs cannot both be set")
 	}
 
-	switch {
-	case o.action == "docs":
+	switch o.action {
+	case "docs":
 		if err := writeDocs(o.docsTemplate, o.docsOutput, *config); err != nil {
 			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", o.docsTemplate, o.docsOutput)
 		}
-	case o.action == "css":
+	case "css":
 		if err := writeCSS(o.cssTemplate, o.cssOutput, *config); err != nil {
 			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", o.cssTemplate, o.cssOutput)
 		}
-	case o.action == "sync":
+	case "sync":
 		var githubClient client
 		var err error
 		if deprecated {
@@ -930,7 +930,7 @@ func writeDocs(template string, output string, config Configuration) error {
 // I could not find a proper doc, so rules here a mostly empirical
 func linkify(text string) string {
 	// swap space with dash
-	link := strings.Replace(text, " ", "-", -1)
+	link := strings.ReplaceAll(text, " ", "-")
 	// discard some special characters
 	discard, _ := regexp.Compile("[,/]")
 	link = discard.ReplaceAllString(link, "")
@@ -975,7 +975,7 @@ type labelCSSData struct {
 func cssEscape(s string) (escaped string) {
 	var IsAlpha = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
 	for i, c := range s {
-		if (i == 0 && unicode.IsDigit(c)) || !(unicode.IsDigit(c) || IsAlpha(string(c))) {
+		if (i == 0 && unicode.IsDigit(c)) || (!unicode.IsDigit(c) && !IsAlpha(string(c))) {
 			escaped += fmt.Sprintf("x%0.6x", c)
 			continue
 		}
