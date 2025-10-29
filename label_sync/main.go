@@ -765,16 +765,16 @@ func main() {
 		logrus.Fatalf("--only and --orgs cannot both be set")
 	}
 
-	switch {
-	case o.action == "docs":
+	switch o.action {
+	case "docs":
 		if err := writeDocs(o.docsTemplate, o.docsOutput, *config); err != nil {
 			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", o.docsTemplate, o.docsOutput)
 		}
-	case o.action == "css":
+	case "css":
 		if err := writeCSS(o.cssTemplate, o.cssOutput, *config); err != nil {
 			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", o.cssTemplate, o.cssOutput)
 		}
-	case o.action == "sync":
+	case "sync":
 		var githubClient client
 		var err error
 		if deprecated {

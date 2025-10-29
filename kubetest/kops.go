@@ -675,7 +675,8 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 		t.KubeMasterURL = kubecfg.Clusters[0].Cluster.Server
 	}
 
-	if k.provider == "gce" {
+	switch k.provider {
+	case "gce":
 		t.GCEProject = k.gcpProject
 		if len(k.zones) > 0 {
 			zone := k.zones[0]
@@ -688,7 +689,7 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 			}
 			t.GCERegion = zone[0:lastDash]
 		}
-	} else if k.provider == "aws" {
+	case "aws":
 		if len(k.zones) > 0 {
 			zone := k.zones[0]
 			// These GCE fields are actually provider-agnostic
