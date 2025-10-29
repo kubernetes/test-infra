@@ -292,7 +292,7 @@ periodics:
         - name: GINKGO_FOCUS
           value: "Workload cluster creation"
         - name: GINKGO_SKIP
-          value: \[Managed Kubernetes\]
+          value: \[Managed Kubernetes\]|\[WINDOWS\]
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
