@@ -7,8 +7,7 @@ module k8s.io/test-infra
 // packages: https://github.com/golang/go/issues/44840#issuecomment-1651863470
 
 require (
-	bitbucket.org/creachadair/stringset v0.0.9
-	cloud.google.com/go/automl v1.12.0
+	bitbucket.org/creachadair/stringset v0.0.9 // indirect
 	cloud.google.com/go/secretmanager v1.10.0
 	cloud.google.com/go/storage v1.28.1
 	github.com/Azure/azure-sdk-for-go v67.3.0+incompatible
@@ -92,7 +91,6 @@ require (
 	cloud.google.com/go/compute v1.19.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.13.0 // indirect
-	cloud.google.com/go/longrunning v0.4.1 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
