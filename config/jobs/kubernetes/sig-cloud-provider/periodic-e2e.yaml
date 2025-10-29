@@ -181,7 +181,7 @@ periodics:
              --test-package-url=https://dl.k8s.io/ \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
-             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
+             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
              --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0" \
              --parallel=25
         env:

@@ -3278,7 +3278,7 @@ periodics:
           --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
-          --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
+          --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
           --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
           --parallel=4
       env:
@@ -3347,7 +3347,7 @@ periodics:
           --test-package-url=https://storage.googleapis.com/k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
-          --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
+          --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
           --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0" \
           --parallel=4
       env:
