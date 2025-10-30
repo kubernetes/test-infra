@@ -70,6 +70,8 @@ def replace_or_remove_line(s, pattern, new_str):
     return '\n'.join(keep)
 
 def should_skip_newer_k8s(k8s_version, kops_version):
+    if k8s_version == 'ci':
+        return False
     if kops_version is None:
         return False
     if k8s_version is None:

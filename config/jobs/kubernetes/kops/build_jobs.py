@@ -1341,11 +1341,11 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.35', '1.34', '1.33', '1.32', '1.31']:
+    for version in ['master', '1.34', '1.33', '1.32']:
         results.append(
             build_test(
                 cloud='aws',
-                k8s_version=version,
+                k8s_version=version.replace('master', 'ci'),
                 kops_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
@@ -1365,7 +1365,7 @@ def generate_conformance():
         results.append(
             build_test(
                 cloud='aws',
-                k8s_version=version,
+                k8s_version=version.replace('master', 'ci'),
                 kops_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
@@ -1841,17 +1841,17 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.35', '1.34', '1.33', '1.32', '1.31']:
+    for version in ['master', '1.34', '1.33', '1.32']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://k8s-staging-kops/kops/releases/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt"
         results.append(
             build_test(
                 cloud="aws",
-                k8s_version=version.replace('master', 'stable'),
+                k8s_version=version.replace('master', 'ci'),
                 kops_version=kops_version,
                 kops_channel='alpha',
-                name_override=f"kops-pipeline-updown-kops{version.replace('.', '')}",
+                name_override=f"kops-pipeline-updown-kops-{version.replace('.', '')}",
                 networking='calico',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=24,

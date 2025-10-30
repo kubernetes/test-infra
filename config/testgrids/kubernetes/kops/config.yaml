@@ -39,7 +39,7 @@ dashboard_groups:
   - kops-1.32
   - kops-1.33
   - kops-1.34
-  - kops-1.35
+  - kops-master
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -83,7 +83,7 @@ dashboards:
 - name: kops-1.32
 - name: kops-1.33
 - name: kops-1.34
-- name: kops-1.35
+- name: kops-master
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons
