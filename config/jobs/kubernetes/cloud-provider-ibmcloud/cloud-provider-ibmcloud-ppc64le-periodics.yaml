@@ -344,6 +344,7 @@ periodics:
 
               set +o errexit
               set -o xtrace
+              export TF_VAR_controlplane_powervs_memory=16
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
@@ -409,6 +410,7 @@ periodics:
               set +o errexit
               set -o xtrace
               export TF_VAR_powervs_system_type=e980
+              export TF_VAR_controlplane_powervs_memory=16
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
