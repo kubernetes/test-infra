@@ -426,9 +426,9 @@ periodics:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: kubernetes
+    - org: emerbe
       repo: perf-tests
-      base_ref: master
+      base_ref: dra-update-to-stable-api
       path_alias: k8s.io/perf-tests
     - org: kubernetes
       repo: kops
@@ -535,9 +535,9 @@ periodics:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: kubernetes
+    - org: emerbe
       repo: perf-tests
-      base_ref: master
+      base_ref: dra-update-to-stable-api
       path_alias: k8s.io/perf-tests
     - org: kubernetes
       repo: kops
