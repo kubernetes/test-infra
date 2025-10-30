@@ -61,7 +61,7 @@ if find -L . -type f -not \( \
 fi
 
 
-trap 'echo ERROR: bad spelling, fix with hack/update/misspell.sh' ERR
+trap 'echo ERROR: bad spelling, fix with hack/make-rules/update/misspell.sh' ERR
 
 echo "Check for spelling..."
 # Unit test: lang auge (remove space)
