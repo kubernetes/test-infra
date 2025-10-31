@@ -50,7 +50,7 @@ periodics:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       - name: GOPATH
         value: /home/prow/go
       - name: ARTIFACTS
@@ -150,7 +150,7 @@ periodics:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       - name: GOPATH
         value: /home/prow/go
       - name: ARTIFACTS
@@ -252,7 +252,7 @@ periodics:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       - name: GOPATH
         value: /home/prow/go
       - name: ARTIFACTS
@@ -354,7 +354,7 @@ periodics:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       - name: GOPATH
         value: /home/prow/go
       - name: ARTIFACTS
