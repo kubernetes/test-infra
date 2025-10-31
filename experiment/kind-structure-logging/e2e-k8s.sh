@@ -84,15 +84,6 @@ build() {
   export PATH="${PWD}/_output/bin:$PATH"
 }
 
-check_structured_log_support() {
-	case "${KUBE_VERSION}" in
-		v1.1[0-8].*)
-			echo "$1 is only supported on versions >= v1.19, got ${KUBE_VERSION}"
-			exit 1
-			;;
-	esac
-}
-
 # up a cluster with kind
 create_cluster() {
   # Grab the version of the cluster we're about to start
@@ -107,7 +98,6 @@ create_cluster() {
   controllerManager_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\""
   apiServer_extra_args="      \"v\": \"${KIND_CLUSTER_LOG_LEVEL}\""
   if [ -n "$CLUSTER_LOG_FORMAT" ]; then
-      check_structured_log_support "CLUSTER_LOG_FORMAT"
       scheduler_extra_args="${scheduler_extra_args}
       \"logging-format\": \"${CLUSTER_LOG_FORMAT}\""
       controllerManager_extra_args="${controllerManager_extra_args}
@@ -120,7 +110,6 @@ create_cluster() {
       \"container-log-max-size\": \"100Mi\""
   KUBELET_LOG_FORMAT=${KUBELET_LOG_FORMAT:-$CLUSTER_LOG_FORMAT}
   if [ -n "$KUBELET_LOG_FORMAT" ]; then
-      check_structured_log_support "KUBECTL_LOG_FORMAT"
       kubelet_extra_args="${kubelet_extra_args}
       \"logging-format\": \"${KUBELET_LOG_FORMAT}\""
   fi
