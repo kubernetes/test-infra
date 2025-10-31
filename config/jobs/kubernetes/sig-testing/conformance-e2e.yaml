@@ -165,8 +165,11 @@ periodics:
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      - name: GA_ONLY
-        value: "true"
+      # disable non-GA APIs and features
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":false,"AllBeta":false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/alpha":"false", "api/beta":"false"}'
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

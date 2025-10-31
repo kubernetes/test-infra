@@ -98,8 +98,11 @@ presubmits:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
           value: "true"
-        - name: GA_ONLY
-          value: "true"
+        # disable non-GA APIs and features
+        - name: FEATURE_GATES
+          value: '{"AllAlpha":false,"AllBeta":false}'
+        - name: RUNTIME_CONFIG
+          value: '{"api/alpha":"false", "api/beta":"false"}'
         command:
         - wrapper.sh
         - bash
