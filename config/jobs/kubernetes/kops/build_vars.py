@@ -17,7 +17,7 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master"
 
 # Grid Definitions
 networking_options = [
