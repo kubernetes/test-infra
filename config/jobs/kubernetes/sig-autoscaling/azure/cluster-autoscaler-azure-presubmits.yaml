@@ -43,6 +43,10 @@ presubmits:
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
             value: "1.33" # latest available in AKS
+          - name: AKS_TIER
+            value: "Premium" # required for LTS
+          - name: AKS_SUPPORT_PLAN
+            value: "AKSLongTermSupport" # Use LTS
           - name: CLUSTER_TEMPLATE
             value: ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml
         # docker-in-docker needs privileged mode
