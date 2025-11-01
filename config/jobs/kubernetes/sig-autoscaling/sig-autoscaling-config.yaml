@@ -41,6 +41,9 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
+      env:
+      - name: NUMPROC
+        value: "8"
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
