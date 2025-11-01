@@ -290,19 +290,9 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.test-pods.svc.cluster.local
       - |-
-        --comment=The Kubernetes project has merge-blocking tests that are currently too flaky to consistently pass.
+        --comment=Retesting failed PR that otherwise appears ready for merge.
 
-        This bot retests PRs for certain kubernetes repos according to the following rules:
-        - The PR does have any `do-not-merge/*` labels
-        - The PR does not have the `needs-ok-to-test` label
-        - The PR is mergeable (does not have a `needs-rebase` label)
-        - The PR is approved (has `cncf-cla: yes`, `lgtm`, `approved` labels)
-        - The PR is failing tests required for merge
-
-        You can:
-        - Review the [full test history](https://prow.k8s.io/pr-history/?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}) for this PR
-        - Prevent this bot from retesting with `/lgtm cancel` or `/hold`
-        - Help make our tests less flaky by following our [Flaky Tests Guide][1]
+        Please help us fix flaky tests by following our [Flaky Tests Guide][1]
 
         /retest-required
 
