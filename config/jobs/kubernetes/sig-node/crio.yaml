@@ -416,7 +416,9 @@ periodics:
     testgrid-dashboards: sig-node-cri-o
     testgrid-tab-name: ci-crio-userns-e2e-serial
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "Executes userns E2E tests with ProcMountType and UserNamespacesSupport feature gates"
+    # Before UserNamespacesHostNetworkSupport reaches GA, if we need to migrate the userns tests to the conformance tests,
+    # we must retain the test job for UserNamespacesHostNetworkSupport.
+    description: "Executes userns E2E tests with ProcMountType, UserNamespacesSupport and UserNamespacesHostNetworkSupport feature gates"
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -430,8 +432,8 @@ periodics:
           - --repo-root=.
           - --gcp-zone=us-central1-b
           - --parallelism=1
-          - --focus-regex=\[Feature:ProcMountType\]|\[Feature:UserNamespacesSupport\]
-          - '--test-args=--service-feature-gates="UserNamespacesSupport=true,ProcMountType=true" --feature-gates="UserNamespacesSupport=true,ProcMountType=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+          - --focus-regex=\[Feature:ProcMountType\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesHostNetworkSupport\]
+          - '--test-args=--service-feature-gates="UserNamespacesSupport=true,ProcMountType=true,UserNamespacesHostNetworkSupport=true" --feature-gates="UserNamespacesSupport=true,ProcMountType=true,UserNamespacesHostNetworkSupport=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-userns.yaml
         resources:
           limits:
