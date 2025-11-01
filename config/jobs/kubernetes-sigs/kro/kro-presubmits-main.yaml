@@ -25,3 +25,78 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
       testgrid-tab-name: presubmits-unit-tests
+  - name: presubmits-integration-tests
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        command:
+        - scripts/ci/presubmits/integration-tests
+        resources:
+          limits:
+            cpu: 8
+            memory: 16Gi
+          requests:
+            cpu: 8
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-integration-tests
+  - name: presubmits-e2e-tests
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        command:
+        - scripts/ci/presubmits/e2e-tests
+        resources:
+          limits:
+            cpu: 8
+            memory: 16Gi
+          requests:
+            cpu: 8
+            memory: 16Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-e2e-tests
+  - name: presubmits-build-image
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 2h
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        command:
+        - scripts/ci/presubmits/build-image
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-build-image
