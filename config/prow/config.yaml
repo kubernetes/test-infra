@@ -242,9 +242,11 @@ branch-protection:
         autoscaler:
           required_status_checks:
             contexts:
-            - test-and-verify
             - Helm chart
             - Helm Docs
+            - unit tests
+            - golangci-lint
+            - verify
           branches:
             gh-pages:
               protect: false
