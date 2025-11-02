@@ -288,7 +288,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gce-autoscaling
-- interval: 30m
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa-cm
   cluster: k8s-infra-prow-build
   labels:
@@ -324,7 +324,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gci-gce-autoscaling-hpa-cm
-- interval: 30m
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
   cluster: k8s-infra-prow-build
   labels:
@@ -360,7 +360,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gci-gce-autoscaling-migs-hpa
-- interval: 30m
+- interval: 24h
   name: ci-kubernetes-e2e-autoscaling-hpa-cpu
   cluster: k8s-infra-prow-build
   labels:
@@ -397,7 +397,7 @@ periodics:
     # TODO: add to release blocking dashboards once run is successful
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gce-cos-autoscaling-hpa-cpu
-- interval: 30m
+- interval: 24h
   name: ci-kubernetes-e2e-autoscaling-hpa-cpu-alpha-beta
   cluster: k8s-infra-prow-build
   labels:
