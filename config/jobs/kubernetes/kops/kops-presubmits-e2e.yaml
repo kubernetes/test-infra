@@ -2505,7 +2505,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-boskos-kubetest2
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos125", "extra_flags": "--image=cos-cloud/cos-125-19216-0-115 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kindnet"}
   - name: pull-kops-kubernetes-e2e-cos-gce-serial
     cluster: k8s-infra-prow-build
     branches:
@@ -2536,7 +2536,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default" \
+            --create-args="--channel=alpha --networking=kindnet --image=cos-cloud/cos-125-19216-0-115 --node-volume-size=100 --gce-service-account=default" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2566,16 +2566,16 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: cos105
-      test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default
+      test.kops.k8s.io/distro: cos125
+      test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-125-19216-0-115 --node-volume-size=100 --gce-service-account=default
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kubenet
+      test.kops.k8s.io/networking: kindnet
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-kubernetes-e2e-cos-gce-serial
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos125", "extra_flags": "--image=cos-cloud/cos-125-19216-0-115 --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kubenet"}
   - name: pull-kops-kubernetes-e2e-cos-gce
     cluster: k8s-infra-prow-build
     branches:
@@ -2606,7 +2606,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default" \
+            --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-125-19216-0-115 --node-volume-size=100 --gce-service-account=default" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2635,8 +2635,8 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: cos105
-      test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-370-67 --node-volume-size=100 --gce-service-account=default
+      test.kops.k8s.io/distro: cos125
+      test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-125-19216-0-115 --node-volume-size=100 --gce-service-account=default
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kubenet
@@ -2644,7 +2644,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-kubernetes-e2e-cos-gce
 
-# {"cloud": "gce", "distro": "cos105", "extra_flags": "--image=cos-cloud/cos-105-17412-370-67 --set=spec.networking.networkID=default --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kubenet"}
+# {"cloud": "gce", "distro": "cos125", "extra_flags": "--image=cos-cloud/cos-125-19216-0-115 --set=spec.networking.networkID=default --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "kubenet"}
   - name: pull-kops-kubernetes-e2e-cos-gce-slow
     cluster: k8s-infra-prow-build
     branches:
@@ -2675,7 +2675,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
-            --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-105-17412-370-67 --set=spec.networking.networkID=default --gce-service-account=default" \
+            --create-args="--channel=alpha --networking=kubenet --image=cos-cloud/cos-125-19216-0-115 --set=spec.networking.networkID=default --gce-service-account=default" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2705,8 +2705,8 @@ presubmits:
             memory: 6Gi
     annotations:
       test.kops.k8s.io/cloud: gce
-      test.kops.k8s.io/distro: cos105
-      test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-105-17412-370-67 --set=spec.networking.networkID=default --gce-service-account=default
+      test.kops.k8s.io/distro: cos125
+      test.kops.k8s.io/extra_flags: --image=cos-cloud/cos-125-19216-0-115 --set=spec.networking.networkID=default --gce-service-account=default
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kubenet
