@@ -1,7 +1,7 @@
 periodics:
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   cluster: k8s-infra-prow-build
-  interval: 2h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   cluster: k8s-infra-prow-build
-  interval: 2h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -99,7 +99,7 @@ periodics:
     testgrid-tab-name: autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
   cluster: k8s-infra-prow-build
-  interval: 2h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -148,7 +148,7 @@ periodics:
     testgrid-tab-name: autoscaling-vpa-full
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   cluster: k8s-infra-prow-build
-  interval: 3h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -197,7 +197,7 @@ periodics:
     testgrid-tab-name: autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   cluster: k8s-infra-prow-build
-  interval: 2h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
