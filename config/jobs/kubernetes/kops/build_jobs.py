@@ -33,6 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
     build_cron,
     create_args,
     distro_images,
+    gce_distro_images,
     distros_ssh_user,
     k8s_version_info,
     should_skip_newer_k8s,
@@ -126,7 +127,7 @@ def build_test(cloud='aws',
             build_cluster = 'k8s-infra-kops-prow-build'
 
     elif cloud == 'gce':
-        kops_image = None
+        kops_image = gce_distro_images[distro]
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
         if build_cluster is None:
@@ -345,7 +346,7 @@ def presubmit_test(branch='master',
             build_cluster = 'k8s-infra-prow-build'
 
     elif cloud == 'gce':
-        kops_image = None
+        kops_image = gce_distro_images[distro]
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
         if build_cluster is None:
@@ -500,6 +501,12 @@ def generate_grid():
         for distro in gce_distro_options: # TODO: all distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
+                    extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
+                    if 'arm64' in distro:
+                        extra_flags.extend([
+                            "--node-size=c4a-standard-2",
+                            "--master-size=c4a-standard-2",
+                        ])
                     results.append(
                         build_test(cloud="gce",
                                    runs_per_day=3,
@@ -508,7 +515,7 @@ def generate_grid():
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
                                    networking=networking,
-                                   extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+                                   extra_flags=extra_flags,
                                    )
                     )
 
@@ -985,7 +992,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--set=spec.nodeProblemDetector.enabled=true",
                        "--gce-service-account=default",
                    ],
@@ -1035,7 +1041,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--set=spec.networking.networkID=default",
                        "--gce-service-account=default",
                    ],
@@ -1070,7 +1075,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
@@ -1190,7 +1194,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--node-count=3",
                        "--gce-service-account=default",
                    ],
@@ -1209,7 +1212,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--node-count=3",
                        "--gce-service-account=default",
                    ],
@@ -1255,7 +1257,6 @@ def generate_misc():
                    kops_channel="alpha",
                    extra_flags=[
                        "--set=cluster.spec.cloudConfig.manageStorageClasses=false",
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--node-volume-size=100",
                        "--gce-service-account=default",
                    ],
@@ -1318,7 +1319,6 @@ def generate_misc():
                    kops_version=marker_updown_green("master"),
                    kops_channel="alpha",
                    extra_flags=[
-                       "--image=cos-cloud/cos-125-19216-0-115",
                        "--set=spec.kubeAPIServer.logLevel=4",
                        "--set=spec.kubeAPIServer.auditLogMaxSize=2000000000",
                        "--set=spec.kubeAPIServer.enableAggregatorRouting=true",
@@ -1503,6 +1503,12 @@ def generate_network_plugins():
                 )
             )
         if plugin in supports_gce:
+            extra_flags = ["--gce-service-account=default"]
+            if 'arm64' in distro:
+                extra_flags.extend([
+                    '--node-size=c4a-standard-2',
+                    '--master-size=c4a-standard-2',
+                ])
             results.append(
                 build_test(
                     cloud="gce",
@@ -1511,7 +1517,7 @@ def generate_network_plugins():
                     kops_channel='alpha',
                     name_override=f"kops-gce-cni-{plugin}",
                     networking=networking_arg,
-                    extra_flags=["--gce-service-account=default"],
+                    extra_flags=extra_flags,
                     extra_dashboards=['kops-network-plugins'],
                     runs_per_day=8,
                 )
@@ -1780,7 +1786,7 @@ def generate_nftables():
                 cloud="aws",
                 distro=distro,
                 k8s_version="stable",
-                networking="cilium",
+                networking="kindnet",
                 kops_channel="alpha",
                 name_override=f"kops-aws-nftables-{distro}",
                 extra_flags=["--set=cluster.spec.kubeProxy.proxyMode=nftables"],
@@ -1794,7 +1800,7 @@ def generate_nftables():
                 cloud="gce",
                 distro=distro,
                 k8s_version="stable",
-                networking="cilium",
+                networking="kindnet",
                 kops_channel="alpha",
                 name_override=f"kops-gce-nftables-{distro}",
                 extra_flags=[
@@ -2399,7 +2405,6 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             kops_channel="alpha",
             extra_flags=[
-                "--image=cos-cloud/cos-125-19216-0-115",
                 "--node-volume-size=100",
                 "--gce-service-account=default",
             ],
@@ -2418,7 +2423,6 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             kops_channel="alpha",
             extra_flags=[
-                "--image=cos-cloud/cos-125-19216-0-115",
                 "--node-volume-size=100",
                 "--gce-service-account=default",
             ],
@@ -2435,7 +2439,6 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             kops_channel="alpha",
             extra_flags=[
-                "--image=cos-cloud/cos-125-19216-0-115",
                 "--set=spec.networking.networkID=default",
                 "--gce-service-account=default",
             ],

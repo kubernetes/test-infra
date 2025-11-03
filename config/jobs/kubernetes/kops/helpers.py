@@ -185,36 +185,25 @@ def latest_gce_image(project, family, arch="X86_64"):
     if image:
         return image
 
-    import googleapiclient.discovery  # pylint: disable=import-error, import-outside-toplevel
+    from google.cloud import compute_v1  # pylint: disable=import-error, import-outside-toplevel
+    from google.api_core.exceptions import NotFound  # pylint: disable=import-error, import-outside-toplevel
 
-    compute = googleapiclient.discovery.build("compute", "v1", cache_discovery=False)
+    client = compute_v1.ImagesClient()
     try:
-        # Get the latest image from the specified family
-        # pylint: disable=no-member
-        image_response = (
-            compute.images().getFromFamily(project=project, family=family).execute()
-        )
-        # pylint: enable=no-member
-    except Exception as e:
-        raise RuntimeError(
-            f"Failed to get image from family {family} in project {project}: {str(e)}"
-        )
+        image = client.get_from_family(project=project, family=family)
+    except NotFound:
+        print(f"Image family {family}, has been deprecated by Google, please remove this OS from testing") # pylint: disable=line-too-long
+        return ""
 
-    # Verify architecture matches
-    if "architecture" not in image_response:
+    if arch not in image.architecture:
         raise RuntimeError(
-            f"Image {image_response['name']} has no architecture specified"
-        )
-
-    if arch not in image_response["architecture"]:
-        raise RuntimeError(
-            f"Image family {family} has architecture {image_response['architecture']} "
+            f"Image family {family} has architecture {image.architecture} "
             f"which doesn't match requested {arch}"
         )
 
-    image_name = image_response["name"]
+    image_name = f"{project}/{image.name}"
     set_pinned(pin, image_name)
-    return f"{project}/{image_name}"
+    return image_name
 
 # Get latest images from some public images families
 gce_distro_images = {
@@ -227,6 +216,8 @@ gce_distro_images = {
     "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
+    "cos125": latest_gce_image("cos-cloud", "cos-125-lts"),
+    "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
 }
 
 distro_images = {
