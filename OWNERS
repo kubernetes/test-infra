@@ -13,7 +13,6 @@ approvers:
 - stevekuznetsov
 - krzyzacy
 - test-infra-oncall # oncall
-- sig-k8s-infra-oncall # oncall
 emeritus_approvers:
 - amwat
 - fejta

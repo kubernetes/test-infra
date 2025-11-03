@@ -7,8 +7,10 @@ reviewers:
 - ameukam
 - BenTheElder
 - dims
+- upodroid
+- xmudrii
 
 # All oncallers
 approvers:
 - test-infra-oncall
-- sig-k8s-infra-oncall
+- sig-k8s-infra-leads
