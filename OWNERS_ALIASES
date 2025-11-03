@@ -8,15 +8,6 @@ aliases:
   - mpherman2
   - timwangmusic
 
-
-  sig-k8s-infra-oncall:
-  - BenTheElder
-  # kubernetes.io org admins
-  - ameukam
-  - dims
-  - thockin
-  - upodroid
-
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
     - deads2k
@@ -81,9 +72,9 @@ aliases:
     - rexagod
     - richabanker
   sig-k8s-infra-leads:
-    - BenTheElder
     - ameukam
-    - dims
+    - GenPage
+    - hakman
     - upodroid
     - xmudrii
   sig-multicluster-leads:
