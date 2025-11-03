@@ -599,8 +599,6 @@ periodics:
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "true"
-        - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
         - name: CLOUD_PROVIDER
