@@ -476,8 +476,6 @@ periodics:
           value: "3s"
         - name: CL2_LONG_JOB_RUNNING_TIME
           value: "45m"
-        - name: CL2_EXTENDED_RESOURCE_NAME
-          value: "example.com/gpu"
         # - name: CL2_LOAD_TEST_THROUGHPUT
         #   value: "50"
         # - name: CL2_DELETE_TEST_THROUGHPUT
@@ -506,8 +504,6 @@ periodics:
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
         - name: KOPS_CL2_TEST_CONFIG
           value: testing/dra/config.yaml
-        - name: CL2_ENABLE_EXTENDED_RESOURCES
-          value: "true"
         resources:
           requests:
             cpu: "7"
