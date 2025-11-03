@@ -216,8 +216,12 @@ gce_distro_images = {
     "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
+    "cos121": latest_gce_image("cos-cloud", "cos-121-lts"),
+    "cos121arm64": latest_gce_image("cos-cloud", "cos-arm64-121-lts", "ARM64"),
     "cos125": latest_gce_image("cos-cloud", "cos-125-lts"),
     "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
+    "cosdev": latest_gce_image("cos-cloud", "cos-dev"),
+    "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
 }
 
 distro_images = {

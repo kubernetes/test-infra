@@ -504,8 +504,9 @@ def generate_grid():
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
                     if 'arm64' in distro:
                         extra_flags.extend([
-                            "--node-size=c4a-standard-2",
-                            "--master-size=c4a-standard-2",
+                            "--node-size=t2a-standard-2",
+                            "--master-size=t2a-standard-2",
+                            "--zones=us-central1-a",
                         ])
                     results.append(
                         build_test(cloud="gce",
@@ -1506,8 +1507,9 @@ def generate_network_plugins():
             extra_flags = ["--gce-service-account=default"]
             if 'arm64' in distro:
                 extra_flags.extend([
-                    '--node-size=c4a-standard-2',
-                    '--master-size=c4a-standard-2',
+                    '--node-size=t2a-standard-2',
+                    '--master-size=t2a-standard-2',
+                    '--zones=us-central1-a',
                 ])
             results.append(
                 build_test(

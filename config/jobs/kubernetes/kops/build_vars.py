@@ -31,6 +31,12 @@ networking_options = [
 
 # GCE distributions
 gce_distro_options = [
+    "cos121",
+    "cos121arm64",
+    "cos125",
+    "cos125arm64",
+    "cosdev",
+    "cosdevarm64",
     "deb12",
     "deb12arm64",
     "deb13",
