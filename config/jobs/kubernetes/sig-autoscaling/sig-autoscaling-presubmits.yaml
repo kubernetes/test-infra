@@ -240,6 +240,8 @@ presubmits:
         env:
         - name: FEATURE_GATES
           value: "InPlaceOrRecreate=true"
+        - name: WORKSPACE
+          value: $(ARTIFACTS)
   - name: pull-autoscaling-e2e-vpa-actuation
     cluster: k8s-infra-prow-build
     annotations:
@@ -285,6 +287,8 @@ presubmits:
           value: "8"
         - name: FEATURE_GATES
           value: "InPlaceOrRecreate=true"
+        - name: WORKSPACE
+          value: $(ARTIFACTS)
   - name: pull-autoscaling-e2e-vpa-admission-controller
     cluster: k8s-infra-prow-build
     annotations:
@@ -328,6 +332,8 @@ presubmits:
         env:
         - name: FEATURE_GATES
           value: "InPlaceOrRecreate=true"
+        - name: WORKSPACE
+          value: $(ARTIFACTS)
   - name: pull-autoscaling-e2e-vpa-recommender
     cluster: k8s-infra-prow-build
     annotations:
@@ -371,6 +377,8 @@ presubmits:
         env:
         - name: FEATURE_GATES
           value: "InPlaceOrRecreate=true"
+        - name: WORKSPACE
+          value: $(ARTIFACTS)
   - name: pull-autoscaling-e2e-vpa-updater
     cluster: k8s-infra-prow-build
     annotations:
@@ -414,6 +422,8 @@ presubmits:
         env:
         - name: FEATURE_GATES
           value: "InPlaceOrRecreate=true"
+        - name: WORKSPACE
+          value: $(ARTIFACTS)
   - name: pull-autoscaling-e2e-ca-build
     cluster: k8s-infra-prow-build
     annotations:
