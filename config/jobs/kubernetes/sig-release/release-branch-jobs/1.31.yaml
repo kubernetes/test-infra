@@ -114,7 +114,11 @@ periodics:
       - bash
       - -c
       - |
-        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
+        curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-logs-e2e-k8s.sh >$(which e2e-k8s.sh) &&
+        chmod u+x $(which e2e-k8s.sh) &&
+        e2e-k8s.sh
+
       env:
       - name: CLUSTER_LOG_FORMAT
         value: json
