@@ -2,7 +2,7 @@
 # 16 jobs, total of 336 runs per week
 periodics:
 
-# {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-al2023
   cron: '26 7-23/8 * * *'
   labels:
@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20250929.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -61,12 +61,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-al2023, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-al2023
 
-# {"cloud": "aws", "distro": "deb12", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "deb12", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-deb12
   cron: '56 0-23/8 * * *'
   labels:
@@ -96,7 +96,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20251006-2257' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='136693071363/debian-12-amd64-20251006-2257' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -125,12 +125,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-deb12, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-deb12
 
-# {"cloud": "aws", "distro": "deb13", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "deb13", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-deb13
   cron: '54 6-23/8 * * *'
   labels:
@@ -160,7 +160,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-13-amd64-20251006-2257' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='136693071363/debian-13-amd64-20251006-2257' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -189,12 +189,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-deb13, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-deb13
 
-# {"cloud": "aws", "distro": "flatcar", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "flatcar", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-flatcar
   cron: '45 7-23/8 * * *'
   labels:
@@ -224,7 +224,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4426.1.0-hvm' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='075585003325/Flatcar-beta-4459.1.0-hvm' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -254,12 +254,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-flatcar, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-flatcar
 
-# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-rhel8
   cron: '45 5-23/8 * * *'
   labels:
@@ -289,7 +289,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='309956199498/RHEL-8.9.0_HVM-20240327-x86_64-4-Hourly2-GP3' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -318,12 +318,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-rhel8, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-rhel8
 
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-u2204
   cron: '9 5-23/8 * * *'
   labels:
@@ -353,7 +353,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251001' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251015' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -382,12 +382,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-u2204, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2204
 
-# {"cloud": "aws", "distro": "u2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-aws-nftables-u2404
   cron: '19 7-23/8 * * *'
   labels:
@@ -417,7 +417,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251001' --channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251022' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -446,12 +446,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-nftables-u2404
 
-# {"cloud": "gce", "distro": "deb12", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "deb12", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-deb12
   cron: '33 5-23/8 * * *'
   labels:
@@ -481,7 +481,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='debian-cloud/debian-12-bookworm-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -510,12 +510,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-deb12, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-deb12
 
-# {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-deb12arm64
   cron: '11 5-23/8 * * *'
   labels:
@@ -545,7 +545,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -574,12 +574,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-deb12, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-deb12arm64
 
-# {"cloud": "gce", "distro": "deb13", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "deb13", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-deb13
   cron: '43 3-23/8 * * *'
   labels:
@@ -609,7 +609,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='debian-cloud/debian-13-trixie-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -638,12 +638,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-deb13, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-deb13
 
-# {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-deb13arm64
   cron: '30 0-23/8 * * *'
   labels:
@@ -673,7 +673,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -702,12 +702,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-deb13, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-deb13arm64
 
-# {"cloud": "gce", "distro": "u2204", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "u2204", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-u2204
   cron: '36 0-23/8 * * *'
   labels:
@@ -737,7 +737,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2204-jammy-v20251023' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -766,12 +766,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-u2204, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-u2204
 
-# {"cloud": "gce", "distro": "u2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "u2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-u2404
   cron: '22 2-23/8 * * *'
   labels:
@@ -801,7 +801,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -830,12 +830,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-u2404, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-u2404
 
-# {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-u2404arm64
   cron: '42 4-23/8 * * *'
   labels:
@@ -865,7 +865,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20251021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -894,12 +894,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-u2404, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-u2404arm64
 
-# {"cloud": "gce", "distro": "umini2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "umini2404", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-umini2404
   cron: '28 2-23/8 * * *'
   labels:
@@ -929,7 +929,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-amd64-v20251020' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -958,12 +958,12 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-umini2404, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-umini2404
 
-# {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
+# {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-umini2404arm64
   cron: '29 2-23/8 * * *'
   labels:
@@ -993,7 +993,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--channel=alpha --networking=cilium --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20251020' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1022,7 +1022,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: cilium
+    test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-umini2404, kops-gce, kops-k8s-stable, kops-latest, kops-nftables, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-umini2404arm64
