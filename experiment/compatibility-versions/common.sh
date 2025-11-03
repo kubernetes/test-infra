@@ -35,16 +35,12 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 # parallel testing is enabled. Using LABEL_FILTER instead of combining SKIP and
 # FOCUS is recommended (more expressive, easier to read than regexp).
 #
-# GA_ONLY: true  - limit to GA APIs/features as much as possible
-#          false - (default) APIs and features left at defaults
 # FEATURE_GATES:
 #          JSON or YAML encoding of a string/bool map: {"FeatureGateA": true, "FeatureGateB": false}
 #          Enables or disables feature gates in the entire cluster.
-#          Cannot be used when GA_ONLY=true.
 # RUNTIME_CONFIG:
 #          JSON or YAML encoding of a string/string (!) map: {"apia.example.com/v1alpha1": "true", "apib.example.com/v1beta1": "false"}
 #          Enables API groups in the apiserver via --runtime-config.
-#          Cannot be used when GA_ONLY=true.
 
 # cleanup logic for cleanup on exit
 CLEANED_UP=false
@@ -133,30 +129,6 @@ create_cluster() {
   feature_gates="${FEATURE_GATES:-{\}}"
   # --runtime-config argument value passed to the API server, again as a map
   runtime_config="${RUNTIME_CONFIG:-{\}}"
-
-  case "${GA_ONLY:-false}" in
-  false)
-    :
-    ;;
-  true)
-    if [ "${feature_gates}" != "{}" ]; then
-      echo "GA_ONLY=true and FEATURE_GATES=${feature_gates} are mutually exclusive."
-      return 1
-    fi
-    if [ "${runtime_config}" != "{}" ]; then
-      echo "GA_ONLY=true and RUNTIME_CONFIG=${runtime_config} are mutually exclusive."
-      return 1
-    fi
-
-    echo "Limiting to GA APIs and features for ${PREV_VERSION}"
-    feature_gates='{"AllAlpha":false,"AllBeta":false}'
-    runtime_config='{"api/alpha":"false", "api/beta":"false"}'
-    ;;
-  *)
-    echo "\$GA_ONLY set to '${GA_ONLY}'; supported values are true and false (default)"
-    return 1
-    ;;
-  esac
 
   # create the config file
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
