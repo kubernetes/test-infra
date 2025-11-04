@@ -60,7 +60,7 @@ presubmits:
             --zones=us-central1-a,us-central1-f \
             --arch=arm64 \
             --min-cpu-platform="" \
-            --image-url=projects/ubuntu-os-cloud/global/images/family/ubuntu-minimal-2404-lts-arm64
+            --image-url=projects/ubuntu-os-cloud/global/images/family/ubuntu-minimal-2404-lts-arm64 \
             --ginkgo.focus="\[NVMe\]"
         env:
         - name: ZONE
