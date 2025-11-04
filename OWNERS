@@ -3,6 +3,7 @@
 reviewers:
 - aojea # lead
 - BenTheElder # lead
+- dims
 - stevekuznetsov
 - cjwagner # oncall, lead
 - mpherman2 # oncall
@@ -10,6 +11,7 @@ reviewers:
 approvers:
 - aojea # lead
 - BenTheElder # lead
+- dims
 - stevekuznetsov
 - krzyzacy
 - test-infra-oncall # oncall
