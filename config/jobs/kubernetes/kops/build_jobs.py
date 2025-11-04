@@ -1830,7 +1830,7 @@ def generate_versions():
             runs_per_day=8,
         )
     ]
-    for version in ['1.35', '1.34', '1.33', '1.32', '1.31', '1.30', '1.29']:
+    for version in ['1.34', '1.33', '1.32', '1.31']:
         results.append(
             build_test(
                 cloud='aws',
@@ -2053,6 +2053,31 @@ def generate_presubmits_e2e():
         presubmit_test(
             cloud='gce',
             k8s_version='stable',
+            distro='deb12arm64',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-distro-debian12-arm64',
+            networking='kindnet',
+            always_run=False,
+            extra_flags=[
+                "--gce-service-account=default",
+                "--node-size=t2a-standard-2",
+                "--master-size=t2a-standard-2",
+                "--zones=us-central1-a"
+            ],
+        ),
+        presubmit_test(
+            cloud='gce',
+            k8s_version='stable',
+            distro='deb13',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-distro-debian13',
+            networking='kindnet',
+            always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-cilium',
             networking='cilium',
@@ -2072,6 +2097,7 @@ def generate_presubmits_e2e():
                 "--zones=us-east1-b",
                 "--node-size=c4-standard-4",
                 "--master-size=c4-standard-2",
+                "--set cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeSize=60",
