@@ -515,7 +515,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-cos121
 
-# {"cloud": "gce", "distro": "cos121arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "cos121arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-cos121arm64
   cron: '58 2-23/8 * * *'
   labels:
@@ -545,7 +545,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-121-18867-294-2' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-arm64-121-18867-294-2' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -570,7 +570,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos121arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -643,7 +643,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-cos125
 
-# {"cloud": "gce", "distro": "cos125arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "cos125arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-cos125arm64
   cron: '28 4-23/8 * * *'
   labels:
@@ -673,7 +673,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-125-19216-0-115' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-arm64-125-19216-0-115' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -698,7 +698,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cos125arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -771,7 +771,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-cosdev
 
-# {"cloud": "gce", "distro": "cosdevarm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "cosdevarm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-cosdevarm64
   cron: '13 5-23/8 * * *'
   labels:
@@ -801,7 +801,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-arm64-dev-129-19340-0-0' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-arm64-dev-129-19340-0-0' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -826,7 +826,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: cosdevarm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -899,7 +899,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-deb12
 
-# {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "deb12arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-deb12arm64
   cron: '11 5-23/8 * * *'
   labels:
@@ -929,7 +929,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='debian-cloud/debian-12-bookworm-arm64-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -954,7 +954,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: deb12arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -1027,7 +1027,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-deb13
 
-# {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "deb13arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-deb13arm64
   cron: '30 0-23/8 * * *'
   labels:
@@ -1057,7 +1057,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='debian-cloud/debian-13-trixie-arm64-v20251014' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1082,7 +1082,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: deb13arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -1219,7 +1219,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-u2404
 
-# {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "u2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-u2404arm64
   cron: '42 4-23/8 * * *'
   labels:
@@ -1249,7 +1249,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20251021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20251021' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1274,7 +1274,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: u2404arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
@@ -1347,7 +1347,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-gce-nftables-umini2404
 
-# {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "gce", "distro": "umini2404arm64", "extra_flags": "--set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
 - name: e2e-kops-gce-nftables-umini2404arm64
   cron: '29 2-23/8 * * *'
   labels:
@@ -1377,7 +1377,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20251020' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-minimal-2404-noble-arm64-v20251020' --channel=alpha --networking=kindnet --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1402,7 +1402,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/distro: umini2404arm64
-    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default
+    test.kops.k8s.io/extra_flags: --set=cluster.spec.kubeProxy.proxyMode=nftables --gce-service-account=default --node-size=t2a-standard-2 --master-size=t2a-standard-2 --zones=us-central1-a
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest

@@ -1797,6 +1797,16 @@ def generate_nftables():
             )
         )
     for distro in gce_distro_options:
+        extra_flags = [
+            "--set=cluster.spec.kubeProxy.proxyMode=nftables",
+            "--gce-service-account=default",
+        ]
+        if 'arm64' in distro:
+            extra_flags.extend([
+                "--node-size=t2a-standard-2",
+                "--master-size=t2a-standard-2",
+                "--zones=us-central1-a",
+            ])
         results.append(
             build_test(
                 cloud="gce",
@@ -1805,10 +1815,7 @@ def generate_nftables():
                 networking="kindnet",
                 kops_channel="alpha",
                 name_override=f"kops-gce-nftables-{distro}",
-                extra_flags=[
-                    "--set=cluster.spec.kubeProxy.proxyMode=nftables",
-                    "--gce-service-account=default",
-                ],
+                extra_flags=extra_flags,
                 extra_dashboards=["kops-nftables"],
                 runs_per_day=3,
             )
@@ -2097,7 +2104,7 @@ def generate_presubmits_e2e():
                 "--zones=us-east1-b",
                 "--node-size=c4-standard-4",
                 "--master-size=c4-standard-2",
-                "--set cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage",
+                "--set spec.cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000",
                 "--set spec.etcdClusters[*].etcdMembers[*].volumeSize=60",
