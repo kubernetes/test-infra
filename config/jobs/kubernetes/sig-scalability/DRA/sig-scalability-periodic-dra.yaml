@@ -607,8 +607,6 @@ periodics:
           value: "scalability-scale-project"
         - name: NODE_PRELOAD_IMAGES
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        - name: CL2_ENABLE_EXTENDED_RESOURCES
-          value: "true"
         - name: KOPS_CL2_TEST_CONFIG
           value: testing/dra/config.yaml
         resources:
