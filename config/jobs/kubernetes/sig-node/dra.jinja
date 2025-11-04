@@ -189,7 +189,10 @@ presubmits:
           if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
               echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
           fi
-          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd\n' /tmp/kind.yaml
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           {% else %}
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
