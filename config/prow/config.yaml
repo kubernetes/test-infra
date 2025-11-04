@@ -242,7 +242,8 @@ branch-protection:
         autoscaler:
           required_status_checks:
             contexts:
-            - test-and-verify
+            - test
+            - verify
             - Helm chart
             - Helm Docs
           branches:
