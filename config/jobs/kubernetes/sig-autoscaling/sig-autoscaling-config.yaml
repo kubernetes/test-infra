@@ -44,8 +44,6 @@ periodics:
       env:
       - name: NUMPROC
         value: "8"
-      - name: WORKSPACE
-        value: $(ARTIFACTS)
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -95,8 +93,6 @@ periodics:
       env:
       - name: FEATURE_GATES
         value: "InPlaceOrRecreate=true"
-      - name: WORKSPACE
-        value: $(ARTIFACTS)
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -146,8 +142,6 @@ periodics:
       env:
       - name: FEATURE_GATES
         value: "InPlaceOrRecreate=true"
-      - name: WORKSPACE
-        value: $(ARTIFACTS)
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -197,8 +191,6 @@ periodics:
       env:
       - name: FEATURE_GATES
         value: "InPlaceOrRecreate=true"
-      - name: WORKSPACE
-        value: $(ARTIFACTS)
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -248,8 +240,6 @@ periodics:
       env:
       - name: FEATURE_GATES
         value: "InPlaceOrRecreate=true"
-      - name: WORKSPACE
-        value: $(ARTIFACTS)
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
