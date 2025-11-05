@@ -421,6 +421,59 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension
+  - name: pull-e2e-capz-windows-2022-staging-gallery
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/windows-testing
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-containerd-2-0-latest: "true"
+      preset-azure-community: "true"
+      preset-capz-windows-2022: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+          command:
+            - "runner.sh"
+            - "env"
+            - "KUBERNETES_VERSION=latest"
+            - "./capz/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
+          env:
+          - name: GINKGO_FOCUS
+            value: \[sig-windows\] # run just a subset to speed up testing time
+          - name: "GALLERY_NAME"
+            value: "staging_gallery"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-e2e-capz-windows-gallery-image
   - name: pull-e2e-capz-windows-2025-extension
     cluster: k8s-infra-prow-build
     decorate: true
@@ -473,6 +526,59 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-extension-2025
+  - name: pull-e2e-capz-windows-2025-staging-gallery
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/windows-testing
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-containerd-2-0-latest: "true"
+      preset-azure-community: "true"
+      preset-capz-windows-2025: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+          command:
+            - "runner.sh"
+            - "env"
+            - "KUBERNETES_VERSION=latest"
+            - "./capz/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
+          env:
+          - name: GINKGO_FOCUS
+            value: \[sig-windows\] # run just a subset to speed up testing time
+          - name: "GALLERY_NAME"
+            value: "staging_gallery"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-e2e-capz-windows-2025-staging-gallery
   - name: pull-e2e-capz-windows-2022-extension-community-gke
     cluster: k8s-infra-prow-build
     decorate: true
