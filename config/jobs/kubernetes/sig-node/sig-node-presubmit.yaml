@@ -1349,7 +1349,7 @@ presubmits:
               - --gcp-zone=us-central1-b
               - --parallelism=8
               - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
-              - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
+              - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
               - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --feature-gates=EventedPLEG=true --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-evented-pleg.yaml
             resources:
@@ -1364,6 +1364,54 @@ presubmits:
                 value: core
               - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
                 value: "1"
+    - name: pull-kubernetes-node-containerd-evented-pleg-e2e
+      cluster: k8s-infra-prow-build
+      # explicitly needs /test pull-kubernetes-containerd-crio-evented-pleg-e2e to run
+      always_run: false
+      optional: true
+      skip_branches:
+        - release-\d+\.\d+ # per-release image
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      decoration_config:
+        timeout: 180m
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-kubernetes-e2e-gce: "true"
+      annotations:
+        testgrid-dashboards: sig-node-presubmits
+        testgrid-tab-name: pr-containerd-evented-pleg-gce-e2e
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+            command:
+              - runner.sh
+            args:
+              - kubetest2
+              - noop
+              - --test=node
+              - --
+              - --repo-root=.
+              - --gcp-zone=us-central1-b
+              - --parallelism=8
+              - --focus-regex=\[NodeConformance\]|\[Feature:.+\]|\[Feature\]
+              - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|\[Feature:PodLevelResources\]|\[Alpha\]
+              - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --feature-gates=EventedPLEG=true --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
     - name: pull-kubernetes-node-crio-e2e
       cluster: k8s-infra-prow-build
       # explicitly needs /test pull-kubernetes-node-crio-e2e to run
