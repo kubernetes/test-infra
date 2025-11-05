@@ -2094,11 +2094,11 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             cloud='gce',
-            k8s_version='stable',
+            k8s_version='ci',
             kops_channel='alpha',
-            name='pull-kops-e2e-k8s-gce-cilium-hyperdisk',
-            networking='cilium',
-            tab_name='e2e-gce-cilium-hyperdisk',
+            name='pull-kops-e2e-k8s-gce-kindnet-hyperdisk',
+            networking='kindnet',
+            tab_name='e2e-gce-kindnet-hyperdisk',
             always_run=False,
             extra_flags=[
                 "--zones=us-east1-b",
