@@ -15,6 +15,7 @@ approvers:
 - stevekuznetsov
 - krzyzacy
 - test-infra-oncall # oncall
+- upodroid
 emeritus_approvers:
 - amwat
 - fejta
