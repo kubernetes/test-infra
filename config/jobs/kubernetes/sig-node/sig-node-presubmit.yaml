@@ -2664,6 +2664,61 @@ presubmits:
                 cpu: 4
                 memory: 6Gi
 
+    - name: pull-kubernetes-node-e2e-containerd-standalone-mode-serial-all-alpha
+      cluster: k8s-infra-prow-build
+      branches:
+        # TODO(releng): Remove once repo default branch has been renamed
+        - master
+        - main
+      always_run: false
+      optional: true
+      max_concurrency: 12
+      skip_report: false
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      annotations:
+        testgrid-dashboards: sig-node-presubmits
+        testgrid-tab-name: pr-node-kubelet-containerd-standalone-mode-serial-all-alpha
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: containerd
+          repo: containerd
+          base_ref: main
+          path_alias: github.com/containerd/containerd
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+            command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+              - --deployment=node
+              - --gcp-zone=us-central1-b
+              - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+              - --node-tests=true
+              - --provider=gce
+              - --test_args=--nodes=1 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]"
+              - --timeout=65m
+            env:
+              - name: GOPATH
+                value: /go
+            resources:
+              requests:
+                cpu: 4
+                memory: 6Gi
+              limits:
+                cpu: 4
+                memory: 6Gi
+
     - name: pull-kubernetes-node-e2e-containerd-standalone-mode
       cluster: k8s-infra-prow-build
       branches:
