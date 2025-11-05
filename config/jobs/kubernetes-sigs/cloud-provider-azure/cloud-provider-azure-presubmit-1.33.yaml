@@ -392,7 +392,7 @@ presubmits:
       testgrid-num-columns-recent: "30"
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz-1-33
     cluster: eks-prow-build-cluster
-    always_run: false
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 5h
@@ -510,7 +510,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz-1-33
     cluster: eks-prow-build-cluster
-    always_run: false
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 5h
