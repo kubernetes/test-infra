@@ -92,7 +92,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 5h
@@ -152,7 +152,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 5h
@@ -337,9 +337,8 @@ presubmits:
           value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
-        # TODO(mainred): remove template with static version
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/453dee707edb7a016440c5277107a17523b9c60f/templates/test/ci/cluster-template-prow-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ci-version.yaml
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
@@ -417,7 +416,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 5h
@@ -477,7 +476,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 5h
