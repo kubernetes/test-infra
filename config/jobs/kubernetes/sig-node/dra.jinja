@@ -172,7 +172,6 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          {%- if canary %}
           # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
           # and adding something at the end.
           (
@@ -193,29 +192,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-          {% else %}
-          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
-          # and adding something at the end.
-          (
-              ${kind_yaml_cmd[@]}
-
-              # Additional features are not in kind.yaml, but they can be added at the end.
-              for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
-          ) >/tmp/kind.yaml
-          {%- endif %}
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
