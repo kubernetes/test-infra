@@ -65,8 +65,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -152,8 +152,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -239,8 +239,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -324,8 +324,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -454,8 +454,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -584,8 +584,8 @@ presubmits:
 
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
-
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
