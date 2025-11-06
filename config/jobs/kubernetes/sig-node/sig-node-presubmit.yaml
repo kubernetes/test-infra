@@ -467,10 +467,59 @@ presubmits:
               - --repo-root=.
               - --gcp-zone=us-central1-b
               - --parallelism=8
-              - --focus-regex=\[Feature:.+\]
-              - --skip-regex=\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|[\[Feature:PodLevelResources\]|\[Alpha\]
+              - --focus-regex=\\[Feature:.+\\]
+              - --skip-regex=\\[Flaky\\]|\\[Serial\\]|\\[Feature:InPlacePodVerticalScaling\\]|\\[Feature:UserNamespacesSupport]|\\[Feature:UserNamespacesPodSecurityStandards\\]|\\[Feature:KubeletCredentialProviders\\]|\\[Feature:LockContention\\]|\\[Feature:SCTPConnectivity\\]|[\\[Feature:PodLevelResources\\]|\\[Alpha\\]
               - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+    - name: pull-kubernetes-node-e2e-restartallcontainers
+      cluster: k8s-infra-prow-build
+      always_run: false
+      optional: true
+      skip_report: false
+      branches:
+        - master
+        - main
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      annotations:
+        testgrid-dashboards: sig-node-presubmits
+        testgrid-tab-name: pr-node-e2e-restartallcontainers
+        description: Runs node e2e tests with ContainerRestartRules and RestartAllContainersOnContainerExits feature gates enabled.
+      run_if_changed: ^pkg/kubelet/.*|pkg/features/.*
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+            command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --deployment=node
+              - --gcp-zone=us-central1-b
+              - '--node-test-args=--feature-gates=ContainerRestartRules=true,RestartAllContainersOnContainerExits=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              - --node-tests=true
+              - --provider=gce
+              - --test_args=--nodes=1 --focus="\[Feature:RestartAllContainersOnContainerExits\]" --skip="\[Flaky\]"
+              - --timeout=65m
+            env:
+              - name: GOPATH
+                value: /go
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
     - name: pull-kubernetes-node-e2e-containerd-alpha-features
       cluster: k8s-infra-prow-build
       branches:
