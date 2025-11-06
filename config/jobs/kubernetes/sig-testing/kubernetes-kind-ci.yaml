@@ -104,7 +104,7 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
+    testgrid-dashboards: sig-release-master-blocking, sig-testing-kind
     testgrid-tab-name: kind-master-beta-features
     description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
