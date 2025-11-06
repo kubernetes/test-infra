@@ -931,6 +931,62 @@ periodics:
           - --node-tests=true
           - --provider=gce
           # all criproxy tests are serial, but no need to specify it
+          # disabled features are handled by -all-alpha variant of this test job
+          - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]|\[Featuure:OffByDefault\]"
+          - --timeout=120m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          requests:
+            cpu: 4
+            memory: 6Gi
+          limits:
+            cpu: 4
+            memory: 6Gi
+
+- name: ci-kubernetes-node-e2e-cri-proxy-all-alpha-serial
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-cri-proxy-all-alpha
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+    description: "Use cri proxy"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
+    - org: containerd
+      repo: containerd
+      base_ref: main
+      path_alias: github.com/containerd/containerd
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+        command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+          - --deployment=node
+          - --gcp-zone=us-central1-b
+          - '--node-test-args=--cri-proxy-enabled=true --feature-gates=AllAlpha=true,AllBeta=true --service-feature-gates=AllAlpha=true,AllBeta=true --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+          - --node-tests=true
+          - --provider=gce
+          # all criproxy tests are serial, but no need to specify it
           - --test_args=--nodes=1 --focus="\[Feature:CriProxy\]" --skip="\[Flaky\]"
           - --timeout=120m
         env:
