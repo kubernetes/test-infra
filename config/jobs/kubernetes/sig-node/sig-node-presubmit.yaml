@@ -467,15 +467,14 @@ presubmits:
               - --repo-root=.
               - --gcp-zone=us-central1-b
               - --parallelism=8
-              - --focus-regex=\\[Feature:.+\\]
-              - --skip-regex=\\[Flaky\\]|\\[Serial\\]|\\[Feature:InPlacePodVerticalScaling\\]|\\[Feature:UserNamespacesSupport]|\\[Feature:UserNamespacesPodSecurityStandards\\]|\\[Feature:KubeletCredentialProviders\\]|\\[Feature:LockContention\\]|\\[Feature:SCTPConnectivity\\]|[\\[Feature:PodLevelResources\\]|\\[Alpha\\]
+              - --focus-regex=\[Feature:.+\]
+              - --skip-regex=\[Flaky\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]|[\[Feature:PodLevelResources\]|\[Alpha\]
               - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
               - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
     - name: pull-kubernetes-node-e2e-restartallcontainers
       cluster: k8s-infra-prow-build
       always_run: false
       optional: true
-      skip_report: false
       branches:
         - master
         - main
