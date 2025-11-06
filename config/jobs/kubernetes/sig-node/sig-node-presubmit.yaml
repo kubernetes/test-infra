@@ -509,6 +509,7 @@ presubmits:
               - --provider=gce
               - --test_args=--nodes=1 --focus="\[Feature:RestartAllContainersOnContainerExits\]" --skip="\[Flaky\]"
               - --timeout=65m
+              - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
             env:
               - name: GOPATH
                 value: /go
