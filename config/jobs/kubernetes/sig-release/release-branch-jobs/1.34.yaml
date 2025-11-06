@@ -625,7 +625,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/test-infra
     repo: test-infra
-  - base_ref: release/2.0
+  - base_ref: release/2.1
     org: containerd
     repo: containerd
   interval: 24h
@@ -653,7 +653,7 @@ periodics:
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
         --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
       command:
       - runner.sh
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
@@ -2392,7 +2392,7 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/test-infra
       repo: test-infra
-    - base_ref: release/2.0
+    - base_ref: release/2.1
       org: containerd
       repo: containerd
     labels:
@@ -2421,7 +2421,7 @@ presubmits:
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
           --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
