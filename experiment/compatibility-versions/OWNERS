@@ -3,5 +3,7 @@
 # TODO(#34269) update owners in experiment/compatibility-versions to a group/rotation and route the alert email to a rotation vs individual email
 reviewers:
 - aaron-prindle
+- siyuanfoundation
 approvers:
 - aaron-prindle
+- siyuanfoundation
