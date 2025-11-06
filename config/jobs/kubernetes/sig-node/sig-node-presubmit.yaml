@@ -730,7 +730,7 @@ presubmits:
         - release-\d+\.\d+ # per-release image
       annotations:
         testgrid-dashboards: sig-node-presubmits
-        testgrid-tab-name: pr-kubelet-serial-e2e-podlevelresources-resize
+        testgrid-tab-name: pr-kubelet-e2e-podlevelresources-resize
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
