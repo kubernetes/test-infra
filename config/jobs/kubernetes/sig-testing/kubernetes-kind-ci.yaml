@@ -100,7 +100,7 @@ periodics:
           # during the tests more like 3-20m is used
           cpu: 7
 
-- interval: 4h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
@@ -149,7 +149,7 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 4h
+- interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-enabled
   annotations:
@@ -198,7 +198,7 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 4h
+- interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-enabled-conformance
   annotations:
@@ -247,7 +247,7 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 4h
+- interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-features
   annotations:
@@ -353,7 +353,7 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 4h
+- interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-enabled
   annotations:
@@ -403,7 +403,7 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 4h
+- interval: 2h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-conformance
   annotations:
