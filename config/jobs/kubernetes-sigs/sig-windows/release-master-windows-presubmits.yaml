@@ -471,6 +471,8 @@ presubmits:
             value: \[sig-windows\] # run just a subset to speed up testing time
           - name: "AZURE_LOCATION"
             value: "northcentralus" # images in the staging gallery are only in northcentralus region
+          - name: "GALLERY_IMAGE_NAME"
+            value: "capi-windows-2022-containerd"
           - name: "GALLERY_NAME"
             value: "staging_gallery"
     annotations:
@@ -543,7 +545,6 @@ presubmits:
       preset-capz-windows-common: "true"
       preset-capz-containerd-2-0-latest: "true"
       preset-azure-community: "true"
-      preset-capz-windows-2025: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -578,6 +579,8 @@ presubmits:
             value: \[sig-windows\] # run just a subset to speed up testing time
           - name: "AZURE_LOCATION"
             value: "northcentralus" # images in the staging gallery are only in northcentralus region
+          - name: "GALLERY_IMAGE_NAME"
+            value: "capi-windows-2025-containerd"
           - name: "GALLERY_NAME"
             value: "staging_gallery"
     annotations:
