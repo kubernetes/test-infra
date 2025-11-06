@@ -469,6 +469,8 @@ presubmits:
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
+          - name: "AZURE_LOCATION"
+            value: "northcentralus" # images in the staging gallery are only in northcentralus region
           - name: "GALLERY_NAME"
             value: "staging_gallery"
     annotations:
@@ -574,6 +576,8 @@ presubmits:
           env:
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
+          - name: "AZURE_LOCATION"
+            value: "northcentralus" # images in the staging gallery are only in northcentralus region
           - name: "GALLERY_NAME"
             value: "staging_gallery"
     annotations:
