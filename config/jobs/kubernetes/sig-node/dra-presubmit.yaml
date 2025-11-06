@@ -831,7 +831,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.0
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
     decorate: true
@@ -845,7 +845,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     - org: containerd
       repo: containerd
-      base_ref: release/2.0
+      base_ref: release/2.1
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -863,7 +863,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         resources:
           limits:
             cpu: 2
@@ -885,7 +885,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.0 and with all feature gates enabled (including non-DRA feature gates)
+      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.1 and with all feature gates enabled (including non-DRA feature gates)
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
     decorate: true
@@ -899,7 +899,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     - org: containerd
       repo: containerd
-      base_ref: release/2.0
+      base_ref: release/2.1
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -917,7 +917,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         resources:
           limits:
             cpu: 2
