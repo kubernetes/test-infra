@@ -153,10 +153,10 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-enabled
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
     testgrid-tab-name: kind-master-beta-enabled
     description: Runs tests with no special requirements in a KinD cluster where beta feature gates and APIs are enabled, i.e. this does not include tests for off-by-default beta features.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
@@ -202,10 +202,10 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-enabled-conformance
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
     testgrid-tab-name: kind-master-beta-enabled-conformance
     description: Runs conformance tests in a KinD cluster where beta feature gates and APIs are enabled.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
@@ -357,10 +357,10 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-enabled
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
     testgrid-tab-name: kind-master-alpha-beta-enabled
     description: Runs tests with no special requirements in a KinD cluster where alpha and beta feature gates and APIs are enabled, i.e. this does not include tests for alpha features and off-by-default beta features.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
@@ -407,10 +407,10 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-alpha-beta-conformance
   annotations:
-    testgrid-dashboards: sig-testing-kind
+    testgrid-dashboards: sig-release-master-informing,sig-testing-kind
     testgrid-tab-name: kind-master-alpha-beta-enabled-conformance
     description: Runs conformance tests in a KinD cluster where alpha and beta feature gates and APIs are enabled.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
