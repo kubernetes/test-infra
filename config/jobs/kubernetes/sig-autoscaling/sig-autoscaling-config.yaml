@@ -383,14 +383,14 @@ periodics:
       - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
         --minStartupPods=8
-      - --ginkgo-parallel=1
+      - --ginkgo-parallel=3
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 6Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 6Gi
 
   annotations:
