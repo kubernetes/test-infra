@@ -258,9 +258,9 @@ for feature_name in "${!actual_features[@]}"; do
       # - 1. DEPRECATED feature gate at the same version as the binary version
       # - 2. GA feature with version 1.0 (used for code deprecation backfilling)
       # - 3. BETA feature with version 1.0 (used for bug fixes bound to binary version instead of emulation version)
-      if [[ -n "${current_version_stage[$feature_name]:-}" == "DEPRECATED" ]] || \
-         [[ -n "${version_1_0_stage[$feature_name]:-}" == "BETA" ]] || \
-         [[ -n "${version_1_0_stage[$feature_name]:-}" == "GA" ]]; then
+      if [[ "${current_version_stage[$feature_name]:-}" == "DEPRECATED" ]] || \
+         [[ "${version_1_0_stage[$feature_name]:-}" == "BETA" ]] || \
+         [[ "${version_1_0_stage[$feature_name]:-}" == "GA" ]]; then
         continue
       fi
        echo "FAIL: unexpected feature '$feature_name' found in /metrics, got=1" \
