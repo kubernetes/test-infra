@@ -494,7 +494,6 @@ presubmits:
         testgrid-dashboards: sig-node-presubmits
         testgrid-tab-name: pr-node-e2e-restartallcontainers
         description: Runs node e2e tests with ContainerRestartRules and RestartAllContainersOnContainerExits feature gates enabled.
-      run_if_changed: ^pkg/kubelet/.*|pkg/features/.*
       spec:
         containers:
           - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
