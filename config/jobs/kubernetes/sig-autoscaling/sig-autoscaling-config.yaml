@@ -379,6 +379,7 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-central1-b
       - --gcp-node-image=gci
+      - --gcp-node-size=e2-standard-4
       - --extract=ci/latest
       - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
@@ -387,10 +388,10 @@ periodics:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
       resources:
         limits:
-          cpu: 4
+          cpu: 2
           memory: 6Gi
         requests:
-          cpu: 4
+          cpu: 2
           memory: 6Gi
 
   annotations:
