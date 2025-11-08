@@ -79,11 +79,61 @@ If you're not sure where to contribute or what any of these mean, please see
 
 ### Build and Test
 
-We use make rules to build, test and deploy code in this repo. In most
-cases you can get by just fine with:
+#### Running Tests
 
-```
+```bash
+# Run all tests (Go + Python unit tests)
 make test
+
+# Run only Go unit tests
+make go-unit
+
+# Run only Python unit tests
+make py-unit
+
+# Test a specific Go package or folder
+hack/make-rules/go-test/unit.sh <folder>
+# Examples:
+hack/make-rules/go-test/unit.sh kettle/...
+hack/make-rules/go-test/unit.sh pkg/benchmarkjunit/...
+```
+
+#### Verification and Linting
+
+```bash
+# Run all verification checks
+make verify
+
+# Run specific verifications
+make go-lint           # golangci-lint checks
+make verify-gofmt      # Go formatting
+make verify-eslint     # TypeScript/JavaScript linting
+make py-lint           # Python linting
+make verify-boilerplate # License header checks
+make verify-yamllint   # YAML linting
+make verify-spelling   # Spell checking
+make verify-labels     # GitHub label validation
+make verify-file-perms # File permission checks
+make verify-generated-jobs # Verify generated jobs are up to date
+```
+
+#### Auto-fixing Issues
+
+```bash
+# Auto-format Go code
+make update-gofmt
+
+# Update Go dependencies (after changing go.mod)
+make update-go-deps
+
+# Auto-fix spelling mistakes
+make update-spelling
+
+# Update file permissions
+make update-file-perms
+
+# Regenerate generated job configs
+make generate-jobs
 ```
 
 ### Dependency Management
