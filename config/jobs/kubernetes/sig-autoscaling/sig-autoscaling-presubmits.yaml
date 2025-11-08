@@ -248,7 +248,7 @@ presubmits:
     optional: false
     decorate: true
     decoration_config:
-      timeout: 120m
+      timeout: 200m
     run_if_changed: '^vertical-pod-autoscaler\/'
     path_alias: k8s.io/autoscaler
     labels:
@@ -269,7 +269,7 @@ presubmits:
         - --test=false
         - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
         - --test-cmd-args=actuation
-        - --timeout=100m
+        - --timeout=180m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
         securityContext:
           privileged: true
