@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.24.3
+ARG GO_VERSION=1.25.4
 
 FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
 
@@ -56,6 +56,6 @@ ADD ./buildx-entrypoint.sh /buildx-entrypoint
 RUN apk add qemu
 
 # Install buildx system-wide for fast docker builds
-COPY --from=docker/buildx-bin:0.18.0 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+COPY --from=docker/buildx-bin:0.29.1 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]
