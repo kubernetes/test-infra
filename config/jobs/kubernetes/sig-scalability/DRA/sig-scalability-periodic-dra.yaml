@@ -609,10 +609,6 @@ periodics:
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
         - name: KOPS_CL2_TEST_CONFIG
           value: testing/dra/config.yaml
-        - name: KOPS_SCHEDULER_QPS
-          value: "-1"
-        - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
-          value: "4000"
         resources:
           requests:
             cpu: "7"
