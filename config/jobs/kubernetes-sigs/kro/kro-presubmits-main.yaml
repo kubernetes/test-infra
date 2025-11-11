@@ -51,6 +51,8 @@ presubmits:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
       testgrid-tab-name: presubmits-integration-tests
   - name: presubmits-e2e-tests
+    labels:
+      preset-dind-enabled: "true"
     always_run: true
     optional: false
     decorate: true
@@ -63,7 +65,10 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        securityContext:
+          privileged: true
         command:
+        - runner.sh
         - scripts/ci/presubmits/e2e-tests
         resources:
           limits:
