@@ -26,13 +26,13 @@ fi
 declare -A CONFIGURATIONS=(
     ["crio"]="root env"
     ["crio_eventedpleg"]="root env eventedpleg"
-    ["crio_canary"]="root env-canary crun-enabled"
+    ["crio_canary"]="root env-canary"
     ["crio_drop_infra_ctr"]="root env drop-infra-ctr"
     ["crio_swap1g"]="root env swap-1G"
     ["crio_imagefs"]="root env imagefs"
     ["crio_splitfs"]="root env splitfs"
     ["crio_hugepages"]="root env hugepages"
-    ["crio_userns"]="root env userns crun-enabled"
+    ["crio_userns"]="root env userns"
 )
 
 CONTAINER_RUNTIME=$(which podman 2>/dev/null || which nerdctl 2>/dev/null || which docker 2>/dev/null)

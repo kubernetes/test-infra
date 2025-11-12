@@ -47,7 +47,7 @@
         "path": "/etc/crio/crio.conf.d/20-crio.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/7SQsW7zMAyEdz0F4X/+7b1Atu5ZuhWBIcu0pVYmDZJKExR990Jx2qFAiiydBBE83t33HCRxmxY/48FpmslbEexXzimcYQdNhxa6utRts/ZFmRrnNqEUsrTgwWWe+4xHzFUz4lDmxo3Ca59oEt8HE9jB5LOiG3HyJVt/1VaBFAo/b3692gYpdHDXb796i5dgRaXLacATXgPWvcYtTMlYfttjWmqHf/C0f9w/QPTHRDNYRKgnQMsQZuGywiDoXxUsJoXAOWOwxASCCx9xG79FJLDoDZLClE44fhf0RGy+KhR28H6p2XJIrZ7VcBlbLcPFp6k5G/i4SaDyuYfAxvF+Arf8DNX+R09jRvkL388AAAD//4dbqrt2AgAA"
+          "source": "data:;base64,H4sIAAAAAAAC/7RQPU/zQAze8yusvPOb7Ejd2LuwoSq6XJzEcLEj21daIf47uqawoCIYmE5nP19+HqOSNLSECQ+V0cTBs2K3SqJ4hh3ULXpsC6jdZs2TCddVtRE1s9OChyrJ1CU8YiqcAfs81dWgsnbEo4YuusIOxpAMqwHHkJN3V24hRM1fND9ea8r2UF2/3Rp8vgTLpm2iHk94DbipLMLkot/hhJdywz942N/v72AOR+IJfEYoEmC5j5NKXqFXDM8GPpNBlJQwOgmD4iJH3MYvMzL4HBzIYKQTDp8HBmbxUBgGO3iFWjM3EqmxszkuQ2O5v/jUJWcNbzcb0MzxJw0U3G8auOXnaP5/Djwk1L/wfQ8AAP//ee9iEHYCAAA="
         },
         "mode": 420
       },
@@ -70,7 +70,7 @@
         "path": "/etc/systemd/system.conf.d/10-env.conf",
         "contents": {
           "compression": "",
-          "source": "data:,%5BManager%5D%0ADefaultEnvironment%3D%22CRIO_SCRIPT_COMMIT%3D0936ec4f6d77fba3a42432adaf8aa57b629c06cf%22%0ADefaultEnvironment%3D%22CRIO_COMMIT%3D5655aea0470e126bbb0dd9a5092efb32fb4e12d1%22%0A"
+          "source": "data:,%5BManager%5D%0ADefaultEnvironment%3D%22CRIO_SCRIPT_COMMIT%3Da7cafc89fd6011acbc8668f325752ea8f6dde0ae%22%0ADefaultEnvironment%3D%22CRIO_COMMIT%3Dcae4e9ac33013ddcd57b258dfe6b845533f2fc84%22%0A"
         },
         "mode": 420
       },

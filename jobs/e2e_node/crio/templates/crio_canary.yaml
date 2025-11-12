@@ -34,10 +34,6 @@ storage:
           [Manager]
           DefaultEnvironment="CRIO_SCRIPT_COMMIT=a7cafc89fd6011acbc8668f325752ea8f6dde0ae"
           DefaultEnvironment="CRIO_COMMIT=cae4e9ac33013ddcd57b258dfe6b845533f2fc84"
-    - path: /etc/crio/crio.conf.d/99-crun.conf
-      contents:
-        local: 99-crun.conf
-      mode: 0644
 systemd:
   units:
     - name: configure-sysctl.service
