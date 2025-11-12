@@ -316,7 +316,7 @@ presubmits:
           --gcp-zone=us-central1-b
           --ginkgo-parallel=30
           --image-family=pipeline-1-34-amd64
-          --env=KUBELET_ARGS="--fail-cgroupv1=false"
+          '--node-test-args=--kubelet-flags="--fail-cgroupv1=false"'
           --image-project=ubuntu-os-gke-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
@@ -365,7 +365,7 @@ presubmits:
           --gcp-zone=us-central1-b
           --ginkgo-parallel=30
           --image-family=pipeline-1-34-amd64
-          --env=KUBELET_ARGS="--fail-cgroupv1=false"
+          '--node-test-args=--kubelet-flags="--fail-cgroupv1=false"'
           --image-project=ubuntu-os-gke-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
