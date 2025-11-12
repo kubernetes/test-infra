@@ -1,34 +1,5 @@
 postsubmits:
   kubernetes/test-infra:
-    #
-    # job images, e.g. images/*
-    #
-    - name: post-test-infra-push-bazelbuild
-      cluster: k8s-infra-prow-build-trusted
-      run_if_changed: '^images/bazelbuild/'
-      annotations:
-        testgrid-dashboards: sig-testing-image-pushes, sig-k8s-infra-gcb
-        testgrid-tab-name: bazelbuild
-        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
-        testgrid-num-failures-to-alert: '1'
-        description: builds and pushes the image builder's own image
-      decorate: true
-      branches:
-      - ^master$
-      max_concurrency: 1
-      # avoid overloading GCB logs quota for the shared staging project
-      job_queue_name: "test-infra-staging-image-push"
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20250914-3092127382
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/bazelbuild/
     - name: post-test-infra-push-benchmarkjunit
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^pkg/benchmarkjunit/'
