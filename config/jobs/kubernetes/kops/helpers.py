@@ -224,7 +224,7 @@ gce_distro_images = {
     "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
 }
 
-distro_images = {
+aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
@@ -245,7 +245,7 @@ distro_images = {
     'u2510arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
-distros_ssh_user = {
+aws_distros_ssh_user = {
     'al2023': 'ec2-user',
     'al2023arm64': 'ec2-user',
     'amzn2': 'ec2-user',

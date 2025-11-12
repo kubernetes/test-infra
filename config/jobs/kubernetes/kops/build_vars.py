@@ -19,16 +19,6 @@ skip_jobs = []
 
 image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master"
 
-# Grid Definitions
-networking_options = [
-    "kubenet",
-    "calico",
-    "cilium",
-    "cilium-etcd",
-    "cilium-eni",
-    "kopeio",
-]
-
 # GCE distributions
 gce_distro_options = [
     "cos121",
@@ -37,10 +27,10 @@ gce_distro_options = [
     "cos125arm64",
     "cosdev",
     "cosdevarm64",
-    "deb12",
-    "deb12arm64",
-    "deb13",
-    "deb13arm64",
+    "debian12",
+    "debian12arm64",
+    "debian13",
+    "debian13arm64",
     "u2204",
     "u2404",
     "u2404arm64",
@@ -49,33 +39,7 @@ gce_distro_options = [
 ]
 
 # AWS distributions
-distro_options = [
-    "al2023",
-    "deb12",
-    "deb13",
-    "flatcar",
-    "rhel8",
-    "u2204",
-    "u2404",
-]
-
-k8s_versions = [
-    "1.31",
-    "1.32",
-    "1.33",
-    "1.34",
-]
-
-# kOps versions tested
-kops_versions = [
-    None,  # maps to latest
-    "1.30",
-    "1.31",
-    "1.32",
-]
-
-# Distros for periodic and presubmit distro tests
-distros = [
+aws_distro_options = [
     "debian11",
     "debian12",
     "debian13",
@@ -94,9 +58,36 @@ distros = [
     "flatcar",
 ]
 
+k8s_versions = [
+    "1.32",
+    "1.33",
+    "1.34",
+]
+
+# kOps versions tested
+kops_versions = [
+    None,  # maps to latest
+    "1.32",
+    "1.33",
+    "1.34",
+]
+
 # Network plugins for periodic network plugin tests
 network_plugins_periodics = {
     "plugins": [
+        "amazon-vpc",
+        "calico",
+        "gce",
+        "cilium",
+        "cilium-etcd",
+        "cilium-eni",
+        "flannel",
+        "kindnet",
+        "kopeio",
+        "kubenet",
+        "kuberouter",
+    ],
+    "supports_aws": [
         "amazon-vpc",
         "calico",
         "cilium",
@@ -105,10 +96,11 @@ network_plugins_periodics = {
         "flannel",
         "kindnet",
         "kopeio",
+        "kubenet",
         "kuberouter",
     ],
-    "supports_gce": {"calico", "cilium", "kindnet"},
-    "supports_azure": {"cilium"},
+    "supports_gce": ["kubenet", "calico", "cilium", "kindnet", "gce"],
+    "supports_azure": ["cilium"],
 }
 
 # Network plugins for presubmit network plugin tests
@@ -133,6 +125,9 @@ network_plugins_presubmits = {
 kops29 = "v1.29.2"
 kops30 = "v1.30.3"
 kops31 = "v1.31.0"
+kops32 = "v1.32.0"
+kops33 = "v1.33.0"
+kops34 = "v1.34.0"
 
 upgrade_versions_list = [
     #  kops    k8s          kops      k8s
