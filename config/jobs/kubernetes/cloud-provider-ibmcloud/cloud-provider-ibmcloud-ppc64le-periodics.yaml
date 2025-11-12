@@ -542,6 +542,7 @@ periodics:
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors\
                 --break-kubetest-on-upfail true \
                 --extra-vars=container_runtime_test_handler:true \
+                --extra-vars="kubelet_extra_args:--max-pods 220" \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
                 --test=ginkgo -- --parallel 1 --test-package-dir ci --test-package-marker latest.txt \
                 --focus-regex='\[Serial\]|\[Disruptive\]' --skip-regex='\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]'; rc=$?
