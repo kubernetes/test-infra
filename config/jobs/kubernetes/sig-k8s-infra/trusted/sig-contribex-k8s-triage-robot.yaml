@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: stable-metrics-help
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -140,7 +140,7 @@ periodics:
     testgrid-tab-name: close-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -202,7 +202,7 @@ periodics:
     testgrid-tab-name: close-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -260,7 +260,7 @@ periodics:
     testgrid-tab-name: rotten-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -322,7 +322,7 @@ periodics:
     testgrid-tab-name: rotten-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -381,7 +381,7 @@ periodics:
     testgrid-tab-name: stale-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -443,7 +443,7 @@ periodics:
     testgrid-tab-name: stale-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -502,7 +502,7 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -550,7 +550,7 @@ periodics:
     testgrid-tab-name: re-triage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -601,7 +601,7 @@ periodics:
     testgrid-tab-name: re-triage-important
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -653,7 +653,7 @@ periodics:
     testgrid-tab-name: re-triage-critical
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -706,7 +706,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20250922-af75983448
+    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20251031-d6af3d3e19
       command:
       - issue-creator
       args:

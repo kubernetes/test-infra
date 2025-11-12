@@ -12,7 +12,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
         command:
         - scripts/ci/presubmits/unit-tests
         resources:
@@ -37,7 +37,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
         command:
         - scripts/ci/presubmits/integration-tests
         resources:
@@ -64,7 +64,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
         securityContext:
           privileged: true
         command:
@@ -92,7 +92,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
         command:
         - scripts/ci/presubmits/build-image
         resources:
