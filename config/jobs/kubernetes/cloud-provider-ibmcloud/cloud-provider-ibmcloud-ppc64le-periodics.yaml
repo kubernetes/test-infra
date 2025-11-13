@@ -347,7 +347,7 @@ periodics:
 
               set +o errexit
               set -o xtrace
-              export TF_VAR_controlplane_powervs_memory=16
+              export TF_VAR_controlplane_powervs_memory=32
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
@@ -358,7 +358,7 @@ periodics:
                 --extra-vars=feature_gates:AllAlpha=true,AllBeta=true,EventedPLEG=false \
                 --extra-vars=runtime_config:api/all=true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
+                --test=ginkgo -- --parallel 15 --test-package-dir ci --test-package-marker latest.txt \
                 --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
@@ -413,7 +413,7 @@ periodics:
               set +o errexit
               set -o xtrace
               export TF_VAR_powervs_system_type=e980
-              export TF_VAR_controlplane_powervs_memory=16
+              export TF_VAR_controlplane_powervs_memory=32
               kubetest2 tf --powervs-image-name CentOS-Stream-10 --powervs-memory 32 \
                 --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
@@ -422,7 +422,7 @@ periodics:
                 --up --down --auto-approve --retry-on-tf-failure 3 --ignore-destroy-errors \
                 --break-kubetest-on-upfail true \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 25 --test-package-dir ci --test-package-marker latest.txt \
+                --test=ginkgo -- --parallel 15 --test-package-dir ci --test-package-marker latest.txt \
                 --skip-regex="\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|KubeProxy.should.update.metric"; rc=$?
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
