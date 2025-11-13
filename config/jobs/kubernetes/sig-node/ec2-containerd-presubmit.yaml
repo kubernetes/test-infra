@@ -131,7 +131,7 @@ presubmits:
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance.yaml
               - name: SKIP
-                value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]
+                value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:HugePages\]|\[Feature:PodLevelResources\]|\[Feature:OffByDefault\]
               - name: TEST_ARGS
                 value: '--kubelet-flags="--cgroup-driver=systemd"'
             resources:
