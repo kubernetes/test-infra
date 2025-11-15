@@ -249,12 +249,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.21
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.33
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -287,7 +287,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.33"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
@@ -310,12 +310,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.21
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.33
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -348,7 +348,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.33"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
@@ -368,12 +368,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.21
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.33
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -412,7 +412,7 @@ presubmits:
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.33"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "0" # create one linux node
     annotations:
@@ -432,12 +432,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.21
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -476,7 +476,7 @@ presubmits:
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.30.2"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
