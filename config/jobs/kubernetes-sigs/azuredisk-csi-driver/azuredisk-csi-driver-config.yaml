@@ -678,7 +678,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.33
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -715,7 +715,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.33.0"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -744,7 +744,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.33
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -783,7 +783,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.33.0"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
