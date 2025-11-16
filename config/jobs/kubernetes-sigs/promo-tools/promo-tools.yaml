@@ -168,7 +168,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.24-bookworm
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.25-trixie
         imagePullPolicy: Always
         command:
         - make
