@@ -519,6 +519,8 @@ branch-protection:
             gh-pages:
               protect: false
         aws-efs-csi-driver:
+          required_pull_request_reviews:
+            required_approving_review_count: 1
           branches:
             gh-pages:
               protect: false
