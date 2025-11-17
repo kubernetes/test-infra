@@ -394,6 +394,8 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e-eks-{{ ReplaceAll $.branch "." "-" }}
       testgrid-num-columns-recent: '20'
+{{- $onlyInBranch := list "release-2.7" "release-2.8" }}
+{{- if has $.branch $onlyInBranch  }}
   - name: pull-cluster-api-provider-aws-e2e-eks-gc{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
     cluster: eks-prow-build-cluster
     branches:
@@ -439,6 +441,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e-eks-gc-{{ ReplaceAll $.branch "." "-" }}
       testgrid-num-columns-recent: '20'
+{{- end }}
   - name: pull-cluster-api-provider-aws-e2e-eks-testing{{ if ne $.branch "main" }}-{{ ReplaceAll $.branch "." "-" }}{{ end }}
     cluster: eks-prow-build-cluster
     branches:
