@@ -32,7 +32,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: gce-serial
-    testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
+    testgrid-alert-email: sig-cli@kubernetes.io
     description: kubectl gce serial e2e tests for master branch
 
 - interval: 12h
@@ -71,7 +71,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: gce
-    testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
+    testgrid-alert-email: sig-cli@kubernetes.io
     description: kubectl gce e2e tests for master branch
 
 - interval: 12h
@@ -111,7 +111,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: aws
-    testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
+    testgrid-alert-email: sig-cli@kubernetes.io
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-latest-stable1-gci-kubectl-skew
@@ -226,7 +226,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-cli-master
     testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce
-    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com"
+    testgrid-alert-email: "release-team@kubernetes.io, sig-cli@kubernetes.io"
     description: "stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary"
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
