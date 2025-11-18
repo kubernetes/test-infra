@@ -1600,7 +1600,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right annotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
             env={
@@ -1611,7 +1611,7 @@ def generate_presubmits_scale():
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
             build_cluster='eks-prow-build-cluster',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right annotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
             optional=True,
@@ -1646,7 +1646,7 @@ def generate_presubmits_scale():
             name='presubmit-kops-aws-small-scale-amazonvpc-using-cl2',
             scenario='scalability',
             build_cluster="eks-prow-build-cluster",
-            # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right annotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
             artifacts='$(ARTIFACTS)',
@@ -1678,7 +1678,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-gce-scale-ipalias-using-cl2',
             scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right annotation test.kops.k8s.io/networking
             networking='gce',
             cloud="gce",
             always_run=False,
@@ -1712,7 +1712,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-gce-small-scale-ipalias-using-cl2',
             scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right annotation test.kops.k8s.io/networking
             networking='gce',
             cloud="gce",
             always_run=False,
@@ -1745,7 +1745,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-gce-small-scale-kindnet-using-cl2',
             scenario='scalability',
-            # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right annotation test.kops.k8s.io/networking
             networking='gce',
             cloud="gce",
             always_run=False,
