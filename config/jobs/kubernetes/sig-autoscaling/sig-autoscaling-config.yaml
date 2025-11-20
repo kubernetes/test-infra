@@ -89,9 +89,6 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
-      env:
-      - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-admission-controller
@@ -137,9 +134,6 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
-      env:
-      - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-full
@@ -185,9 +179,6 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
-      env:
-      - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-recommender
@@ -233,9 +224,6 @@ periodics:
         requests:
           cpu: 2
           memory: 6Gi
-      env:
-      - name: FEATURE_GATES
-        value: "InPlaceOrRecreate=true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
     testgrid-tab-name: autoscaling-vpa-updater
@@ -284,7 +272,9 @@ periodics:
       env:
       - name: NUMPROC
         value: "8"
-      - name: ENABLE_ALL_FEATURE_GATES
+      - name: FEATURE_GATES
+        value: "AllAlpha=true,AllBeta=true"
+      - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -332,7 +322,9 @@ periodics:
           cpu: 2
           memory: 6Gi
       env:
-      - name: ENABLE_ALL_FEATURE_GATES
+      - name: FEATURE_GATES
+        value: "AllAlpha=true,AllBeta=true"
+      - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -380,7 +372,9 @@ periodics:
           cpu: 2
           memory: 6Gi
       env:
-      - name: ENABLE_ALL_FEATURE_GATES
+      - name: FEATURE_GATES
+        value: "AllAlpha=true,AllBeta=true"
+      - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -428,7 +422,9 @@ periodics:
           cpu: 2
           memory: 6Gi
       env:
-      - name: ENABLE_ALL_FEATURE_GATES
+      - name: FEATURE_GATES
+        value: "AllAlpha=true,AllBeta=true"
+      - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
@@ -476,7 +472,9 @@ periodics:
           cpu: 2
           memory: 6Gi
       env:
-      - name: ENABLE_ALL_FEATURE_GATES
+      - name: FEATURE_GATES
+        value: "AllAlpha=true,AllBeta=true"
+      - name: TEST_WITH_FEATURE_GATES_ENABLED
         value: "true"
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
