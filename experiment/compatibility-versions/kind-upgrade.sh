@@ -112,7 +112,7 @@ usage()
 # Main
 build_docker
 IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
-KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
+KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet | head -n 1)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"
