@@ -18,6 +18,10 @@ storage:
       contents:
         local: 20-crio.conf
       mode: 0644
+    - path: /etc/containers/registries.conf.d/99-localhost-insecure.conf
+      contents:
+        local: 99-localhost-insecure.conf
+      mode: 0644
     - path: /etc/sysctl.d/99-e2e-sysctl.conf
       contents:
         local: 99-e2e-sysctl.conf
