@@ -44,6 +44,14 @@
         "mode": 420
       },
       {
+        "path": "/etc/containers/registries.conf.d/99-localhost-insecure.conf",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/1SOMUsFMRCE+/yK4b06cAg2wussLEVed1wR4t5lMWR1d+Nx/14MnGA5zDDfd8Wzymfkhixt5a1rcpYGF6RaZQc3o9yV8HK/v0JpY3M9sIqiSk61iPnT4zRN4Yo3+uqs9D5aeiA4mRu6cdvghbCmD4rnRzTSb1LshXPBCDYoUVo9Qpjnc7ks4Zc1xG64/Odewp/iDa6dwk8AAAD//6EsFVnUAAAA"
+        },
+        "mode": 420
+      },
+      {
         "path": "/etc/sysctl.d/99-e2e-sysctl.conf",
         "contents": {
           "compression": "gzip",
