@@ -115,7 +115,7 @@ pushd $TMP_DIR
 download_images
 popd
 IMAGES_PATH="${TMP_DIR}/kubernetes/server/bin"
-KUBELET_BINARY=$(find ${TMP_DIR}/kubernetes/server/bin/ -type f -name kubelet)
+KUBELET_BINARY=$(find ${TMP_DIR}/kubernetes/server/bin/ -type f -name kubelet | head -n 1)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"
