@@ -434,11 +434,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        env:
-          - name: TEST_WINDOWS
-            value: "" # disabled
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2022"
         resources:
           limits:
             cpu: 6
