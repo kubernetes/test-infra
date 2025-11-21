@@ -23,7 +23,7 @@ metadata:
 spec:
   containers:
   - name: logexporter-test
-    image: gcr.io/k8s-testimages/logexporter:v0.1.6
+    image: registry.k8s.io/logexporter:v0.1.6
     env:
     - name: NODE_NAME
       valueFrom:
