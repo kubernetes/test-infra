@@ -42,9 +42,8 @@ find -L . -type f -not \( \
     -o -path './_bin/*' \
     -o -path './_output/*' \
     -o -path './_artifacts/*' \
-    -o -path './bazel-*/*' \
-    -o -path './hack/tools/go.mod' \
-    -o -path './hack/tools/go.sum' \
     -o -path './.python_virtual_env/*' \
     \) -prune \
+    -o -name 'go.mod' \
+    -o -name 'go.sum' \
     \) | xargs "${MISSPELL}" -w

@@ -5,6 +5,8 @@ periodics:
   decorate: true
   labels:
     preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   annotations:
     testgrid-dashboards: minikube-periodics
   extra_refs:
@@ -14,7 +16,7 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
       command:
       - runner.sh
       args:

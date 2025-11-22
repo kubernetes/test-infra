@@ -11,7 +11,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -73,7 +73,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -103,7 +103,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -138,7 +138,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.18
+        base_ref: release-1.21
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -149,7 +149,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -192,7 +192,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.18
+        base_ref: release-1.21
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -203,7 +203,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -249,18 +249,18 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.18
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -287,7 +287,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
@@ -310,18 +310,18 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.18
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -348,7 +348,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:
@@ -368,18 +368,18 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.18
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -412,7 +412,7 @@ presubmits:
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.30"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "0" # create one linux node
     annotations:
@@ -432,18 +432,18 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.18
+        base_ref: release-1.20
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.30
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -476,7 +476,7 @@ presubmits:
             - name: DISABLE_ZONE # smb-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.30.2"
+              value: "latest-1.32"
             - name: WORKER_MACHINE_COUNT
               value: "1" # create one linux node
     annotations:

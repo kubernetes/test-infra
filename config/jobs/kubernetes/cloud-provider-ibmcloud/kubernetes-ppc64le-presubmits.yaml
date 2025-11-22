@@ -5,14 +5,12 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
     annotations:
       testgrid-dashboards: ibm-ppc64le-presubmits
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - runner.sh
         args:
@@ -22,8 +20,8 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 7
+            cpu: 4
             memory: 20Gi
           requests:
-            cpu: 7
+            cpu: 4
             memory: 20Gi

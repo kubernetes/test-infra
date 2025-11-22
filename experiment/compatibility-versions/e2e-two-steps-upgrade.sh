@@ -28,16 +28,12 @@ set -o errexit -o nounset -o xtrace
 # parallel testing is enabled. Using LABEL_FILTER instead of combining SKIP and
 # FOCUS is recommended (more expressive, easier to read than regexp).
 #
-# GA_ONLY: true  - limit to GA APIs/features as much as possible
-#          false - (default) APIs and features left at defaults
 # FEATURE_GATES:
 #          JSON or YAML encoding of a string/bool map: {"FeatureGateA": true, "FeatureGateB": false}
 #          Enables or disables feature gates in the entire cluster.
-#          Cannot be used when GA_ONLY=true.
 # RUNTIME_CONFIG:
 #          JSON or YAML encoding of a string/string (!) map: {"apia.example.com/v1alpha1": "true", "apib.example.com/v1beta1": "false"}
 #          Enables API groups in the apiserver via --runtime-config.
-#          Cannot be used when GA_ONLY=true.
 
 COMMON_SCRIPT="${COMMON_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/common.sh}"
 source "${COMMON_SCRIPT}"
@@ -97,7 +93,7 @@ main() {
   res=0
   create_cluster || res=$?
 
-
+  # first step: upgrade binary version while keeping emulated version the same as previous version
   # Perform the upgrade.  Assume kind-upgrade.sh is in the same directory as this script.
   UPGRADE_SCRIPT="${UPGRADE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/kind-upgrade.sh}"
   echo "Upgrading cluster with ${UPGRADE_SCRIPT}"
@@ -109,24 +105,36 @@ main() {
     exit $res
   fi
 
+  # after first step of upgrading binary version without bumping emulated version, verify all tests from the previous version pass
+
+  # Clone the previous versions Kubernetes release branch
+  # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
+  export PREV_RELEASE_BRANCH="release-${PREV_VERSION}"
+  # Define the path within the temp directory for the cloned repo
+  PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s"
+  echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
+  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
+  # enter the cloned prev repo branch (in temp) and run tests
+  pushd "${PREV_RELEASE_REPO_PATH}"
+  build_test_bins "${PREV_RELEASE_BRANCH}" || res=$?
+  run_e2e_tests || res=$?
+  # debug kubectl version
+  kubectl version
+  # remove "${PWD}/_output/bin" from PATH
+  export PATH="${PATH//${PWD}\/_output\/bin:}"
+  popd
+
+  # second step: bump emulated version
   EMULATED_VERSION_UPGRADE_SCRIPT="${EMULATED_VERSION_UPGRADE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/emulated-version-upgrade.sh}"
   echo "Upgrading cluster with ${EMULATED_VERSION_UPGRADE_SCRIPT}"
   "${EMULATED_VERSION_UPGRADE_SCRIPT}" | tee "${ARTIFACTS}/emulated-upgrade-output.txt"
 
-  # Clone the previous versions Kubernetes release branch
-  # TODO(aaron-prindle) extend the branches to test from n-1 -> n-1..3 as more k8s releases are done that support compatibility versions
-  export RELEASE_BRANCH="release-${CURRENT_VERSION}"
-  # Define the path within the temp directory for the cloned repo
-  RELEASE_REPO_PATH="${TMP_DIR}/release-k8s"
-  echo "Cloning branch ${RELEASE_BRANCH} into ${RELEASE_REPO_PATH}"
-  git clone --filter=blob:none --single-branch --branch "${RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${RELEASE_REPO_PATH}"
-
-  # enter the cloned prev repo branch (in temp) and run tests
-  pushd "${RELEASE_REPO_PATH}"
-  build_prev_version_bins || res=$?
-  run_prev_version_tests || res=$?
-  popd
-
+  # verify all tests from the current version pass after upgrade is complete
+  # debug kubectl version
+  kubectl version
+  # run tests at head
+  build_test_bins "${CURRENT_VERSION}" || res=$?
+  run_e2e_tests || res=$?
 
   cleanup || res=$?
   exit $res

@@ -6,14 +6,15 @@ approvers:
   - barney-s
   - bridgetkromhout
   - cheftako
+  - matthchr
+
   # Not yet members of org
   # - jlbutler
-  # - matthchr
   # - nicslatts
 
 reviewers:
   # Not yet members of org
-  # - jakobmoellerdev
+  - jakobmoellerdev
   # - michaelhtm
   # - n3wscott
 

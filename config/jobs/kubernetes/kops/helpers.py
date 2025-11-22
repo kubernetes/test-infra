@@ -70,6 +70,8 @@ def replace_or_remove_line(s, pattern, new_str):
     return '\n'.join(keep)
 
 def should_skip_newer_k8s(k8s_version, kops_version):
+    if k8s_version == 'ci':
+        return False
     if kops_version is None:
         return False
     if k8s_version is None:
@@ -183,50 +185,48 @@ def latest_gce_image(project, family, arch="X86_64"):
     if image:
         return image
 
-    import googleapiclient.discovery  # pylint: disable=import-error, import-outside-toplevel
+    from google.cloud import compute_v1  # pylint: disable=import-error, import-outside-toplevel
+    from google.api_core.exceptions import NotFound  # pylint: disable=import-error, import-outside-toplevel
 
-    compute = googleapiclient.discovery.build("compute", "v1", cache_discovery=False)
+    client = compute_v1.ImagesClient()
     try:
-        # Get the latest image from the specified family
-        # pylint: disable=no-member
-        image_response = (
-            compute.images().getFromFamily(project=project, family=family).execute()
-        )
-        # pylint: enable=no-member
-    except Exception as e:
-        raise RuntimeError(
-            f"Failed to get image from family {family} in project {project}: {str(e)}"
-        )
+        image = client.get_from_family(project=project, family=family)
+    except NotFound:
+        print(f"Image family {family}, has been deprecated by Google, please remove this OS from testing") # pylint: disable=line-too-long
+        return ""
 
-    # Verify architecture matches
-    if "architecture" not in image_response:
+    if arch not in image.architecture:
         raise RuntimeError(
-            f"Image {image_response['name']} has no architecture specified"
-        )
-
-    if arch not in image_response["architecture"]:
-        raise RuntimeError(
-            f"Image family {family} has architecture {image_response['architecture']} "
+            f"Image family {family} has architecture {image.architecture} "
             f"which doesn't match requested {arch}"
         )
 
-    image_name = image_response["name"]
+    image_name = f"{project}/{image.name}"
     set_pinned(pin, image_name)
-    return f"{project}/{image_name}"
+    return image_name
 
 # Get latest images from some public images families
 gce_distro_images = {
     "deb12": latest_gce_image("debian-cloud", "debian-12"),
     "deb12arm64": latest_gce_image("debian-cloud", "debian-12-arm64", "ARM64"),
+    "deb13": latest_gce_image("debian-cloud", "debian-13"),
+    "deb13arm64": latest_gce_image("debian-cloud", "debian-13-arm64", "ARM64"),
     "u2204": latest_gce_image("ubuntu-os-cloud", "ubuntu-2204-lts"),
     "u2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-amd64"),
     "u2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-2404-lts-arm64", "ARM64"),
     "umini2404": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-amd64"),
     "umini2404arm64": latest_gce_image("ubuntu-os-cloud", "ubuntu-minimal-2404-lts-arm64", "ARM64"),
+    "cos121": latest_gce_image("cos-cloud", "cos-121-lts"),
+    "cos121arm64": latest_gce_image("cos-cloud", "cos-arm64-121-lts", "ARM64"),
+    "cos125": latest_gce_image("cos-cloud", "cos-125-lts"),
+    "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
+    "cosdev": latest_gce_image("cos-cloud", "cos-dev"),
+    "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
 }
 
 distro_images = {
-    'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.1-x86_64'),
+    'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
+    'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
@@ -241,10 +241,13 @@ distro_images = {
     'u2204arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
     'u2404': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2404arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
+    'u2510': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-amd64-server-*'), # pylint: disable=line-too-long
+    'u2510arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
     'al2023': 'ec2-user',
+    'al2023arm64': 'ec2-user',
     'amzn2': 'ec2-user',
     'deb10': 'admin',
     'deb11': 'admin',
@@ -262,4 +265,6 @@ distros_ssh_user = {
     'u2204arm64': 'ubuntu',
     'u2404': 'ubuntu',
     'u2404arm64': 'ubuntu',
+    'u2510': 'ubuntu',
+    'u2510arm64': 'ubuntu',
 }

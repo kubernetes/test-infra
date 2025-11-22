@@ -515,7 +515,8 @@ milestone_applier:
     main: v0.2
     release-0.1: v0.1
   kubernetes-sigs/kueue:
-    main: v0.14
+    main: v0.15
+    release-0.14: v0.14
     release-0.13: v0.13
     release-0.12: v0.12
     release-0.11: v0.11
@@ -567,9 +568,9 @@ milestone_applier:
     release-2.6: v2.6
     release-2.5: v2.5
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.21
+    main: v1.22
+    release-1.21: v1.21
     release-1.20: v1.20
-    release-1.19: v1.19
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -596,7 +597,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.34: 1.34
+    dev-1.35: 1.35
 
 repo_milestone:
   # Default maintainer
@@ -1520,6 +1521,8 @@ plugins:
     plugins:
     - release-note
     - override
+    - merge-method-comment
+    - mergecommitblocker
 
   kubernetes-sigs/cloud-provider-azure:
     plugins:
@@ -1845,6 +1848,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/aws-ebs-csi-driver:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/cloud-provider-azure:
   - name: cherrypicker
     events:
@@ -2091,6 +2100,12 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  kubernetes-sigs/gateway-api-inference-extension:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker  
   containerd/containerd:
   - name: needs-rebase
     events:

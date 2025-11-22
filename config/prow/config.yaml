@@ -11,15 +11,17 @@ plank:
     'k8sio-image-promo': 1
     # limits concurrency for k8s-test-infra-staging project
     'test-infra-staging-image-push': 1
+    # limits concurrency for 5k GCE jobs
+    '5k-gce-scale-test': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20250914-6845c9a4c"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20250914-6845c9a4c"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20250914-6845c9a4c"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20250914-6845c9a4c"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251117-cfbb719bc"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251117-cfbb719bc"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251117-cfbb719bc"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251117-cfbb719bc"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -214,6 +216,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         api:
@@ -239,7 +242,8 @@ branch-protection:
         autoscaler:
           required_status_checks:
             contexts:
-            - test-and-verify
+            - test
+            - verify
             - Helm chart
             - Helm Docs
           branches:
@@ -474,6 +478,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         python:
@@ -492,6 +497,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
     kubernetes-sigs:
       protect: true
@@ -501,6 +507,7 @@ branch-protection:
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
+        - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         apisnoop:
@@ -512,6 +519,8 @@ branch-protection:
             gh-pages:
               protect: false
         aws-efs-csi-driver:
+          required_pull_request_reviews:
+            required_approving_review_count: 1
           branches:
             gh-pages:
               protect: false
@@ -720,6 +729,32 @@ tide:
     - do-not-merge/work-in-progress
   - repos:
     - kubernetes/kubernetes
+    excludedBranches:
+      - master
+      - release-1.35
+    labels:
+      - lgtm
+      - approved
+      - "cncf-cla: yes"
+    missingLabels:
+      - do-not-merge
+      - do-not-merge/blocked-paths
+      - do-not-merge/cherry-pick-not-approved
+      - do-not-merge/contains-merge-commits
+      - do-not-merge/hold
+      - do-not-merge/invalid-commit-message
+      - do-not-merge/invalid-owners-file
+      - do-not-merge/needs-kind
+      - do-not-merge/needs-sig
+      - do-not-merge/release-note-label-needed
+      - do-not-merge/work-in-progress
+      - needs-rebase
+  - repos:
+      - kubernetes/kubernetes
+    milestone: v1.35
+    includedBranches:
+      - master
+      - release-1.35
     labels:
     - lgtm
     - approved
@@ -821,6 +856,7 @@ tide:
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
+    kubernetes-sigs/agent-sandbox: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/external-dns: squash

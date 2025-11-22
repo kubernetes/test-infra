@@ -28,6 +28,8 @@ oom_score = -999
   default_runtime_name = "runc"
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
   runtime_type = "io.containerd.runc.v2"
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+  SystemdCgroup = true
 
 # Runtime handler used for runtime class test.
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler]

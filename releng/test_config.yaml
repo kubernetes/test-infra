@@ -273,11 +273,11 @@ testSuites:
     - --timeout=180m
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
+    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
       --minStartupPods=8
     cluster: k8s-infra-prow-build
@@ -286,11 +286,11 @@ testSuites:
     - --timeout=180m
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,EventedPLEG=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,EventedPLEG=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
+    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
       --minStartupPods=8
     cluster: k8s-infra-prow-build
@@ -299,7 +299,7 @@ testSuites:
     - --timeout=180m
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,AllBeta=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
@@ -435,7 +435,7 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
 
 # ATTN: RELEASE MANAGERS
 # There must be a stable[#] group for EACH release
@@ -449,19 +449,19 @@ nodeK8sVersions:
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.34
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.34
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.34
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.33
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.33
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.32
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.31
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
   # stable4:
   #   args:
   #   - --repo=k8s.io/kubernetes=release-1.30

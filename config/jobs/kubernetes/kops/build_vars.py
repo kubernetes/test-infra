@@ -17,7 +17,7 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master"
 
 # Grid Definitions
 networking_options = [
@@ -31,8 +31,16 @@ networking_options = [
 
 # GCE distributions
 gce_distro_options = [
+    "cos121",
+    "cos121arm64",
+    "cos125",
+    "cos125arm64",
+    "cosdev",
+    "cosdevarm64",
     "deb12",
     "deb12arm64",
+    "deb13",
+    "deb13arm64",
     "u2204",
     "u2404",
     "u2404arm64",
@@ -75,8 +83,11 @@ distros = [
     "ubuntu2204arm64",
     "ubuntu2404",
     "ubuntu2404arm64",
+    "ubuntu2510",
+    "ubuntu2510arm64",
     "amazonlinux2",
     "al2023",
+    "al2023arm64",
     "rhel8",
     "rhel9",
     "rocky9",

@@ -37,7 +37,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/configurator:v20250903-93d01d0a25
+      - image: gcr.io/k8s-staging-test-infra/configurator:v20251031-d6af3d3e19
         command:
         - configurator
         args:
@@ -77,7 +77,6 @@ periodics:
     description: Runs BigQuery queries to generate data for metrics.
   rerun_auth_config:
     github_team_slugs:
-    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall
@@ -109,7 +108,6 @@ periodics:
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
   rerun_auth_config:
     github_team_slugs:
-    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall
@@ -157,7 +155,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20250914-6845c9a4c
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251117-cfbb719bc
       command:
       - generic-autobumper
       args:

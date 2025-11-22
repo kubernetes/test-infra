@@ -60,11 +60,7 @@ func waitForReadyNodes(desiredCount int, timeout time.Duration, requiredConsecut
 	stop := time.Now().Add(timeout)
 
 	consecutiveSuccesses := 0
-	for {
-		if time.Now().After(stop) {
-			break
-		}
-
+	for time.Now().Before(stop) {
 		nodes, err := kubectlGetNodes("")
 		if err != nil {
 			log.Printf("kubectl get nodes failed, sleeping: %v", err)

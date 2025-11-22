@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -34,7 +34,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -42,11 +42,11 @@ presubmits:
         - test
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-network-external-dns
       testgrid-tab-name: unit test

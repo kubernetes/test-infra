@@ -12,7 +12,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -47,13 +47,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -73,7 +73,7 @@ presubmits:
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -92,7 +92,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-vmss-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^pkg/provider/storage/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -106,13 +106,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -152,7 +152,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-vmss-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^pkg/provider/storage/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -166,13 +166,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -226,13 +226,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -302,7 +302,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes
@@ -313,7 +313,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -337,9 +337,8 @@ presubmits:
           value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.be.able.to.support.the.1\.17.Sample.API.Server.using.the.current.Aggregator --report-dir=/logs/artifacts --disable-log-dump=true
         - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
           value: "1"
-        # TODO(mainred): remove template with static version
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/453dee707edb7a016440c5277107a17523b9c60f/templates/test/ci/cluster-template-prow-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ci-version.yaml
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: GINKGO_PARALLEL_NODES  # cloud-provider-azure config
@@ -373,13 +372,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -417,7 +416,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-ipv6-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^pkg/provider/storage/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -431,13 +430,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -462,7 +461,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
         resources:
           limits:
             cpu: 4
@@ -477,7 +476,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-dualstack-capz
     cluster: eks-prow-build-cluster
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^pkg/provider/storage/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore|go.sum"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -491,13 +490,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -522,7 +521,7 @@ presubmits:
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
         resources:
           limits:
             cpu: 4
@@ -552,13 +551,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -628,13 +627,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -694,7 +693,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -729,13 +728,13 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.18
+      base_ref: release-1.21
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -803,7 +802,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -814,7 +813,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -838,7 +837,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ci-version-ipv6.yaml
       resources:
         limits:
           cpu: 4
@@ -865,7 +864,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -876,7 +875,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -927,7 +926,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -938,7 +937,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -962,7 +961,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-ci-version-dual-stack.yaml
       resources:
         limits:
           cpu: 4
@@ -989,7 +988,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1000,7 +999,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1051,7 +1050,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1062,7 +1061,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1122,7 +1121,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1170,7 +1169,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1181,7 +1180,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1234,7 +1233,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1250,7 +1249,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1303,7 +1302,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1319,7 +1318,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1377,7 +1376,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1393,7 +1392,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1447,7 +1446,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -1458,7 +1457,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1478,7 +1477,7 @@ periodics:
       - name: KUBERNETES_VERSION  # CAPZ config
         value: "latest"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -1509,7 +1508,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1525,7 +1524,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1548,7 +1547,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -1581,7 +1580,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1597,7 +1596,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1621,7 +1620,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -1654,7 +1653,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1670,7 +1669,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1731,7 +1730,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.18
+    base_ref: release-1.21
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1747,7 +1746,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -1770,7 +1769,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT  # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE  # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.18/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/release-1.21/templates/test/ci/cluster-template-prow-machine-pool-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config

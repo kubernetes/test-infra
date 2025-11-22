@@ -163,7 +163,8 @@ func parse(raw []byte) (*junit.Suites, error) {
 		case reActionLine.MatchString(line):
 			match := reActionLine.FindStringSubmatch(line)
 			emptyText := "" // Will be replaced with real text once output is read.
-			if match[1] == "SKIP" {
+			switch match[1] {
+			case "SKIP":
 				suite.Results = append(suite.Results, junit.Result{
 					ClassName: path.Base(suite.Name),
 					Name:      match[2],
@@ -171,7 +172,7 @@ func parse(raw []byte) (*junit.Suites, error) {
 						Value: emptyText,
 					},
 				})
-			} else if match[1] == "FAIL" {
+			case "FAIL":
 				suite.Results = append(suite.Results, junit.Result{
 					ClassName: path.Base(suite.Name),
 					Name:      match[2],

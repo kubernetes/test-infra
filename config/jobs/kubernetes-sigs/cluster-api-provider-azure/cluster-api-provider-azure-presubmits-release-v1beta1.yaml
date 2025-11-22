@@ -10,7 +10,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -35,7 +35,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -67,7 +67,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -109,7 +109,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
           command:
             - runner.sh
           args:
@@ -152,7 +152,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -177,6 +177,51 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-optional-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: Runs optional end-to-end tests for the v1beta1 release branch.
+  - name: pull-cluster-api-provider-azure-e2e-windows-v1beta1
+    cluster: eks-prow-build-cluster
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    branches:
+    - ^release-1.*
+    spec:
+      serviceAccountName: azure
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        env:
+          - name: GINKGO_FOCUS
+            value: \[WINDOWS\]
+          - name: GINKGO_SKIP
+            value: ""
+          - name: TEST_WINDOWS
+            value: "true"
+        resources:
+          limits:
+            cpu: 6
+            memory: 8Gi
+          requests:
+            cpu: 6
+            memory: 8Gi
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-e2e-windows-v1beta1
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs windows end-to-end tests for the v1beta1 release branch.
   - name: pull-cluster-api-provider-azure-e2e-aks-v1beta1
     cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -196,7 +241,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -240,7 +285,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -278,7 +323,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
         - "runner.sh"
         - "make"
@@ -315,7 +360,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -347,7 +392,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -381,7 +426,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         command:
           - runner.sh
         args:
@@ -429,7 +474,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
           command:
             - runner.sh
           args:
@@ -474,7 +519,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-1.32
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

@@ -30,16 +30,10 @@ if [[ ! -f .golangci.yml ]]; then
   exit 1
 fi
 
-# build golangci-lint
-echo "Install golangci-lint."
-cd "hack/tools"
-go build -o "${REPO_ROOT}/_bin/golangci-lint" github.com/golangci/golangci-lint/cmd/golangci-lint
-cd "${REPO_ROOT}"
-
 echo "Run golangci-lint."
-echo "Go version: $(go version)"
-echo "Golangci-lint version: $(./_bin/golangci-lint version)"
+echo "Golangci-lint version: $(go tool -modfile="${REPO_ROOT}/hack/tools/golangci-lint/go.mod" golangci-lint version)"
 export GO111MODULE=on
 export GOPROXY=https://proxy.golang.org
 export GOSUMDB=sum.golang.org
-./_bin/golangci-lint --config ".golangci.yml" run ./...
+go tool -modfile="${REPO_ROOT}/hack/tools/golangci-lint/go.mod" golangci-lint \
+  --config ".golangci.yml" run ./...

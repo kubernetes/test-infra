@@ -16,9 +16,8 @@
       {%- if use_preset_for_account_creds %}
       {{use_preset_for_account_creds}}: "true"
       {%- elif not boskos_resource_type %}
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
       {%- endif %}
-      preset-dind-enabled: "true"
       {%- else %}
       preset-k8s-ssh: "true"
       {%- endif %}
@@ -66,8 +65,6 @@
           requests:
             cpu: "6"
             memory: "16Gi"
-          {%- if scenario == 'scalability' %}
           limits:
             cpu: "6"
             memory: "16Gi"
-          {%- endif %}

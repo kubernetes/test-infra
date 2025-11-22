@@ -8,7 +8,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     optional: true
     labels:
       preset-service-account: "true"
@@ -25,7 +25,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -54,20 +54,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -94,7 +95,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     optional: true
     labels:
       preset-service-account: "true"
@@ -111,7 +112,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -142,20 +143,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -198,7 +200,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -229,20 +231,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -269,7 +272,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     optional: true
     labels:
       preset-service-account: "true"
@@ -286,7 +289,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -315,20 +318,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -400,7 +404,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     optional: true
     labels:
       preset-service-account: "true"
@@ -417,7 +421,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -446,20 +450,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -531,7 +536,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     optional: true
     labels:
       preset-service-account: "true"
@@ -548,7 +553,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -577,20 +582,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -662,7 +668,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     always_run: false
-    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     optional: true
     labels:
       preset-service-account: "true"
@@ -679,7 +685,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         - /bin/bash
@@ -705,7 +711,7 @@ presubmits:
             cpu: 2
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-crio-cgrpv1-dra
+  - name: pull-kubernetes-node-e2e-crio-dra
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -717,7 +723,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O using cgroup v1
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
     decorate: true
@@ -731,7 +737,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -746,64 +752,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv1.yaml
-        env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-        - name: GOPATH
-          value: /go
-        - name: KUBE_SSH_USER
-          value: core
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-
-  - name: pull-kubernetes-node-e2e-crio-cgrpv2-dra
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+  # per-release image
-    always_run: false
-    optional: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-cri-o
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with CRI-O using cgroup v2
-      testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
-      fork-per-release: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
-        command:
-        - runner.sh
-        args:
-        - kubetest2
-        - noop
-        - --test=node
-        - --
-        - --repo-root=.
-        - --gcp-zone=us-central1-b
-        - --parallelism=1
-        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } && !Flaky && !Slow'
-        - --timeout=60m
-        - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgroupv2.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
         env:
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
@@ -845,7 +794,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -882,7 +831,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.0
+      description: Runs E2E node tests for Dynamic Resource Allocation on-by-default features with containerd 2.1
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
     decorate: true
@@ -896,10 +845,10 @@ presubmits:
       path_alias: k8s.io/test-infra
     - org: containerd
       repo: containerd
-      base_ref: release/2.0
+      base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -914,7 +863,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         resources:
           limits:
             cpu: 2
@@ -936,7 +885,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-presubmits, sig-node-containerd
-      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.0 and with all feature gates enabled (including non-DRA feature gates)
+      description: Runs all E2E node tests for Dynamic Resource Allocation features with containerd 2.1 and with all feature gates enabled (including non-DRA feature gates)
       testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
       fork-per-release: "true"
     decorate: true
@@ -950,10 +899,10 @@ presubmits:
       path_alias: k8s.io/test-infra
     - org: containerd
       repo: containerd
-      base_ref: release/2.0
+      base_ref: release/2.1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -968,7 +917,7 @@ presubmits:
         - --timeout=60m
         - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
         - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         resources:
           limits:
             cpu: 2

@@ -7,7 +7,7 @@ presets:
   - name: CREATE_CUSTOM_NETWORK
     value: "true"
   - name: NODE_SIZE
-    value: e2-standard-2
+    value: n1-standard-2
 
 presubmits:
   kubernetes/kubernetes:
@@ -21,46 +21,44 @@ presubmits:
     optional: true
     max_concurrency: 5
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-gce-device-plugin-gpu: "true"
     decorate: true
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
     spec:
+      serviceAccountName: prow-build
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
+        - kubetest2
+        - gce
         args:
-        - --build=quick
-        - --cluster=
-        # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
-        # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-        - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
-        - --gcp-node-image=gci
-        - --gcp-nodes=2
-        - --gcp-project-type=gpu-project
+        - --v=9
+        - --legacy-mode
+        - --build
+        - --up
+        - --down
+        - --node-size=n1-standard-2
+        - --num-nodes=2
         - --gcp-zone=us-central1-b
-        - --ginkgo-parallel=30
+        - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
+        - --boskos-resource-type=gpu-project
+        - --node-accelerators=type=nvidia-tesla-t4,count=2
+        - --test=ginkgo
+        - --
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
+        - --use-built-binaries=true
+        - --test-args=--minStartupPods=8
+        - --focus-regex=\[Feature:GPUDevicePlugin\]
         resources:
           limits:
-            cpu: 4
+            cpu: 6
             memory: "14Gi"
           requests:
-            cpu: 4
+            cpu: 6
             memory: "14Gi"
         securityContext:
           privileged: true

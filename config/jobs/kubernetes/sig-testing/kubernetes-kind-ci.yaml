@@ -22,7 +22,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
       command:
       - wrapper.sh
       - bash
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
       command:
       - wrapper.sh
       - bash
@@ -100,63 +100,14 @@ periodics:
           # during the tests more like 3-20m is used
           cpu: 7
 
-- interval: 4h
-  cluster: k8s-infra-prow-build
-  name: ci-kubernetes-e2e-kind-alpha-features
-  annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
-    testgrid-tab-name: kind-master-alpha
-    description: Runs tests with no special requirements other than alpha feature gates in a KinD cluster where alpha feature gates and APIs are enabled.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: FEATURE_GATES
-        value: '{"AllAlpha":true,"EventedPLEG": false}'
-      - name: RUNTIME_CONFIG
-        value: '{"api/alpha":"true", "api/ga":"true"}'
-      - name: LABEL_FILTER
-        value: "Feature: isSubsetOf OffByDefault && !BetaOffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
-      - name: PARALLEL
-        value: "true"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          memory: 9Gi
-          cpu: 7
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: 9Gi
-          cpu: 7
-
-- interval: 4h
+- interval: 1h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-beta-features
   annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
-    testgrid-tab-name: kind-master-beta
+    testgrid-dashboards: sig-release-master-blocking, sig-testing-kind
+    testgrid-tab-name: kind-master-beta-features
     description: Runs tests with no special requirements other than beta feature gates in a KinD cluster where beta feature gates and APIs are enabled.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
@@ -170,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
       command:
       - wrapper.sh
       - bash
@@ -198,14 +149,14 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 4h
+- interval: 2h
   cluster: k8s-infra-prow-build
-  name: ci-kubernetes-e2e-kind-alpha-beta-features
+  name: ci-kubernetes-e2e-kind-beta-enabled
   annotations:
     testgrid-dashboards: sig-release-master-informing, sig-testing-kind
-    testgrid-tab-name: kind-master-alpha-beta
-    description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
+    testgrid-tab-name: kind-master-beta-enabled
+    description: Runs tests with no special requirements in a KinD cluster where beta feature gates and APIs are enabled, i.e. this does not include tests for off-by-default beta features.
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
     testgrid-num-columns-recent: '6'
   labels:
     preset-dind-enabled: "true"
@@ -219,13 +170,112 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
       command:
       - wrapper.sh
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
+      - name: FEATURE_GATES
+        value: '{"AllBeta":true}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/beta":"true", "api/ga":"true"}'
+      - name: LABEL_FILTER
+        value: "Feature: isEmpty && !Alpha && !Deprecated && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7
+
+- interval: 2h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-beta-enabled-conformance
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
+    testgrid-tab-name: kind-master-beta-enabled-conformance
+    description: Runs conformance tests in a KinD cluster where beta feature gates and APIs are enabled.
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: FEATURE_GATES
+        value: '{"AllBeta":true}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/beta":"true", "api/ga":"true"}'
+      - name: LABEL_FILTER
+        value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7
+
+- interval: 2h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-alpha-beta-features
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
+    testgrid-tab-name: kind-master-alpha-beta-features
+    description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled.
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
       - name: FEATURE_GATES
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
@@ -247,7 +297,163 @@ periodics:
           memory: 9Gi
           cpu: 7
 
-- interval: 24h
+- interval: 8h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-alpha-beta-features-canary
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: kind-master-alpha-beta-features-canary
+    description: Runs tests with no special requirements other than alpha or beta feature gates in a KinD cluster where alpha and beta feature gates and APIs are enabled. In contrast to ci-kubernetes-e2e-kind-alpha-beta-features it really runs all such tests, with serial and flaky tests being the only exceptions.
+    testgrid-alert-email: patrick.ohly@intel.com
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      # Modified e2e-k8s.sh from https://github.com/kubernetes-sigs/kind/pull/4015/files.
+      # It gets pulled here to try out that modification for a while *before* merging it.
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && curl -sSLO https://raw.githubusercontent.com/pohly/kind/46d774ce34846c9522efd9de1150b0d3cfa585c8/hack/ci/e2e-k8s.sh && chmod u+x e2e-k8s.sh && ./e2e-k8s.sh
+      env:
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/all":"true"}'
+      - name: LABEL_FILTER
+        # Full coverage. The only exception are known flaky tests
+        # and deprecated features because those don't get enabled by AllAlpha/Beta.
+        #
+        # Serial tests get disabled temporarily to make it more comparable with ci-kubernetes-e2e-kind-alpha-beta-features
+        # (https://github.com/onsi/ginkgo/issues/1599#issuecomment-3441247598) and could be enabled again later.
+        value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Flaky && !Serial"
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7
+
+- interval: 2h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-alpha-beta-enabled
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, sig-testing-kind
+    testgrid-tab-name: kind-master-alpha-beta-enabled
+    description: Runs tests with no special requirements in a KinD cluster where alpha and beta feature gates and APIs are enabled, i.e. this does not include tests for alpha features and off-by-default beta features.
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/all":"true"}'
+      - name: LABEL_FILTER
+        value: "Feature: isEmpty && !Deprecated && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7
+
+- interval: 2h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-e2e-kind-alpha-beta-conformance
+  annotations:
+    testgrid-dashboards: sig-release-master-informing,sig-testing-kind
+    testgrid-tab-name: kind-master-alpha-beta-enabled-conformance
+    description: Runs conformance tests in a KinD cluster where alpha and beta feature gates and APIs are enabled.
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,patrick.ohly@intel.com,release-team@kubernetes.io
+    testgrid-num-columns-recent: '6'
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/all":"true"}'
+      - name: LABEL_FILTER
+        value: "Conformance && !Deprecated && !Slow && !Disruptive && !Flaky"
+      - name: PARALLEL
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9Gi
+          cpu: 7
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: 9Gi
+          cpu: 7
+
+- interval: 4h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-e2e-kind-rootless
   annotations:
@@ -270,7 +476,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -333,7 +539,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
       command:
       - runner.sh
       args:

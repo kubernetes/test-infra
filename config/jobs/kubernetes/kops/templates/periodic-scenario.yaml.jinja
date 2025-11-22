@@ -5,10 +5,9 @@
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    {%- if build_cluster == "default" %}
-    preset-aws-credential: "true"
+    {%- if build_cluster == "k8s-infra-kops-prow-build" %}
+    preset-k8s-kops-aws-credential: "true"
     {%- endif %}
-    preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:

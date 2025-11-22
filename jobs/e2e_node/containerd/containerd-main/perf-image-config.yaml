@@ -1,11 +1,14 @@
 images:
   ubuntu:
-    image_family: pipeline-1-29
+    image_family: pipeline-1-34-amd64
     project: ubuntu-os-gke-cloud
+    # the image regex is added so that only cgroupv2 images are selected.
+    # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
+    image_regex: ".*[^-cgroupsv1]$"
     machine: e2-standard-16  # node performance tests will be skipped on smaller machines
     metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/env"
-  cos-stable:
-    image_family: cos-beta
+  cos:
+    image_family: cos-125-lts # keep as close to the COS version that has containerd version closest to the main branch as possible
     project: cos-cloud
     machine: e2-standard-16 # node performance tests will be skipped on smaller machines
     metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/env,gci-update-strategy=update_disabled"

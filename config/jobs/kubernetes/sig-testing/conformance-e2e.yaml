@@ -24,7 +24,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -62,7 +62,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -117,7 +117,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       command:
       - runner.sh
       args:
@@ -158,15 +158,18 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
       command:
       - wrapper.sh
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-      - name: GA_ONLY
-        value: "true"
+      # disable non-GA APIs and features
+      - name: FEATURE_GATES
+        value: '{"AllAlpha":false,"AllBeta":false}'
+      - name: RUNTIME_CONFIG
+        value: '{"api/alpha":"false", "api/beta":"false"}'
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

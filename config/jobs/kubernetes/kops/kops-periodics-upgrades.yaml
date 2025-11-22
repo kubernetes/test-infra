@@ -9,7 +9,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -50,7 +50,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -79,7 +79,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -120,7 +120,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -149,7 +149,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -190,7 +190,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -219,7 +219,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -266,7 +266,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -295,7 +295,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -336,7 +336,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -365,7 +365,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -406,7 +406,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -435,7 +435,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -476,7 +476,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -505,7 +505,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -546,7 +546,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -575,7 +575,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -616,7 +616,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -645,7 +645,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -692,7 +692,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -721,7 +721,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -762,7 +762,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -791,7 +791,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -838,7 +838,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -867,7 +867,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -908,7 +908,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -937,7 +937,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -984,7 +984,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1013,7 +1013,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1054,7 +1054,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1083,7 +1083,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1130,7 +1130,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1159,7 +1159,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1200,7 +1200,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1229,7 +1229,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1276,7 +1276,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1305,7 +1305,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1346,7 +1346,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1375,7 +1375,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1422,7 +1422,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1451,7 +1451,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1492,7 +1492,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1521,7 +1521,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1568,7 +1568,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1597,7 +1597,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1638,7 +1638,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1667,7 +1667,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1714,7 +1714,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1743,7 +1743,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1784,7 +1784,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1813,7 +1813,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1860,7 +1860,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1889,7 +1889,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -1930,7 +1930,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1959,7 +1959,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2006,7 +2006,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2035,7 +2035,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2076,7 +2076,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2105,7 +2105,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2152,7 +2152,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2181,7 +2181,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2222,7 +2222,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2251,7 +2251,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2298,7 +2298,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2327,7 +2327,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2368,7 +2368,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2397,7 +2397,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2444,7 +2444,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2473,7 +2473,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2514,7 +2514,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2543,7 +2543,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2590,7 +2590,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2619,7 +2619,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2660,7 +2660,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2689,7 +2689,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2736,7 +2736,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2765,7 +2765,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2806,7 +2806,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2835,7 +2835,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2882,7 +2882,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2911,7 +2911,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -2952,7 +2952,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2981,7 +2981,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-dind-enabled: "true"
+    preset-k8s-kops-aws-credential: "true"
   max_concurrency: 1
   decorate: true
   decoration_config:
@@ -3028,7 +3028,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       imagePullPolicy: Always
       resources:
         limits:

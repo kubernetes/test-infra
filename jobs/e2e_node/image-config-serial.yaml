@@ -3,11 +3,14 @@
 # `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
 images:
   ubuntu:
-    image: ubuntu-gke-2204-1-24-v20220623
-    machine: e2-standard-2 # These tests need a lot of memory
+    image_family: pipeline-1-34-amd64
     project: ubuntu-os-gke-cloud
-  cos-stable1:
-    image_family: cos-beta
+    # the image regex is added so that only cgroupv2 images are selected.
+    # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
+    image_regex: ".*[^-cgroupsv1]$"
+    machine: e2-standard-2 # These tests need a lot of memory
+  cos:
+    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     machine: e2-standard-2 # These tests need a lot of memory
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"

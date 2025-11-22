@@ -21,18 +21,14 @@ set -o errexit -o nounset -o pipefail
 set -o xtrace
 
 # Settings:
-# GA_ONLY: true  - limit to GA APIs/features as much as possible
-#          false - (default) APIs and features left at defaults
 
 # FEATURE_GATES:
 #          JSON or YAML encoding of a string/bool map: {"FeatureGateA": true, "FeatureGateB": false}
 #          Enables or disables feature gates in the entire cluster.
-#          Cannot be used when GA_ONLY=true.
 
 # RUNTIME_CONFIG:
 #          JSON or YAML encoding of a string/string (!) map: {"apia.example.com/v1alpha1": "true", "apib.example.com/v1beta1": "false"}
 #          Enables API groups in the apiserver via --runtime-config.
-#          Cannot be used when GA_ONLY=true.
 
 # cleanup logic for cleanup on exit
 CLEANED_UP=false
@@ -118,30 +114,6 @@ create_cluster() {
   feature_gates="${FEATURE_GATES:-{\}}"
   # --runtime-config argument value passed to the API server, again as a map
   runtime_config="${RUNTIME_CONFIG:-{\}}"
-
-  case "${GA_ONLY:-false}" in
-  false)
-    :
-    ;;
-  true)
-    if [ "${feature_gates}" != "{}" ]; then
-      echo "GA_ONLY=true and FEATURE_GATES=${feature_gates} are mutually exclusive."
-      exit 1
-    fi
-    if [ "${runtime_config}" != "{}" ]; then
-      echo "GA_ONLY=true and RUNTIME_CONFIG=${runtime_config} are mutually exclusive."
-      exit 1
-    fi
-
-    echo "Limiting to GA APIs and features for ${KUBE_VERSION}"
-    feature_gates='{"AllAlpha":false,"AllBeta":false}'
-    runtime_config='{"api/alpha":"false", "api/beta":"false"}'
-    ;;
-  *)
-    echo "\$GA_ONLY set to '${GA_ONLY}'; supported values are true and false (default)"
-    exit 1
-    ;;
-  esac
 
   # create the config file
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
@@ -236,7 +208,6 @@ main() {
   # Set original paths with fallbacks
   export VERSIONED_FEATURE_LIST=${VERSIONED_FEATURE_LIST:-"test/featuregates_linter/test_data/versioned_feature_list.yaml"}
   export PREV_VERSIONED_FEATURE_LIST=${PREV_VERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/versioned_feature_list.yaml"}
-  export PREV_UNVERSIONED_FEATURE_LIST=${PREV_UNVERSIONED_FEATURE_LIST:-"release-${EMULATED_VERSION}/test/featuregates_linter/test_data/unversioned_feature_list.yaml"}
 
   # Create and validate previous cluster
   git clone --filter=blob:none --single-branch --branch "release-${EMULATED_VERSION}" https://github.com/kubernetes/kubernetes.git "release-${EMULATED_VERSION}"
@@ -269,16 +240,9 @@ main() {
     fi
   fi
 
-  if [ ! -f "$PREV_UNVERSIONED_FEATURE_LIST" ]; then
-    alt_path="release-${EMULATED_VERSION}/test/compatibility_lifecycle/reference/unversioned_feature_list.yaml"
-    if [ -f "$alt_path" ]; then
-      export PREV_UNVERSIONED_FEATURE_LIST="$alt_path"
-      echo "Using alternative path for PREV_UNVERSIONED_FEATURE_LIST: $alt_path"
-    fi
-  fi
 
   VALIDATE_SCRIPT="${VALIDATE_SCRIPT:-${PWD}/../test-infra/experiment/compatibility-versions/validate-compatibility-versions-feature-gates.sh}"
-  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${CURRENT_VERSION}" "${LATEST_METRICS}" "${VERSIONED_FEATURE_LIST}" "${PREV_VERSIONED_FEATURE_LIST}" "${PREV_UNVERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
+  "${VALIDATE_SCRIPT}" "${EMULATED_VERSION}" "${CURRENT_VERSION}" "${LATEST_METRICS}" "${VERSIONED_FEATURE_LIST}" "${PREV_VERSIONED_FEATURE_LIST}" "${LATEST_RESULTS}"
 
   # Report results
   echo "=== Latest Cluster (${EMULATED_VERSION}) Validation ==="

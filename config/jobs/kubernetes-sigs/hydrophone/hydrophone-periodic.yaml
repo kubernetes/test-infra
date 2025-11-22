@@ -16,14 +16,14 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
           env:
             - name: CONFORMANCE
               value: "true"
             - name: EXPECTED_NUM_TESTS
-              value: "388" # This is the number of specs expected to run. This will change with each version of Kubernetes.
+              value: "424" # This is the number of specs expected to run. This will change with each version of Kubernetes.
           args:
             - bash
             - -c
@@ -60,7 +60,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
           command:
             - runner.sh
           env:
@@ -69,7 +69,7 @@ periodics:
             - name: SKIP
               value: '\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist'
             - name: EXPECTED_NUM_TESTS
-              value: "354" # This is the number of specs expected to run. This may change with each version of Kubernetes.
+              value: "389" # This is the number of specs expected to run. This may change with each version of Kubernetes.
           args:
             - bash
             - -c

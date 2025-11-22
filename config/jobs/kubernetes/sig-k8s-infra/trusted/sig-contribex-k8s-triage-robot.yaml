@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: stable-metrics-help
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -140,7 +140,7 @@ periodics:
     testgrid-tab-name: close-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -202,7 +202,7 @@ periodics:
     testgrid-tab-name: close-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -250,74 +250,6 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
-- name: ci-k8s-triage-robot-retester
-  interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  annotations:
-    testgrid-dashboards: sig-contribex-k8s-triage-robot
-    testgrid-tab-name: retester
-    description: Automatically /retest for approved PRs that are failing tests
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
-      command:
-      - commenter
-      args:
-      - |-
-        --query=is:pr
-        -label:do-not-merge
-        -label:do-not-merge/blocked-paths
-        -label:do-not-merge/cherry-pick-not-approved
-        -label:do-not-merge/contains-merge-commits
-        -label:do-not-merge/hold
-        -label:do-not-merge/invalid-commit-message
-        -label:do-not-merge/invalid-owners-file
-        -label:do-not-merge/needs-sig
-        -label:do-not-merge/needs-kind
-        -label:do-not-merge/release-note-label-needed
-        -label:do-not-merge/work-in-progress
-        label:lgtm
-        label:approved
-        label:"cncf-cla: yes"
-        status:failure
-        -label:needs-rebase
-        -label:needs-ok-to-test
-        -label:"cncf-cla: no"
-        repo:kubernetes/kops
-        repo:kubernetes/kubernetes
-        repo:kubernetes/test-infra
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.test-pods.svc.cluster.local
-      - |-
-        --comment=The Kubernetes project has merge-blocking tests that are currently too flaky to consistently pass.
-
-        This bot retests PRs for certain kubernetes repos according to the following rules:
-        - The PR does have any `do-not-merge/*` labels
-        - The PR does not have the `needs-ok-to-test` label
-        - The PR is mergeable (does not have a `needs-rebase` label)
-        - The PR is approved (has `cncf-cla: yes`, `lgtm`, `approved` labels)
-        - The PR is failing tests required for merge
-
-        You can:
-        - Review the [full test history](https://prow.k8s.io/pr-history/?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}) for this PR
-        - Prevent this bot from retesting with `/lgtm cancel` or `/hold`
-        - Help make our tests less flaky by following our [Flaky Tests Guide][1]
-
-        /retest
-
-        [1]: https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md
-      - --template
-      - --ceiling=1
-      - --confirm
-      volumeMounts:
-      - name: token
-        mountPath: /etc/github-token
-    volumes:
-    - name: token
-      secret:
-        secretName: k8s-triage-robot-github-token
-
 - name: ci-k8s-triage-robot-rotten-issues
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
@@ -328,7 +260,7 @@ periodics:
     testgrid-tab-name: rotten-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -390,7 +322,7 @@ periodics:
     testgrid-tab-name: rotten-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -449,7 +381,7 @@ periodics:
     testgrid-tab-name: stale-issues
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -511,7 +443,7 @@ periodics:
     testgrid-tab-name: stale-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -570,7 +502,7 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -618,7 +550,7 @@ periodics:
     testgrid-tab-name: re-triage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -669,7 +601,7 @@ periodics:
     testgrid-tab-name: re-triage-important
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -721,7 +653,7 @@ periodics:
     testgrid-tab-name: re-triage-critical
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/commenter:v20251031-d6af3d3e19
       command:
       - commenter
       args:
@@ -774,7 +706,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20250903-93d01d0a25
+    - image: gcr.io/k8s-staging-test-infra/issue-creator:v20251031-d6af3d3e19
       command:
       - issue-creator
       args:

@@ -64,7 +64,7 @@ presubmits:
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
-    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_20_repo %}
+    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
     extra_refs:
     {%- if ci and need_kubernetes_repo %}
     - org: kubernetes
@@ -79,15 +79,15 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     {%- endif %}
-    {%- if need_containerd_20_repo %}
+    {%- if need_containerd_repo %}
     - org: containerd
       repo: containerd
-      base_ref: release/2.0
+      base_ref: release/2.1
     {%- endif %}
     {%- endif %}
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
 
@@ -179,20 +179,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"

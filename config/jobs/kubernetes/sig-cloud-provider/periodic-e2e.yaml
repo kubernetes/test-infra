@@ -24,7 +24,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
           - runner.sh
         args:
@@ -91,7 +91,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
           - runner.sh
         args:
@@ -105,7 +105,7 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
-             --feature-gates="AllAlpha=true,EventedPLEG=false" \
+             --feature-gates="AllAlpha=true,AllBeta=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
              --external-cloud-provider true \
              --up \
@@ -157,7 +157,7 @@ periodics:
   spec:
     serviceAccountName: node-e2e-tests
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
           - runner.sh
         args:
@@ -171,7 +171,7 @@ periodics:
             kubetest2 ec2 \
              --stage https://dl.k8s.io/ci/fast/ \
              --version $VERSION \
-             --feature-gates="AllAlpha=true,EventedPLEG=false" \
+             --feature-gates="AllAlpha=true,AllBeta=true,EventedPLEG=false" \
              --runtime-config="api/all=true" \
              --up \
              --down \
@@ -181,7 +181,7 @@ periodics:
              --test-package-url=https://dl.k8s.io/ \
              --test-package-dir=ci/fast \
              --test-package-marker=latest-fast.txt \
-             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
+             --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
              --skip-regex="\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0" \
              --parallel=25
         env:

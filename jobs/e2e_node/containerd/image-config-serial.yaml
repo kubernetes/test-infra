@@ -1,23 +1,23 @@
 images:
   ubuntu:
-    image_family: pipeline-1-29
+    image_family: pipeline-1-34-amd64
     project: ubuntu-os-gke-cloud
     # the image regex is added so that only cgroupv2 images are selected.
     # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
     image_regex: ".*[^-cgroupsv1]$"
     machine: e2-standard-2 # These tests need a lot of memory
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
-  cos-stable2:
-    image_family: cos-stable
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
+  cos-2:
+    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     machine: n1-standard-4 # These tests need a lot of memory
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
     resources:
       accelerators:
         - type: nvidia-tesla-t4
           count: 2
-  cos-stable1:
-    image_family: cos-stable
+  cos-1:
+    image_family: cos-125-lts # keep in sync with jobs/e2e_node/containerd/image-config.yaml
     project: cos-cloud
     machine: e2-standard-2 # These tests need a lot of memory
-    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config-systemd.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml,registry-config-docker</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/hosts-docker.toml"

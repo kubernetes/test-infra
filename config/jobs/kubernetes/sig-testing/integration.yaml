@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - runner.sh
         args:
@@ -50,7 +50,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - runner.sh
         env:
@@ -73,6 +73,8 @@ presubmits:
     always_run: false # Has known failures.
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 90m
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
@@ -87,12 +89,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - runner.sh
         env:
         - name: KUBE_TIMEOUT
-          value: "-timeout=20m"
+          value: "-timeout=30m"
         - name: KUBE_RACE
           value: "-race"
         args:
@@ -124,7 +126,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
         command:
         - runner.sh
         env:
@@ -160,7 +162,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-go-canary
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-go-canary
         command:
         - runner.sh
         args:
@@ -197,7 +199,7 @@ periodics:
     description: "Ends up running: make test-integration"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
       command:
       - runner.sh
       args:
@@ -219,6 +221,8 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-integration-race-master
   decorate: true
+  decoration_config:
+    timeout: 90m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -236,7 +240,7 @@ periodics:
     description: "Ends up running: make test-integration with race detection"
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250905-c89b045f57-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
       command:
       - runner.sh
       args:
@@ -245,7 +249,7 @@ periodics:
       - name: SHORT
         value: --short=false
       - name: KUBE_TIMEOUT
-        value: "-timeout=20m"
+        value: "-timeout=30m"
       - name: KUBE_RACE
         value: "-race"
       # docker-in-docker needs privileged mode

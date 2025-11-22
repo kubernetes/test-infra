@@ -14,9 +14,8 @@
       preset-service-account: "true"
       preset-aws-ssh: "true"
       {%- if not boskos_resource_type %}
-      preset-aws-credential: "true"
+      preset-k8s-kops-aws-credential: "true"
       {%- endif %}
-      preset-dind-enabled: "true"
       {%- elif cloud == "azure" %}
       preset-service-account: "true"
       preset-kops-azure-cred-wi: "true"
@@ -71,6 +70,10 @@
             {%- if template_path %}
             --template-path={{template_path}} \
             {%- endif %}
+            {%- for flag in instance_groups_overrides %}
+            --control-plane-instance-group-overrides={{flag}} \
+            --node-instance-group-overrides={{flag}} \
+            {%- endfor %}
             --test=kops \
             -- \
             {%- if test_args %}

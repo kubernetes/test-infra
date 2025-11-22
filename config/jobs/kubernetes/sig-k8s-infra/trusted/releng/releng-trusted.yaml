@@ -318,35 +318,6 @@ periodics:
       - org: kubernetes
         slug: release-managers
 
-- interval: 4h
-  cluster: k8s-infra-prow-build-trusted
-  max_concurrency: 1
-  name: ci-k8sio-gcr-prod-backup
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: main
-  spec:
-    serviceAccountName: k8s-infra-gcr-promoter-bak
-    containers:
-    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bookworm
-      imagePullPolicy: Always
-      command:
-      - infra/gcp/bash/backup_tools/backup.sh
-      env:
-      # The backup script needs GOPATH to be explicitly defined.
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-release-releng-blocking
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
-    testgrid-num-failures-to-alert: '2'
-  rerun_auth_config:
-    github_team_slugs:
-      - org: kubernetes
-        slug: release-managers
-
 - interval: 6h
   name: ci-fast-forward
   cluster: k8s-infra-prow-build-trusted

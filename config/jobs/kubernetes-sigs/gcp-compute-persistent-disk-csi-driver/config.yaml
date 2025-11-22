@@ -12,7 +12,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -45,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -54,11 +54,13 @@ presubmits:
         - >-
           test/run-e2e.sh \
             --machine-type=t2a-standard-2 \
+            --hyperdisk-machine-type=none \
+            --skip-local-ssd-tests \
             --vm-name-prefix=gce-pd-csi-e2e-arm64 \
             --zones=us-central1-a,us-central1-f \
             --arch=arm64 \
             --min-cpu-platform="" \
-            --image-url=projects/ubuntu-os-cloud/global/images/family/ubuntu-minimal-2404-lts-arm64
+            --image-url=projects/ubuntu-os-cloud/global/images/family/ubuntu-minimal-2404-lts-arm64 \
             --ginkgo.focus="\[NVMe\]"
         env:
         - name: ZONE
@@ -84,7 +86,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -110,7 +112,7 @@ presubmits:
       timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -137,7 +139,7 @@ presubmits:
       timeout: 30m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:
@@ -169,7 +171,7 @@ presubmits:
     path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         command:
         - runner.sh
         args:

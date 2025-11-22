@@ -22,12 +22,12 @@ dashboard_groups:
   - kops-distro-rocky9
   - kops-distro-u2204
   - kops-distro-u2404
+  - kops-distro-u2510
   - kops-distro-umini2404
-  - kops-distro-cos105
-  - kops-k8s-1.27
-  - kops-k8s-1.28
+  - kops-distro-cos121
+  - kops-distro-cos125
+  - kops-distro-cosdev
   - kops-k8s-1.29
-  - kops-k8s-1.30
   - kops-k8s-1.31
   - kops-k8s-1.32
   - kops-k8s-1.33
@@ -39,6 +39,7 @@ dashboard_groups:
   - kops-1.32
   - kops-1.33
   - kops-1.34
+  - kops-master
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -65,12 +66,12 @@ dashboards:
 - name: kops-distro-rocky9
 - name: kops-distro-u2204
 - name: kops-distro-u2404
+- name: kops-distro-u2510
 - name: kops-distro-umini2404
-- name: kops-distro-cos105
-- name: kops-k8s-1.27
-- name: kops-k8s-1.28
+- name: kops-distro-cos121
+- name: kops-distro-cos125
+- name: kops-distro-cosdev
 - name: kops-k8s-1.29
-- name: kops-k8s-1.30
 - name: kops-k8s-1.31
 - name: kops-k8s-1.32
 - name: kops-k8s-1.33
@@ -82,6 +83,7 @@ dashboards:
 - name: kops-1.32
 - name: kops-1.33
 - name: kops-1.34
+- name: kops-master
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons

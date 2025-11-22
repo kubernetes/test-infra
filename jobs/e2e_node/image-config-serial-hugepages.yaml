@@ -3,8 +3,11 @@
 # `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
 images:
   ubuntu:
-    image: ubuntu-gke-2204-1-24-v20220623
+    image_family: pipeline-1-34-amd64
     project: ubuntu-os-gke-cloud
+    # the image regex is added so that only cgroupv2 images are selected.
+    # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
+    image_regex: ".*[^-cgroupsv1]$"
     metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/ubuntu-hugepages-1G-allocation.yaml"
     # Using `e2-standard-2` to have enough memory for 1Gb huge pages allocation
     machine: e2-standard-2

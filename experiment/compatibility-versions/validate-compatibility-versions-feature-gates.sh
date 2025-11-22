@@ -14,13 +14,13 @@
 # limitations under the License.
 
 # This script validates feature gates from a Kubernetes cluster's /metrics endpoint
-# against expected values defined in versioned and unversioned feature lists.
+# against expected values defined in a versioned feature list.
 #
-# Usage: validate-compatibility-versions-feature-gates.sh <emulated_version> <current_version> <metrics_file> <feature_list> <prev_feature_list> <prev_unversioned_feature_list> <results_file>
+# Usage: validate-compatibility-versions-feature-gates.sh <emulated_version> <current_version> <metrics_file> <feature_list> <prev_feature_list> <results_file>
 set -o errexit -o nounset -o pipefail
 # Check arg count
-if [[ $# -ne 7 ]]; then
-  echo "Usage: ${0} <emulated_version> <current_version> <metrics_file> <feature_list> <prev_feature_list> <prev_unversioned_feature_list> <results_file>"
+if [[ $# -ne 6 ]]; then
+  echo "Usage: ${0} <emulated_version> <current_version> <metrics_file> <feature_list> <prev_feature_list> <results_file>"
   exit 1
 fi
 emulated_version="$1"   # e.g. "1.32"
@@ -28,8 +28,7 @@ current_version="$2"    # e.g. "1.33" - the actual version to check for DEPRECAT
 metrics_file="$3"       # path to /metrics
 feature_list="$4"       # current versioned_feature_list.yaml
 prev_feature_list="$5"       # previous versioned_feature_list.yaml
-prev_unversioned_feature_list="$6" # previous unversioned_feature_list.yaml
-results_file="$7"
+results_file="$6"
 echo "Validating features for emulated_version=${emulated_version}, current_version=${current_version}..."
 rm -f "${results_file}"
 touch "${results_file}"
@@ -109,47 +108,6 @@ while IFS= read -r feature_entry; do
   expected_value["$feature_name"]="$want"
 done < <(echo "$prev_feature_stream")
 
-# Build the "expected_unversioned" sets from previous unversioned_feature_list.yaml
-# => expected_unversioned_stage[featureName], expected_unversioned_lock[featureName], expected_unversioned_value[featureName]
-declare -A expected_unversioned_stage
-declare -A expected_unversioned_lock
-declare -A expected_unversioned_value
-
-unversioned_feature_stream="$(
-  yq e -o=json '.' "${prev_unversioned_feature_list}" \
-    | jq -c '.[]'
-)"
-
-while IFS= read -r unversioned_feature_entry; do
-  unversioned_feature_name=$(echo "${unversioned_feature_entry}" | jq -r '.name')
-  unversioned_specs_json=$(echo "${unversioned_feature_entry}"   | jq -c '.versionedSpecs') # Although named versionedSpecs in YAML, it's unversioned list.
-
-  # Unversioned should always use the first spec (assuming only one exists or first one is the default)
-  target_unversioned_spec="$(
-    echo "${unversioned_specs_json}" \
-    | jq -r '.[0]' # Get the first spec
-  )"
-
-  # If no spec, skip (should not happen in valid file)
-  if [[ -z "$target_unversioned_spec" || "$target_unversioned_spec" == "null" ]]; then
-    continue
-  fi
-
-  # Read fields - these are default values for unversioned features
-  raw_unversioned_stage=$(echo "$target_unversioned_spec"       | jq -r '.preRelease') # Can use this or default to GA
-  unversioned_lockToDefault=$(echo "$target_unversioned_spec"   | jq -r '.lockToDefault')
-  unversioned_defaultVal=$(echo "$target_unversioned_spec"      | jq -r '.default')
-
-  # Convert defaultVal (true/false) -> 1/0
-  unversioned_want="0"
-  if [[ "$unversioned_defaultVal" == "true" ]]; then
-    unversioned_want="1"
-  fi
-
-  expected_unversioned_stage["$unversioned_feature_name"]="$raw_unversioned_stage"
-  expected_unversioned_lock["$unversioned_feature_name"]="$unversioned_lockToDefault"
-  expected_unversioned_value["$unversioned_feature_name"]="$unversioned_want"
-done < <(echo "$unversioned_feature_stream")
 
 # For each "expected" feature (versioned):
 # - If missing from /metrics => fail unless stage==ALPHA or lock==true or is a deprecated feature that is listed as properly removed.
@@ -188,41 +146,7 @@ for feature_name in "${!expected_stage[@]}"; do
   fi
 done
 
-# For each "expected_unversioned" feature:
-# - If missing from /metrics => fail unless stage==ALPHA or lock==true
-# - If present => compare numeric value
-for unversioned_feature_name in "${!expected_unversioned_stage[@]}"; do
-  unversioned_stage="${expected_unversioned_stage[$unversioned_feature_name]}"
-  unversioned_locked="${expected_unversioned_lock[$unversioned_feature_name]}"
-  unversioned_want="${expected_unversioned_value[$unversioned_feature_name]}"
 
-  got="${actual_features[$unversioned_feature_name]:-}"  # empty if missing
-  # If present, but stage==ALPHA => no checks are done
-  if [[ "$unversioned_stage" == "ALPHA" ]]; then
-    continue
-  fi
-
-  if [[ -z "$got" ]]; then
-    # Missing from metrics
-    if [[ "$unversioned_locked" == "true" ]]; then
-      continue
-    fi
-    # Deprecated feature that was removed, these can continue. These can only be features that are not in the 
-    # scope of compatibility version(e.g kuebelet).
-    if [[  "$REMOVED_FEATURE_LIST" == *"$feature_name"* ]]; then
-      continue
-    fi
-    echo "FAIL: expected unversioned feature gate '$unversioned_feature_name' not found in metrics (lockToDefault=${unversioned_locked})" \
-    >> "${results_file}"
-    continue
-  fi
-
-  # If present, compare true/false enabled value
-  if [[ "$got" != "$unversioned_want" ]]; then
-    echo "FAIL: unversioned feature '$unversioned_feature_name' expected value $unversioned_want, got $got" \
-      >> "${results_file}"
-  fi
-done
 
 declare -A current_stage
 declare -A current_lock
@@ -316,24 +240,27 @@ while IFS= read -r feature_entry; do
   current_version_stage["$feature_name"]="${exact_stage^^}"  # uppercase
 done < <(echo "$current_feature_stream")
 
-# For each actual feature in /metrics not in the "expected" maps (versioned OR unversioned),
+# For each actual feature in /metrics not in the "expected" map,
 #  - if it's "1", we fail as "unexpected feature". because new gates not found in previous
 #    expected gates can only be introduced if they are off by default (0) but not on by default (1)
   #    UNLESS:
   #      - new feature is a client-go feature then we do not fail but continue
   #      - new feature is a actually pre-existing code now being deprecated and as such called a "feature" retroactively for deprecation
 for feature_name in "${!actual_features[@]}"; do
-  if [[ -z "${expected_stage[$feature_name]:-}" ]] && [[ -z "${expected_unversioned_stage[$feature_name]:-}" ]]; then
+  if [[ -z "${expected_stage[$feature_name]:-}" ]]; then
     got="${actual_features[$feature_name]}"
     if [[ "$got" == "1" ]]; then
       # Check to see if gate is found in client-go and if so, continue
       if grep -q "$feature_name" staging/src/k8s.io/client-go/features/known_features.go; then
         continue
       fi
-      # Check if gate is deprecated feature gate at the same version as the binary version
-      # OR if it's a GA feature with version 1.0
-      if [[ -n "${current_version_stage[$feature_name]:-}" && "${current_version_stage[$feature_name]}" == "DEPRECATED" ]] || \
-         [[ -n "${version_1_0_stage[$feature_name]:-}" && "${version_1_0_stage[$feature_name]}" == "GA" ]]; then
+      # Check if gate is:
+      # - 1. DEPRECATED feature gate at the same version as the binary version
+      # - 2. GA feature with version 1.0 (used for code deprecation backfilling)
+      # - 3. BETA feature with version 1.0 (used for bug fixes bound to binary version instead of emulation version)
+      if [[ "${current_version_stage[$feature_name]:-}" == "DEPRECATED" ]] || \
+         [[ "${version_1_0_stage[$feature_name]:-}" == "BETA" ]] || \
+         [[ "${version_1_0_stage[$feature_name]:-}" == "GA" ]]; then
         continue
       fi
        echo "FAIL: unexpected feature '$feature_name' found in /metrics, got=1" \

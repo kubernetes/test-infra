@@ -15,6 +15,7 @@ dashboard_groups:
     - sig-network-node-ipam-controller
     - sig-network-gwctl
     - sig-network-nat64
+    - sig-network-kindnet
 
 dashboards:
 - name: sig-network-dns
@@ -106,3 +107,4 @@ dashboards:
 - name: sig-network-node-ipam-controller
 - name: sig-network-gwctl
 - name: sig-network-nat64
+- name: sig-network-kindnet

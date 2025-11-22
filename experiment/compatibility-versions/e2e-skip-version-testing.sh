@@ -34,6 +34,7 @@ trap signal_handler INT TERM
 
 run_skip_version_tests() {
   export PARALLEL=true
+  initial_emulated_version="$EMULATED_VERSION"
   ret=0
   while ! version_gte "$EMULATED_VERSION" "$CURRENT_VERSION"; do
     echo "Running e2e with compatibility version set to ${EMULATED_VERSION}"
@@ -49,8 +50,13 @@ run_skip_version_tests() {
       return 1
     fi
     pushd "${PREV_RELEASE_REPO_PATH}"
-    build_prev_version_bins || ret=$?
-    run_prev_version_tests || ret=$?
+    if [[ "$EMULATED_VERSION" != "$initial_emulated_version" ]]; then
+      # overwrite node e2e tests with the node tests at the initial emulated version because Kubelet is still at that version.
+      echo "Replace ${EMULATED_VERSION} node tests with node tests at ${initial_emulated_version}"
+      rsync -av --delete "./test/e2e/node" "${TMP_DIR}/prev-release-k8s-${initial_emulated_version}/test/e2e/node"
+    fi
+    build_test_bins "${PREV_RELEASE_BRANCH}" || ret=$?
+    run_e2e_tests || ret=$?
     if [[ "$ret" -ne 0 ]]; then
       echo "Failed running skip version tests for emulated version $EMULATED_VERSION"
       return 1
@@ -66,8 +72,13 @@ run_skip_version_tests() {
   # Test removal of emulated version entirely.
   export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
   delete_emulation_version || ret=$?
-  build_prev_version_bins || ret=$?
-  run_prev_version_tests || ret=$?
+  if [[ "$EMULATED_VERSION" != "$initial_emulated_version" ]]; then
+    # overwrite node e2e tests with the node tests at the initial emulated version because Kubelet is still at that version.
+    echo "Replace ${EMULATED_VERSION} node tests with node tests at ${initial_emulated_version}"
+    rsync -av --delete "./test/e2e/node" "${TMP_DIR}/prev-release-k8s-${initial_emulated_version}/test/e2e/node"
+  fi
+  build_test_bins "${PREV_RELEASE_BRANCH}" || ret=$?
+  run_e2e_tests || ret=$?
   return $ret
 }
 

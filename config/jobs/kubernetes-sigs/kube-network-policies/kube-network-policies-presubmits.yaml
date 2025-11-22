@@ -19,7 +19,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
         env:
         - name: KUBE_PROXY_MODE
           value: "nftables"
@@ -66,7 +66,7 @@ presubmits:
       timeout: 60m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20250904-c89b045f57-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -100,4 +100,42 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-network-policy-api
       testgrid-tab-name: pull-kube-network-policies-ipv6 conformance, master (dev) [non-serial]
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+  - name: pull-kube-network-policies-iptracker
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: kops
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: sigs.k8s.io/kube-network-policies
+    decoration_config:
+      timeout: 60m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        command:
+        - runner.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        - hack/e2e-kops.sh
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-network-policy-api
+      testgrid-tab-name: pull-kube-network-policies-iptracker conformance, master (dev) [non-serial]
       testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com

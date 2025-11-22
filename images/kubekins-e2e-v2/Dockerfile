@@ -73,7 +73,7 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
         --path-update=false \
         --usage-reporting=false; \
     fi && \
-    gcloud components install alpha beta && \
+    gcloud components install alpha beta gke-gcloud-auth-plugin && \
     gcloud info | tee /workspace/gcloud-info.txt
 
 
