@@ -1803,6 +1803,10 @@ plugins:
     plugins:
     - require-matching-label
 
+  kubernetes-sigs/gateway-api-inference-extension:
+    plugins:
+    - milestone
+
 external_plugins:
   kubernetes:
   - name: needs-rebase
