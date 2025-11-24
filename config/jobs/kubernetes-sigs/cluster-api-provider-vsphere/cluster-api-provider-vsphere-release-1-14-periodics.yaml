@@ -42,7 +42,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -93,7 +93,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -144,7 +144,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -195,7 +195,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -246,7 +246,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -299,7 +299,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -350,7 +350,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -401,7 +401,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
