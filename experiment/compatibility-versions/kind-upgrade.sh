@@ -74,7 +74,7 @@ update_kubelet() {
  for n in $NODES; do
    # Backup previous kubelet
    docker exec $n cp /usr/bin/kubelet /usr/bin/kubelet.bak
-   # This flag has been removed in 1.35. We can remove the override it once 1.35 cannot be emulated anymore
+   # This flag has been removed in 1.35. We can remove the replacement once 1.35 cannot be emulated anymore
    docker exec $n sed -i 's/--pod-infra-container-image=[^ "]*//g' /var/lib/kubelet/kubeadm-flags.env
    # Install new kubelet binary
    docker cp ${KUBELET_BINARY} $n:/usr/bin/kubelet
