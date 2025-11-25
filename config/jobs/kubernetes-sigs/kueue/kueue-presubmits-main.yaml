@@ -552,7 +552,6 @@ presubmits:
         - image-local-build
         - importer-image
         - kueueviz-image
-        - kueue-populator-image
         env:
         - name: GOMAXPROCS
           value: "2"
