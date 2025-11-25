@@ -595,6 +595,12 @@ periodics:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-96"
+        - name: KOPS_CONTROLLER_MANAGER_BURST
+          value: "1000"
+        - name: KOPS_CONTROLLER_MANAGER_QPS
+          value: "1000"
+        - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
+          value: "2000"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER
