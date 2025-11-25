@@ -11,6 +11,8 @@ periodics:
     annotations:
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-unit-ppc64le
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
@@ -51,6 +53,8 @@ periodics:
     annotations:
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-master-ppc64le
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
       description: "Ends up running: make test-integration"
     spec:
       containers:
@@ -85,6 +89,8 @@ periodics:
     annotations:
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-1-34-ppc64le
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
       description: "Ends up running: make test-integration"
     spec:
       containers:
@@ -119,6 +125,8 @@ periodics:
     annotations:
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-1-33-ppc64le
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
       description: "Ends up running: make test-integration"
     spec:
       containers:
@@ -159,6 +167,8 @@ periodics:
       description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -242,6 +252,8 @@ periodics:
       description: Runs e2e-node tests using kubetest2 on IBM powervs
       testgrid-dashboards: ibm-ppc64le-node-e2e, ibm-ppc64le-k8s, sig-node-ppc64le
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -313,6 +325,8 @@ periodics:
       description: Runs e2e tests with alpha enabled feature gates against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -380,6 +394,8 @@ periodics:
       description: Runs e2e tests with against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-default
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -444,6 +460,8 @@ periodics:
       description: Runs E2E slow tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-slow-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
@@ -507,6 +525,8 @@ periodics:
       description: Runs E2E serial tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
         - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
