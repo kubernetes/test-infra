@@ -667,6 +667,9 @@ repo_milestone:
   kubernetes-sigs/kueue:
     maintainers_team: kueue-maintainers
     maintainers_friendly_name: Kueue Maintainers
+  kubernetes-sigs/gateway-api-inference-extension:
+    maintainers_team: gateway-api-inference-extension-milestone-maintainers
+    maintainers_friendly_name: Inference Gateway Milestone Maintainers
 
 project_config:
   project_org_configs:
@@ -1802,6 +1805,10 @@ plugins:
   kubernetes-sigs/usage-metrics-collector:
     plugins:
     - require-matching-label
+
+  kubernetes-sigs/gateway-api-inference-extension:
+    plugins:
+    - milestone
 
 external_plugins:
   kubernetes:
