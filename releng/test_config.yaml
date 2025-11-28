@@ -45,10 +45,6 @@ jobs:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -74,10 +70,6 @@ jobs:
 
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -109,10 +101,6 @@ jobs:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -138,10 +126,6 @@ jobs:
 
   # stable3
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -344,11 +328,6 @@ testSuites:
     - --timeout=300m
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\]
       --minStartupPods=8
-    cluster: k8s-infra-prow-build
-  ingress:
-    args:
-    - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
     cluster: k8s-infra-prow-build
   reboot:
     args:
