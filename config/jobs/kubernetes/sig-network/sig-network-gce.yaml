@@ -245,7 +245,7 @@ presubmits:
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --ginkgo-parallel=30
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|SupplementalGroups --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
         resources:
@@ -815,7 +815,7 @@ periodics:
       - --ginkgo-parallel=30
       - --provider=gce
       # skip ESIPP should work from pods #97081
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers|SupplementalGroups --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
       resources:
