@@ -510,6 +510,10 @@ branch-protection:
         - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        alibaba-cloud-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         apisnoop:
           branches:
             gh-pages:
