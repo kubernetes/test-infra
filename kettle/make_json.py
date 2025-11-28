@@ -28,7 +28,7 @@ import traceback
 try:
     import defusedxml.ElementTree as ET
 except ImportError:
-    import xml.etree.cElementTree as ET
+    import xml.etree.ElementTree as ET
 
 import model
 

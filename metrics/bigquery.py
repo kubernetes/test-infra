@@ -19,7 +19,7 @@
 import argparse
 import glob
 import os
-import pipes
+import shlex
 import re
 import subprocess
 import sys
@@ -34,7 +34,7 @@ DEFAULT_JQ_BIN = '/usr/bin/jq'
 
 def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
-    print('Run:', ' '.join(pipes.quote(c) for c in cmd), end=' ', file=sys.stderr)
+    print('Run:', ' '.join(shlex.quote(c) for c in cmd), end=' ', file=sys.stderr)
     if hasattr(kwargs.get('stdout'), 'name'):
         print(' > %s' % kwargs['stdout'].name, file=sys.stderr)
     else:

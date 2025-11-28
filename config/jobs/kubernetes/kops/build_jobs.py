@@ -119,6 +119,10 @@ def build_test(cloud='aws',
     if instance_groups_overrides is None:
         instance_groups_overrides = []
 
+    kops_image = None
+    kops_ssh_user = None
+    kops_ssh_key_path = None
+
     if cloud == 'aws':
         kops_image = distro_images[distro]
         kops_ssh_user = distros_ssh_user[distro]
@@ -327,6 +331,10 @@ def presubmit_test(branch='master',
                    alert_num_failures=None,
                    instance_groups_overrides=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
+    kops_image = None
+    kops_ssh_user = None
+    kops_ssh_key_path = None
+
     if cloud == 'aws':
         if distro == "channels":
             kops_image = None

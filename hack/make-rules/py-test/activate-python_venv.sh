@@ -24,7 +24,12 @@ cd "${REPO_ROOT}"
 # Trick from https://pythonspeed.com/articles/activate-virtualenv-dockerfile/
 export VIRTUAL_ENV="${REPO_ROOT}/.python_virtual_env"
 
-if [[ ! -f "${VIRTUAL_ENV}/bin/activate" ]]; then
+# Check if the virtual environment exists and matches the current python version
+CURRENT_PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+VENV_PYTHON_VERSION_DIR="${VIRTUAL_ENV}/lib/python${CURRENT_PYTHON_VERSION}"
+
+if [[ ! -d "${VENV_PYTHON_VERSION_DIR}" || ! -f "${VIRTUAL_ENV}/bin/activate" ]]; then
+    rm -rf "${VIRTUAL_ENV}"
     python3 -m venv "${VIRTUAL_ENV}"
 fi
 

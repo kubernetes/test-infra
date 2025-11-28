@@ -1,10 +1,10 @@
-astroid==2.3.3
+astroid==3.3.5
 backports.functools_lru_cache==1.6.1
 configparser==4.0.2
 chardet==4.0.0
-isort==4.3.21
+isort==5.13.2
 Jinja2==3.1.5
-pylint==2.4.4
+pylint==3.3.1
 parameterized==0.7.4
 PyYAML==5.3
 requests==2.28.1
@@ -12,3 +12,9 @@ ruamel.yaml==0.16.5
 setuptools==44.0.0
 sh==1.12.14
 singledispatch==3.4.0.3
+mccabe==0.7.0
+platformdirs==4.3.6
+dill==0.3.9
+tomlkit==0.13.2
+typing-extensions==4.12.2
+wrapt==1.17.0
