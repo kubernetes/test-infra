@@ -11,6 +11,8 @@ postsubmits:
         testgrid-tab-name: post-contributor-site-push-image-k8s-contrib-site-hugo
         testgrid-dashboards: sig-contribex-contributor-website, sig-k8s-infra-gcb
       decorate: true
+      run_if_changed: >-
+        ^(Dockerfile|Makefile|netlify\.toml|\.dockerignore|cloudbuild\.yaml|package\.json|package-lock\.json)$
       # this causes the job to only run on the master branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
       # probably does).
