@@ -24,10 +24,10 @@ cd "${REPO_ROOT}"
 
 # Use ARM version of Python image when on ARM architecture
 if [[ "$(uname -m)" == "arm64" ]]; then
-  PY_IMAGE='python:3.9-slim-buster'
+  PY_IMAGE='python:3.14-slim-trixie'
   PLATFORM_FLAG="--platform=linux/arm64"
 else
-  PY_IMAGE='python:3.9-slim-buster'
+  PY_IMAGE='python:3.14-slim-trixie'
   PLATFORM_FLAG=""
 fi
 
