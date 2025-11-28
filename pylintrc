@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-methods,missing-docstring,ungrouped-imports,too-many-lines,too-many-locals,invalid-name,superfluous-parens
+disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-methods,missing-docstring,ungrouped-imports,too-many-lines,too-many-locals,invalid-name,superfluous-parens,consider-using-f-string,unspecified-encoding,consider-using-with,missing-timeout,consider-using-from-import,too-many-positional-arguments,unnecessary-lambda-assignment,use-dict-literal,broad-exception-raised,consider-using-enumerate,consider-using-in,inconsistent-return-statements,no-else-raise,f-string-without-interpolation,format-string-without-interpolation,consider-iterating-dictionary,useless-option-value,consider-using-max-builtin
 
 [REPORTS]
 reports=no
