@@ -20,6 +20,7 @@ dashboard_groups:
   - kops-distro-rhel8
   - kops-distro-rhel9
   - kops-distro-rocky9
+  - kops-distro-rocky10
   - kops-distro-u2204
   - kops-distro-u2404
   - kops-distro-u2510
@@ -27,15 +28,11 @@ dashboard_groups:
   - kops-distro-cos121
   - kops-distro-cos125
   - kops-distro-cosdev
-  - kops-k8s-1.29
-  - kops-k8s-1.31
   - kops-k8s-1.32
   - kops-k8s-1.33
   - kops-k8s-1.34
   - kops-k8s-ci
-  - kops-k8s-latest
   - kops-k8s-stable
-  - kops-1.31
   - kops-1.32
   - kops-1.33
   - kops-1.34
@@ -64,6 +61,7 @@ dashboards:
 - name: kops-distro-rhel8
 - name: kops-distro-rhel9
 - name: kops-distro-rocky9
+- name: kops-distro-rocky10
 - name: kops-distro-u2204
 - name: kops-distro-u2404
 - name: kops-distro-u2510
@@ -71,15 +69,11 @@ dashboards:
 - name: kops-distro-cos121
 - name: kops-distro-cos125
 - name: kops-distro-cosdev
-- name: kops-k8s-1.29
-- name: kops-k8s-1.31
 - name: kops-k8s-1.32
 - name: kops-k8s-1.33
 - name: kops-k8s-1.34
 - name: kops-k8s-ci
-- name: kops-k8s-latest
 - name: kops-k8s-stable
-- name: kops-1.31
 - name: kops-1.32
 - name: kops-1.33
 - name: kops-1.34
