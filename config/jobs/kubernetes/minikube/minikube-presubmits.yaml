@@ -58,7 +58,7 @@ presubmits:
           limits:
             memory: 20Gi
             cpu: 7
-  - name: integration-docker-docker-linux-arm64 
+  - name: integration-docker-docker-linux-arm64
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/minikube"
