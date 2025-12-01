@@ -21,7 +21,7 @@ periodics:
       - runner.sh
       args:
       - make
-      - integration-kvm-prow
+      - integration-prow-docker-docker-linux-x86-64
       resources:
         limits:
           cpu: 7
