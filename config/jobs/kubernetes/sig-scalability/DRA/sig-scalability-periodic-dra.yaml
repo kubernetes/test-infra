@@ -600,11 +600,11 @@ periodics:
         - name: KOPS_CONTROLLER_MANAGER_QPS
           value: "1000"
         - name: KOPS_SCHEDULER_QPS
-          value: "1000"
+          value: "1200"
         - name: KOPS_SCHEDULER_BURST
-          value: "1000"
+          value: "1200"
         - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
-          value: "2500"
+          value: "2700"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER
