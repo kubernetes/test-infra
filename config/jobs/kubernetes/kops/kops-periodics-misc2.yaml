@@ -32,7 +32,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251022' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable-1.29.txt \
           --test=kops \
@@ -167,7 +167,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -233,7 +233,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251021' --channel=alpha --networking=cilium --gce-service-account=default" \
+          --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251121' --channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -362,7 +362,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4459.1.0-arm64-hvm' --channel=alpha --networking=calico" \
+          --create-args="--image='075585003325/Flatcar-alpha-4515.0.1-arm64-hvm' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -426,7 +426,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -490,7 +490,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -554,7 +554,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=kindnet --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kindnet --ipv6 --topology=private --dns=public --bastion --zones=us-west-2a" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -618,7 +618,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4459.1.0-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion" \
+          --create-args="--image='075585003325/Flatcar-alpha-4515.0.1-arm64-hvm' --channel=alpha --networking=cilium --ipv6 --topology=private --dns=public --bastion" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -683,7 +683,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-4459.1.0-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion" \
+          --create-args="--image='075585003325/Flatcar-alpha-4515.0.1-arm64-hvm' --channel=alpha --networking=calico --ipv6 --topology=private --dns=public --bastion" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --validation-wait=20m \
@@ -748,7 +748,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --api-loadbalancer-type=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --api-loadbalancer-type=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -812,7 +812,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --api-loadbalancer-type=public --set=cluster.spec.cloudProvider.aws.warmPool.minSize=1" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --api-loadbalancer-type=public --set=cluster.spec.cloudProvider.aws.warmPool.minSize=1" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -876,7 +876,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=calico --topology=private --bastion" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --topology=private --bastion" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -940,7 +940,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --zones=us-west-1a --dns=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --zones=us-west-1a --dns=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --terraform-version=1.5.5 \
@@ -1005,7 +1005,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --zones=us-west-1a --dns=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --ipv6 --topology=private --bastion --zones=us-west-1a --dns=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --terraform-version=1.5.5 \
@@ -1070,7 +1070,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=calico --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1134,7 +1134,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/latest.txt \
           --test=kops \
@@ -1198,7 +1198,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -1264,7 +1264,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -1332,7 +1332,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251022' --channel=alpha --networking=calico --node-size=c5.large --master-size=c5.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=calico --node-size=c5.large --master-size=c5.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -1712,7 +1712,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --set=cluster.spec.externalDNS.provider=external-dns --dns=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --set=cluster.spec.externalDNS.provider=external-dns --dns=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1776,7 +1776,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --ipv6 --bastion --set=cluster.spec.externalDNS.provider=external-dns --dns=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --ipv6 --bastion --set=cluster.spec.externalDNS.provider=external-dns --dns=public" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1840,7 +1840,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium" \
           --env=KOPS_FEATURE_FLAGS=APIServerNodes \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -1906,7 +1906,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --instance-manager=karpenter --master-size=c6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -1972,7 +1972,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251022' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -2038,7 +2038,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2104,7 +2104,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-9.6.0_HVM-20250910-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller" \
+          --create-args="--image='309956199498/RHEL-9.6.0_HVM-20251030-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2176,7 +2176,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-9.6.0_HVM-20250910-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller" \
+          --create-args="--image='309956199498/RHEL-9.6.0_HVM-20251030-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kubernetes-feature-gates=SELinuxMount,SELinuxChangePolicy \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
@@ -2249,7 +2249,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2316,7 +2316,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-utils" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-utils" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2383,7 +2383,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251015' --channel=alpha --networking=kubenet --set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-common" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251122' --channel=alpha --networking=kubenet --set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-common" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2450,7 +2450,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2518,7 +2518,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.packages=nfs-utils" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.packages=nfs-utils" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2586,7 +2586,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2654,7 +2654,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2722,7 +2722,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-aws-cni.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
@@ -2789,7 +2789,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2858,7 +2858,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -2927,7 +2927,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -2995,7 +2995,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3063,7 +3063,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3132,7 +3132,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3200,7 +3200,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -3268,7 +3268,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.9.20251027.0-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true" \
+          --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true" \
           --kubernetes-feature-gates=AllAlpha,AllBeta,-EventedPLEG \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -3337,7 +3337,7 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --admin-access=0.0.0.0/0 \
-          --create-args="--image='cos-cloud/cos-125-19216-0-115' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
+          --create-args="--image='cos-cloud/cos-125-19216-104-25' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
           --kubernetes-feature-gates=AllAlpha,AllBeta,-EventedPLEG \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
