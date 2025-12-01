@@ -330,7 +330,7 @@ periodics:
       - "perfDashPrefix: gce-dra-extended-resources-100Nodes-with-workload"
       - "perfDashBuildsCount: 270"
       - "perfDashJobType: performance"
-    interval: 4h
+    interval: 24h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
