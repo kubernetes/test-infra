@@ -112,6 +112,9 @@ def create_args(kops_channel, networking, extra_flags, kops_image):
         args = f"--image='{kops_image}' {args}"
     return args.strip()
 
+def distro_shortener(distro):
+    return distro.replace('ubuntuminimal', 'umini').replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+
 # The pin file contains a list of key=value pairs, that holds images we want to pin.
 # This enables us to use the latest image without fetching them from AWS every time.
 def pinned_file():
@@ -222,9 +225,11 @@ gce_distro_images = {
     "cos125arm64": latest_gce_image("cos-cloud", "cos-arm64-125-lts", "ARM64"),
     "cosdev": latest_gce_image("cos-cloud", "cos-dev"),
     "cosdevarm64": latest_gce_image("cos-cloud", "cos-arm64-dev", "ARM64"),
+    "rocky10": latest_gce_image("rocky-linux-cloud", "rocky-linux-10-optimized-gcp"),
+    "rocky10arm64": latest_gce_image("rocky-linux-cloud", "rocky-linux-10-optimized-gcp-arm64", "ARM64"), # pylint: disable=line-too-long
 }
 
-distro_images = {
+aws_distro_images = {
     'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-x86_64'),
     'al2023arm64': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.12-arm64', 'arm64'),
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
@@ -245,7 +250,7 @@ distro_images = {
     'u2510arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd-gp3/ubuntu-questing-25.10-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
-distros_ssh_user = {
+aws_distros_ssh_user = {
     'al2023': 'ec2-user',
     'al2023arm64': 'ec2-user',
     'amzn2': 'ec2-user',

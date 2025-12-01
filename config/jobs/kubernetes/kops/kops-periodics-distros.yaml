@@ -3,8 +3,8 @@
 periodics:
 
 # {"cloud": "aws", "distro": "deb11", "extra_flags": "--set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-debian11
-  cron: '42 7-23/8 * * *'
+- name: e2e-kops-aws-distro-deb11
+  cron: '11 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -64,11 +64,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-deb11, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-debian11
+    testgrid-tab-name: kops-aws-distro-deb11
 
 # {"cloud": "aws", "distro": "deb12", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-debian12
-  cron: '8 5-23/8 * * *'
+- name: e2e-kops-aws-distro-deb12
+  cron: '21 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -127,11 +127,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-deb12, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-debian12
+    testgrid-tab-name: kops-aws-distro-deb12
 
 # {"cloud": "aws", "distro": "deb13", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-debian13
-  cron: '6 3-23/8 * * *'
+- name: e2e-kops-aws-distro-deb13
+  cron: '39 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -190,11 +190,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-deb13, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-debian13
+    testgrid-tab-name: kops-aws-distro-deb13
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-ubuntu2204
-  cron: '34 4-23/8 * * *'
+- name: e2e-kops-aws-distro-u2204
+  cron: '28 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -253,11 +253,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-u2204, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-ubuntu2204
+    testgrid-tab-name: kops-aws-distro-u2204
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-ubuntu2204arm64
-  cron: '36 3-23/8 * * *'
+- name: e2e-kops-aws-distro-u2204arm64
+  cron: '22 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -317,11 +317,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-u2204, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-ubuntu2204arm64
+    testgrid-tab-name: kops-aws-distro-u2204arm64
 
 # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-ubuntu2404
-  cron: '28 6-23/8 * * *'
+- name: e2e-kops-aws-distro-u2404
+  cron: '46 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -380,11 +380,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-u2404, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-ubuntu2404
+    testgrid-tab-name: kops-aws-distro-u2404
 
 # {"cloud": "aws", "distro": "u2404arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-ubuntu2404arm64
-  cron: '59 4-23/8 * * *'
+- name: e2e-kops-aws-distro-u2404arm64
+  cron: '41 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -444,11 +444,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-u2404, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-ubuntu2404arm64
+    testgrid-tab-name: kops-aws-distro-u2404arm64
 
 # {"cloud": "aws", "distro": "u2510", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-ubuntu2510
-  cron: '23 1-23/8 * * *'
+- name: e2e-kops-aws-distro-u2510
+  cron: '21 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -507,11 +507,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-u2510, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-ubuntu2510
+    testgrid-tab-name: kops-aws-distro-u2510
 
 # {"cloud": "aws", "distro": "u2510arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-ubuntu2510arm64
-  cron: '31 0-23/8 * * *'
+- name: e2e-kops-aws-distro-u2510arm64
+  cron: '5 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -571,11 +571,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-u2510, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-ubuntu2510arm64
+    testgrid-tab-name: kops-aws-distro-u2510arm64
 
 # {"cloud": "aws", "distro": "amzn2", "extra_flags": "--set=cluster.spec.containerd.version=1.7.28 --set=cluster.spec.containerd.runc.version=1.3.0", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-kops-aws-distro-amazonlinux2
-  cron: '59 1-23/8 * * *'
+- name: e2e-kops-aws-distro-amzn2
+  cron: '53 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -635,7 +635,7 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: kops-distro-amzn2, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-amazonlinux2
+    testgrid-tab-name: kops-aws-distro-amzn2
 
 # {"cloud": "aws", "distro": "al2023", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
 - name: e2e-kops-aws-distro-al2023

@@ -32,23 +32,22 @@ import jinja2 # pylint: disable=import-error
 from helpers import ( # pylint: disable=import-error, no-name-in-module
     build_cron,
     create_args,
-    distro_images,
+    aws_distro_images,
     gce_distro_images,
-    distros_ssh_user,
+    aws_distros_ssh_user,
     k8s_version_info,
     should_skip_newer_k8s,
     script_dir,
+    distro_shortener
 )
 
 from build_vars import ( # pylint: disable=import-error, no-name-in-module
     skip_jobs,
     image,
-    networking_options,
     gce_distro_options,
-    distro_options,
+    aws_distro_options,
     k8s_versions,
     kops_versions,
-    distros,
     network_plugins_periodics,
     network_plugins_presubmits,
     upgrade_versions_list,
@@ -120,8 +119,8 @@ def build_test(cloud='aws',
         instance_groups_overrides = []
 
     if cloud == 'aws':
-        kops_image = distro_images[distro]
-        kops_ssh_user = distros_ssh_user[distro]
+        kops_image = aws_distro_images[distro]
+        kops_ssh_user = aws_distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
         if build_cluster is None:
             build_cluster = 'k8s-infra-kops-prow-build'
@@ -148,7 +147,7 @@ def build_test(cloud='aws',
     if cloud and cloud != "aws":
         suffix += "-" + cloud
     if networking:
-        suffix += "-" + networking
+        suffix += "-" + networking.replace('gce', 'ipalias')
     if distro:
         suffix += "-" + distro
     if k8s_version:
@@ -332,8 +331,8 @@ def presubmit_test(branch='master',
             kops_image = None
             kops_ssh_user = 'ubuntu'
         else:
-            kops_image = distro_images[distro]
-            kops_ssh_user = distros_ssh_user[distro]
+            kops_image = aws_distro_images[distro]
+            kops_ssh_user = aws_distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
         if build_cluster is None:
             build_cluster = 'k8s-infra-kops-prow-build'
@@ -476,31 +475,31 @@ def presubmit_test(branch='master',
 def generate_grid():
     results = []
     # pylint: disable=too-many-nested-blocks
-    for networking in networking_options:
-        for distro in distro_options:
+    for networking in network_plugins_periodics['supports_aws']:
+        for distro in aws_distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in kops_versions:
+                    networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
+                    distro_short = distro_shortener(distro)
                     extra_flags = []
                     if networking == 'cilium-eni':
                         extra_flags = ['--node-size=t3.large']
                     results.append(
                         build_test(cloud="aws",
-                                   distro=distro,
+                                   distro=distro_short,
                                    extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
-                                   networking=networking,
+                                   networking=networking_arg,
                                    extra_flags=extra_flags,
                                    irsa=False)
                     )
 
-    # Manually expand grid coverage for GCP
-    # TODO(justinsb): merge into above block when we can
-    # pylint: disable=too-many-nested-blocks
-    for networking in ['kubenet', 'calico', 'cilium', 'gce']: # TODO: all networking_options:
-        for distro in gce_distro_options: # TODO: all distro_options:
+    for networking in network_plugins_periodics['supports_gce']:
+        for distro in gce_distro_options:
             for k8s_version in k8s_versions:
-                for kops_version in [None]: # TODO: all kops_versions:
+                for kops_version in kops_versions:
+                    distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
                     if 'arm64' in distro:
                         extra_flags.extend([
@@ -508,10 +507,16 @@ def generate_grid():
                             "--master-size=t2a-standard-2",
                             "--zones=us-central1-a",
                         ])
+                    # If we are not using cos or ubuntu, we need to use startup-script
+                    # instead of cloud-init
+                    if not distro.startswith(("ubuntu", "cos")):
+                        extra_flags.extend([
+                            "--set=cluster.spec.cloudProvider.gce.useStartupScript=true"
+                        ])
                     results.append(
                         build_test(cloud="gce",
-                                   runs_per_day=3,
-                                   distro=distro,
+                                   runs_per_day=2,
+                                   distro=distro_short,
                                    extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
                                    kops_version=kops_version,
@@ -527,14 +532,6 @@ def generate_grid():
 #############################
 def generate_misc():
     results = [
-        # A one-off scenario testing the k8s.gcr.io mirror
-        build_test(name_override="kops-scenario-gcr-mirror",
-                   runs_per_day=24,
-                   cloud="aws",
-                   # Latest runs with a staging AWS CCM, not available in registry.k8s.io
-                   k8s_version='1.29',
-                   extra_dashboards=['kops-misc']),
-
         # A one-off scenario testing AWS EKS Pod Identity
         build_test(name_override="kops-aws-eks-pod-identity",
                    runs_per_day=3,
@@ -568,23 +565,6 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=["--gce-service-account=default"],
                    extra_dashboards=['kops-network-plugins']),
-
-        # A special test for Calico CNI on Debian 11
-        build_test(name_override="kops-aws-cni-calico-deb11",
-                   cloud="aws",
-                   distro="deb11",
-                   k8s_version="stable",
-                   networking="calico",
-                   runs_per_day=3,
-                   extra_dashboards=['kops-network-plugins']),
-        # A special test for Calico CNI on Flatcar
-        build_test(name_override="kops-aws-cni-calico-flatcar",
-                   cloud="aws",
-                   distro="flatcararm64",
-                   k8s_version="stable",
-                   networking="calico",
-                   runs_per_day=3,
-                   extra_dashboards=['kops-distros', 'kops-network-plugins']),
 
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-aws-cni-calico-ipv6",
@@ -726,57 +706,6 @@ def generate_misc():
                        "--master-count=3",
                        "--zones=eu-west-1a,eu-west-1b,eu-west-1c"
                    ],
-                   extra_dashboards=["kops-misc"]),
-
-        build_test(name_override="kops-aws-arm64-release",
-                   cloud="aws",
-                   k8s_version="latest",
-                   distro="u2404arm64",
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   extra_flags=["--zones=eu-central-1a",
-                                "--node-size=m6g.large",
-                                "--master-size=m6g.large"],
-                   extra_dashboards=["kops-misc"]),
-
-        build_test(name_override="kops-aws-arm64-ci",
-                   cloud="aws",
-                   k8s_version="ci",
-                   distro="u2404arm64",
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   extra_flags=["--zones=eu-central-1a",
-                                "--node-size=m6g.large",
-                                "--master-size=m6g.large"],
-                   extra_dashboards=["kops-misc"]),
-
-        build_test(name_override="kops-aws-arm64-conformance",
-                   cloud="aws",
-                   k8s_version="ci",
-                   distro="u2404arm64",
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   extra_flags=["--zones=eu-central-1a",
-                                "--node-size=m6g.large",
-                                "--master-size=m6g.large"],
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Flaky\]',
-                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-                   extra_dashboards=["kops-misc"]),
-
-        build_test(name_override="kops-aws-amd64-conformance",
-                   cloud="aws",
-                   k8s_version="ci",
-                   distro='u2404',
-                   networking="calico",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   extra_flags=["--node-size=c5.large",
-                                "--master-size=c5.large"],
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Flaky\]',
-                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-aws-load-balancer-controller",
@@ -1390,8 +1319,8 @@ def generate_conformance():
 ###############################
 def generate_distros():
     results = []
-    for distro in distros:
-        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn')
+    for distro in aws_distro_options:
+        distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
@@ -1409,7 +1338,7 @@ def generate_distros():
                        networking='cilium',
                        k8s_version='stable',
                        kops_channel='alpha',
-                       name_override=f"kops-aws-distro-{distro}",
+                       name_override=f"kops-aws-distro-{distro_short}",
                        extra_dashboards=['kops-distros'],
                        extra_flags=extra_flags,
                        runs_per_day=3,
@@ -1422,8 +1351,8 @@ def generate_distros():
 ###############################
 def generate_presubmits_distros():
     results = []
-    for distro in distros:
-        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn')
+    for distro in aws_distro_options:
+        distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
             extra_flags.extend([
@@ -1443,7 +1372,35 @@ def generate_presubmits_distros():
                 k8s_version='stable',
                 kops_channel='alpha',
                 name=f"pull-kops-aws-distro-{distro}",
-                tab_name=f"e2e-{distro}",
+                tab_name=f"e2e-aws-{distro}",
+                extra_flags=extra_flags,
+                always_run=False,
+            )
+        )
+    for distro in gce_distro_options:
+        distro_short = distro_shortener(distro)
+        extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
+        if 'arm64' in distro:
+            extra_flags.extend([
+                "--node-size=t2a-standard-2",
+                "--master-size=t2a-standard-2",
+                "--zones=us-central1-a",
+            ])
+        # If we are not using cos or ubuntu, we need to use startup-script
+        # instead of cloud-init
+        if not distro.startswith(("ubuntu", "cos")):
+            extra_flags.extend([
+                "--set=cluster.spec.cloudProvider.gce.useStartupScript=true"
+            ])
+        results.append(
+            presubmit_test(
+                cloud="gce",
+                distro=distro_short,
+                networking='cilium',
+                k8s_version='stable',
+                kops_channel='alpha',
+                name=f"pull-kops-gce-distro-{distro}",
+                tab_name=f"e2e-gce-{distro}",
                 extra_flags=extra_flags,
                 always_run=False,
             )
@@ -1455,40 +1412,42 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
     plugins = network_plugins_periodics['plugins']
-    supports_gce = network_plugins_periodics['supports_gce']
+    supports_aws = network_plugins_periodics['supports_aws']
     supports_azure = network_plugins_periodics['supports_azure']
+    supports_gce = network_plugins_periodics['supports_gce']
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
-        k8s_version = 'stable'
-        distro = 'u2404'
-        extra_flags = ['--node-size=t3.large']
-        if plugin in ['kuberouter']:
-            k8s_version = 'ci'
-        if plugin in ['cilium-eni']:
-            distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
-        if plugin in ['amazon-vpc']:
-            extra_flags += [
-                "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
-                "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
-                "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
-            ]
-        if plugin == 'calico':
-            extra_flags.extend([
-                "--set=cluster.spec.networking.calico.wireguardEnabled=false",
-            ])
-        results.append(
-            build_test(
-                distro=distro,
-                k8s_version=k8s_version,
-                kops_channel='alpha',
-                name_override=f"kops-aws-cni-{plugin}",
-                networking=networking_arg,
-                extra_flags=extra_flags,
-                extra_dashboards=['kops-network-plugins'],
-                runs_per_day=3,
+        if plugin in supports_aws:
+            k8s_version = 'stable'
+            distro = 'u2404'
+            extra_flags = ['--node-size=t3.large']
+            if plugin in ['kuberouter']:
+                k8s_version = 'ci'
+            if plugin in ['cilium-eni']:
+                distro = 'u2204' # pinned to 22.04 because of network issues with 24.04 and these CNIs
+            if plugin in ['amazon-vpc']:
+                extra_flags += [
+                    "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
+                    "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
+                    "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
+                ]
+            if plugin == 'calico':
+                extra_flags.extend([
+                    "--set=cluster.spec.networking.calico.wireguardEnabled=false",
+                ])
+            results.append(
+                build_test(
+                    distro=distro,
+                    k8s_version=k8s_version,
+                    kops_channel='alpha',
+                    name_override=f"kops-aws-cni-{plugin}",
+                    networking=networking_arg,
+                    extra_flags=extra_flags,
+                    extra_dashboards=['kops-network-plugins'],
+                    runs_per_day=3,
+                )
             )
-        )
         if plugin in supports_azure:
             results.append(
                 build_test(
@@ -1517,7 +1476,7 @@ def generate_network_plugins():
                     # distro="ubuntu2404",
                     k8s_version=k8s_version,
                     kops_channel='alpha',
-                    name_override=f"kops-gce-cni-{plugin}",
+                    name_override=f"kops-gce-cni-{networking_arg.replace('gce', 'ipalias')}",
                     networking=networking_arg,
                     extra_flags=extra_flags,
                     extra_dashboards=['kops-network-plugins'],
@@ -1782,21 +1741,23 @@ def generate_presubmits_scale():
 #################################
 def generate_nftables():
     results = []
-    for distro in distro_options:
+    for distro in aws_distro_options:
+        distro_short = distro_shortener(distro)
         results.append(
             build_test(
                 cloud="aws",
-                distro=distro,
+                distro=distro_short,
                 k8s_version="stable",
                 networking="kindnet",
                 kops_channel="alpha",
-                name_override=f"kops-aws-nftables-{distro}",
+                name_override=f"kops-aws-nftables-{distro_short}",
                 extra_flags=["--set=cluster.spec.kubeProxy.proxyMode=nftables"],
                 extra_dashboards=["kops-nftables"],
                 runs_per_day=3,
             )
         )
     for distro in gce_distro_options:
+        distro_short = distro_shortener(distro)
         extra_flags = [
             "--set=cluster.spec.kubeProxy.proxyMode=nftables",
             "--gce-service-account=default",
@@ -1807,14 +1768,20 @@ def generate_nftables():
                 "--master-size=t2a-standard-2",
                 "--zones=us-central1-a",
             ])
+        # If we are not using cos or ubuntu, we need to use startup-script
+        # instead of cloud-init
+        if not distro.startswith(("ubuntu", "cos")):
+            extra_flags.extend([
+                "--set=cluster.spec.cloudProvider.gce.useStartupScript=true"
+            ])
         results.append(
             build_test(
                 cloud="gce",
-                distro=distro,
+                distro=distro_short,
                 k8s_version="stable",
                 networking="kindnet",
                 kops_channel="alpha",
-                name_override=f"kops-gce-nftables-{distro}",
+                name_override=f"kops-gce-nftables-{distro_short}",
                 extra_flags=extra_flags,
                 extra_dashboards=["kops-nftables"],
                 runs_per_day=3,
@@ -1837,11 +1804,11 @@ def generate_versions():
             runs_per_day=8,
         )
     ]
-    for version in ['1.34', '1.33', '1.32', '1.31']:
+    for version in ['1.34', '1.33', '1.32']:
         results.append(
             build_test(
                 cloud='aws',
-                k8s_version=version,
+                k8s_version=version.replace('master', 'ci'),
                 kops_channel='alpha',
                 name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
                 networking='calico',
@@ -2335,25 +2302,6 @@ def generate_presubmits_e2e():
             tab_name='e2e-1-31',
             always_run=True,
         ),
-        presubmit_test(
-            branch='release-1.30',
-            k8s_version='1.30',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-30',
-            networking='calico',
-            tab_name='e2e-1-30',
-            always_run=True,
-        ),
-        presubmit_test(
-            branch='release-1.29',
-            k8s_version='1.29',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-29',
-            networking='calico',
-            tab_name='e2e-1-29',
-            always_run=True,
-        ),
-
         presubmit_test(
             name="pull-kops-scenario-aws-karpenter",
             cloud="aws",
