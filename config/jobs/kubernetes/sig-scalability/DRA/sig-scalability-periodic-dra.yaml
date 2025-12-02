@@ -34,7 +34,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -156,7 +156,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -274,7 +274,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -354,7 +354,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
