@@ -6,7 +6,7 @@ presubmits:
       decorate: true
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.17
+          - image: public.ecr.aws/docker/library/golang:1.25
             command:
               - sh
               - "-c"
@@ -24,7 +24,7 @@ presubmits:
       decorate: true
       spec:
         containers:
-          - image: public.ecr.aws/docker/library/golang:1.17
+          - image: public.ecr.aws/docker/library/golang:1.25
             command:
               - make
               - test
