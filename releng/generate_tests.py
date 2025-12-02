@@ -415,7 +415,8 @@ def main(yaml_config_path, output_dir, testgrid_output_path):
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         description='Create test definitions from the given yaml config')
-    PARSER.add_argument('--yaml-config-path', help='Path to config.yaml')
+    PARSER.add_argument('--yaml-config-path', help='Path to config.yaml',
+                        default='releng/test_config.yaml')
     PARSER.add_argument(
         '--output-dir',
         help='Prowjob config output dir',
