@@ -601,7 +601,7 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf { OffByDefault, DataRace } && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
         # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
