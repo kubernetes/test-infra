@@ -505,10 +505,10 @@ milestone_applier:
     master: v1.35
   kubernetes/kubernetes:
     master: v1.35
+    release-1.35: v1.35
     release-1.34: v1.34
     release-1.33: v1.33
     release-1.32: v1.32
-    release-1.31: v1.31
   kubernetes/org:
     main: v1.35
   kubernetes/release:
@@ -2121,7 +2121,7 @@ external_plugins:
     events:
     - issue_comment
     - pull_request
-    endpoint: http://cherrypicker  
+    endpoint: http://cherrypicker
   containerd/containerd:
   - name: needs-rebase
     events:
