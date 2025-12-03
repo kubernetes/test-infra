@@ -1281,7 +1281,7 @@ periodics:
       resources:
         requests:
           cpu: 6
-          memory: "16Gi"
+          memory: "32Gi"
         limits:
           cpu: 6
-          memory: "16Gi"
+          memory: "32Gi"
