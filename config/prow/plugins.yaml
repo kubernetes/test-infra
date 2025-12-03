@@ -1647,6 +1647,7 @@ plugins:
     - milestonestatus
     - release-note
     - require-matching-label
+    - override
 
   kubernetes-sigs/cluster-api-provider-gcp:
     plugins:
