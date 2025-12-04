@@ -85,7 +85,7 @@ periodics:
   spec:
     serviceAccountName: k8s-metrics
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20241015-f5fd905349
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20251204-1bf8d2445c
       args:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
