@@ -17,8 +17,8 @@ dashboard_groups:
   - kops-distro-deb12
   - kops-distro-deb13
   - kops-distro-flatcar
-  - kops-distro-rhel8
   - kops-distro-rhel9
+  - kops-distro-rhel10
   - kops-distro-rocky9
   - kops-distro-rocky10
   - kops-distro-u2204
@@ -58,8 +58,8 @@ dashboards:
 - name: kops-distro-deb12
 - name: kops-distro-deb13
 - name: kops-distro-flatcar
-- name: kops-distro-rhel8
 - name: kops-distro-rhel9
+- name: kops-distro-rhel10
 - name: kops-distro-rocky9
 - name: kops-distro-rocky10
 - name: kops-distro-u2204

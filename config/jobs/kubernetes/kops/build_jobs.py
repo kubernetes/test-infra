@@ -1328,9 +1328,9 @@ def generate_distros():
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ])
-        if distro in ['amazonlinux2', 'debian11', 'rhel8']:
+        if distro in ['amazonlinux2', 'debian11']:
             extra_flags.extend([
-                "--set=cluster.spec.containerd.version=1.7.28",
+                "--set=cluster.spec.containerd.version=1.7.29",
                 "--set=cluster.spec.containerd.runc.version=1.3.0",
             ])
         results.append(
