@@ -468,7 +468,7 @@ nodeK8sVersions:
   stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.31
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
 
 nodeTestSuites:
   default:
