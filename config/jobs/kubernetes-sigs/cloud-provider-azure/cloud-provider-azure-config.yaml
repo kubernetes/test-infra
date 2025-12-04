@@ -191,6 +191,8 @@ presubmits:
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest"
+        - name: FAIL_FAST
+          value: "true"
         - name: AZURE_LOADBALANCER_SKU  # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
@@ -518,6 +520,8 @@ presubmits:
           value: "1"
         - name: KUBERNETES_VERSION  # CAPZ config
           value: "latest"
+        - name: FAIL_FAST
+          value: "true"
         - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -958,6 +962,8 @@ periodics:
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
         value: "latest"
+      - name: FAIL_FAST
+        value: "true"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
@@ -1020,6 +1026,8 @@ periodics:
         value: "1"
       - name: KUBERNETES_VERSION  # CAPZ config
         value: "latest"
+      - name: FAIL_FAST
+        value: "true"
       - name: CLUSTER_PROVISIONING_TOOL  # cloud-provider-azure config
         value: "capz"
       - name: CLUSTER_TEMPLATE  # CAPZ config
