@@ -211,30 +211,14 @@ periodics:
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name $CLUSTER_NAME \
-                --up --auto-approve --retry-on-tf-failure 3 \
-                --break-kubetest-on-upfail true \
+                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --break-kubetest-on-upfail true --ignore-destroy-errors \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]' --skip-regex='\[Serial\]'; rc1=$?
-
-              export KUBECONFIG="$(pwd)/$CLUSTER_NAME/kubeconfig"
-              export ARTIFACTS=$ARTIFACTS/serial_tests_artifacts
-              #Run Serial Conformance tests
-              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --ignore-cluster-dir true \
-                --cluster-name $CLUSTER_NAME \
-                --down --auto-approve --ignore-destroy-errors \
-                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Serial\].*\[Conformance\]'; rc2=$?
+                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]'; rc=$?
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+              [ $rc != 0 ] && echo "ERROR: E2E Conformance Test suite exited with code:$rc"; exit $rc
 
-              if [ $rc1 != 0 ]; then
-                  echo "ERROR: Non Serial k8s Conformance tests exited with code: $rc1"
-                  exit $rc1
-              elif [ $rc2 != 0 ]; then
-                  echo "ERROR: Serial k8s Conformance tests exited with code: $rc2"
-                  exit $rc2
-              fi
   - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
