@@ -461,7 +461,7 @@ def presubmit_test(branch='master',
 
     extra = yaml.dump({'annotations': annotations}, width=9999, default_flow_style=False)
 
-    output = f"\n# {jsonspec}{job}\n"
+    output = f"\n  # {jsonspec}{job}\n"
     for line in extra.splitlines():
         output += f"    {line}\n"
     return output
