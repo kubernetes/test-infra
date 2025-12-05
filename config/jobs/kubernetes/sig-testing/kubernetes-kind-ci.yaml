@@ -22,7 +22,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
@@ -170,7 +170,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
@@ -219,7 +219,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
@@ -268,14 +268,14 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
       - name: FEATURE_GATES
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
@@ -318,7 +318,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
@@ -374,14 +374,14 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
       - name: FEATURE_GATES
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
@@ -424,14 +424,14 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
       command:
       - wrapper.sh
       - bash
       - -c
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
-        # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
+      # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
       - name: FEATURE_GATES
         value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
       - name: RUNTIME_CONFIG
@@ -476,7 +476,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
       command:
       - runner.sh
       args:

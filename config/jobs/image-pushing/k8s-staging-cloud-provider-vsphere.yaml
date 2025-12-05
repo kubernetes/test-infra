@@ -16,7 +16,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251029-79c2132152
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251204-1bf8d2445c
             command:
               - /run.sh
             args:
@@ -41,11 +41,11 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251029-79c2132152
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251204-1bf8d2445c
           command:
             - /run.sh
           args:
-          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            # this is the project GCB will run in, which is the same as the GCR images are pushed to.
             - --project=k8s-staging-cloud-pv-vsphere
             - --scratch-bucket=gs://k8s-staging-cloud-pv-vsphere-gcb
             - --env-passthrough=PULL_BASE_REF
@@ -53,12 +53,12 @@ periodics:
             - --with-git-dir
             - .
           env:
-          # We need to emulate a pull job for the cloud build to work the same
-          # way as it usually does.
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
             - name: PULL_BASE_REF
               value: master
     annotations:
-    # this is the name of some testgrid dashboard to report to.
+      # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-k8s-infra-gcb
       testgrid-tab-name: cloud-provider-vsphere-push-images-nightly
       testgrid-alert-email: k8s-infra-staging-cloud-pv-vsphere@kubernetes.io

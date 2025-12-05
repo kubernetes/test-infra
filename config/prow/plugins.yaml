@@ -40,6 +40,12 @@ triggers:
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
   trigger_github_workflows: true
+- repos:
+  - kubernetes-sigs/gateway-api
+  - kubernetes-sigs/gateway-api-inference-extension
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+  trigger_github_workflows: true
 
 owners:
   mdyamlrepos:
@@ -499,10 +505,10 @@ milestone_applier:
     master: v1.35
   kubernetes/kubernetes:
     master: v1.35
+    release-1.35: v1.35
     release-1.34: v1.34
     release-1.33: v1.33
     release-1.32: v1.32
-    release-1.31: v1.31
   kubernetes/org:
     main: v1.35
   kubernetes/release:
@@ -515,7 +521,8 @@ milestone_applier:
     main: v0.2
     release-0.1: v0.1
   kubernetes-sigs/kueue:
-    main: v0.15
+    main: v0.16
+    release-0.15: v0.15
     release-0.14: v0.14
     release-0.13: v0.13
     release-0.12: v0.12
@@ -547,7 +554,8 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
-    main: v1.12
+    main: v1.13
+    release-1.12: v1.12
     release-1.11: v1.11
     release-1.10: v1.10
     release-1.9: v1.9
@@ -581,7 +589,8 @@ milestone_applier:
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-vsphere:
-    main: v1.15
+    main: v1.16
+    release-1.15: v1.15
     release-1.14: v1.14
     release-1.13: v1.13
     release-1.12: v1.12
@@ -1638,6 +1647,7 @@ plugins:
     - milestonestatus
     - release-note
     - require-matching-label
+    - override
 
   kubernetes-sigs/cluster-api-provider-gcp:
     plugins:
@@ -2112,7 +2122,7 @@ external_plugins:
     events:
     - issue_comment
     - pull_request
-    endpoint: http://cherrypicker  
+    endpoint: http://cherrypicker
   containerd/containerd:
   - name: needs-rebase
     events:

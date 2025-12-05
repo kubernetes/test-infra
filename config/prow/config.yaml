@@ -18,10 +18,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251125-e3ae8cf22"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251125-e3ae8cf22"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251125-e3ae8cf22"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251125-e3ae8cf22"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251205-476eedbb0"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251205-476eedbb0"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251205-476eedbb0"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251205-476eedbb0"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -510,6 +510,10 @@ branch-protection:
         - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        alibaba-cloud-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         apisnoop:
           branches:
             gh-pages:

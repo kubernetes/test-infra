@@ -34,7 +34,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -156,7 +156,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -274,7 +274,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -330,7 +330,7 @@ periodics:
       - "perfDashPrefix: gce-dra-extended-resources-100Nodes-with-workload"
       - "perfDashBuildsCount: 270"
       - "perfDashJobType: performance"
-    interval: 4h
+    interval: 24h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -354,7 +354,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -599,8 +599,12 @@ periodics:
           value: "1000"
         - name: KOPS_CONTROLLER_MANAGER_QPS
           value: "1000"
+        - name: KOPS_SCHEDULER_QPS
+          value: "1200"
+        - name: KOPS_SCHEDULER_BURST
+          value: "1200"
         - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
-          value: "2000"
+          value: "2700"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER

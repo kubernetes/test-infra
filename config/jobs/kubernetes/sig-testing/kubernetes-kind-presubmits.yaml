@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -104,7 +104,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -201,7 +201,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -243,7 +243,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -294,7 +294,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -340,7 +340,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -390,7 +390,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -440,7 +440,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -487,7 +487,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -538,7 +538,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -583,12 +583,12 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     decoration_config:
-      timeout: 60m
+      timeout: 90m
       grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash
@@ -601,9 +601,11 @@ presubmits:
         - name: RUNTIME_CONFIG
           value: '{"api/all":"true"}'
         - name: LABEL_FILTER
-          value: "Feature: isSubsetOf OffByDefault && !Deprecated && !Slow && !Disruptive && !Flaky"
+          value: "Feature: isSubsetOf { OffByDefault, DataRace } && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
+        - name: KUBE_E2E_TEST_ARGS
+          value: "-logcheck-data-races"
         # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
         - name: KUBE_RACE
           value: -race
@@ -611,21 +613,16 @@ presubmits:
         # We need to override the default for components of interest.
         - name: KUBE_CGO_OVERRIDES
           value: kube-apiserver kube-controller-manager kube-scheduler
-        # At the default verbosity level 4 some logs become so large (for example, kube-apiserver
-        # logs each HTTP request) that a post-run analysis only sees an incomplete tail of the
-        # logs. Let's use the "recommended default log level for most systems" (https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md#what-method-to-use).
-        - name: KIND_CLUSTER_LOG_LEVEL
-          value: "2"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         resources:
           limits:
             cpu: 7
-            memory: 9000Mi
+            memory: 26Gi
           requests:
             cpu: 7
-            memory: 9000Mi
+            memory: 26Gi
 
   - name: pull-kubernetes-e2e-kind-evented-pleg
     cluster: k8s-infra-prow-build
@@ -642,7 +639,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
         command:
         - wrapper.sh
         - bash

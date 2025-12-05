@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:548.0.0 as builder
+
+FROM google/cloud-sdk:545.0.0 as builder
 # https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 
 ARG AWS_IAM_AUTHENTICATOR_VERSION
@@ -23,14 +24,14 @@ RUN curl -fsSL \
     chmod +x /aws-iam-authenticator
 
 RUN apt update && apt install -y unzip && curl -fsSLO https://github.com/Azure/kubelogin/releases/download/v${AZURE_KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip \
- && unzip -j kubelogin-linux-amd64.zip -d / \
- && rm kubelogin-linux-amd64.zip
+    && unzip -j kubelogin-linux-amd64.zip -d / \
+    && rm kubelogin-linux-amd64.zip
 
 # Update the date below (check https://hub.docker.com/_/alpine/tags) to get the
 # alpine edge base image, which has a faster release cadence than alpine:latest
 # (which tracks alpine stable), to pick up security patches more quickly.
 # TODO: switch to Distroless https://github.com/GoogleContainerTools/distroless (help-wanted)
-FROM alpine:20250108
+FROM alpine:3.22.2
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}

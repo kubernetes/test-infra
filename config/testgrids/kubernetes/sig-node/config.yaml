@@ -11,7 +11,6 @@ dashboard_groups:
     - sig-node-gpu
     - sig-node-ppc64le
     # These dashboards are for out-of-tree SIG Node projects
-    - sig-node-cadvisor
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
     - sig-node-kernel-module-management
@@ -22,7 +21,6 @@ dashboard_groups:
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
 
-- name: sig-node-cadvisor
 - name: sig-node-kubelet
 - name: sig-node-containerd
   dashboard_tab:
