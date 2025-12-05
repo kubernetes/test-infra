@@ -345,6 +345,10 @@ presubmits:
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 1))
+          if [[ $revision == *alpha.0* ]]; then
+              : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
+              previous_minor=$((previous_minor - 1))
+          fi
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
           # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
           # Then parse the output using Bash parameter expansion:
@@ -477,6 +481,10 @@ presubmits:
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 2))
+          if [[ $revision == *alpha.0* ]]; then
+              : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
+              previous_minor=$((previous_minor - 1))
+          fi
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
           # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
           # Then parse the output using Bash parameter expansion:
@@ -609,6 +617,10 @@ presubmits:
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - 3))
+          if [[ $revision == *alpha.0* ]]; then
+              : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
+              previous_minor=$((previous_minor - 1))
+          fi
           # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
           # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
           # Then parse the output using Bash parameter expansion:
