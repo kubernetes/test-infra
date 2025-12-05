@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 FROM google/cloud-sdk:545.0.0 as builder
 # https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 
