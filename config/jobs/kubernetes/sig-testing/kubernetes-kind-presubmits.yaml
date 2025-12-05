@@ -604,6 +604,8 @@ presubmits:
           value: "Feature: isSubsetOf { OffByDefault, DataRace } && !Deprecated && !Slow && !Disruptive && !Flaky"
         - name: PARALLEL
           value: "true"
+        - name: KUBE_E2E_TEST_ARGS
+          value: "-logcheck-data-races"
         # -race gets injected into the build of dynamically linked binaries during "kind build node-image".
         - name: KUBE_RACE
           value: -race
