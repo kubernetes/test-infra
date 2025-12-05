@@ -35,7 +35,7 @@ periodics:
           - name: VM_SIZE
             value: Standard_D8as_v5
   annotations:
-#   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-unit-master
 presubmits:
