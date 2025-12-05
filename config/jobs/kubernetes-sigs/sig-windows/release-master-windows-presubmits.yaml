@@ -921,8 +921,6 @@ presubmits:
               cpu: 2
               memory: "9Gi"
           env:
-            - name: WINDOWS # azurefile-csi-driver config
-              value: "true"
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
     annotations:
