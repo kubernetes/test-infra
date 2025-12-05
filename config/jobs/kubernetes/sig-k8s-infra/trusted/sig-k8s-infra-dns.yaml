@@ -16,9 +16,9 @@ postsubmits:
       github_team_slugs:
       - org: kubernetes
         slug: sig-k8s-infra-leads
-      # TODO(spiffxp): team specifically for this service
-      # - org: kubernetes
-      #   slug: k8s-infra-dns-admins
+    # TODO(spiffxp): team specifically for this service
+    # - org: kubernetes
+    #   slug: k8s-infra-dns-admins
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
@@ -48,9 +48,9 @@ periodics:
     github_team_slugs:
     - org: kubernetes
       slug: sig-k8s-infra-leads
-    # TODO(spiffxp): team specifically for this service
-    # - org: kubernetes
-    #   slug: k8s-infra-dns-admins
+  # TODO(spiffxp): team specifically for this service
+  # - org: kubernetes
+  #   slug: k8s-infra-dns-admins
   spec:
     serviceAccountName: k8s-infra-dns-updater
     containers:

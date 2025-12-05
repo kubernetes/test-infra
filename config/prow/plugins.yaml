@@ -184,8 +184,8 @@ label:
 
   restricted_labels:
     kubernetes/kubernetes:
-        # Security Response Committee (SRC) is allowed to add this label,
-        # to new and existing GitHub Issues and PRs that announce a fixed CVE triaged by SRC
+      # Security Response Committee (SRC) is allowed to add this label,
+      # to new and existing GitHub Issues and PRs that announce a fixed CVE triaged by SRC
       - allowed_teams:
           - security-response-committee
         # SIG Security Tooling Lead is an allowed user to assist SRC in this CVE feed automation
@@ -394,15 +394,15 @@ heart:
   commentregexp: ".*"
 
 branch_cleaner:
-    # PreservedBranches is a map of org/repo branches
-    # format:
-    # ```
-    # preserved_branches:
-    # <org>: ["master", "release"]
-    # <org/repo>: ["master", "release"]
-    # ```
-    # branches in this allow map would be exempt from branch gc
-    # even if the branches are already merged into the target branch
+  # PreservedBranches is a map of org/repo branches
+  # format:
+  # ```
+  # preserved_branches:
+  # <org>: ["master", "release"]
+  # <org/repo>: ["master", "release"]
+  # ```
+  # branches in this allow map would be exempt from branch gc
+  # even if the branches are already merged into the target branch
   preserved_branches:
     kubernetes-sigs/cloud-provider-azure: ["master", "release-1.1", "release-1.0", "release-1.23", "release-1.24", "release-1.25", "release-1.26", "release-0.7", "release-0.6", "release-0.5", "release-0.1", "kubetest2-aks"]
 
@@ -756,7 +756,7 @@ require_matching_label:
   repo: kubernetes
   prs: true
   regexp: ^(sig|wg|committee)/
-  # Define needs-sig separately for issues so that we only comment on issues.
+# Define needs-sig separately for issues so that we only comment on issues.
 - missing_label: needs-sig
   org: kubernetes
   repo: kubernetes

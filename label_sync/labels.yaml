@@ -2330,7 +2330,7 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-      # End shared
+  # End shared
   kubernetes-sigs/cluster-api-provider-vsphere:
       labels:
       - color: 0052cc

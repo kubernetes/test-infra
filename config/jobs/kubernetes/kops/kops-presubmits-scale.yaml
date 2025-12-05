@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale-amazonvpc
     cluster: k8s-infra-kops-prow-build
     branches:
@@ -69,7 +69,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc
 
-# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
     cluster: eks-prow-build-cluster
     branches:
@@ -175,7 +175,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-scale-amazonvpc-using-cl2
 
-# {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
+  # {"cloud": "aws", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
     cluster: eks-prow-build-cluster
     branches:
@@ -279,7 +279,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-small-scale-amazonvpc-using-cl2
 
-# {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: presubmit-kops-gce-scale-ipalias-using-cl2
     cluster: k8s-infra-prow-build
     branches:
@@ -382,7 +382,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-gce-scale-ipalias-using-cl2
 
-# {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: presubmit-kops-gce-small-scale-ipalias-using-cl2
     cluster: k8s-infra-prow-build
     branches:
@@ -483,7 +483,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-gce-small-scale-ipalias-using-cl2
 
-# {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
+  # {"cloud": "gce", "distro": "u2404", "k8s_version": "stable", "kops_channel": "alpha", "networking": "gce"}
   - name: presubmit-kops-gce-small-scale-kindnet-using-cl2
     cluster: k8s-infra-prow-build
     branches:

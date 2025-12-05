@@ -1,5 +1,5 @@
 test_groups:
-# main
+  # main
   - name: pull-ci-kcp-dev-kcp-main-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-main-lint
   - name: pull-ci-kcp-dev-kcp-main-codegen
@@ -28,7 +28,7 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-main-e2e-shared-periodic
   - name: periodic-ci-kcp-dev-kcp-main-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-main-e2e-multiple-runs-periodic
-# release-0.7
+  # release-0.7
   - name: pull-ci-kcp-dev-kcp-release-0.7-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.7-lint
   - name: pull-ci-kcp-dev-kcp-release-0.7-codegen
@@ -49,7 +49,7 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.7-e2e-periodic
   - name: periodic-ci-kcp-dev-kcp-release-0.7-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.7-e2e-multiple-runs-periodic
-# release-0.8
+  # release-0.8
   - name: pull-ci-kcp-dev-kcp-release-0.8-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.8-lint
   - name: pull-ci-kcp-dev-kcp-release-0.8-codegen
@@ -70,7 +70,7 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.8-e2e-periodic
   - name: periodic-ci-kcp-dev-kcp-release-0.8-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.8-e2e-multiple-runs-periodic
-# release-0.9
+  # release-0.9
   - name: pull-ci-kcp-dev-kcp-release-0.9-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.9-lint
   - name: pull-ci-kcp-dev-kcp-release-0.9-codegen
@@ -91,7 +91,7 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.9-e2e-periodic
   - name: periodic-ci-kcp-dev-kcp-release-0.9-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.9-e2e-multiple-runs-periodic
-# release-0.10
+  # release-0.10
   - name: pull-ci-kcp-dev-kcp-release-0.10-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-lint
   - name: pull-ci-kcp-dev-kcp-release-0.10-codegen
@@ -120,7 +120,7 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.10-e2e-shared-periodic
   - name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs-periodic
-# release-0.11
+  # release-0.11
   - name: pull-ci-kcp-dev-kcp-release-0.11-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.11-lint
   - name: pull-ci-kcp-dev-kcp-release-0.11-codegen

@@ -45,7 +45,7 @@ presubmits:
       repo: csi-test
       base_ref: master
       workdir: false
-      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/csi-test
+    # Checked out in /home/prow/go/src/github.com/kubernetes-csi/csi-test
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -86,7 +86,7 @@ presubmits:
       repo: external-provisioner
       base_ref: master
       workdir: false
-      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
+    # Checked out in /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -139,7 +139,7 @@ presubmits:
       repo: external-snapshotter
       base_ref: master
       workdir: false
-      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
+    # Checked out in /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -192,7 +192,7 @@ presubmits:
       repo: csi-driver-host-path
       base_ref: master
       workdir: false
-      # Checked out in /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
+    # Checked out in /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

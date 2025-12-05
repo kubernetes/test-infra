@@ -44,7 +44,7 @@ presets:
     value: "1"
 - labels:
     preset-capz-windows-ci-entrypoint-common-main: "true"
-    # https://capz.sigs.k8s.io/developers/development.html#running-custom-test-suites-on-capz-clusters
+  # https://capz.sigs.k8s.io/developers/development.html#running-custom-test-suites-on-capz-clusters
   env:
     - name: KUBERNETES_VERSION
       value: "latest"
