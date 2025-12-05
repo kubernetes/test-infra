@@ -32,7 +32,7 @@ periodics:
         \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
       command:
       - runner.sh
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
       name: ""
       resources:
         limits:
@@ -91,7 +91,7 @@ periodics:
       - runner.sh
       - kubetest2
       - gce
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
       name: ""
       resources:
         limits:
@@ -1017,7 +1017,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
       name: ""
       resources:
         limits:
@@ -1054,7 +1054,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
       name: ""
       resources:
         limits:
@@ -1176,7 +1176,7 @@ periodics:
     - command:
       - make
       - test
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
       name: ""
       resources:
         limits:
@@ -1223,7 +1223,7 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       - name: TYPECHECK_SERIAL
         value: "true"
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
       imagePullPolicy: Always
       name: ""
       resources:
@@ -1872,7 +1872,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3482,7 +3482,7 @@ presubmits:
           value: "8"
         - name: KUBE_TIMEOUT
           value: -timeout=30m
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3515,7 +3515,7 @@ presubmits:
           value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3586,7 +3586,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: main
         resources:
           limits:
@@ -3614,7 +3614,7 @@ presubmits:
         - ./hack/jenkins/test-integration-dockerized.sh
         command:
         - runner.sh
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3650,7 +3650,7 @@ presubmits:
           value: -timeout=30m
         - name: KUBE_RACE
           value: -race
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3683,7 +3683,7 @@ presubmits:
           value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3827,7 +3827,7 @@ presubmits:
       - command:
         - make
         - test
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3861,7 +3861,7 @@ presubmits:
           value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
@@ -3965,7 +3965,7 @@ presubmits:
           value: release-1.35
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         imagePullPolicy: Always
         name: ""
         resources:
@@ -3993,7 +3993,7 @@ presubmits:
         - WHAT=golangci-lint-pr-hints
         command:
         - make
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-1.35
         name: ""
         resources:
           limits:
