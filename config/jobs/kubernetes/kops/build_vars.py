@@ -37,7 +37,10 @@ gce_distro_options = [
     "ubuntuminimal2404",
     "ubuntuminimal2404arm64",
     "rocky10",
-    "rocky10arm64",
+    # "rocky10arm64",
+    "rhel10",
+    # "rhel10arm64",
+    # "fedora43", #https://bugzilla.redhat.com/show_bug.cgi?id=2394063
 ]
 
 # AWS distributions
@@ -54,9 +57,10 @@ aws_distro_options = [
     "amazonlinux2",
     "al2023",
     "al2023arm64",
-    "rhel8",
     "rhel9",
+    "rhel10arm64",
     "rocky9",
+    "rocky10arm64",
     "flatcar",
 ]
 
