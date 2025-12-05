@@ -962,7 +962,7 @@ presubmits:
         securityContext:
           privileged: true
         env:
-          # CAPZ variables
+        # CAPZ variables
         - name: TEST_K8S
           value: "true"
         - name: WINDOWS
@@ -1171,7 +1171,7 @@ presubmits:
         securityContext:
           privileged: true
         env:
-          # CAPZ variables
+        # CAPZ variables
         - name: TEST_K8S
           value: "true"
         - name: WINDOWS

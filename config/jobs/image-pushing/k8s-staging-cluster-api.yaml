@@ -435,7 +435,7 @@ periodics:
           command:
             - /run.sh
           args:
-          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            # this is the project GCB will run in, which is the same as the GCR images are pushed to.
             - --project=k8s-staging-cluster-api
             - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
             - --env-passthrough=PULL_BASE_REF
@@ -443,14 +443,14 @@ periodics:
             - --with-git-dir
             - .
           env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
             - name: PULL_BASE_REF
               value: main
             - name: LOG_TO_STDOUT
               value: "y"
     annotations:
-    # this is the name of some testgrid dashboard to report to.
+      # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-push-images-nightly
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
@@ -476,7 +476,7 @@ periodics:
           command:
             - /run.sh
           args:
-          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            # this is the project GCB will run in, which is the same as the GCR images are pushed to.
             - --project=k8s-staging-capi-vsphere
             - --scratch-bucket=gs://k8s-staging-capi-vsphere-gcb
             - --env-passthrough=PULL_BASE_REF
@@ -484,12 +484,12 @@ periodics:
             - --with-git-dir
             - .
           env:
-          # We need to emulate a pull job for the cloud build to work the same
-          # way as it usually does.
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
             - name: PULL_BASE_REF
               value: main
     annotations:
-    # this is the name of some testgrid dashboard to report to.
+      # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-provider-vsphere-push-images-nightly
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
@@ -510,7 +510,7 @@ periodics:
           command:
             - /run.sh
           args:
-          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            # this is the project GCB will run in, which is the same as the GCR images are pushed to.
             - --project=k8s-staging-cluster-api-aws
             - --scratch-bucket=gs://k8s-staging-cluster-api-aws-gcb
             - --env-passthrough=PULL_BASE_REF
@@ -518,12 +518,12 @@ periodics:
             - --with-git-dir
             - .
           env:
-          # We need to emulate a pull job for the cloud build to work the same
-          # way as it usually does.
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
             - name: PULL_BASE_REF
               value: main
     annotations:
-    # this is the name of some testgrid dashboard to report to.
+      # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-provider-aws-push-images-nightly
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
@@ -544,7 +544,7 @@ periodics:
           command:
             - /run.sh
           args:
-          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            # this is the project GCB will run in, which is the same as the GCR images are pushed to.
             - --project=k8s-staging-cluster-api-gcp
             - --scratch-bucket=gs://k8s-staging-cluster-api-gcp-gcb
             - --env-passthrough=PULL_BASE_REF
@@ -552,12 +552,12 @@ periodics:
             - --with-git-dir
             - .
           env:
-          # We need to emulate a pull job for the cloud build to work the same
-          # way as it usually does.
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
             - name: PULL_BASE_REF
               value: main
     annotations:
-    # this is the name of some testgrid dashboard to report to.
+      # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-provider-gcp-push-images-nightly
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
