@@ -482,6 +482,12 @@ def generate_grid():
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
                     extra_flags = []
+                    if 'arm64' in distro:
+                        extra_flags.extend([
+                            "--zones=eu-west-1a",
+                            "--node-size=m6g.large",
+                            "--master-size=m6g.large"
+                        ])
                     if networking == 'cilium-eni':
                         extra_flags = ['--node-size=t3.large']
                     results.append(
@@ -1743,6 +1749,13 @@ def generate_nftables():
     results = []
     for distro in aws_distro_options:
         distro_short = distro_shortener(distro)
+        extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
+        if 'arm64' in distro:
+            extra_flags.extend([
+                "--zones=eu-west-1a",
+                "--node-size=m6g.large",
+                "--master-size=m6g.large"
+            ])
         results.append(
             build_test(
                 cloud="aws",
@@ -1751,7 +1764,7 @@ def generate_nftables():
                 networking="kindnet",
                 kops_channel="alpha",
                 name_override=f"kops-aws-nftables-{distro_short}",
-                extra_flags=["--set=cluster.spec.kubeProxy.proxyMode=nftables"],
+                extra_flags=extra_flags,
                 extra_dashboards=["kops-nftables"],
                 runs_per_day=3,
             )
