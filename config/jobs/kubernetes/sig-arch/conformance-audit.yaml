@@ -24,7 +24,7 @@ presubmits:
           path_alias: k8s.io/test-infra
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251205-d1700a27d1-master
             command:
               - wrapper.sh
               - bash
@@ -83,7 +83,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251204-1bf8d2445c-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251205-d1700a27d1-master
       command:
         - wrapper.sh
         - bash
