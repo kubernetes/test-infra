@@ -98,6 +98,7 @@ dashboards:
 - name: conformance-hack-local-up-cluster
 - name: conformance-ppc64le
 - name: conformance-arm64
+- name: conformance-kind
 
 # Gardener Conformance Dashboard
 - name: conformance-gardener
