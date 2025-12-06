@@ -23,7 +23,7 @@ periodics:
         value: "gs://k8s-cve-feed"
   annotations:
     testgrid-create-test-group: "true"
-    testgrid-alert-email: security-tooling-private@kubernetes.io
+    testgrid-alert-email: cve-feed-maintainers@kubernetes.io
     testgrid-num-failures-to-alert: '1'
     testgrid-dashboards: sig-security-cve-feed
     description: Auto refreshing official cve feed KEP 3203
