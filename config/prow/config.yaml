@@ -1123,6 +1123,23 @@ presets:
       secret:
         defaultMode: 256
         secretName: prow-job-ssh-private-key
+- labels:
+    preset-ibmcloud-cred-z: "true"
+  volumeMounts:
+    - mountPath: /etc/secret-volume
+      name: prow-job-ssh-private-key
+      readOnly: true
+  env:
+    - name: TF_VAR_vpc_api_key
+      valueFrom:
+        secretKeyRef:
+          name: prow-job-api-key
+          key: key
+  volumes:
+    - name: prow-job-ssh-private-key
+      secret:
+        defaultMode: 256
+        secretName: prow-job-ssh-private-key
 # enable GOPROXY by default
 - env:
   - name: GOPROXY
