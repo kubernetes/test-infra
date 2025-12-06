@@ -157,7 +157,8 @@ periodics:
       preset-ibmcloud-cred: "true"
     decorate: true
     decoration_config:
-      timeout: 220m
+      # TO-DO(kishen-v): Investigating on how to reduce the job duration on ppc64le arch
+      timeout: 300m
     extra_refs:
       - base_ref: main
         org: kubernetes-sigs
