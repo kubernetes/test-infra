@@ -112,11 +112,10 @@ main() {
   export PREV_RELEASE_BRANCH="release-${PREV_VERSION}"
   # Define the path within the temp directory for the cloned repo
   PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s"
-  echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
-  git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
   # enter the cloned prev repo branch (in temp) and run tests
+  mkdir "${PREV_RELEASE_REPO_PATH}"
   pushd "${PREV_RELEASE_REPO_PATH}"
-  build_test_bins "${PREV_RELEASE_BRANCH}" || res=$?
+  download_release_version_bins ${EMULATED_VERSION} || res=$?
   run_e2e_tests || res=$?
   # debug kubectl version
   kubectl version
@@ -133,9 +132,12 @@ main() {
   # debug kubectl version
   kubectl version
   # run tests at head
-  build_test_bins "${CURRENT_VERSION}" || res=$?
+  CUR_RELEASE_REPO_PATH="${TMP_DIR}/cur-release-k8s"
+  mkdir "${CUR_RELEASE_REPO_PATH}"
+  pushd "${CUR_RELEASE_REPO_PATH}"
+  download_current_version_bins ${LATEST_VERSION} || ret=$?
   run_e2e_tests || res=$?
-
+  popd
   cleanup || res=$?
   exit $res
 }
