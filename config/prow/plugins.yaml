@@ -280,6 +280,7 @@ lgtm:
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
   - kubernetes-sigs/cluster-api-provider-aws
+  - kubernetes-sigs/dra-example-driver
   - kubernetes-sigs/kjob
   - kubernetes-sigs/kueue
   store_tree_hash: true
