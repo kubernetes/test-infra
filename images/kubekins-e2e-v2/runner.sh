@@ -48,6 +48,22 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     # Fix ulimit issue
     sed -i 's|ulimit -Hn|ulimit -n|' /etc/init.d/docker || true
 
+    # Use the overlay2 storage driver and disable the containerd snapshotter
+    DAEMON_JSON=/etc/docker/daemon.json
+    echo "Applying Docker config."
+
+    mkdir -p /etc/docker
+    cat ${DAEMON_JSON} > /dev/null <<EOF
+{
+    "storage-driver": "overlay2",
+    "features": {
+        "containerd-snapshotter": false
+    }
+}
+EOF
+
+    cat ${DAEMON_JSON}
+
     # start the docker daemon
     service docker start
     # the service can be started but the docker socket not ready, wait for ready
