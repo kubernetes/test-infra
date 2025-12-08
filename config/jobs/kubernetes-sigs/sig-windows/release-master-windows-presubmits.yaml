@@ -966,7 +966,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure &&
+              cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
               make test-ccm-e2e
           securityContext:
             privileged: true
