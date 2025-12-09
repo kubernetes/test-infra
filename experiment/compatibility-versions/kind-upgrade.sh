@@ -32,6 +32,9 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 KUBE_ROOT="."
 # KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
 source "${KUBE_ROOT}/hack/lib/version.sh"
+source "${KUBE_ROOT}/hack/lib/logging.sh"
+source "${KUBE_ROOT}/hack/lib/util.sh"
+
 DOCKER_TAG=${LATEST_VERSION/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
 export GOFLAGS="-tags=providerless"
@@ -117,7 +120,7 @@ pushd $TMP_DIR
 download_images
 popd
 IMAGES_PATH="${TMP_DIR}/kubernetes/server/bin"
-KUBELET_BINARY=$(find ${TMP_DIR}/kubernetes/server/bin/ -type f -name kubelet | head -n 1)
+KUBELET_BINARY=$(kube::util::find-binary kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"

@@ -31,6 +31,8 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 # Assume go installed
 KUBE_ROOT="."
 source "${KUBE_ROOT}/hack/lib/version.sh"
+source "${KUBE_ROOT}/hack/lib/logging.sh"
+source "${KUBE_ROOT}/hack/lib/util.sh"
 kube::version::get_version_vars
 DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
@@ -80,7 +82,7 @@ check_emulated_version_removed(){
 }
 
 # Main
-KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet | head -n 1)
+KUBELET_BINARY=$(kube::util::find-binary kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   upgrade_emulated_version
