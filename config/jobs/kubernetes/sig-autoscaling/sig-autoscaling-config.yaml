@@ -611,12 +611,12 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-central1-b
       - --gcp-node-image=gci
-      - --gcp-node-size=e2-standard-4
+      - --gcp-node-size=e2-highcpu-8
       - --extract=ci/latest
       - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
         --minStartupPods=8
-      - --ginkgo-parallel=3
+      - --ginkgo-parallel=10
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
