@@ -108,7 +108,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # the pod logs, so we just comment out the call to it... :shrug:
 ARG DOCKER_VERSION
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce=${DOCKER_VERSION} docker-buildx-plugin && \
+    apt-get install -y --no-install-recommends docker-ce=${DOCKER_VERSION} docker-ce-cli=${DOCKER_VERSION} docker-buildx-plugin && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && update-alternatives --set iptables /usr/sbin/iptables-legacy \
