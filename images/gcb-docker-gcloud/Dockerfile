@@ -13,13 +13,13 @@
 # limitations under the License.
 
 ARG GO_VERSION=1.25.5
-# Docker v29+ doesn't work in GCP Cloud Build because its stuck on 20.10.x
-ARG DOCKER_VERSION=28
+FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine3.22
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
+ARG DOCKER_VERSION
 ENV IMAGE=${IMAGE_ARG}
 
 # Install gcloud, docker, and bash
@@ -32,7 +32,7 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/ap
     apk --no-cache add curl python3 py-crcmod bash \
     libc6-compat openssh-client git gnupg \
     docker-cli-buildx \
-    docker-cli~${DOCKER_VERSION} make
+    docker-cli~=${DOCKER_VERSION} make
 
 RUN curl -fsSLO https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
 RUN tar xzf google-cloud-sdk.tar.gz -C /
