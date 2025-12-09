@@ -80,7 +80,6 @@ check_emulated_version_removed(){
 }
 
 # Main
-IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
 KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet | head -n 1)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
