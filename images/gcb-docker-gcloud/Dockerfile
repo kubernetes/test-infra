@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.25.4
-
-FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
-
+ARG GO_VERSION=1.25.5
+# Docker v29+ doesn't work in GCP Cloud Build because its stuck on 20.10.x
+ARG DOCKER_VERSION=28
 # Includes bash, docker, and gcloud
-FROM golang:${GO_VERSION}-alpine
+FROM golang:${GO_VERSION}-alpine3.22
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -30,7 +29,10 @@ ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
 WORKDIR /workspace
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/apk/repositories && \
-    apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make
+    apk --no-cache add curl python3 py-crcmod bash \
+    libc6-compat openssh-client git gnupg \
+    docker-cli-buildx \
+    docker-cli~${DOCKER_VERSION} make
 
 RUN curl -fsSLO https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
 RUN tar xzf google-cloud-sdk.tar.gz -C /
@@ -54,8 +56,5 @@ COPY --from=qemu-image /register /register
 ADD ./buildx-entrypoint.sh /buildx-entrypoint
 
 RUN apk add qemu
-
-# Install buildx system-wide for fast docker builds
-COPY --from=docker/buildx-bin:0.29.1 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]

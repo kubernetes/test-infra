@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "docker"
-    directory: "/images/"
+    directory: "/images/**"
     schedule:
       interval: "daily"
     labels:
