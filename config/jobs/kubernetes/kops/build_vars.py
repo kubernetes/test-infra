@@ -17,7 +17,7 @@
 # pylint: disable=line-too-long
 skip_jobs = []
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251202-27e1f5f482-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master"
 
 # GCE distributions
 gce_distro_options = [
