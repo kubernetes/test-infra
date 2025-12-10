@@ -51,6 +51,8 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
     annotations:
+      fork-per-release: "true"
+      fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-master-ppc64le
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
@@ -76,79 +78,6 @@ periodics:
           requests:
             cpu: 6
             memory: 20Gi
-
-  - name: ci-kubernetes-integration-1-34-ppc64le
-    cron: "0 0-18/6 * * *" # every 6h starting at 00:00 UTC
-    cluster: k8s-infra-ppc64le-prow-build
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.34
-      path_alias: k8s.io/kubernetes
-    annotations:
-      testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
-      testgrid-tab-name: ci-kubernetes-integration-1-34-ppc64le
-      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '2'
-      description: "Ends up running: make test-integration"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 20Gi
-          requests:
-            cpu: 4
-            memory: 20Gi
-
-  - name: ci-kubernetes-integration-1-33-ppc64le
-    cron: "0 1 * * *" # every 24h starting at 01:00 UTC
-    cluster: k8s-infra-ppc64le-prow-build
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.33
-      path_alias: k8s.io/kubernetes
-    annotations:
-      testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
-      testgrid-tab-name: ci-kubernetes-integration-1-33-ppc64le
-      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '2'
-      description: "Ends up running: make test-integration"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 20Gi
-          requests:
-            cpu: 4
-            memory: 20Gi
-
 
   - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC

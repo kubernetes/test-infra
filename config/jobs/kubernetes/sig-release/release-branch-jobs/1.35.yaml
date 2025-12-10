@@ -1235,6 +1235,41 @@ periodics:
           memory: 24Gi
       securityContext:
         privileged: true
+- annotations:
+    fork-per-release-cron: 0 1/6 * * *, 0 2 * * *
+    testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+    testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
+    testgrid-num-failures-to-alert: "2"
+    testgrid-tab-name: ci-kubernetes-integration-1.35-ppc64le
+  cluster: k8s-infra-ppc64le-prow-build
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.35
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  cron: 0 0/2 * * *
+  name: ci-kubernetes-integration-master-ppc64le-1-35
+  spec:
+    containers:
+    - args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      command:
+      - runner.sh
+      env:
+      - name: SHORT
+        value: --short=false
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
+      name: ""
+      resources:
+        limits:
+          cpu: "6"
+          memory: 20Gi
+        requests:
+          cpu: "6"
+          memory: 20Gi
+      securityContext:
+        privileged: true
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
