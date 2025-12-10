@@ -16,7 +16,7 @@
 # NOTE: we attempt to avoid unnecessary tools and image layers while
 # supporting kubernetes builds, kind installation, etc.
 
-FROM debian:bookworm-20251020
+FROM debian:bookworm
 
 # arg that specifies the image name (for debugging)
 ARG IMAGE_ARG
@@ -51,57 +51,57 @@ COPY wrapper.sh /usr/local/bin/
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
 RUN echo "Installing Packages ..." \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-    apt-transport-https \
-    build-essential \
-    ca-certificates \
-    curl \
-    file \
-    git \
-    gnupg2 \
-    iproute2 \
-    kmod \
-    lsb-release \
-    mercurial \
-    pkg-config \
-    procps \
-    python3 \
-    rsync \
-    software-properties-common \
-    unzip \
-    && rm -rf /var/lib/apt/lists/* \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends \
+            apt-transport-https \
+            build-essential \
+            ca-certificates \
+            curl \
+            file \
+            git \
+            gnupg2 \
+            iproute2 \
+            kmod \
+            lsb-release \
+            mercurial \
+            pkg-config \
+            procps \
+            python3 \
+            rsync \
+            software-properties-common \
+            unzip \
+        && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
-    && if [ -z "${GO_VERSION}" ]; then GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | grep -oP "go\K(.*)"); fi \
-    && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" \
-    && curl -fsSL "https://go.dev/dl/${GO_TARBALL}" --output "${GO_TARBALL}" \
-    && tar xzf "${GO_TARBALL}" -C /usr/local \
-    && rm "${GO_TARBALL}"\
-    && mkdir -p "${GOPATH}/bin" \
+        && if [ -z "${GO_VERSION}" ]; then GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | grep -oP "go\K(.*)"); fi \
+        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" \
+        && curl -fsSL "https://go.dev/dl/${GO_TARBALL}" --output "${GO_TARBALL}" \
+        && tar xzf "${GO_TARBALL}" -C /usr/local \
+        && rm "${GO_TARBALL}"\
+        && mkdir -p "${GOPATH}/bin" \
     && echo "Installing gcloud SDK, kubectl ..." \
-    && curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
-    && tar xzf google-cloud-sdk.tar.gz -C / \
-    && rm google-cloud-sdk.tar.gz \
-    && /google-cloud-sdk/install.sh \
-    --disable-installation-options \
-    --bash-completion=false \
-    --path-update=false \
-    --usage-reporting=false \
-    && gcloud components install kubectl \
+        && curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz --output google-cloud-sdk.tar.gz \
+        && tar xzf google-cloud-sdk.tar.gz -C / \
+        && rm google-cloud-sdk.tar.gz \
+        && /google-cloud-sdk/install.sh \
+            --disable-installation-options \
+            --bash-completion=false \
+            --path-update=false \
+            --usage-reporting=false \
+        && gcloud components install kubectl \
     && echo "Installing Docker ..." \
-    && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
-    && chmod a+r /etc/apt/keyrings/docker.gpg \
-    && echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-    tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin \
-    && rm -rf /var/lib/apt/lists/* \
-    && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
-    && sed -i 's/ulimit -Hn/# ulimit -Hn/g' /etc/init.d/docker \
+        && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+        && chmod a+r /etc/apt/keyrings/docker.gpg \
+        && echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+            "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin \
+        && rm -rf /var/lib/apt/lists/* \
+        && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
+        && sed -i 's/ulimit -Hn/# ulimit -Hn/g' /etc/init.d/docker \
     && echo "Ensuring Legacy Iptables ..." \
-    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
-    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+        && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+        && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 
 # entrypoint is our wrapper script, in Prow you will need to explicitly re-specify this
 ENTRYPOINT ["wrapper.sh"]
