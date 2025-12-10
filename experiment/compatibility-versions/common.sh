@@ -213,7 +213,7 @@ build_test_bins() {
 # TODO: Support Mac as a platform along with Linux https://github.com/kubernetes/test-infra/pull/34930#discussion_r2138760351
 download_release_version_bins() {
   local version=$1
-  wget https://dl.k8s.io/ci/$(curl -Ls https://dl.k8s.io/ci/latest-${version}.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  curl -LO https://dl.k8s.io/ci/$(curl -Ls https://dl.k8s.io/ci/latest-${version}.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
   if [ $? -ne 0 ]; then
     echo "failed to download previous version ${version} binaries"
     return 1
@@ -226,7 +226,7 @@ download_release_version_bins() {
 }
 
 download_current_version_bins() {
-  wget 'https://dl.k8s.io/ci/'"${1}"/'kubernetes-test-'"$(go env GOOS)-$(go env GOARCH)"'.tar.gz'
+  curl -LO 'https://dl.k8s.io/ci/'"${1}"/'kubernetes-test-'"$(go env GOOS)-$(go env GOARCH)"'.tar.gz'
   if [ $? -ne 0 ]; then
     echo "failed to download current version binaries"
     return 1
