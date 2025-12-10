@@ -218,7 +218,7 @@ download_release_version_bins() {
     echo "failed to download previous version ${version} binaries"
     return 1
   fi
-  tar -xvf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz 
+  tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz 
   mkdir -p _output/bin
   mv kubernetes/test/bin/* _output/bin
   export PATH="${PWD}/_output/bin:$PATH"
@@ -231,7 +231,7 @@ download_current_version_bins() {
     echo "failed to download current version binaries"
     return 1
   fi
-  tar -xvf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
   mkdir -p _output/bin
   mv kubernetes/test/bin/* _output/bin
   return 0
