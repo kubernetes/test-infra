@@ -1,9 +1,0 @@
-version: 2
-updates:
-  - package-ecosystem: "docker"
-    directories:
-      -  "/images/**"
-    schedule:
-      interval: "daily"
-    labels:
-    - "skip-review"
