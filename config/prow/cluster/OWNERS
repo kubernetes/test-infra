@@ -1,6 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+# TODO: delete this directory
+
 labels:
 - area/prow/bump
-approvers:
-- test-infra-oncall
