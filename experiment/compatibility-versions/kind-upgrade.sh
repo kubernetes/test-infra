@@ -32,6 +32,9 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 KUBE_ROOT="."
 # KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
 source "${KUBE_ROOT}/hack/lib/version.sh"
+source "${KUBE_ROOT}/hack/lib/logging.sh"
+source "${KUBE_ROOT}/hack/lib/util.sh"
+
 DOCKER_TAG=${LATEST_VERSION/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
 export GOFLAGS="-tags=providerless"
@@ -74,6 +77,8 @@ update_kubelet() {
  for n in $NODES; do
    # Backup previous kubelet
    docker exec $n cp /usr/bin/kubelet /usr/bin/kubelet.bak
+   # This flag has been removed in 1.35. We can remove the replacement once 1.35 cannot be emulated anymore
+   docker exec $n sed -i 's/--pod-infra-container-image=[^ "]*//g' /var/lib/kubelet/kubeadm-flags.env
    # Install new kubelet binary
    docker cp ${KUBELET_BINARY} $n:/usr/bin/kubelet
    docker exec $n systemctl restart kubelet
@@ -115,7 +120,7 @@ pushd $TMP_DIR
 download_images
 popd
 IMAGES_PATH="${TMP_DIR}/kubernetes/server/bin"
-KUBELET_BINARY=$(find ${TMP_DIR}/kubernetes/server/bin/ -type f -name kubelet)
+KUBELET_BINARY=$(kube::util::find-binary kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"
