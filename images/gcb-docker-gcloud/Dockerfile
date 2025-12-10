@@ -42,6 +42,7 @@ RUN gcloud config set core/disable_usage_reporting true && \
     gcloud config set metrics/environment github_docker_image && \
     gcloud components install alpha beta gke-gcloud-auth-plugin gsutil && \
     gcloud --version && \
+    gcloud auth configure-docker gcr.io,us-central1-docker.pkg.dev && \
     gcloud info > /workspace/gcloud-info.txt
 
 # Default home for cloudbuild jobs is /builder/home
