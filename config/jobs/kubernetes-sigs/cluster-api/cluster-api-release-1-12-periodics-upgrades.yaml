@@ -319,7 +319,7 @@ periodics:
       - name: KUBERNETES_VERSION_UPGRADE_FROM
         value: "stable-1.34"
       - name: KUBERNETES_VERSION_UPGRADE_TO
-        value: "ci/latest-1.35"
+        value: "stable-1.35"
       - name: ETCD_VERSION_UPGRADE_TO
         value: "3.6.6-0"
       - name: COREDNS_VERSION_UPGRADE_TO
