@@ -7,6 +7,6 @@ images:
     image_regex: ".*[^-cgroupsv1]$"
     metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/env"
   cos:
-    image_family: cos-121-lts # Use cos-121-lts to lock down what COS version is used with containerd 2.0, which aligns with COS's built-in containerd version
+    image_family: cos-125-lts # Use cos-125-lts to lock down what COS version is used with containerd 2.0, which aligns with COS's built-in containerd version
     project: cos-cloud
     metadata: "user-data</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</home/prow/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</home/prow/go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/env,gci-update-strategy=update_disabled"
