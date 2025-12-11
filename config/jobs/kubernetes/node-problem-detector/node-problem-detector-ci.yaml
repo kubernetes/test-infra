@@ -21,11 +21,11 @@ periodics:
       - ci
       resources:
         limits:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 6Gi
         requests:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 6Gi
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -114,10 +114,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -159,10 +159,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -204,10 +204,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -245,18 +245,17 @@ periodics:
         --gcp-node-image=ubuntu
         --gcp-zone=us-central1-b
         --ginkgo-parallel=30
-        --image-family=pipeline-1-34-amd64
-        --env=KUBELET_ARGS="--fail-cgroupv1=false"
-        --image-project=ubuntu-os-gke-cloud
+        --image-family=ubuntu-2404-lts-amd64
+        --image-project=ubuntu-os-cloud
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -294,18 +293,17 @@ periodics:
         --gcp-node-image=ubuntu
         --gcp-zone=us-central1-b
         --ginkgo-parallel=30
-        --image-family=pipeline-1-34-amd64
-        --env=KUBELET_ARGS="--fail-cgroupv1=false"
-        --image-project=ubuntu-os-gke-cloud
+        --image-family=ubuntu-2404-lts-amd64
+        --image-project=ubuntu-os-cloud
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
