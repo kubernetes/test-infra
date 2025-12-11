@@ -20,7 +20,6 @@ FROM golang:${GO_VERSION}-alpine3.22
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ARG DOCKER_VERSION
-ENV IMAGE=${IMAGE_ARG}
 
 # Install gcloud, docker, and bash
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
@@ -44,6 +43,8 @@ RUN gcloud config set core/disable_usage_reporting true && \
     gcloud --version && \
     gcloud auth configure-docker gcr.io,us-central1-docker.pkg.dev && \
     gcloud info > /workspace/gcloud-info.txt
+
+RUN echo ${IMAGE_ARG} > /workspace/image-reference.txt
 
 # Default home for cloudbuild jobs is /builder/home
 RUN mkdir -p /builder/home
