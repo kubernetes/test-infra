@@ -315,9 +315,9 @@ presubmits:
           --gcp-node-image=ubuntu
           --gcp-zone=us-central1-b
           --ginkgo-parallel=30
-          --image-family=pipeline-1-34-amd64
+          --image-family=ubuntu-2404-lts-amd64
           '--node-test-args=--kubelet-flags="--fail-cgroupv1=false"'
-          --image-project=ubuntu-os-gke-cloud
+          --image-project=ubuntu-os-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
         resources:
@@ -364,9 +364,9 @@ presubmits:
           --gcp-node-image=ubuntu
           --gcp-zone=us-central1-b
           --ginkgo-parallel=30
-          --image-family=pipeline-1-34-amd64
+          --image-family=ubuntu-2404-lts-amd64
           '--node-test-args=--kubelet-flags="--fail-cgroupv1=false"'
-          --image-project=ubuntu-os-gke-cloud
+          --image-project=ubuntu-os-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
         resources:
