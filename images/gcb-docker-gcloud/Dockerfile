@@ -16,6 +16,10 @@ ARG GO_VERSION=1.25.5
 FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine3.22
+# upstream go image sets GOTOOLCHAIN=local
+# this means that we won't auto-select the appropriate go for the project being
+# built, so we set it back to auto, which is the default if GOTOOLCHAIN is not set
+ENV GOTOOLCHAIN=auto
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
