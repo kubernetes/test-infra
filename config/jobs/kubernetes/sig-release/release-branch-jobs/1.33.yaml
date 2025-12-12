@@ -127,7 +127,7 @@ periodics:
         value: Conformance && !Slow && !Disruptive && !Flaky
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+      image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
       name: ""
       resources:
         limits:
@@ -774,7 +774,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+      image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
       name: ""
       resources:
         limits:
@@ -823,7 +823,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+      image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
       name: ""
       resources:
         limits:
@@ -858,7 +858,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.33
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-1.33
       name: ""
       resources:
         limits:
@@ -2436,7 +2436,7 @@ presubmits:
           value: ipv6
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
         name: ""
         resources:
           limits:
@@ -2571,7 +2571,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
         name: ""
         resources:
           limits:
@@ -2614,7 +2614,7 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: ipv6
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
         name: ""
         resources:
           limits:
@@ -2654,7 +2654,7 @@ presubmits:
           value: '{"api/alpha":"false", "api/beta":"false"}'
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.33
         name: ""
         resources:
           limits:

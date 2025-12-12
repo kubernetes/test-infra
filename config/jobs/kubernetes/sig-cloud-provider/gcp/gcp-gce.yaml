@@ -984,7 +984,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
         name: ""
         resources:
           limits:
@@ -1039,7 +1039,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
-        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
         name: ""
         resources:
           limits:
