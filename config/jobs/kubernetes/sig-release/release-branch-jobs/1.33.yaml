@@ -11,7 +11,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  name: ci-kubernetes-unit-ppc64le-1-35
+  name: ci-kubernetes-unit-ppc64le-1-33
   spec:
     containers:
     - command:
@@ -55,7 +55,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-gce-conformance-latest-1-35
+  name: ci-kubernetes-gce-conformance-latest-1-33
   spec:
     containers:
     - args:
@@ -103,7 +103,7 @@ periodics:
     repo: kubernetes
   labels:
     preset-k8s-ssh: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-35
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-33
   spec:
     containers:
     - args:
@@ -163,7 +163,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  name: ci-kubernetes-kind-e2e-json-logging-1-35
+  name: ci-kubernetes-kind-e2e-json-logging-1-33
   spec:
     containers:
     - command:
@@ -207,7 +207,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
-  name: ci-kind-dra-1-35
+  name: ci-kind-dra-1-33
   spec:
     containers:
     - args:
@@ -289,7 +289,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
-  name: ci-kind-dra-n-1-1-35
+  name: ci-kind-dra-n-1-1-33
   spec:
     containers:
     - args:
@@ -401,7 +401,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
-  name: ci-kind-dra-n-2-1-35
+  name: ci-kind-dra-n-2-1-33
   spec:
     containers:
     - args:
@@ -513,7 +513,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
-  name: ci-kind-dra-n-3-1-35
+  name: ci-kind-dra-n-3-1-33
   spec:
     containers:
     - args:
@@ -637,7 +637,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-service-account: "true"
-  name: ci-dra-integration-1-35
+  name: ci-dra-integration-1-33
   spec:
     containers:
     - command:
@@ -686,7 +686,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-node-e2e-crio-dra-1-35
+  name: ci-node-e2e-crio-dra-1-33
   spec:
     containers:
     - args:
@@ -746,7 +746,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-node-e2e-containerd-1-7-dra-1-35
+  name: ci-node-e2e-containerd-1-7-dra-1-33
   spec:
     containers:
     - args:
@@ -803,7 +803,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-node-e2e-containerd-2-0-dra-1-35
+  name: ci-node-e2e-containerd-2-0-dra-1-33
   spec:
     containers:
     - args:
@@ -849,7 +849,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-1-35
+  name: ci-kubernetes-build-1-33
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes
@@ -906,7 +906,7 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-kubemark-500-gce-1-35
+  name: ci-kubernetes-kubemark-500-gce-1-33
   spec:
     containers:
     - args:
@@ -988,7 +988,7 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-1-35
+  name: ci-kubernetes-e2e-gci-gce-scalability-1-33
   spec:
     containers:
     - args:
@@ -1062,7 +1062,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-cmd-1-35
+  name: ci-kubernetes-cmd-1-33
   spec:
     containers:
     - args:
@@ -1101,7 +1101,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-1-35
+  name: ci-kubernetes-integration-1-33
   spec:
     containers:
     - args:
@@ -1174,7 +1174,7 @@ periodics:
   interval: 2h
   labels:
     preset-dind-enabled: "true"
-  name: ci-kubernetes-e2e-kind-1-35
+  name: ci-kubernetes-e2e-kind-1-33
   spec:
     containers:
     - command:
@@ -1221,7 +1221,7 @@ periodics:
   interval: 2h
   labels:
     preset-dind-enabled: "true"
-  name: ci-kubernetes-e2e-kind-ipv6-1-35
+  name: ci-kubernetes-e2e-kind-ipv6-1-33
   spec:
     containers:
     - command:
@@ -1270,7 +1270,7 @@ periodics:
     path_alias: k8s.io/kubernetes
     repo: kubernetes
   interval: 1h
-  name: ci-kubernetes-unit-1-35
+  name: ci-kubernetes-unit-1-33
   spec:
     containers:
     - command:
@@ -1307,7 +1307,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-1-35
+  name: ci-kubernetes-verify-1-33
   spec:
     containers:
     - args:
@@ -1367,7 +1367,7 @@ periodics:
     preset-capz-windows-common: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  name: ci-kubernetes-e2e-capz-master-windows-1-35
+  name: ci-kubernetes-e2e-capz-master-windows-1-33
   spec:
     containers:
     - command:
