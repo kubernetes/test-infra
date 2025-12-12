@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:jammy-20251001
+FROM ubuntu:jammy-20251013
 
 RUN apt-get update && apt-get install -y \
     git \
