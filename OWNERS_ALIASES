@@ -1,13 +1,4 @@
 aliases:
-  # business hours oncall for prow etc (https://go.k8s.io/oncall)
-  test-infra-oncall:
-  - airbornepony
-  - chases2
-  - cjwagner
-  - michelle192837
-  - mpherman2
-  - timwangmusic
-
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
     - deads2k

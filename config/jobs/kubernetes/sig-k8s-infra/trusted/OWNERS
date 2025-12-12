@@ -8,7 +8,6 @@ filters:
     - sig-k8s-infra-leads
     approvers:
     - sig-k8s-infra-leads
-    - test-infra-oncall
   # ContribEx related jobs that K8s infra owns (currently
   # only the sig-contirbex-k8s-triage-robot.yaml job) should
   # be reviewed by ContribEx TLs since it could potentially

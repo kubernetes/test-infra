@@ -72,7 +72,6 @@ for app in "${APPS[@]}"; do
         github_team_slugs:
         - org: kubernetes
           slug: sig-k8s-infra-leads
-        # proxy for test-infra-oncall
         - org: kubernetes
           slug: test-infra-admins
         # TODO: sig-specific team in charge of this app
