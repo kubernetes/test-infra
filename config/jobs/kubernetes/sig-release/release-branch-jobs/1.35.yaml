@@ -1,5 +1,40 @@
 periodics:
 - annotations:
+    fork-per-release-cron: 0 4/6 * * *, 0 5 * * *
+    testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
+    testgrid-tab-name: ci-kubernetes-unit-ppc64le-1.35
+  cluster: k8s-infra-ppc64le-prow-build
+  cron: 0 3/2 * * *
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.35
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  name: ci-kubernetes-unit-ppc64le-1-35
+  spec:
+    containers:
+    - command:
+      - make
+      - test
+      env:
+      - name: KUBE_TIMEOUT
+        value: -timeout=300s
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      name: ""
+      resources:
+        limits:
+          cpu: "6"
+          memory: 28Gi
+        requests:
+          cpu: "6"
+          memory: 28Gi
+      securityContext:
+        allowPrivilegeEscalation: false
+    securityContext:
+      runAsGroup: 2010
+      runAsUser: 2001
+- annotations:
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.35-blocking, conformance-all, conformance-gce
@@ -32,6 +67,7 @@ periodics:
         \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
       command:
       - runner.sh
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -78,6 +114,7 @@ periodics:
       - --boskos-resource-type=gpu-project
       - --node-accelerators=type=nvidia-tesla-t4,count=2
       - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
+      - --kubernetes-version=https://dl.k8s.io/ci/latest-1.35
       - --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt
       - --test=ginkgo
       - --
@@ -85,12 +122,14 @@ periodics:
       - --test-package-url=https://dl.k8s.io
       - --test-package-dir=ci
       - --test-args=--minStartupPods=8
+      - --test-package-marker=latest-1.35
       - --test-package-marker=latest-1.35.txt
       - --focus-regex=\[Feature:GPUDevicePlugin\]
       command:
       - runner.sh
       - kubetest2
       - gce
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -102,6 +141,7 @@ periodics:
           memory: 6Gi
     serviceAccountName: prow-build
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: 1h 2h 6h 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
@@ -128,6 +168,7 @@ periodics:
       - bash
       - -c
       - |
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-logs-e2e-k8s.sh >$(which e2e-k8s.sh) && chmod u+x $(which e2e-k8s.sh) && e2e-k8s.sh
       env:
       - name: CLUSTER_LOG_FORMAT
@@ -138,6 +179,7 @@ periodics:
         value: Conformance && !Slow && !Disruptive && !Flaky
       - name: PARALLEL
         value: "true"
+      image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -194,6 +236,20 @@ periodics:
 
             # Additional features are not in kind.yaml, but they can be added at the end.
             for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
         ) >/tmp/kind.yaml
 
         # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -221,6 +277,7 @@ periodics:
         wait "${GINKGO_E2E_PID}"
       command:
       - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -277,6 +334,20 @@ periodics:
 
             # Additional features are not in kind.yaml, but they can be added at the end.
             for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
         ) >/tmp/kind.yaml
 
         # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -334,6 +405,7 @@ periodics:
         wait "${GINKGO_E2E_PID}"
       command:
       - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -390,6 +462,20 @@ periodics:
 
             # Additional features are not in kind.yaml, but they can be added at the end.
             for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
         ) >/tmp/kind.yaml
 
         # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -447,6 +533,7 @@ periodics:
         wait "${GINKGO_E2E_PID}"
       command:
       - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -503,6 +590,20 @@ periodics:
 
             # Additional features are not in kind.yaml, but they can be added at the end.
             for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
         ) >/tmp/kind.yaml
 
         # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -560,6 +661,7 @@ periodics:
         wait "${GINKGO_E2E_PID}"
       command:
       - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -606,6 +708,7 @@ periodics:
         # We also need the control plane binaries.
         make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
         KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -667,6 +770,7 @@ periodics:
         value: /go
       - name: KUBE_SSH_USER
         value: core
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -721,6 +825,7 @@ periodics:
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
       command:
       - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -748,6 +853,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/test-infra
     repo: test-infra
+  - base_ref: release/2.0
   - base_ref: release/2.1
     org: containerd
     repo: containerd
@@ -775,6 +881,10 @@ periodics:
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
         --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+      command:
+      - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
       command:
       - runner.sh
@@ -893,6 +1003,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -978,6 +1089,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
       name: ""
       resources:
@@ -992,6 +1104,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: 2h 2h 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking
@@ -1017,6 +1130,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -1029,6 +1143,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: 2h 2h 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking
@@ -1054,6 +1169,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -1066,6 +1182,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: 1h 2h 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking, sig-testing-kind
@@ -1097,6 +1214,7 @@ periodics:
         value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
+      image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -1109,6 +1227,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: 1h 2h 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.35-blocking, sig-testing-kind
@@ -1144,6 +1263,7 @@ periodics:
         value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
+      image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
       image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -1176,6 +1296,7 @@ periodics:
     - command:
       - make
       - test
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
       name: ""
       resources:
@@ -1191,6 +1312,7 @@ periodics:
       runAsGroup: 2010
       runAsUser: 2001
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: 2h 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io,
       release-team@kubernetes.io
@@ -1223,6 +1345,7 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       - name: TYPECHECK_SERIAL
         value: "true"
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
       image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
       imagePullPolicy: Always
       name: ""
@@ -1236,6 +1359,56 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io,
+      release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.35-informing, sig-windows-master-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1.35
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 4h0m0s
+  extra_refs:
+  - base_ref: main
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    repo: cluster-api-provider-azure
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+    workdir: true
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    repo: cloud-provider-azure
+  interval: 3h
+  labels:
+    preset-azure-community: "true"
+    preset-capz-containerd-2-0-latest: "true"
+    preset-capz-windows-2022: "true"
+    preset-capz-windows-common: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  name: ci-kubernetes-e2e-capz-master-windows-1-35
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - env
+      - KUBERNETES_VERSION=latest-1.35
+      - ./capz/run-capz-e2e.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 9Gi
+        requests:
+          cpu: "2"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+    serviceAccountName: azure
     fork-per-release-cron: 0 1/6 * * *, 0 2 * * *
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
     testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
@@ -1305,6 +1478,7 @@ presubmits:
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -1337,6 +1511,7 @@ presubmits:
         - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
         - --test-mode
         - unit
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1385,6 +1560,7 @@ presubmits:
           value: "true"
         - name: GO_VERSION
           value: devel
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -1419,6 +1595,7 @@ presubmits:
         env:
         - name: GO_VERSION
           value: devel
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1471,6 +1648,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1524,6 +1702,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1584,6 +1763,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1637,6 +1817,7 @@ presubmits:
             --parallel=30
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1696,6 +1877,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1750,6 +1932,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1805,6 +1988,7 @@ presubmits:
             --parallel=1
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1857,6 +2041,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -1907,6 +2092,7 @@ presubmits:
         - runner.sh
         - kubetest2
         - gce
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -1934,6 +2120,7 @@ presubmits:
     name: pull-kubernetes-kind-dra
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
@@ -1963,6 +2150,20 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
           ) >/tmp/kind.yaml
 
           # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -1990,6 +2191,7 @@ presubmits:
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2016,6 +2218,7 @@ presubmits:
     name: pull-kubernetes-kind-dra-all
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
@@ -2047,6 +2250,20 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
           ) >/tmp/kind.yaml
 
           # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -2074,6 +2291,7 @@ presubmits:
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2130,6 +2348,20 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
           ) >/tmp/kind.yaml
 
           # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -2157,6 +2389,7 @@ presubmits:
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2183,6 +2416,7 @@ presubmits:
     name: pull-kubernetes-kind-dra-n-1
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
@@ -2212,6 +2446,20 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
           ) >/tmp/kind.yaml
 
           # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -2284,6 +2532,7 @@ presubmits:
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2310,6 +2559,7 @@ presubmits:
     name: pull-kubernetes-kind-dra-n-2
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
@@ -2339,6 +2589,20 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
           ) >/tmp/kind.yaml
 
           # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -2353,6 +2617,7 @@ presubmits:
           mkdir -p "${ARTIFACTS}/kind"
           cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
 
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
@@ -2411,6 +2676,7 @@ presubmits:
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2437,6 +2703,7 @@ presubmits:
     name: pull-kubernetes-kind-dra-n-3
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
@@ -2466,6 +2733,20 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
           ) >/tmp/kind.yaml
 
           # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
@@ -2538,6 +2819,7 @@ presubmits:
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2564,6 +2846,7 @@ presubmits:
     name: pull-kubernetes-dra-integration
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
     run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*\.(go|yaml)
     spec:
       containers:
@@ -2581,6 +2864,7 @@ presubmits:
           # We also need the control plane binaries.
           make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
           KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2640,6 +2924,7 @@ presubmits:
           value: /go
         - name: KUBE_SSH_USER
           value: core
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2690,6 +2975,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2712,6 +2998,7 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/test-infra
       repo: test-infra
+    - base_ref: release/2.0
     - base_ref: release/2.1
       org: containerd
       repo: containerd
@@ -2741,6 +3028,10 @@ presubmits:
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
           --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
@@ -2766,6 +3057,7 @@ presubmits:
       org: kubernetes
       path_alias: k8s.io/test-infra
       repo: test-infra
+    - base_ref: release/2.0
     - base_ref: release/2.1
       org: containerd
       repo: containerd
@@ -2797,6 +3089,10 @@ presubmits:
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
           --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.1/image-config.yaml
         command:
         - runner.sh
@@ -2845,12 +3141,14 @@ presubmits:
         - --gcp-zone=us-central1-b
         - --ginkgo-parallel=30
         - --provider=gce
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[Feature:RuntimeHandler\]
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2899,6 +3197,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2941,6 +3240,7 @@ presubmits:
           value: aws-instance.yaml
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -2991,6 +3291,7 @@ presubmits:
           value: aws-instance-arm64.yaml
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3043,6 +3344,7 @@ presubmits:
           value: aws-instance-arm64.yaml
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3101,6 +3403,7 @@ presubmits:
         env:
         - name: GOPATH
           value: /go
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3151,6 +3454,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3196,6 +3500,7 @@ presubmits:
           value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:PodLevelResources\]
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3276,6 +3581,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3355,6 +3661,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3429,6 +3736,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3483,6 +3791,7 @@ presubmits:
             --parallel=1 # [Feature:SELinux] tests include serial ones
         command:
         - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -3517,6 +3826,7 @@ presubmits:
           value: "8"
         - name: KUBE_TIMEOUT
           value: -timeout=30m
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3547,6 +3857,10 @@ presubmits:
         - runner.sh
         env:
         - name: GO_VERSION
+          value: 1.25.3
+        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+          value: auto
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
           value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
@@ -3589,6 +3903,7 @@ presubmits:
           value: ipv6
         - name: PARALLEL
           value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3621,6 +3936,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: main
         resources:
@@ -3649,6 +3965,7 @@ presubmits:
         - ./hack/jenkins/test-integration-dockerized.sh
         command:
         - runner.sh
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3685,6 +4002,7 @@ presubmits:
           value: -timeout=30m
         - name: KUBE_RACE
           value: -race
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3715,6 +4033,10 @@ presubmits:
         - runner.sh
         env:
         - name: GO_VERSION
+          value: 1.25.3
+        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+          value: auto
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
           value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
@@ -3755,6 +4077,7 @@ presubmits:
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3797,6 +4120,7 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: ipv6
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3830,6 +4154,11 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
           - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
+        - name: GA_ONLY
+          value: "true"
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.35
         - name: FEATURE_GATES
           value: '{"AllAlpha":false,"AllBeta":false}'
         - name: RUNTIME_CONFIG
@@ -3862,6 +4191,7 @@ presubmits:
       - command:
         - make
         - test
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -3893,6 +4223,10 @@ presubmits:
         - test
         env:
         - name: GO_VERSION
+          value: 1.25.3
+        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+          value: auto
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
           value: 1.25.4
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
@@ -3927,6 +4261,7 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: main
         resources:
@@ -3962,6 +4297,7 @@ presubmits:
           value: release-1.35
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         imagePullPolicy: Always
         name: ""
@@ -4000,6 +4336,7 @@ presubmits:
           value: release-1.35
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         imagePullPolicy: Always
         name: ""
@@ -4028,6 +4365,7 @@ presubmits:
         - WHAT=golangci-lint-pr-hints
         command:
         - make
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.35
         name: ""
         resources:
@@ -4037,6 +4375,58 @@ presubmits:
           requests:
             cpu: "5"
             memory: 12Gi
+  - always_run: false
+    branches:
+    - release-1.35
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-e2e-capz-windows-1.35
+    decorate: true
+    decoration_config:
+      timeout: 2h30m0s
+    extra_refs:
+    - base_ref: main
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      repo: cluster-api-provider-azure
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      repo: cloud-provider-azure
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: k8s.io/windows-testing
+      repo: windows-testing
+      workdir: true
+    labels:
+      preset-azure-community: "true"
+      preset-capz-containerd-2-0-latest: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-windows-common-pull: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kubernetes-e2e-capz-windows-master
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - env
+        - KUBERNETES_VERSION=latest-1.35
+        - ./capz/run-capz-e2e.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 9Gi
+          requests:
+            cpu: "2"
+            memory: 9Gi
+        securityContext:
+          privileged: true
+      serviceAccountName: azure
   kubernetes/perf-tests:
   - always_run: false
     branches:
@@ -4097,6 +4487,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
@@ -4169,6 +4560,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.35
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
         name: ""
         resources:
