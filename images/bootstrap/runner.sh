@@ -42,19 +42,29 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     echo "Docker in Docker enabled, initializing..."
     printf '=%.0s' {1..80}; echo
 
-    # optionally enable CDI in Docker/containerd (see https://github.com/cncf-tags/container-device-interface?tab=readme-ov-file#docker-configuration)
+    DAEMON_JSON=/etc/docker/daemon.json
+    echo "Applying Docker config."
+
+    mkdir -p /etc/docker
+
+    # Use the overlay2 storage driver and disable the containerd snapshotter
+    cat ${DAEMON_JSON} > /dev/null <<EOF
+{
+    "storage-driver": "overlay2",
+    "features": {
+        "containerd-snapshotter": false
+    }
+}
+EOF
+
+    # Optionally enable CDI in Docker/containerd (see https://github.com/cncf-tags/container-device-interface?tab=readme-ov-file#docker-configuration)
     export CDI_IN_DOCKER_ENABLED=${CDI_IN_DOCKER_ENABLED:-false}
     if [[ "${CDI_IN_DOCKER_ENABLED}" == "true" ]]; then
         echo "Enabling CDI for Docker."
-        mkdir -p /etc/docker/
-        cat >/etc/docker/daemon.json <<EOF
-{
-  "features": {
-    "cdi": true
-  }
-}
-EOF
+        jq '.features += {"cdi": true}' ${DAEMON_JSON} | tee ${DAEMON_JSON} > /dev/null
     fi
+
+    cat ${DAEMON_JSON}
 
     # docker v27+ has ipv6 by default, but not all e2e hosts have everything
     # we need enabled by default
