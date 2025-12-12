@@ -33,6 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
     build_cron,
     create_args,
     aws_distro_images,
+    azure_distro_images,
     gce_distro_images,
     aws_distros_ssh_user,
     k8s_version_info,
@@ -137,7 +138,7 @@ def build_test(cloud='aws',
             build_cluster = 'k8s-infra-prow-build'
 
     elif cloud == 'azure':
-        kops_image = None
+        kops_image = azure_distro_images[distro]
         kops_ssh_user = 'kops'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
         if build_cluster is None:
@@ -1300,7 +1301,7 @@ def generate_conformance():
                              "--master-size=t3.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
-                extra_dashboards=['kops-conformance', 'conformance-all'],
+                extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-ec2'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]',
@@ -1320,8 +1321,26 @@ def generate_conformance():
                              "--master-size=t4g.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
-                extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-arm64'],
+                extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-arm64', 'conformance-ec2'],
                 runs_per_day=1,
+                focus_regex=r'\[Conformance\]',
+                skip_regex=r'\[NoSkip\]',
+            )
+        )
+        results.append(
+            build_test(
+                cloud='azure',
+                k8s_version=version.replace('master', 'ci'),
+                kops_version=version,
+                kops_channel='alpha',
+                name_override=f"kops-azure-conformance-{version.replace('.', '-')}",
+                networking='kindnet',
+                distro="u2404",
+                feature_flags=['Azure'],
+                test_parallelism=1,
+                test_timeout_minutes=150,
+                extra_dashboards=['kops-conformance', 'conformance-all', 'conformance-azure'],
+                runs_per_day=3,
                 focus_regex=r'\[Conformance\]',
                 skip_regex=r'\[NoSkip\]',
             )
