@@ -64,7 +64,7 @@ presubmits:
     {%- if not ci %}
     path_alias: k8s.io/kubernetes
     {%- endif %}
-    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_20_repo %}
+    {%- if ci and need_kubernetes_repo or need_test_infra_repo or need_containerd_repo %}
     extra_refs:
     {%- if ci and need_kubernetes_repo %}
     - org: kubernetes
@@ -79,15 +79,15 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     {%- endif %}
-    {%- if need_containerd_20_repo %}
+    {%- if need_containerd_repo %}
     - org: containerd
       repo: containerd
-      base_ref: release/2.0
+      base_ref: release/2.1
     {%- endif %}
     {%- endif %}
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
 
@@ -179,20 +179,21 @@ presubmits:
 
               # Additional features are not in kind.yaml, but they can be added at the end.
               for feature in ${features[@]}; do echo "  ${feature}: true"; done
-
-              # Append ClusterConfiguration which causes etcd to use /tmp
-              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
-              cat <<EOF
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            etcd:
-              local:
-                dataDir: /tmp/etcd
-          EOF
           ) >/tmp/kind.yaml
+
+          # Add or extend kubeadmConfigPatches with a ClusterConfiguration which causes etcd to use /tmp
+          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+          # kind.yaml may or may not have a `kubeadmConfigPatches`, so we have to be
+          # careful.
+          if ! grep -q '^kubeadmConfigPatches:$' /tmp/kind.yaml; then
+              echo "kubeadmConfigPatches:" >>/tmp/kind.yaml
+          fi
+          sed -i -e '/^kubeadmConfigPatches:$/a\' -e '  - |\n    kind: ClusterConfiguration\n    etcd:\n      local:\n        dataDir: /tmp/etcd\n' /tmp/kind.yaml
+
+          mkdir -p "${ARTIFACTS}/kind"
+          cp /tmp/kind.yaml "${ARTIFACTS}/kind"
           cat /tmp/kind.yaml
+
           kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
@@ -206,6 +207,10 @@ presubmits:
           major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
           minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
           previous_minor=$((minor - {{kubelet_skew}}))
+          if [[ $revision == *alpha.0* ]]; then
+              : Treating alpha.0 like previous release because it already gets set on the master branch during code freeze and/or is too similar to the previous release to justify a change in what the jobs test against.
+              previous_minor=$((previous_minor - 1))
+          fi
           {%- if ci %}
           # Test with the most recent CI build, doesn't even need to be released yet.
           # We want to know if those are broken.

@@ -17,29 +17,26 @@ dashboard_groups:
   - kops-distro-deb12
   - kops-distro-deb13
   - kops-distro-flatcar
-  - kops-distro-rhel8
   - kops-distro-rhel9
+  - kops-distro-rhel10
   - kops-distro-rocky9
+  - kops-distro-rocky10
   - kops-distro-u2204
   - kops-distro-u2404
   - kops-distro-u2510
   - kops-distro-umini2404
-  - kops-distro-cos105
-  - kops-k8s-1.29
-  - kops-k8s-1.30
-  - kops-k8s-1.31
+  - kops-distro-cos121
+  - kops-distro-cos125
+  - kops-distro-cosdev
   - kops-k8s-1.32
   - kops-k8s-1.33
   - kops-k8s-1.34
-  - kops-k8s-1.35
   - kops-k8s-ci
-  - kops-k8s-latest
   - kops-k8s-stable
-  - kops-1.31
   - kops-1.32
   - kops-1.33
   - kops-1.34
-  - kops-1.35
+  - kops-master
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -61,29 +58,26 @@ dashboards:
 - name: kops-distro-deb12
 - name: kops-distro-deb13
 - name: kops-distro-flatcar
-- name: kops-distro-rhel8
 - name: kops-distro-rhel9
+- name: kops-distro-rhel10
 - name: kops-distro-rocky9
+- name: kops-distro-rocky10
 - name: kops-distro-u2204
 - name: kops-distro-u2404
 - name: kops-distro-u2510
 - name: kops-distro-umini2404
-- name: kops-distro-cos105
-- name: kops-k8s-1.29
-- name: kops-k8s-1.30
-- name: kops-k8s-1.31
+- name: kops-distro-cos121
+- name: kops-distro-cos125
+- name: kops-distro-cosdev
 - name: kops-k8s-1.32
 - name: kops-k8s-1.33
 - name: kops-k8s-1.34
-- name: kops-k8s-1.35
 - name: kops-k8s-ci
-- name: kops-k8s-latest
 - name: kops-k8s-stable
-- name: kops-1.31
 - name: kops-1.32
 - name: kops-1.33
 - name: kops-1.34
-- name: kops-1.35
+- name: kops-master
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons

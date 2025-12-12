@@ -92,6 +92,11 @@ def _process_yaml_data(yaml_data, endpoint_type):
     """
     endpoints = set()
 
+    # Handle empty YAML files (yaml_data is None)
+    if yaml_data is None:
+        print(f"Loaded {len(endpoints)} {endpoint_type} (empty file)")
+        return endpoints
+
     if isinstance(yaml_data, list):
         for item in yaml_data:
             if isinstance(item, dict):

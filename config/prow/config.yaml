@@ -18,10 +18,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251027-86c075707"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251027-86c075707"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251027-86c075707"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251027-86c075707"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251211-8a9b5e47b"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251211-8a9b5e47b"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251211-8a9b5e47b"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251211-8a9b5e47b"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -242,7 +242,8 @@ branch-protection:
         autoscaler:
           required_status_checks:
             contexts:
-            - test-and-verify
+            - test
+            - verify
             - Helm chart
             - Helm Docs
           branches:
@@ -509,6 +510,10 @@ branch-protection:
         - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        alibaba-cloud-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         apisnoop:
           branches:
             gh-pages:
@@ -518,6 +523,8 @@ branch-protection:
             gh-pages:
               protect: false
         aws-efs-csi-driver:
+          required_pull_request_reviews:
+            required_approving_review_count: 1
           branches:
             gh-pages:
               protect: false
@@ -726,6 +733,32 @@ tide:
     - do-not-merge/work-in-progress
   - repos:
     - kubernetes/kubernetes
+    excludedBranches:
+      - master
+      - release-1.35
+    labels:
+      - lgtm
+      - approved
+      - "cncf-cla: yes"
+    missingLabels:
+      - do-not-merge
+      - do-not-merge/blocked-paths
+      - do-not-merge/cherry-pick-not-approved
+      - do-not-merge/contains-merge-commits
+      - do-not-merge/hold
+      - do-not-merge/invalid-commit-message
+      - do-not-merge/invalid-owners-file
+      - do-not-merge/needs-kind
+      - do-not-merge/needs-sig
+      - do-not-merge/release-note-label-needed
+      - do-not-merge/work-in-progress
+      - needs-rebase
+  - repos:
+      - kubernetes/kubernetes
+    milestone: v1.35
+    includedBranches:
+      - master
+      - release-1.35
     labels:
     - lgtm
     - approved

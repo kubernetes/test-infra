@@ -24,7 +24,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -81,7 +81,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -138,7 +138,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -195,7 +195,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -252,7 +252,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -309,7 +309,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.34
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -321,9 +321,9 @@ periodics:
       - name: KUBERNETES_VERSION_UPGRADE_TO
         value: "ci/latest-1.35"
       - name: ETCD_VERSION_UPGRADE_TO
-        value: "3.6.4-0"
+        value: "3.6.6-0"
       - name: COREDNS_VERSION_UPGRADE_TO
-        value: "v1.12.1"
+        value: "v1.13.1"
       - name: GINKGO_LABEL_FILTER
         value: "(Conformance && K8s-Upgrade)"
       # we need privileged mode in order to do docker in docker

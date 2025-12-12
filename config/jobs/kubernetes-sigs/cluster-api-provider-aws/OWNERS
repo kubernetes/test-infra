@@ -1,23 +1,20 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- luthermonson
-- cnmcavoy
-- nrb
-- faiq
-- fiunchinho
-- damdo
+  - faiq
+  - fiunchinho
 approvers:
-- richardcase
-- Ankitasw
-- dlipovetsky
-- nrb
-- AndiDog
+  - richardcase
+  - dlipovetsky
+  - nrb
+  - AndiDog
+  - damdo
 emeritus_approvers:
-- chuckha
-- detiber
-- ncdc
-- randomvariable
-- rudoi
-- Skarlso
-- vincepri
+  - Ankitasw
+  - chuckha
+  - detiber
+  - ncdc
+  - randomvariable
+  - rudoi
+  - Skarlso
+  - vincepri

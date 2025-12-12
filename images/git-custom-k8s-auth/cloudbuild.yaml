@@ -22,5 +22,5 @@ steps:
 substitutions:
   _GIT_TAG: "12345"
   # Prefer 0.5.x series (not 0.6.x) for now.
-  _AWS_IAM_AUTHENTICATOR_VERSION: "0.5.21"
-  _AZURE_KUBELOGIN_VERSION: "0.1.4"
+  _AWS_IAM_AUTHENTICATOR_VERSION: "0.7.9"
+  _AZURE_KUBELOGIN_VERSION: "0.2.13"

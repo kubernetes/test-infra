@@ -18,6 +18,10 @@ storage:
       contents:
         local: 20-crio.conf
       mode: 0644
+    - path: /etc/containers/registries.conf.d/99-localhost-insecure.conf
+      contents:
+        local: 99-localhost-insecure.conf
+      mode: 0644
     - path: /etc/sysctl.d/99-e2e-sysctl.conf
       contents:
         local: 99-e2e-sysctl.conf
@@ -32,8 +36,8 @@ storage:
       contents:
         inline: |
           [Manager]
-          DefaultEnvironment="CRIO_SCRIPT_COMMIT=0936ec4f6d77fba3a42432adaf8aa57b629c06cf"
-          DefaultEnvironment="CRIO_COMMIT=5655aea0470e126bbb0dd9a5092efb32fb4e12d1"
+          DefaultEnvironment="CRIO_SCRIPT_COMMIT=a7cafc89fd6011acbc8668f325752ea8f6dde0ae"
+          DefaultEnvironment="CRIO_COMMIT=14e7ced5d93fb2dedf7afd65111dc6f739301f23"
     - path: /etc/crio/crio.conf.d/40-evented-pleg.conf
       contents:
         local: 40-evented-pleg.conf

@@ -1,12 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- AdoHe
-- pwittrock
+- ardaguclu
+- brianpursley
+- eddiezane
 - soltysh
 approvers:
-- AdoHe
-- monopole
-- pwittrock
-- seans3
+- ardaguclu
+- brianpursley
+- eddiezane
 - soltysh

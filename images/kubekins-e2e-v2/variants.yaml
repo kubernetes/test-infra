@@ -1,31 +1,36 @@
 variants:
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.25.3
+    GO_VERSION: 1.25.5
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
   master:
     CONFIG: master
-    GO_VERSION: 1.25.3
+    GO_VERSION: 1.25.5
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:28.*
+  '1.35':
+    CONFIG: '1.35'
+    GO_VERSION: 1.25.5
+    K8S_RELEASE: latest-1.35
+    BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:28.*
   '1.34':
     CONFIG: '1.34'
-    GO_VERSION: 1.24.9
+    GO_VERSION: 1.24.11
     K8S_RELEASE: latest-1.34
     BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:28.*
   '1.33':
     CONFIG: '1.33'
-    GO_VERSION: 1.24.9
+    GO_VERSION: 1.24.11
     K8S_RELEASE: latest-1.33
     BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:28.*
   '1.32':
     CONFIG: '1.32'
-    GO_VERSION: 1.24.9
+    GO_VERSION: 1.24.11
     K8S_RELEASE: latest-1.32
     BAZEL_VERSION: 3.4.1
-  '1.31':
-    CONFIG: '1.31'
-    GO_VERSION: 1.24.9
-    K8S_RELEASE: latest-1.31
-    BAZEL_VERSION: 3.4.1
+    DOCKER_VERSION: 5:28.*

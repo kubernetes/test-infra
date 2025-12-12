@@ -254,10 +254,13 @@ for feature_name in "${!actual_features[@]}"; do
       if grep -q "$feature_name" staging/src/k8s.io/client-go/features/known_features.go; then
         continue
       fi
-      # Check if gate is deprecated feature gate at the same version as the binary version
-      # OR if it's a GA feature with version 1.0
-      if [[ -n "${current_version_stage[$feature_name]:-}" && "${current_version_stage[$feature_name]}" == "DEPRECATED" ]] || \
-         [[ -n "${version_1_0_stage[$feature_name]:-}" && "${version_1_0_stage[$feature_name]}" == "GA" ]]; then
+      # Check if gate is:
+      # - 1. DEPRECATED feature gate at the same version as the binary version
+      # - 2. GA feature with version 1.0 (used for code deprecation backfilling)
+      # - 3. BETA feature with version 1.0 (used for bug fixes bound to binary version instead of emulation version)
+      if [[ "${current_version_stage[$feature_name]:-}" == "DEPRECATED" ]] || \
+         [[ "${version_1_0_stage[$feature_name]:-}" == "BETA" ]] || \
+         [[ "${version_1_0_stage[$feature_name]:-}" == "GA" ]]; then
         continue
       fi
        echo "FAIL: unexpected feature '$feature_name' found in /metrics, got=1" \

@@ -8,7 +8,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 3h
-    interval: 12h
+    interval: 168h # one week
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     labels:
       preset-dind-enabled: "true"
@@ -34,7 +34,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         - ./scripts/ci-entrypoint.sh
@@ -130,7 +130,7 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 8h
-    interval: 12h
+    interval: 168h # one week
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     labels:
       preset-dind-enabled: "true"
@@ -156,7 +156,7 @@ periodics:
     spec:
       serviceAccountName: azure
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -274,7 +274,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -330,7 +330,7 @@ periodics:
       - "perfDashPrefix: gce-dra-extended-resources-100Nodes-with-workload"
       - "perfDashBuildsCount: 270"
       - "perfDashJobType: performance"
-    interval: 4h
+    interval: 24h
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -354,7 +354,7 @@ periodics:
         path_alias: k8s.io/perf-tests
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           command:
             - runner.sh
             - /workspace/scenarios/kubernetes_e2e.py
@@ -447,7 +447,7 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -459,7 +459,7 @@ periodics:
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
-          value: ubuntu
+          value: prow
         - name: GOPATH
           value: /home/prow/go
         - name: ARTIFACTS
@@ -476,8 +476,6 @@ periodics:
           value: "3s"
         - name: CL2_LONG_JOB_RUNNING_TIME
           value: "45m"
-        - name: CL2_EXTENDED_RESOURCE_NAME
-          value: "example.com/gpu"
         # - name: CL2_LOAD_TEST_THROUGHPUT
         #   value: "50"
         # - name: CL2_DELETE_TEST_THROUGHPUT
@@ -506,8 +504,6 @@ periodics:
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
         - name: KOPS_CL2_TEST_CONFIG
           value: testing/dra/config.yaml
-        - name: CL2_ENABLE_EXTENDED_RESOURCES
-          value: "true"
         resources:
           requests:
             cpu: "7"
@@ -535,9 +531,9 @@ periodics:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
-    - org: kubernetes
+    - org: alaypatel07
       repo: perf-tests
-      base_ref: master
+      base_ref: dra-scalability-bump-timeout
       path_alias: k8s.io/perf-tests
     - org: kubernetes
       repo: kops
@@ -558,7 +554,7 @@ periodics:
     spec:
       serviceAccountName: prow-build
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250925-95b5a2c7a5-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -570,7 +566,7 @@ periodics:
         - name: KUBE_SSH_KEY_PATH
           value: /etc/ssh-key-secret/ssh-private
         - name: KUBE_SSH_USER
-          value: ubuntu
+          value: prow
         - name: GOPATH
           value: /home/prow/go
         - name: ARTIFACTS
@@ -584,7 +580,7 @@ periodics:
         - name: CL2_NODES_PER_NAMESPACE
           value: "2500"
         - name: CL2_JOB_RUNNING_TIME
-          value: "3s"
+          value: "30s"
         - name: CL2_LONG_JOB_RUNNING_TIME
           value: "240m"
         # - name: CL2_LOAD_TEST_THROUGHPUT
@@ -599,11 +595,19 @@ periodics:
           value: "1"
         - name: CONTROL_PLANE_SIZE
           value: "c4-standard-96"
+        - name: KOPS_CONTROLLER_MANAGER_BURST
+          value: "1000"
+        - name: KOPS_CONTROLLER_MANAGER_QPS
+          value: "1000"
+        - name: KOPS_SCHEDULER_QPS
+          value: "1200"
+        - name: KOPS_SCHEDULER_BURST
+          value: "1200"
+        - name: KOPS_APISERVER_MAX_REQUESTS_INFLIGHT
+          value: "2700"
         - name: KUBE_PROXY_MODE
           value: "nftables"
         - name: ENABLE_PROMETHEUS_SERVER
-          value: "true"
-        - name: PROMETHEUS_SCRAPE_KUBELETS
           value: "true"
         - name: PROMETHEUS_PVC_STORAGE_CLASS
           value: "ssd-csi"
@@ -613,8 +617,6 @@ periodics:
           value: "scalability-scale-project"
         - name: NODE_PRELOAD_IMAGES
           value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        - name: CL2_ENABLE_EXTENDED_RESOURCES
-          value: "true"
         - name: KOPS_CL2_TEST_CONFIG
           value: testing/dra/config.yaml
         resources:

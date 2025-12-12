@@ -31,6 +31,8 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 # Assume go installed
 KUBE_ROOT="."
 source "${KUBE_ROOT}/hack/lib/version.sh"
+source "${KUBE_ROOT}/hack/lib/logging.sh"
+source "${KUBE_ROOT}/hack/lib/util.sh"
 kube::version::get_version_vars
 DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
@@ -46,6 +48,8 @@ update_kubelet() {
  for n in $NODES; do
    # Backup previous kubelet
    docker exec $n cp /usr/bin/kubelet /usr/bin/kubelet.bak
+   # This flag has been removed in 1.35. We can remove the replacement once 1.35 cannot be emulated anymore
+   docker exec $n sed -i 's/--pod-infra-container-image=[^ "]*//g' /var/lib/kubelet/kubeadm-flags.env
    # Install new kubelet binary
    docker cp ${KUBELET_BINARY} $n:/usr/bin/kubelet
    docker exec $n systemctl restart kubelet
@@ -78,8 +82,7 @@ check_emulated_version_removed(){
 }
 
 # Main
-IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
-KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
+KUBELET_BINARY=$(kube::util::find-binary kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   upgrade_emulated_version

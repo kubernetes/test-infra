@@ -252,8 +252,13 @@ presubmits:
     annotations:
       testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: capi-pr-e2e-blocking-{{ ReplaceAll $.branch "." "-" }}
-  - name: pull-cluster-api-e2e-{{ ReplaceAll $.branch "." "-" }}
-    cluster: eks-prow-build-cluster
+
+{{- block "e2e-main" (list $ "eks-prow-build-cluster" "") }}
+{{- $prowCluster := index $ 1 }}
+{{- $jobSuffix := index $ 2 }}
+{{- with index $ 0 }}
+  - name: pull-cluster-api-e2e-{{ ReplaceAll .branch "." "-" }}{{ $jobSuffix }}
+    cluster: {{ $prowCluster }}
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -268,11 +273,11 @@ presubmits:
     always_run: false
     branches:
     # The script this job runs is not in all branches.
-    - ^{{ $.branch }}$
+    - ^{{ .branch }}$
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: {{ $.config.TestImage }}
+      - image: {{ .config.TestImage }}
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -280,7 +285,7 @@ presubmits:
           # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
-{{- if eq $.branch "release-1.9" }}
+{{- if eq .branch "release-1.9" }}
           - name: GINKGO_SKIP
             value: "\\[Conformance\\]"
 {{- else }}
@@ -301,8 +306,14 @@ presubmits:
             cpu: 3000m
             memory: 8Gi
     annotations:
-      testgrid-dashboards: cluster-api-core-{{ TrimPrefix $.branch "release-" }}
-      testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll $.branch "." "-" }}
+      testgrid-dashboards: cluster-api-core-{{ TrimPrefix .branch "release-" }}
+      testgrid-tab-name: capi-pr-e2e-{{ ReplaceAll .branch "." "-" }}{{ $jobSuffix }}
+{{- end }}
+{{- end }}
+
+{{- if eq $.branch "main" }}
+  {{- template "e2e-main" (list $ "k8s-infra-prow-build" "-gke") }}
+{{- end }}
   - name: pull-cluster-api-e2e-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
     cluster: eks-prow-build-cluster
     labels:

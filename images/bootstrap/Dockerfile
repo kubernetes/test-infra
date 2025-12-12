@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:bookworm
+FROM debian:bookworm-20251020
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -65,10 +65,10 @@ RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
     /google-cloud-sdk/install.sh \
-        --disable-installation-options \
-        --bash-completion=false \
-        --path-update=false \
-        --usage-reporting=false && \
+    --disable-installation-options \
+    --bash-completion=false \
+    --path-update=false \
+    --usage-reporting=false && \
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
@@ -103,7 +103,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin && \
+    apt-get install -y --no-install-recommends docker-ce=5:28.* docker-ce-cli=5:28.* docker-buildx-plugin && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && update-alternatives --set iptables /usr/sbin/iptables-legacy \
@@ -127,7 +127,7 @@ RUN mkdir /docker-graph
 # env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
 # .bazelrc files if bazel remote caching is enabled 
 COPY ["entrypoint.sh", "runner.sh", \
-        "/usr/local/bin/"]
+    "/usr/local/bin/"]
 
 # TODO(krzyzacy): Move the scenario scripts to kubekins v2
 # The bundled scenarios are for podutil jobs, bootstrap jobs will still use
