@@ -231,9 +231,6 @@ dashboards:
 # s390x dashboard
 - name: conformance-s390x
   dashboard_tab:
-    - name: Periodic s390x conformance test on local cluster
-      test_group_name: s390x-conformance
-      description: Runs conformance tests by using kubetest2 against latest master version of kubernetes on local s390x cluster
     - name: Periodic s390x conformance test on local cluster , v1.33
       test_group_name: s390x-conformance-v1.33
       description: Runs conformance tests by using kubetest2 against latest v1.33 branch HEAD of kubernetes on local s390x cluster
@@ -263,8 +260,6 @@ test_groups:
   gcs_prefix: cel-conformance/test-logs
 
 #IBM s390x test results
-- name: s390x-conformance
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
 - name: s390x-conformance-v1.33
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.33
 - name: s390x-conformance-v1.32
