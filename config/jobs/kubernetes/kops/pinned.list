@@ -1,3 +1,6 @@
+azure://images/Canonical/ubuntu-24_04-lts/server:X86_64=Canonical:ubuntu-24_04-lts:server:24.04.202512100
+azure://images/Canonical/ubuntu-24_04-lts/server-arm64:arm64=Canonical:ubuntu-24_04-lts:server-arm64:24.04.202512100
+azure://images/Debian/debian-13/13-gen2:X86_64=Debian:debian-13:13-gen2:0.20251117.2299
 gce://images/debian-cloud/debian-12:X86_64=debian-cloud/debian-12-bookworm-v20251111
 gce://images/debian-cloud/debian-12-arm64:ARM64=debian-cloud/debian-12-bookworm-arm64-v20251111
 gce://images/debian-cloud/debian-13:X86_64=debian-cloud/debian-13-trixie-v20251111
