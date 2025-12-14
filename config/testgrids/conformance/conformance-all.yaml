@@ -5,6 +5,7 @@ dashboard_groups:
     - conformance-apisnoop
     - conformance-ec2
     - conformance-gce
+    - conformance-azure
     - conformance-kind
     - conformance-hack-local-up-cluster
     - conformance-ppc64le
@@ -95,6 +96,7 @@ dashboards:
 - name: conformance-apisnoop
 - name: conformance-ec2
 - name: conformance-gce
+- name: conformance-azure
 - name: conformance-hack-local-up-cluster
 - name: conformance-ppc64le
 - name: conformance-arm64
