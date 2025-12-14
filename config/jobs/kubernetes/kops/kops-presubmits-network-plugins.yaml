@@ -836,12 +836,12 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=kube-router --master-size=c6g.large --node-size=t4g.large" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --parallel=25
