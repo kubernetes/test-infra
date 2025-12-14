@@ -13,7 +13,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
@@ -41,7 +41,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
@@ -68,7 +68,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-json-sort.sh"
@@ -92,7 +92,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           args:
           - runner.sh
           - "./images/capi/scripts/ci-packer-validate.sh"
@@ -116,7 +116,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           args:
           - runner.sh
           - "./images/capi/scripts/ci-lint.sh"
@@ -143,7 +143,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-gce.sh"
@@ -172,7 +172,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-goss-populate.sh"
@@ -198,7 +198,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-container-image.sh"

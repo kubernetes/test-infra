@@ -12,6 +12,7 @@ steps:
     - --build-arg=KIND_VERSION=$_KIND_VERSION
     - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
     - --build-arg=YQ_VERSION=$_YQ_VERSION
+    - --build-arg=DOCKER_VERSION=$_DOCKER_VERSION
     - --push
     - .
     dir: .
@@ -32,6 +33,7 @@ substitutions:
   _KIND_VERSION: '0.30.0'
   _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.47.2
+  _DOCKER_VERSION: 5:29.*
 timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE

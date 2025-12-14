@@ -16,30 +16,14 @@ dashboard_groups:
     - sig-network-gwctl
     - sig-network-nat64
     - sig-network-kindnet
+    - sig-network-kube-agentic-networking
+    - sig-network-dranet
 
 dashboards:
 - name: sig-network-dns
 - name: sig-network-external-dns
 - name: sig-network-gce
   dashboard_tab:
-    - name: gce-cos-1.11-ingress
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gce-cos-1.12-ingress
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gce-cos-1.13-ingress
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    # TODO(1.30): Uncomment this when adding jobs for release-1.30 branch.
-    # TODO(1.29): comment this out when we move 1.29 to stable1
-    - name: gce-cos-1.14-ingress
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-ipvs
       test_group_name: ci-kubernetes-e2e-gci-gce-ipvs
       description: network gci-gce e2e tests in ipvs proxier mode
@@ -108,3 +92,5 @@ dashboards:
 - name: sig-network-gwctl
 - name: sig-network-nat64
 - name: sig-network-kindnet
+- name: sig-network-kube-agentic-networking
+- name: sig-network-dranet

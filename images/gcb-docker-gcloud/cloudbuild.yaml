@@ -4,6 +4,7 @@ steps:
       - build
       - --tag=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG
       - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG
+      - --build-arg=DOCKER_VERSION=$_DOCKER_VERSION
       - .
     dir: images/gcb-docker-gcloud/
   - name: gcr.io/cloud-builders/docker
@@ -13,6 +14,7 @@ steps:
     - gcr.io/$PROJECT_ID/gcb-docker-gcloud:latest
 substitutions:
   _GIT_TAG: '12345'
+  _DOCKER_VERSION: '28' # Docker v29+ doesn't work in GCP Cloud Build because its stuck on 20.10.x
 images:
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:latest'

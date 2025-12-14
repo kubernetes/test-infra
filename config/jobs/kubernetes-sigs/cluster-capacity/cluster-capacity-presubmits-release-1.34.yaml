@@ -1,7 +1,7 @@
 # sigs.k8s.io/cluster-capacity presubmits
 presubmits:
   kubernetes-sigs/cluster-capacity:
-  - name: pull-cluster-capacity-verify-gofmt-release-1-34
+  - name: pull-cluster-capacity-verify-release-1-34
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
@@ -15,7 +15,7 @@ presubmits:
         command:
         - make
         args:
-        - verify-gofmt
+        - verify
         resources:
           requests:
             cpu: 2
@@ -23,7 +23,7 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-verify-build-release-1-34
+  - name: pull-cluster-capacity-build-release-1-34
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
@@ -45,7 +45,7 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-unit-test-release-1-34
+  - name: pull-cluster-capacity-test-unit-release-1-34
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
@@ -84,7 +84,7 @@ presubmits:
     - release-1.34
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -123,7 +123,7 @@ presubmits:
     - release-1.34
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -162,7 +162,7 @@ presubmits:
     - release-1.34
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

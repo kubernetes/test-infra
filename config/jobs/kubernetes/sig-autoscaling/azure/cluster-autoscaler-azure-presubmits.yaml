@@ -27,7 +27,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -42,7 +42,7 @@ presubmits:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
-            value: "1.33" # latest available in AKS
+            value: "1.34"
           - name: AKS_TIER
             value: "Premium" # required for LTS
           - name: AKS_SUPPORT_PLAN
@@ -145,7 +145,7 @@ presubmits:
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -160,7 +160,7 @@ presubmits:
           - name: ADDITIONAL_ASO_CRDS
             value: authorization.azure.com/*;managedidentity.azure.com/* # needed for this CLUSTER_TEMPLATE
           - name: KUBERNETES_VERSION
-            value: "1.33" # TODO update when 1.34 is available in AKS
+            value: "1.34"
           - name: AKS_TIER
             value: "Premium" # required for LTS
           - name: AKS_SUPPORT_PLAN

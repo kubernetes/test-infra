@@ -100,6 +100,8 @@ create_cluster() {
   KIND_CLUSTER_LOG_LEVEL=${KIND_CLUSTER_LOG_LEVEL:-4}
 
   EMULATED_VERSION=${EMULATED_VERSION:-}
+  export LATEST_VERSION="${LATEST_VERSION:-$(curl -Ls https://dl.k8s.io/ci/latest.txt)}"
+  echo "{\"revision\":\"$LATEST_VERSION\"}" >"${ARTIFACTS}/metadata.json"
 
   # potentially enable --logging-format
   CLUSTER_LOG_FORMAT=${CLUSTER_LOG_FORMAT:-}
@@ -208,6 +210,33 @@ build_test_bins() {
   echo "Finished building e2e.test binary from ${release_branch}."
 }
 
+# TODO: Support Mac as a platform along with Linux https://github.com/kubernetes/test-infra/pull/34930#discussion_r2138760351
+download_release_version_bins() {
+  local version=$1
+  curl -LO https://dl.k8s.io/ci/$(curl -Ls https://dl.k8s.io/ci/latest-${version}.txt)/kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  if [ $? -ne 0 ]; then
+    echo "failed to download previous version ${version} binaries"
+    return 1
+  fi
+  tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz 
+  mkdir -p _output/bin
+  mv kubernetes/test/bin/* _output/bin
+  export PATH="${PWD}/_output/bin:$PATH"
+  return 0
+}
+
+download_current_version_bins() {
+  curl -LO 'https://dl.k8s.io/ci/'"${1}"/'kubernetes-test-'"$(go env GOOS)-$(go env GOARCH)"'.tar.gz'
+  if [ $? -ne 0 ]; then
+    echo "failed to download current version binaries"
+    return 1
+  fi
+  tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
+  mkdir -p _output/bin
+  mv kubernetes/test/bin/* _output/bin
+  return 0
+}
+
 # run e2es with ginkgo-e2e.sh
 run_e2e_tests() {
   # IPv6 clusters need some CoreDNS changes in order to work in k8s CI:
@@ -260,14 +289,24 @@ run_e2e_tests() {
   export KUBE_CONTAINER_RUNTIME=remote
   export KUBE_CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
   export KUBE_CONTAINER_RUNTIME_NAME=containerd
+  # Setting some formatting vars for ginkgo
+  export GINKGO_NO_COLOR=${GINKGO_NO_COLOR:-$(if [ -t 2 ]; then echo n; else echo y; fi)}
   # ginkgo can take forever to exit, so we run it in the background and save the
   # PID, bash will not run traps while waiting on a process, but it will while
   # running a builtin like `wait`, saving the PID also allows us to forward the
   # interrupt
-  ./hack/ginkgo-e2e.sh \
-    '--provider=skeleton' "--num-nodes=${NUM_NODES}" \
-    "--ginkgo.focus=${FOCUS}" "--ginkgo.skip=${SKIP}" "--ginkgo.label-filter=${LABEL_FILTER}" \
-    "--report-dir=${ARTIFACTS}" '--disable-log-dump=true' &
+  ginkgo \
+    --nodes=8 \
+    --focus="${FOCUS}" \
+    --skip="${SKIP}" \
+    --label-filter="${LABEL_FILTER}" \
+    --silence-skips \
+    --no-color \
+    ./_output/bin/e2e.test -- \
+    --provider=skeleton \
+    --num-nodes="${NUM_NODES}" \
+    --report-dir="${ARTIFACTS}" \
+    --disable-log-dump=true &
   GINKGO_PID=$!
   wait "$GINKGO_PID"
 }

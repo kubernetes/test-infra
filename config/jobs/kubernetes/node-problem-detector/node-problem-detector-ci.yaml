@@ -13,7 +13,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       args:
@@ -21,11 +21,11 @@ periodics:
       - ci
       resources:
         limits:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 6Gi
         requests:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 6Gi
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -48,7 +48,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       args:
@@ -92,7 +92,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       args:
@@ -114,10 +114,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -138,7 +138,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       args:
@@ -159,10 +159,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -183,7 +183,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       args:
@@ -204,10 +204,10 @@ periodics:
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -228,7 +228,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
@@ -245,18 +245,17 @@ periodics:
         --gcp-node-image=ubuntu
         --gcp-zone=us-central1-b
         --ginkgo-parallel=30
-        --image-family=pipeline-1-34-amd64
-        --env=KUBELET_ARGS="--fail-cgroupv1=false"
-        --image-project=ubuntu-os-gke-cloud
+        --image-family=ubuntu-2404-lts-amd64
+        --image-project=ubuntu-os-cloud
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com
@@ -277,7 +276,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
@@ -294,18 +293,17 @@ periodics:
         --gcp-node-image=ubuntu
         --gcp-zone=us-central1-b
         --ginkgo-parallel=30
-        --image-family=pipeline-1-34-amd64
-        --env=KUBELET_ARGS="--fail-cgroupv1=false"
-        --image-project=ubuntu-os-gke-cloud
+        --image-family=ubuntu-2404-lts-amd64
+        --image-project=ubuntu-os-cloud
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
       resources:
         limits:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 4
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, zhenw@google.com,ciprianhacman@gmail.com

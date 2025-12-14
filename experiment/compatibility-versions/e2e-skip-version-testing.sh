@@ -32,30 +32,54 @@ signal_handler() {
 }
 trap signal_handler INT TERM
 
+skip_min_kubelet_versions() {
+  local major_version=$1
+  local minor_version_min=$2
+  local minor_version_max=$3
+  local start_minor
+
+  if [[ minor_version_min -gt minor_version_max ]]; then
+    return
+  fi
+
+  local skips=()
+  for (( ver=minor_version_min; ver<=minor_version_max; ver++ )); do
+    skips+=("\[MinimumKubeletVersion:${major_version}\.${ver}\]")
+  done
+
+  local skip_regex
+  skip_regex=$(IFS='|'; echo "${skips[*]}")
+  echo "skip kubelet tests with ${skip_regex}"
+
+  if [[ -z "${skip_regex}" ]]; then
+    return
+  fi
+
+  if [ -n "${SKIP:-}" ]; then
+    export SKIP="${SKIP}|${skip_regex}"
+  else
+    export SKIP="${skip_regex}"
+  fi
+  echo "SKIP=${SKIP}"
+}
+
 run_skip_version_tests() {
   export PARALLEL=true
-  initial_emulated_version="$EMULATED_VERSION"
   ret=0
   while ! version_gte "$EMULATED_VERSION" "$CURRENT_VERSION"; do
     echo "Running e2e with compatibility version set to ${EMULATED_VERSION}"
     export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
     # Define the path within the temp directory for the cloned repo
     PREV_RELEASE_REPO_PATH="${TMP_DIR}/prev-release-k8s-${EMULATED_VERSION}"
-    echo "Cloning branch ${PREV_RELEASE_BRANCH} into ${PREV_RELEASE_REPO_PATH}"
-    git clone --filter=blob:none --single-branch --branch "${PREV_RELEASE_BRANCH}" https://github.com/kubernetes/kubernetes.git "${PREV_RELEASE_REPO_PATH}"
     # Set value of emulated version 
     set_emulation_version "$EMULATED_VERSION" || ret=$?
     if [[ "$ret" -ne 0 ]]; then
       echo "Failed setting emulation version"
       return 1
     fi
+    mkdir "${PREV_RELEASE_REPO_PATH}"
     pushd "${PREV_RELEASE_REPO_PATH}"
-    if [[ "$EMULATED_VERSION" != "$initial_emulated_version" ]]; then
-      # overwrite node e2e tests with the node tests at the initial emulated version because Kubelet is still at that version.
-      echo "Replace ${EMULATED_VERSION} node tests with node tests at ${initial_emulated_version}"
-      rsync -av --delete "./test/e2e/node" "${TMP_DIR}/prev-release-k8s-${initial_emulated_version}/test/e2e/node"
-    fi
-    build_test_bins "${PREV_RELEASE_BRANCH}" || ret=$?
+    download_release_version_bins ${EMULATED_VERSION} || ret=$?
     run_e2e_tests || ret=$?
     if [[ "$ret" -ne 0 ]]; then
       echo "Failed running skip version tests for emulated version $EMULATED_VERSION"
@@ -70,15 +94,13 @@ run_skip_version_tests() {
     export EMULATED_VERSION="${major}.${minor}"
   done
   # Test removal of emulated version entirely.
-  export PREV_RELEASE_BRANCH="release-${EMULATED_VERSION}"
+  CUR_REPO_PATH="${TMP_DIR}/cur-release-k8s-${EMULATED_VERSION}"
+  mkdir ${CUR_REPO_PATH}
+  pushd "${CUR_REPO_PATH}"
   delete_emulation_version || ret=$?
-  if [[ "$EMULATED_VERSION" != "$initial_emulated_version" ]]; then
-    # overwrite node e2e tests with the node tests at the initial emulated version because Kubelet is still at that version.
-    echo "Replace ${EMULATED_VERSION} node tests with node tests at ${initial_emulated_version}"
-    rsync -av --delete "./test/e2e/node" "${TMP_DIR}/prev-release-k8s-${initial_emulated_version}/test/e2e/node"
-  fi
-  build_test_bins "${PREV_RELEASE_BRANCH}" || ret=$?
+  download_current_version_bins ${LATEST_VERSION} || ret=$?
   run_e2e_tests || ret=$?
+  popd
   return $ret
 }
 
@@ -109,6 +131,7 @@ main() {
   export CURRENT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
   export PREV_VERSION="${MAJOR_VERSION}.$((MINOR_VERSION - VERSION_DELTA))"
   export EMULATED_VERSION="${PREV_VERSION}"
+  skip_min_kubelet_versions $MAJOR_VERSION $((MINOR_VERSION - VERSION_DELTA + 1)) $MINOR_VERSION
 
   # export the KUBECONFIG to a unique path for testing
   KUBECONFIG="${HOME}/.kube/kind-test-config"

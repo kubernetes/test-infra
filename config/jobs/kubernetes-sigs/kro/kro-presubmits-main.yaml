@@ -12,7 +12,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         command:
         - scripts/ci/presubmits/unit-tests
         resources:
@@ -37,7 +37,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         command:
         - scripts/ci/presubmits/lint
         resources:
@@ -62,7 +62,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         command:
         - scripts/ci/presubmits/integration-tests
         resources:
@@ -89,7 +89,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         securityContext:
           privileged: true
         command:
@@ -117,7 +117,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         command:
         - scripts/ci/presubmits/build-image
         resources:
@@ -130,3 +130,29 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
       testgrid-tab-name: presubmits-build-image
+  - name: presubmits-docs-tests
+    always_run: false
+    run_if_changed: "^website/"
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    path_alias: "sigs.k8s.io/kro"
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: node:20
+        command:
+        - scripts/ci/presubmits/docs-tests
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-kro-presubmits
+      testgrid-tab-name: presubmits-docs-tests

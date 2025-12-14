@@ -1,5 +1,5 @@
 # This is the configuration file for cluster-apis prowjob-generator which is located
-# at: https://github.com/kubernetes-sigs/cluster-api/blob/main/hack/tools/prowjob-generator/
+# at: https://github.com/kubernetes-sigs/cluster-api/tree/main/hack/tools/prowjob-gen
 # This configuration is used to generate the presubmits and periodics for cluster-api-provider-vsphere.
 
 # prow_ignored is a well known, unparsed field where non-Prow fields can
@@ -9,9 +9,11 @@ prow_ignored:
   # prowjob configuration files (presubmits, periodics)
   branches:
     main:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33"
+    release-2.10:
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33"
     release-2.9:
-      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32"
+      testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32"
     release-2.8:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30"
     release-2.7:

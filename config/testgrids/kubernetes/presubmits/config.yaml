@@ -9,7 +9,6 @@ dashboard_groups:
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-kubernetes-scalability
-  - presubmits-misc
   - presubmits-node-problem-detector
   - presubmits-test-infra
 
@@ -159,7 +158,6 @@ dashboards:
     test_group_name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     base_options: width=10
 - name: presubmits-kubernetes-scalability
-- name: presubmits-misc
 - name: presubmits-node-problem-detector
 - name: presubmits-test-infra
 - name: presubmits-ec2

@@ -32,8 +32,8 @@ CONTROL_PLANE_COMPONENTS="kube-apiserver kube-controller-manager kube-scheduler"
 KUBE_ROOT="."
 # KUBE_ROOT="$(go env GOPATH)/src/k8s.io/kubernetes"
 source "${KUBE_ROOT}/hack/lib/version.sh"
-kube::version::get_version_vars
-DOCKER_TAG=${KUBE_GIT_VERSION/+/_}
+
+DOCKER_TAG=${LATEST_VERSION/+/_}
 DOCKER_REGISTRY=${KUBE_DOCKER_REGISTRY:-registry.k8s.io}
 export GOFLAGS="-tags=providerless"
 export KUBE_BUILD_CONFORMANCE=n
@@ -66,15 +66,17 @@ parse_args()
 
 parse_args $*
 
-build_docker(){
-  build/run.sh make all WHAT="cmd/kubectl cmd/kubelet" 1> /dev/null
-  make quick-release-images 1> /dev/null
+download_images(){
+  curl -L 'https://dl.k8s.io/ci/'${LATEST_VERSION}'/kubernetes-server-linux-amd64.tar.gz' > kubernetes-server-linux-amd64.tar.gz
+  tar -xf kubernetes-server-linux-amd64.tar.gz
 }
 
 update_kubelet() {
  for n in $NODES; do
    # Backup previous kubelet
    docker exec $n cp /usr/bin/kubelet /usr/bin/kubelet.bak
+   # This flag has been removed in 1.35. We can remove the replacement once 1.35 cannot be emulated anymore
+   docker exec $n sed -i 's/--pod-infra-container-image=[^ "]*//g' /var/lib/kubelet/kubeadm-flags.env
    # Install new kubelet binary
    docker cp ${KUBELET_BINARY} $n:/usr/bin/kubelet
    docker exec $n systemctl restart kubelet
@@ -110,9 +112,13 @@ usage()
 }
 
 # Main
-build_docker
-IMAGES_PATH="${KUBE_ROOT}/_output/release-images/amd64"
-KUBELET_BINARY=$(find ${KUBE_ROOT}/_output/ -type f -name kubelet)
+TMP_DIR=$(mktemp -d -p /tmp kind-e2e-XXXXXX)
+echo "Created temporary directory: ${TMP_DIR}"
+pushd $TMP_DIR
+download_images
+popd
+IMAGES_PATH="${TMP_DIR}/kubernetes/server/bin"
+KUBELET_BINARY=$(find ${TMP_DIR}/kubernetes/server/bin/ -type f -name kubelet)
 
 if [[ "$UPDATE_CONTROL_PLANE" == "true" ]]; then
   update_control_plane "true"

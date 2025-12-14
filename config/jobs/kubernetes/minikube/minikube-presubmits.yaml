@@ -11,7 +11,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -42,13 +42,43 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
         - make
         - integration-prow-kvm-docker-linux-x86-64
         # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 20Gi
+            cpu: 7
+          limits:
+            memory: 20Gi
+            cpu: 7
+  - name: integration-docker-docker-linux-arm64
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: minikube-presubmits
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-prow-docker-docker-linux-arm64
         securityContext:
           privileged: true
         resources:
@@ -71,7 +101,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -100,7 +130,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -129,7 +159,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -158,7 +188,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -187,7 +217,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -216,7 +246,7 @@ presubmits:
       testgrid-dashboards: minikube-presubmits
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -232,3 +262,35 @@ presubmits:
           limits:
             memory: 20Gi
             cpu: 7
+  - name: integration-vfkit-docker-macos-arm64
+    cluster: k8s-infra-prow-build
+    optional: true # macos machine is precious, so only run when matainers explicitly trigger with /test <job_name>
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true" # enable aws ssh credentials
+    annotations:
+      testgrid-dashboards: minikube-presubmits
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-vfkit-docker-macos-arm64
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 20Gi
+            cpu: 7
+          limits:
+            memory: 20Gi
+            cpu: 7
+      nodeSelector:
+        kubernetes.io/arch: arm64

@@ -14,7 +14,7 @@ presubmits:
       description: Build test in container-object-storage-interface repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -47,7 +47,7 @@ presubmits:
       description: Unit tests in container-object-storage-interface repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -78,7 +78,7 @@ presubmits:
       description: Linters in container-object-storage-interface repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -110,7 +110,7 @@ presubmits:
       description: Check generated files in container-object-storage-interface repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -141,7 +141,7 @@ presubmits:
       description: E2e tests in container-object-storage-interface repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:

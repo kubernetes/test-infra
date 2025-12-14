@@ -10,3 +10,6 @@ Features:
 - gcloud
 - DinD
 - runner.sh wrapper
+
+Its available at `us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:latest-master`.
+If you are using it in a prowjob, please use a versioned tag(e.g. `v20251205-d1700a27d1-master` ) that will be autobumped.

@@ -129,7 +129,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -167,7 +167,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.33"
@@ -205,7 +205,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -243,7 +243,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -281,7 +281,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -319,7 +319,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -357,7 +357,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -395,7 +395,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.34"
@@ -408,6 +408,82 @@ presubmits:
             - make
             - kind-image-build
             - test-e2e-kueueviz
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
+  - name: pull-kueue-test-e2e-upgrade-main
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-upgrade-main
+      description: "Run kueue upgrade end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.34"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-upgrade
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
+  - name: pull-kueue-test-e2e-certmanager-upgrade-main
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-certmanager-upgrade-main
+      description: "Run kueue upgrade with cert-manager end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.34"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e-certmanager-upgrade
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -433,7 +509,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         securityContext:
           privileged: true
         command:
@@ -466,7 +542,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         securityContext:
           privileged: true
         command:
@@ -476,6 +552,7 @@ presubmits:
         - image-local-build
         - importer-image
         - kueueviz-image
+        - kueue-populator-image
         env:
         - name: GOMAXPROCS
           value: "2"
@@ -516,3 +593,131 @@ presubmits:
           limits:
             cpu: "6"
             memory: "9Gi"
+  - name: pull-kueue-populator-verify-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-populator-verify-main
+      description: "Run kueue-populator verify checks"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+          - make
+          - kueue-populator-verify
+        env:
+        - name: GOMAXPROCS
+          value: "8"
+        resources:
+          requests:
+            cpu: "8"
+            memory: "8Gi"
+          limits:
+            cpu: "8"
+            memory: "8Gi"
+  - name: pull-kueue-populator-test-unit-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-populator-test-unit-main
+      description: "Run kueue-populator unit tests"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.25
+        env:
+        - name: GO_TEST_FLAGS
+          value: "-race -count 3"
+        - name: GOMAXPROCS
+          value: "6"
+        command:
+        - make
+        args:
+        - kueue-populator-test
+        resources:
+          requests:
+            cpu: "6"
+            memory: "6Gi"
+          limits:
+            cpu: "6"
+            memory: "6Gi"
+  - name: pull-kueue-populator-test-integration-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-populator-test-integration-main
+      description: "Run kueue-populator integration tests"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.25
+        command:
+        - make
+        args:
+        - kueue-populator-test-integration
+        env:
+        - name: GOMAXPROCS
+          value: "7"
+        resources:
+          requests:
+            cpu: "7"
+            memory: "10Gi"
+          limits:
+            cpu: "7"
+            memory: "10Gi"
+  - name: pull-kueue-populator-test-e2e-main
+    cluster: eks-prow-build-cluster
+    branches:
+      - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$|^(keps|site|charts)/"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-populator-test-e2e-main
+      description: "Run kueue-populator end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.34"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kueue-populator-test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"

@@ -1,10 +1,10 @@
 periodics:
   - interval: 12h
-    name: periodic-kueue-test-unit-release-0-13
+    name: periodic-kueue-test-unit-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-unit-release-0-13
+      testgrid-tab-name: periodic-kueue-test-unit-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueue unit tests"
@@ -15,7 +15,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -40,11 +40,11 @@ periodics:
               cpu: "6"
               memory: "6Gi"
   - interval: 12h
-    name: periodic-kueue-test-integration-release-0-13
+    name: periodic-kueue-test-integration-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-integration-release-0-13
+      testgrid-tab-name: periodic-kueue-test-integration-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueue test-integration"
@@ -55,7 +55,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -78,11 +78,11 @@ periodics:
               cpu: "6"
               memory: "9Gi"
   - interval: 12h
-    name: periodic-kueue-test-integration-multikueue-release-0-13
+    name: periodic-kueue-test-integration-multikueue-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-integration-multikueue-release-0-13
+      testgrid-tab-name: periodic-kueue-test-integration-multikueue-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueue test-multikueue-integration"
@@ -93,7 +93,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -116,11 +116,11 @@ periodics:
               cpu: "7"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-scheduling-perf-release-0-13
+    name: periodic-kueue-test-scheduling-perf-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-scheduling-perf-release-0-13
+      testgrid-tab-name: periodic-kueue-test-scheduling-perf-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueue test-scheduling-perf"
@@ -131,7 +131,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -154,11 +154,11 @@ periodics:
               cpu: "6"
               memory: "9Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-release-0-13-1-32
+    name: periodic-kueue-test-e2e-release-0-15-1-32
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-release-0-13-1-32
+      testgrid-tab-name: periodic-kueue-test-e2e-release-0-15-1-32
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueue end to end tests for Kubernetes 1.32"
@@ -169,14 +169,14 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.32"
@@ -200,11 +200,11 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-release-0-13-1-33
+    name: periodic-kueue-test-e2e-release-0-15-1-33
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-release-0-13-1-33
+      testgrid-tab-name: periodic-kueue-test-e2e-release-0-15-1-33
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueue end to end tests for Kubernetes 1.33"
@@ -215,14 +215,14 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
               value: "1.33"
@@ -246,11 +246,57 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-multikueue-release-0-13
+    name: periodic-kueue-test-e2e-release-0-15-1-34
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-release-0-13
+      testgrid-tab-name: periodic-kueue-test-e2e-release-0-15-1-34
+      testgrid-alert-email: kueue-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: "Run periodic kueue end to end tests for Kubernetes 1.34"
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: kueue
+        base_ref: release-0.15
+        path_alias: kubernetes-sigs/kueue
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+          env:
+            - name: E2E_K8S_VERSION
+              value: "1.34"
+            - name: BASE_BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - kind-image-build
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "10Gi"
+            limits:
+              cpu: "10"
+              memory: "10Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-multikueue-release-0-15
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: periodic-kueue-test-e2e-multikueue-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic multikueue end to end tests"
@@ -261,17 +307,17 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.33"
+              value: "1.34"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -292,11 +338,11 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-tas-release-0-13
+    name: periodic-kueue-test-e2e-tas-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-tas-release-0-13
+      testgrid-tab-name: periodic-kueue-test-e2e-tas-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic tas end to end tests"
@@ -307,17 +353,17 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.33"
+              value: "1.34"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -338,11 +384,11 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-customconfigs-release-0-13
+    name: periodic-kueue-test-e2e-customconfigs-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-customconfigs-release-0-13
+      testgrid-tab-name: periodic-kueue-test-e2e-customconfigs-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic customconfigs end to end tests"
@@ -353,17 +399,17 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.33"
+              value: "1.34"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -384,11 +430,11 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-certmanager-release-0-13
+    name: periodic-kueue-test-e2e-certmanager-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-certmanager-release-0-13
+      testgrid-tab-name: periodic-kueue-test-e2e-certmanager-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic certmanager end to end tests"
@@ -399,17 +445,17 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.33"
+              value: "1.34"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:
@@ -430,11 +476,11 @@ periodics:
               cpu: "10"
               memory: "10Gi"
   - interval: 12h
-    name: periodic-kueue-test-e2e-kueueviz-release-0-13
+    name: periodic-kueue-test-e2e-kueueviz-release-0-15
     cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-kueueviz-release-0-13
+      testgrid-tab-name: periodic-kueue-test-e2e-kueueviz-release-0-15
       testgrid-alert-email: kueue-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: "Run periodic kueueviz end to end tests"
@@ -445,17 +491,17 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: release-0.13
+        base_ref: release-0.15
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
           env:
             - name: E2E_K8S_VERSION
-              value: "1.33"
+              value: "1.34"
             - name: BASE_BUILDER_IMAGE
               value: public.ecr.aws/docker/library/golang
           command:

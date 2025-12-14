@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-staging-test-infra/bootstrap:v20250702-52f5173c3a
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20251209-855adc2699
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"

@@ -11,6 +11,8 @@ periodics:
     annotations:
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-unit-ppc64le
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
@@ -19,7 +21,7 @@ periodics:
         runAsGroup: 2010
         runAsUser: 2001
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           command:
             - make
             - test
@@ -49,12 +51,16 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
     annotations:
+      fork-per-release: "true"
+      fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
       testgrid-tab-name: ci-kubernetes-integration-master-ppc64le
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         args:
@@ -72,75 +78,6 @@ periodics:
           requests:
             cpu: 6
             memory: 20Gi
-
-  - name: ci-kubernetes-integration-1-34-ppc64le
-    cron: "0 0-18/6 * * *" # every 6h starting at 00:00 UTC
-    cluster: k8s-infra-ppc64le-prow-build
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.34
-      path_alias: k8s.io/kubernetes
-    annotations:
-      testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
-      testgrid-tab-name: ci-kubernetes-integration-1-34-ppc64le
-      description: "Ends up running: make test-integration"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 20Gi
-          requests:
-            cpu: 4
-            memory: 20Gi
-
-  - name: ci-kubernetes-integration-1-33-ppc64le
-    cron: "0 1 * * *" # every 24h starting at 01:00 UTC
-    cluster: k8s-infra-ppc64le-prow-build
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.33
-      path_alias: k8s.io/kubernetes
-    annotations:
-      testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
-      testgrid-tab-name: ci-kubernetes-integration-1-33-ppc64le
-      description: "Ends up running: make test-integration"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 20Gi
-          requests:
-            cpu: 4
-            memory: 20Gi
-
 
   - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC
@@ -149,7 +86,8 @@ periodics:
       preset-ibmcloud-cred: "true"
     decorate: true
     decoration_config:
-      timeout: 220m
+      # TO-DO(kishen-v): Investigating on how to reduce the job duration on ppc64le arch
+      timeout: 300m
     extra_refs:
       - base_ref: main
         org: kubernetes-sigs
@@ -159,9 +97,11 @@ periodics:
       description: Runs conformance tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, conformance-ppc64le, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           securityContext:
             privileged: true
           env:
@@ -201,30 +141,14 @@ periodics:
                 --powervs-service-id ${BOSKOS_RESOURCE_ID} --powervs-ssh-key k8s-prow-sshkey \
                 --ssh-private-key /etc/secret-volume/ssh-privatekey \
                 --workers-count 2 --cluster-name $CLUSTER_NAME \
-                --up --auto-approve --retry-on-tf-failure 3 \
-                --break-kubetest-on-upfail true \
+                --up --down --auto-approve --retry-on-tf-failure 3 \
+                --break-kubetest-on-upfail true --ignore-destroy-errors \
                 --build-version $(curl -Ls https://dl.k8s.io/ci/latest.txt) \
-                --test=ginkgo -- --parallel 10 --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]' --skip-regex='\[Serial\]'; rc1=$?
-
-              export KUBECONFIG="$(pwd)/$CLUSTER_NAME/kubeconfig"
-              export ARTIFACTS=$ARTIFACTS/serial_tests_artifacts
-              #Run Serial Conformance tests
-              kubetest2 tf --powervs-region ${BOSKOS_REGION} --powervs-zone ${BOSKOS_ZONE} \
-                --powervs-service-id ${BOSKOS_RESOURCE_ID} \
-                --ignore-cluster-dir true \
-                --cluster-name $CLUSTER_NAME \
-                --down --auto-approve --ignore-destroy-errors \
-                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Serial\].*\[Conformance\]'; rc2=$?
+                --test=ginkgo -- --test-package-dir ci --test-package-marker latest.txt --focus-regex='\[Conformance\]'; rc=$?
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
+              [ $rc != 0 ] && echo "ERROR: E2E Conformance Test suite exited with code:$rc"; exit $rc
 
-              if [ $rc1 != 0 ]; then
-                  echo "ERROR: Non Serial k8s Conformance tests exited with code: $rc1"
-                  exit $rc1
-              elif [ $rc2 != 0 ]; then
-                  echo "ERROR: Serial k8s Conformance tests exited with code: $rc2"
-                  exit $rc2
-              fi
   - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
     cluster: k8s-infra-ppc64le-prow-build
@@ -242,9 +166,11 @@ periodics:
       description: Runs e2e-node tests using kubetest2 on IBM powervs
       testgrid-dashboards: ibm-ppc64le-node-e2e, ibm-ppc64le-k8s, sig-node-ppc64le
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -313,9 +239,11 @@ periodics:
       description: Runs e2e tests with alpha enabled feature gates against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-alpha-enabled-default
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           securityContext:
             privileged: true
           env:
@@ -380,9 +308,11 @@ periodics:
       description: Runs e2e tests with against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-default
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -444,9 +374,11 @@ periodics:
       description: Runs E2E slow tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-ppc64le-e2e-slow-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           securityContext:
             privileged: true
           env:
@@ -507,9 +439,11 @@ periodics:
       description: Runs E2E serial tests using kubetest2 against kubernetes ci latest on IBM powervs
       testgrid-dashboards: ibm-ppc64le-e2e, ibm-ppc64le-k8s, ibm-k8s-e2e
       testgrid-tab-name: ci-kubernetes-e2e-ppc64le-serial-kubetest2
+      testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"

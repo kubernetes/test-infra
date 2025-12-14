@@ -610,6 +610,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Checkpoint Restore.
+      name: wg/checkpoint-restore
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Data Protection.
       name: wg/data-protection
       target: both

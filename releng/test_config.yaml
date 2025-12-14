@@ -39,12 +39,9 @@ jobs:
   # ATTN: RELEASE MANAGERS
   # ENSURE THE ARGUMENTS FOLLOW THE ROTATION AS STABLE 1 IS SHIFTED TO STABLE 2 AND SO ON.
   # ROTATE 1->2, 2->3, 3->4, etc.
+  # ALSO ROTATE INTERVAL 1h->2h, 2h->6h, 6h->24h, etc.
 
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -76,10 +73,6 @@ jobs:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
@@ -105,10 +98,6 @@ jobs:
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
@@ -140,15 +129,10 @@ jobs:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     args:
     - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
@@ -169,34 +153,37 @@ jobs:
     testSuite: alphafeatures-eventedpleg
 
   # stable4
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-default:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseInforming: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseInforming: true
-  #   testgridNumFailuresToAlert: 6
-  # ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
-  #   interval: 24h
-  #   sigOwners: [sig-cloud-provider-gcp]
-  #   releaseBlocking: true
-  #   testSuite: alphafeatures-eventedpleg
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    args:
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\]
+      --minStartupPods=8
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testSuite: alphafeatures-eventedpleg
 
 # The following settings are used by cluster e2e tests.
 
@@ -248,24 +235,24 @@ k8sVersions:
     version: master
   beta:
     args:
+    - --extract=ci/latest-1.35
+    version: '1.35'
+  stable1:
+    args:
     - --extract=ci/latest-1.34
     version: '1.34'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.33
     version: '1.33'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.32
     version: '1.32'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.31
     version: '1.31'
-  # stable4:
-  #   args:
-  #   - --extract=ci/latest-1.30
-  #   version: '1.30'
 
 testSuites:
   alphafeatures:
@@ -277,7 +264,7 @@ testSuites:
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
+    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
       --minStartupPods=8
     cluster: k8s-infra-prow-build
@@ -290,7 +277,7 @@ testSuites:
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
+    - --test_args=--ginkgo.focus=\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Example)\]|IPv6|csi-hostpath-v0
       --minStartupPods=8
     cluster: k8s-infra-prow-build
@@ -341,11 +328,6 @@ testSuites:
     - --timeout=300m
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\]
       --minStartupPods=8
-    cluster: k8s-infra-prow-build
-  ingress:
-    args:
-    - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
     cluster: k8s-infra-prow-build
   reboot:
     args:
@@ -435,7 +417,7 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
 
 # ATTN: RELEASE MANAGERS
 # There must be a stable[#] group for EACH release
@@ -448,24 +430,24 @@ nodeK8sVersions:
 
   beta:
     args:
-    - --repo=k8s.io/kubernetes=release-1.34
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.34
+    - --repo=k8s.io/kubernetes=release-1.35
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.33
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - --repo=k8s.io/kubernetes=release-1.34
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.34
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.32
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.32
+    - --repo=k8s.io/kubernetes=release-1.33
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
   stable3:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.32
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.31
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.31
-  # stable4:
-  #   args:
-  #   - --repo=k8s.io/kubernetes=release-1.30
-  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
 
 nodeTestSuites:
   default:

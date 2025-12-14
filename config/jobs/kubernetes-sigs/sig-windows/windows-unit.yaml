@@ -16,7 +16,7 @@ periodics:
   spec:
     serviceAccountName: azure
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
           - "runner.sh"
           - "./scripts/ci-k8s-unit-test.sh"
@@ -35,7 +35,7 @@ periodics:
           - name: VM_SIZE
             value: Standard_D8as_v5
   annotations:
-#   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-unit-master
 presubmits:
@@ -64,7 +64,7 @@ presubmits:
       spec:
         serviceAccountName: azure
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-unit-test.sh"
@@ -101,7 +101,7 @@ presubmits:
       spec:
         serviceAccountName: azure
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
             command:
               - "runner.sh"
               - "./scripts/ci-k8s-unit-test.sh"

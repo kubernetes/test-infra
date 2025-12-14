@@ -17,7 +17,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -65,7 +65,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -110,7 +110,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -155,7 +155,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -200,7 +200,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -245,7 +245,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -297,7 +297,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -347,7 +347,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -397,7 +397,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -447,7 +447,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -511,7 +511,7 @@ periodics:
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=400m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -546,7 +546,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -581,7 +581,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -611,13 +611,13 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-central1-b
       - --gcp-node-image=gci
-      - --gcp-node-size=e2-standard-4
+      - --gcp-node-size=e2-highcpu-8
       - --extract=ci/latest
       - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\] --ginkgo.skip=\[Alpha\]|\[Beta\]
         --minStartupPods=8
-      - --ginkgo-parallel=3
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - --ginkgo-parallel=10
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -654,7 +654,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPAConfigurableTolerance\]
         --minStartupPods=8
       - --ginkgo-parallel=1
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2

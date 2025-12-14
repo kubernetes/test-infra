@@ -49,7 +49,7 @@ PROW_CONFIG_TEMPLATE = """
       - command:
         args:
         env:
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         resources:
           requests:
             cpu: 1000m
@@ -415,7 +415,8 @@ def main(yaml_config_path, output_dir, testgrid_output_path):
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         description='Create test definitions from the given yaml config')
-    PARSER.add_argument('--yaml-config-path', help='Path to config.yaml')
+    PARSER.add_argument('--yaml-config-path', help='Path to config.yaml',
+                        default='releng/test_config.yaml')
     PARSER.add_argument(
         '--output-dir',
         help='Prowjob config output dir',

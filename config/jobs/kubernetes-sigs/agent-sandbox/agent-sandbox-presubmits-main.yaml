@@ -2,13 +2,14 @@ presubmits:
   kubernetes-sigs/agent-sandbox:
   - name: presubmit-test-autogen-up-to-date
     cluster: eks-prow-build-cluster
-    always_run: true
+    # Skip ONLY config/metadata, docs/ and md files, but will run for site/.
+    skip_if_only_changed: "^docs/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$"
     decorate: true
     labels:
       preset-service-account: 'true'
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - dev/ci/presubmits/test-autogen-up-to-date
         resources:
@@ -25,7 +26,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: presubmit-agent-sandbox-unit-test
     cluster: eks-prow-build-cluster
-    always_run: true
+    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$"
     decorate: true
     spec:
       containers:
@@ -44,7 +45,7 @@ presubmits:
       testgrid-tab-name: presubmit-unit-test
   - name: presubmit-agent-sandbox-lint-go
     cluster: eks-prow-build-cluster
-    always_run: true
+    run_if_changed: "^.*\\.go$|^go\\.(mod|sum)$|^dev/ci/presubmits/lint-go$"
     decorate: true
     spec:
       containers:
@@ -63,14 +64,14 @@ presubmits:
       testgrid-tab-name: presubmit-lint-go
   - name: presubmit-agent-sandbox-e2e-test
     cluster: eks-prow-build-cluster
-    always_run: true
+    skip_if_only_changed: "^(docs|site)/|\\.md$|^(\\.gitignore|LICENSE|netlify\\.toml|OWNERS)$"
     decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
         command:
         - runner.sh
         - dev/ci/presubmits/test-e2e

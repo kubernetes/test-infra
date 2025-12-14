@@ -17,7 +17,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       resources:
         limits:
           cpu: 2
@@ -42,7 +42,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -61,7 +61,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -93,7 +93,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -112,7 +112,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -144,7 +144,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -163,7 +163,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -195,7 +195,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 5 * * *'
+  cron: '0 21 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -214,7 +214,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -246,7 +246,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -265,7 +265,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -299,7 +299,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 180m
@@ -318,7 +318,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -350,7 +350,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -369,7 +369,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:
@@ -401,7 +401,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-gcve-e2e-config: "true"
     preset-kind-volume-mounts: "true"
-  cron: '0 3 * * *'
+  cron: '0 19 * * *'
   decorate: true
   decoration_config:
     timeout: 120m
@@ -420,7 +420,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-1.33
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       command:
       - runner.sh
       args:

@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.25.4
-
+ARG GO_VERSION=1.25.5
 FROM multiarch/qemu-user-static:7.2.0-1 AS qemu-image
-
 # Includes bash, docker, and gcloud
-FROM golang:${GO_VERSION}-alpine
+FROM golang:${GO_VERSION}-alpine3.22
+# upstream go image sets GOTOOLCHAIN=local
+# this means that we won't auto-select the appropriate go for the project being
+# built, so we set it back to auto, which is the default if GOTOOLCHAIN is not set
+ENV GOTOOLCHAIN=auto
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
-ENV IMAGE=${IMAGE_ARG}
+ARG DOCKER_VERSION
 
 # Install gcloud, docker, and bash
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
@@ -30,7 +32,10 @@ ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
 WORKDIR /workspace
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/apk/repositories && \
-    apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make
+    apk --no-cache add curl python3 py-crcmod bash \
+    libc6-compat openssh-client git gnupg \
+    docker-cli-buildx \
+    docker-cli~=${DOCKER_VERSION} make
 
 RUN curl -fsSLO https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
 RUN tar xzf google-cloud-sdk.tar.gz -C /
@@ -40,7 +45,10 @@ RUN gcloud config set core/disable_usage_reporting true && \
     gcloud config set metrics/environment github_docker_image && \
     gcloud components install alpha beta gke-gcloud-auth-plugin gsutil && \
     gcloud --version && \
+    gcloud auth configure-docker gcr.io,us-central1-docker.pkg.dev && \
     gcloud info > /workspace/gcloud-info.txt
+
+RUN echo ${IMAGE_ARG} > /workspace/image-reference.txt
 
 # Default home for cloudbuild jobs is /builder/home
 RUN mkdir -p /builder/home
@@ -54,8 +62,5 @@ COPY --from=qemu-image /register /register
 ADD ./buildx-entrypoint.sh /buildx-entrypoint
 
 RUN apk add qemu
-
-# Install buildx system-wide for fast docker builds
-COPY --from=docker/buildx-bin:0.29.1 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]

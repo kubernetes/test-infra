@@ -86,7 +86,7 @@ presubmits:
       description: "Build image and run e2e-tests"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         # Need privileged mode for dind
         securityContext:
           privileged: true

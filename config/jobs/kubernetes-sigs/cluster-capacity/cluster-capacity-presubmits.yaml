@@ -1,7 +1,7 @@
 # sigs.k8s.io/cluster-capacity presubmits
 presubmits:
   kubernetes-sigs/cluster-capacity:
-  - name: pull-cluster-capacity-verify-gofmt
+  - name: pull-cluster-capacity-verify
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
@@ -15,7 +15,7 @@ presubmits:
         command:
         - make
         args:
-        - verify-gofmt
+        - verify
         resources:
           requests:
             cpu: 2
@@ -23,7 +23,7 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-verify-build
+  - name: pull-cluster-capacity-build
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
@@ -45,7 +45,7 @@ presubmits:
           limits:
             cpu: 2
             memory: 4Gi
-  - name: pull-cluster-capacity-unit-test
+  - name: pull-cluster-capacity-test-unit
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
@@ -84,7 +84,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -123,7 +123,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -162,7 +162,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

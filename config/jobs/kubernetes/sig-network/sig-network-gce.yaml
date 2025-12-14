@@ -56,7 +56,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
         - --timeout=320m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         resources:
           requests:
             cpu: 4
@@ -114,7 +114,7 @@ presubmits:
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
         - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|SCTPConnectivity)\]|DualStack|Disruptive|Serial|Flaky|LoadBalancer|Alpha|Beta
         - --timeout=100m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         resources:
           requests:
             cpu: 4
@@ -184,7 +184,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         resources:
           limits:
             cpu: 2
@@ -245,9 +245,9 @@ presubmits:
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --ginkgo-parallel=30
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|SupplementalGroups --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         resources:
           limits:
             cpu: 2
@@ -297,7 +297,7 @@ presubmits:
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
         - --timeout=150m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         resources:
           limits:
             cpu: 2
@@ -326,7 +326,7 @@ presubmits:
     path_alias: k8s.io/dns
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - "runner.sh"
         - ./presubmits.sh
@@ -368,7 +368,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=60m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -407,7 +407,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -445,7 +445,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -481,7 +481,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -518,7 +518,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -557,7 +557,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -594,7 +594,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -627,7 +627,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
       - --timeout=320m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 1
@@ -665,7 +665,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 1
@@ -701,7 +701,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -740,7 +740,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[sig-storage\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -778,7 +778,7 @@ periodics:
       # skip ESIPP should work from pods #97081
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -815,9 +815,9 @@ periodics:
       - --ginkgo-parallel=30
       - --provider=gce
       # skip ESIPP should work from pods #97081
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|ESIPP|LoadBalancers|SupplementalGroups --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -857,7 +857,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -892,7 +892,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|LoadBalancer --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -927,7 +927,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|\[sig-cloud-provider-gcp\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -964,7 +964,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[sig-storage\]|\[Feature:.+\]|LoadBalancer|\[sig-cloud-provider-gcp\]  --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -1000,7 +1000,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|ServiceCIDRs|SCTPConnectivity)\]|DualStack|Disruptive|Serial|SNAT|LoadBalancer|Alpha|Beta
       - --extract=ci/latest
       - --timeout=100m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
       resources:
         limits:
           cpu: 2
@@ -1015,70 +1015,3 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
-
-
-- interval: 6h
-  labels:
-    preset-k8s-ssh: "true"
-  cluster: k8s-infra-prow-build
-  name: ci-kubernetes-e2e-gce-kops-nftables
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    serviceAccountName: k8s-kops-test
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        make test-e2e-install
-        kubetest2 kops \
-          -v 2 \
-          --up --down \
-          --cloud-provider=gce \
-          --create-args="--channel=alpha --gce-service-account=default --networking=kindnet --set=spec.kubeProxy.proxyMode=nftables" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
-          --test=kops \
-          -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
-          --test-package-dir=ci \
-          --test-package-marker=latest.txt \
-          --parallel=25
-      env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private
-      - name: KUBE_SSH_USER
-        value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-  annotations:
-    test.kops.k8s.io/cloud: gce
-    test.kops.k8s.io/container_runtime: containerd
-    test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --channel=alpha
-    test.kops.k8s.io/k8s_version: ci
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: 'kindnet'
-    testgrid-dashboards: sig-network-gce
-    testgrid-days-of-results: '40'
-    testgrid-tab-name: kops-gce-networking-nftables

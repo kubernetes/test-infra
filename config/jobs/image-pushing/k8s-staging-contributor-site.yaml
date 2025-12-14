@@ -1,0 +1,40 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated
+  # for each repo.
+  kubernetes/contributor-site:
+    # The name should be changed to match the repo name above
+    - name: post-contributor-site-push-image-k8s-contrib-site-hugo
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # This is the name of some testgrid dashboard to report to.
+        # If this is the first one for your sig, you may need to create one
+        testgrid-tab-name: post-contributor-site-push-image-k8s-contrib-site-hugo
+        testgrid-dashboards: sig-contribex-contributor-website, sig-k8s-infra-gcb
+      decorate: true
+      run_if_changed: >-
+        ^(Dockerfile|Makefile|netlify\.toml|\.dockerignore|cloudbuild\.yaml|package\.json|package-lock\.json)$
+      # this causes the job to only run on the master branch. Remove it if your
+      # job makes sense on every branch (unless it's setting a `latest` tag it
+      # probably does).
+      # if you remove it you must instead use the following:
+      #skip_branches:
+      #  # do not run on dependabot branches, these exist prior to merge
+      #  # only merged code should trigger these jobs
+      #  - '^dependabot'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .

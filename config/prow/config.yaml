@@ -18,10 +18,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251117-cfbb719bc"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251117-cfbb719bc"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251117-cfbb719bc"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251117-cfbb719bc"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251212-148e9cff4"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251212-148e9cff4"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251212-148e9cff4"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251212-148e9cff4"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -510,6 +510,10 @@ branch-protection:
         - "^copilot/" # don't protect branches created by copilot
         - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
+        alibaba-cloud-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
         apisnoop:
           branches:
             gh-pages:
@@ -1110,6 +1114,23 @@ presets:
       readOnly: true
   env:
     - name: TF_VAR_powervs_api_key
+      valueFrom:
+        secretKeyRef:
+          name: prow-job-api-key
+          key: key
+  volumes:
+    - name: prow-job-ssh-private-key
+      secret:
+        defaultMode: 256
+        secretName: prow-job-ssh-private-key
+- labels:
+    preset-ibmcloud-cred-z: "true"
+  volumeMounts:
+    - mountPath: /etc/secret-volume
+      name: prow-job-ssh-private-key
+      readOnly: true
+  env:
+    - name: TF_VAR_vpc_api_key
       valueFrom:
         secretKeyRef:
           name: prow-job-api-key

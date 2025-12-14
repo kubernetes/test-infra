@@ -13,7 +13,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -49,7 +49,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -80,7 +80,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -121,7 +121,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -167,7 +167,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -212,7 +212,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         args:
@@ -256,7 +256,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         env:
         - name: ZONE
           value: us-central1-a
@@ -298,7 +298,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
@@ -315,9 +315,8 @@ presubmits:
           --gcp-node-image=ubuntu
           --gcp-zone=us-central1-b
           --ginkgo-parallel=30
-          --image-family=pipeline-1-34-amd64
-          '--node-test-args=--kubelet-flags="--fail-cgroupv1=false"'
-          --image-project=ubuntu-os-gke-cloud
+          --image-family=ubuntu-2404-lts-amd64
+          --image-project=ubuntu-os-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
         resources:
@@ -347,7 +346,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251029-79c2132152-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
         command:
         - runner.sh
         # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
@@ -364,9 +363,8 @@ presubmits:
           --gcp-node-image=ubuntu
           --gcp-zone=us-central1-b
           --ginkgo-parallel=30
-          --image-family=pipeline-1-34-amd64
-          '--node-test-args=--kubelet-flags="--fail-cgroupv1=false"'
-          --image-project=ubuntu-os-gke-cloud
+          --image-family=ubuntu-2404-lts-amd64
+          --image-project=ubuntu-os-cloud
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
         resources:

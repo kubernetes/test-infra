@@ -85,7 +85,7 @@ periodics:
   spec:
     serviceAccountName: k8s-metrics
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20241015-f5fd905349
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20251205-8481528a19
       args:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
@@ -155,7 +155,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251117-cfbb719bc
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251212-148e9cff4
       command:
       - generic-autobumper
       args:
