@@ -48,7 +48,6 @@ from build_vars import ( # pylint: disable=import-error, no-name-in-module
     gce_distro_options,
     aws_distro_options,
     k8s_versions,
-    kops_versions,
     network_plugins_periodics,
     network_plugins_presubmits,
     upgrade_versions_list,
@@ -268,6 +267,8 @@ def build_test(cloud='aws',
     ]
     if cloud == 'gce':
         dashboards.extend(['kops-gce'])
+    if cloud == 'azure':
+        dashboards.extend(['kops-azure'])
 
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
@@ -485,8 +486,8 @@ def generate_grid():
     results = []
     # pylint: disable=too-many-nested-blocks
     for networking in network_plugins_periodics['supports_aws']:
-        for distro in aws_distro_options:
-            for k8s_version in k8s_versions:
+        for distro, kops_versions in aws_distro_options.items():
+            for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
                     networking_arg = networking.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router')
                     distro_short = distro_shortener(distro)
@@ -511,8 +512,8 @@ def generate_grid():
                     )
 
     for networking in network_plugins_periodics['supports_gce']:
-        for distro in gce_distro_options:
-            for k8s_version in k8s_versions:
+        for distro, kops_versions in gce_distro_options.items():
+            for k8s_version in [v for v in k8s_versions if v != 'master']:
                 for kops_version in kops_versions:
                     distro_short = distro_shortener(distro)
                     extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
@@ -1286,12 +1287,11 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['master', '1.34', '1.33', '1.32']:
+    for version in k8s_versions:
         results.append(
             build_test(
                 cloud='aws',
                 k8s_version=version.replace('master', 'ci'),
-                kops_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
@@ -1311,7 +1311,6 @@ def generate_conformance():
             build_test(
                 cloud='aws',
                 k8s_version=version.replace('master', 'ci'),
-                kops_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
@@ -1331,7 +1330,6 @@ def generate_conformance():
             build_test(
                 cloud='azure',
                 k8s_version=version.replace('master', 'ci'),
-                kops_version=version,
                 kops_channel='alpha',
                 name_override=f"kops-azure-conformance-{version.replace('.', '-')}",
                 networking='kindnet',
@@ -1352,7 +1350,7 @@ def generate_conformance():
 ###############################
 def generate_distros():
     results = []
-    for distro in aws_distro_options:
+    for distro, _ in aws_distro_options.items():
         distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
@@ -1384,7 +1382,7 @@ def generate_distros():
 ###############################
 def generate_presubmits_distros():
     results = []
-    for distro in aws_distro_options:
+    for distro, _ in aws_distro_options.items():
         distro_short = distro_shortener(distro)
         extra_flags = []
         if 'arm64' in distro:
@@ -1410,7 +1408,7 @@ def generate_presubmits_distros():
                 always_run=False,
             )
         )
-    for distro in gce_distro_options:
+    for distro, _ in gce_distro_options.items():
         distro_short = distro_shortener(distro)
         extra_flags = ["--gce-service-account=default"] # Workaround for test-infra#24747
         if 'arm64' in distro:
@@ -1708,6 +1706,7 @@ def generate_presubmits_scale():
             networking='gce',
             cloud="gce",
             always_run=False,
+            run_if_changed=r'^tests\/e2e\/scenarios\/scalability\/run-test.sh',
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
             env={
@@ -1774,7 +1773,7 @@ def generate_presubmits_scale():
 #################################
 def generate_nftables():
     results = []
-    for distro in aws_distro_options:
+    for distro, _ in aws_distro_options.items():
         distro_short = distro_shortener(distro)
         extra_flags = ["--set=cluster.spec.kubeProxy.proxyMode=nftables"]
         if 'arm64' in distro:
@@ -1796,7 +1795,7 @@ def generate_nftables():
                 runs_per_day=3,
             )
         )
-    for distro in gce_distro_options:
+    for distro, _ in gce_distro_options.items():
         distro_short = distro_shortener(distro)
         extra_flags = [
             "--set=cluster.spec.kubeProxy.proxyMode=nftables",
@@ -1833,18 +1832,8 @@ def generate_nftables():
 # kops-periodics-versions.yaml #
 ################################
 def generate_versions():
-    results = [
-        build_test(
-            build_cluster='k8s-infra-kops-prow-build',
-            k8s_version='ci',
-            kops_channel='alpha',
-            name_override='kops-aws-k8s-latest',
-            networking='calico',
-            extra_dashboards=['kops-versions'],
-            runs_per_day=8,
-        )
-    ]
-    for version in ['1.34', '1.33', '1.32']:
+    results = []
+    for version in k8s_versions:
         results.append(
             build_test(
                 cloud='aws',

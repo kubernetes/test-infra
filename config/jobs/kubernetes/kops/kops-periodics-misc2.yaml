@@ -106,11 +106,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25
@@ -172,11 +172,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251121' --channel=alpha --networking=cilium --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25
@@ -1584,11 +1584,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|NodeProblemDetector|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|serve.endpoints.on.same.port.and.different.protocols|should.check.kube-proxy.urls|should.verify.that.all.nodes.have.volume.limits" \
@@ -1651,11 +1651,11 @@ periodics:
           --create-args="--image='309956199498/RHEL-9.6.0_HVM-20251030-x86_64-0-Hourly2-GP3' --channel=alpha --networking=cilium --set=cluster.spec.containerd.selinuxEnabled=true --set=cluster.spec.kubeControllerManager.controllers=* --set=cluster.spec.kubeControllerManager.controllers=selinux-warning-controller" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=120m --master-os-distro=custom --node-os-distro=custom" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:SELinux\]" \
@@ -1724,11 +1724,11 @@ periodics:
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kubernetes-feature-gates=SELinuxMount,SELinuxChangePolicy \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=120m --master-os-distro=custom --node-os-distro=custom" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:SELinux\]" \
@@ -1795,11 +1795,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --set=spec.nodeProblemDetector.enabled=true --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[KubeUp\]" \
@@ -1862,11 +1862,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-utils" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
@@ -1929,11 +1929,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251122' --channel=alpha --networking=kubenet --set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-common" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m --master-os-distro=ubuntu --node-os-distro=ubuntu" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
@@ -1996,11 +1996,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --set=spec.networking.networkID=default --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=150m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Slow\]" \
@@ -2064,11 +2064,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.packages=nfs-utils" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=150m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Slow\]" \
@@ -2132,11 +2132,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -2200,11 +2200,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]" \
@@ -2336,11 +2336,11 @@ periodics:
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-aws-cni-canary.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]" \
@@ -2405,11 +2405,11 @@ periodics:
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=cilium --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --cluster-name="kubernetes-e2e-al2023-aws-conformance-cilium.k8s.local" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=200m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Conformance\]" \
@@ -2473,11 +2473,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=600m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Disruptive\]" \
@@ -2541,11 +2541,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=gce --node-count=3 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=300m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:Reboot\]" \
@@ -2609,11 +2609,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=amazonvpc --node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=500m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Disruptive\]" \
@@ -2678,11 +2678,11 @@ periodics:
           --admin-access=0.0.0.0/0 \
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=600m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Serial\]" \
@@ -2746,11 +2746,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=600m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Serial\]" \
@@ -2815,11 +2815,11 @@ periodics:
           --create-args="--image='137112412989/al2023-ami-2023.9.20251117.1-kernel-6.12-x86_64' --channel=alpha --networking=kubenet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true" \
           --kubernetes-feature-gates=AllAlpha,AllBeta,-EventedPLEG \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=240m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
@@ -2884,11 +2884,11 @@ periodics:
           --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default" \
           --kubernetes-feature-gates=AllAlpha,AllBeta,-EventedPLEG \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=240m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --focus-regex="\[Feature:(AdmissionWebhookMatchConditions|InPlacePodVerticalScaling|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking" \
