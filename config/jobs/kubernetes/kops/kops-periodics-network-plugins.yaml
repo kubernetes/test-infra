@@ -379,7 +379,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: kops-distro-u2404, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-azure, kops-distro-u2404, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-azure-cni-cilium
 
@@ -991,11 +991,11 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=kube-router --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
           --test=kops \
           -- \
           --test-args="-test.timeout=60m" \
-          --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+          --test-package-url=https://dl.k8s.io \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25

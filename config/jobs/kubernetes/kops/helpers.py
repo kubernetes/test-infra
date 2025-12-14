@@ -74,6 +74,8 @@ def should_skip_newer_k8s(k8s_version, kops_version):
         return False
     if kops_version is None:
         return False
+    if k8s_version == 'master':
+        return False
     if k8s_version is None:
         return True
     return float(k8s_version) > float(kops_version)
@@ -81,20 +83,19 @@ def should_skip_newer_k8s(k8s_version, kops_version):
 def k8s_version_info(k8s_version):
     test_package_url = ''
     test_package_dir = ''
-    if k8s_version == 'latest':
+    if k8s_version == 'ci':
         marker = 'latest.txt'
-        k8s_deploy_url = "https://dl.k8s.io/release/latest.txt"
-    elif k8s_version == 'ci':
-        marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/k8s-release-dev/ci/latest.txt"
-        test_package_url = 'https://storage.googleapis.com/k8s-release-dev'
+        k8s_deploy_url = "https://dl.k8s.io/ci/latest.txt"
+        test_package_url = 'https://dl.k8s.io'
         test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
         k8s_deploy_url = "https://dl.k8s.io/release/stable.txt"
     elif k8s_version:
-        marker = f"stable-{k8s_version}.txt"
-        k8s_deploy_url = f"https://dl.k8s.io/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
+        marker = f"latest-{k8s_version}.txt"
+        k8s_deploy_url = f"https://dl.k8s.io/ci/latest-{k8s_version}.txt" # pylint: disable=line-too-long
+        test_package_url = 'https://dl.k8s.io'
+        test_package_dir = 'ci'
     else:
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_url, test_package_dir

@@ -35,12 +35,12 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -103,12 +103,12 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=calico --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -567,7 +567,7 @@ presubmits:
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
             --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251121' --channel=alpha --networking=kindnet --zones=us-east1-b --node-size=c4-standard-4 --master-size=c4-standard-2 --set spec.cloudProvider.gce.pdCSIDriver.defaultStorageClassName=balanced-storage --set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000 --set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000 --set spec.etcdClusters[*].etcdMembers[*].volumeSize=60 --set spec.etcdClusters[*].etcdMembers[*].volumeType=hyperdisk-balanced --gce-service-account=default" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --control-plane-instance-group-overrides=spec.rootVolume.type=hyperdisk-balanced \
             --node-instance-group-overrides=spec.rootVolume.type=hyperdisk-balanced \
@@ -580,7 +580,7 @@ presubmits:
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --parallel=25
@@ -841,12 +841,12 @@ presubmits:
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
             --create-args="--image='ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251121' --channel=alpha --networking=cilium --gce-service-account=default" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --parallel=25
@@ -977,12 +977,12 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --parallel=25
@@ -1886,12 +1886,14 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=cilium" \
-            --kubernetes-version=https://dl.k8s.io/release/stable-1.32.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest-1.32.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-marker=stable-1.32.txt \
+            --test-package-url=https://dl.k8s.io \
+            --test-package-dir=ci \
+            --test-package-marker=latest-1.32.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -1951,12 +1953,14 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=cilium" \
-            --kubernetes-version=https://dl.k8s.io/release/stable-1.33.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-marker=stable-1.33.txt \
+            --test-package-url=https://dl.k8s.io \
+            --test-package-dir=ci \
+            --test-package-marker=latest-1.33.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -2016,12 +2020,14 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=cilium" \
-            --kubernetes-version=https://dl.k8s.io/release/stable-1.34.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-marker=stable-1.34.txt \
+            --test-package-url=https://dl.k8s.io \
+            --test-package-dir=ci \
+            --test-package-marker=latest-1.34.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -2081,12 +2087,14 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126' --channel=alpha --networking=cilium" \
-            --kubernetes-version=https://dl.k8s.io/release/stable-1.31.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest-1.31.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=60m" \
-            --test-package-marker=stable-1.31.txt \
+            --test-package-url=https://dl.k8s.io \
+            --test-package-dir=ci \
+            --test-package-marker=latest-1.31.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -2541,12 +2549,12 @@ presubmits:
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
             --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kindnet --node-volume-size=100 --gce-service-account=default" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=500m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Serial\]" \
@@ -2611,12 +2619,12 @@ presubmits:
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
             --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kubenet --node-volume-size=100 --gce-service-account=default" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=40m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]" \
@@ -2680,12 +2688,12 @@ presubmits:
             --cloud-provider=gce \
             --admin-access=0.0.0.0/0 \
             --create-args="--image='cos-cloud/cos-125-19216-104-39' --channel=alpha --networking=kubenet --set=spec.networking.networkID=default --gce-service-account=default" \
-            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
+            --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-args="-test.timeout=70m" \
-            --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+            --test-package-url=https://dl.k8s.io \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Slow\]" \
