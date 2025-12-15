@@ -79,7 +79,6 @@ periodics:
     github_team_slugs:
     - org: kubernetes
       slug: sig-k8s-infra-leads
-    # proxy for test-infra-oncall
     - org: kubernetes
       slug: test-infra-admins
   spec:
@@ -110,7 +109,6 @@ periodics:
     github_team_slugs:
     - org: kubernetes
       slug: sig-k8s-infra-leads
-    # proxy for test-infra-oncall
     - org: kubernetes
       slug: test-infra-admins
   spec:
