@@ -2480,7 +2480,7 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126' --channel=alpha --networking=cilium --master-size=c8g.xlarge" \
-            --boskos-resource-type=aws-account \
+            --boskos-aws-resource-type=aws-account \
             --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
