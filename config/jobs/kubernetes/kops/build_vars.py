@@ -62,20 +62,20 @@ aws_distro_options = {
 # GCE distributions
 gce_distro_options = {
     "cos121": kops_versions,
-    "cos121arm64": kops_versions,
+    "cos121arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "cos125": kops_versions,
-    "cos125arm64": kops_versions,
+    "cos125arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "cosdev": kops_versions,
-    "cosdevarm64": kops_versions,
+    "cosdevarm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "debian12": kops_versions,
-    "debian12arm64": kops_versions,
+    "debian12arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "debian13": kops_versions,
-    "debian13arm64": kops_versions,
+    "debian13arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "ubuntu2204": kops_versions,
     "ubuntu2404": kops_versions,
-    "ubuntu2404arm64": kops_versions,
+    "ubuntu2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "ubuntuminimal2404": kops_versions,
-    "ubuntuminimal2404arm64": kops_versions,
+    "ubuntuminimal2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
     "rhel10": drop_unsupported_versions(kops_versions, ['1.32, 1.33']),
     "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32, 1.33']),
     "rocky10": drop_unsupported_versions(kops_versions, ['1.32, 1.33']),
@@ -110,7 +110,7 @@ network_plugins_periodics = {
         "kuberouter",
     ],
     "supports_gce": ["kubenet", "calico", "cilium", "kindnet", "gce"],
-    "supports_azure": ["cilium"],
+    "supports_azure": ["kubenet", "calico", "cilium", "kindnet"],
 }
 
 # Network plugins for presubmit network plugin tests
@@ -124,10 +124,12 @@ network_plugins_presubmits = {
         "flannel": r"^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)",
         "kuberouter": r"^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)",
         "kindnet": r"^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)",
+        "kubenet": r"^pkg\/apis\/kops\/networking.go",
     },
     "supports_ipv6": {"amazonvpc", "calico", "cilium", "kindnet"},
     "supports_gce": {"calico", "cilium", "kindnet"},
-    "supports_azure": {"cilium"},
+    "supports_azure": {"calico", "cilium", "kubenet", "kindnet"},
+    "supports_aws": {"amazonvpc", "calico", "cilium", "cilium-etcd", "flannel", "cilium-eni", "kindnet", "kubenet", "kuberouter"}
 }
 
 
