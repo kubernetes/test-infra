@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,too-many-branches
 import argparse
 import difflib
 import filecmp
@@ -98,7 +98,7 @@ def build_test(cloud='aws',
                storage_e2e_cred=False,
                alert_email=None,
                alert_num_failures=None):
-    # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
+    # pylint: disable=too-many-statements,too-many-arguments
     if kops_version is None:
         kops_deploy_url = marker_updown_green(None)
     elif kops_version.startswith("https://"):
@@ -331,7 +331,7 @@ def presubmit_test(branch='master',
                    alert_email=None,
                    alert_num_failures=None,
                    instance_groups_overrides=None):
-    # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
+    # pylint: disable=too-many-statements,too-many-arguments
     kops_image = None
     kops_ssh_user = None
     kops_ssh_key_path = None
@@ -500,6 +500,10 @@ def generate_grid():
                         ])
                     if networking == 'cilium-eni':
                         extra_flags = ['--node-size=t3.large']
+                    if networking == 'kubenet':
+                        extra_flags.extend([
+                            "--topology=public",
+                        ])
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro_short,
@@ -670,18 +674,6 @@ def generate_misc():
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
                                 '--set=cluster.spec.cloudProvider.aws.warmPool.minSize=1'
-                                ],
-                   extra_dashboards=['kops-misc']),
-
-        # A special test for private topology
-        build_test(name_override="kops-aws-private",
-                   cloud="aws",
-                   distro="u2404arm64",
-                   k8s_version="stable",
-                   runs_per_day=3,
-                   networking="calico",
-                   extra_flags=['--topology=private',
-                                '--bastion',
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -1467,8 +1459,13 @@ def generate_network_plugins():
                 extra_flags.extend([
                     "--set=cluster.spec.networking.calico.wireguardEnabled=false",
                 ])
+            if plugin == 'kubenet':
+                extra_flags.extend([
+                    "--topology=public",
+                ])
             results.append(
                 build_test(
+                    cloud="aws",
                     distro=distro,
                     k8s_version=k8s_version,
                     kops_channel='alpha',
@@ -1880,6 +1877,7 @@ def generate_presubmits_network_plugins():
     plugins = network_plugins_presubmits['plugins']
     supports_ipv6 = network_plugins_presubmits['supports_ipv6']
     supports_gce = network_plugins_presubmits['supports_gce']
+    supports_aws = network_plugins_presubmits['supports_aws']
     supports_azure = network_plugins_presubmits['supports_azure']
     results = []
     for plugin, run_if_changed in plugins.items():
@@ -1887,41 +1885,47 @@ def generate_presubmits_network_plugins():
         networking_arg = plugin
         optional = False
         distro = 'u2404arm64'
-        if plugin == 'flannel':
-            optional = True
-        if plugin == 'kuberouter':
-            networking_arg = 'kube-router'
-            k8s_version = 'ci'
-            optional = True
-        aws_extra_flags = [
-            "--master-size=c6g.large",
-            "--node-size=t4g.large"
-        ]
-        if plugin == 'amazonvpc':
-            aws_extra_flags.extend([
-                "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
-                "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
-                "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
-            ])
-        if plugin == 'calico':
-            aws_extra_flags.extend([
-                "--set=cluster.spec.networking.calico.wireguardEnabled=false",
-            ])
-        if plugin in ['cilium-eni']:
-            distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
-        results.append(
-            presubmit_test(
-                distro=distro,
-                k8s_version=k8s_version,
-                kops_channel='alpha',
-                name=f"pull-kops-e2e-cni-{plugin}",
-                tab_name=f"e2e-{plugin}",
-                networking=networking_arg,
-                extra_flags=aws_extra_flags,
-                run_if_changed=run_if_changed,
-                optional=optional,
+        if plugin in supports_aws:
+            if plugin == 'flannel':
+                optional = True
+            if plugin == 'kuberouter':
+                networking_arg = 'kube-router'
+                k8s_version = 'ci'
+                optional = True
+            aws_extra_flags = [
+                "--master-size=c6g.large",
+                "--node-size=t4g.large"
+            ]
+            if plugin == 'amazonvpc':
+                aws_extra_flags.extend([
+                    "--set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true",
+                    "--set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80",
+                    "--set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10",
+                ])
+            if plugin == 'calico':
+                aws_extra_flags.extend([
+                    "--set=cluster.spec.networking.calico.wireguardEnabled=false",
+                ])
+            if plugin in ['cilium-eni']:
+                distro = 'u2204arm64' # pinned to 22.04 because of network issues with 24.04 and these CNIs
+            if plugin == 'kubenet':
+                aws_extra_flags.extend([
+                    "--topology=public",
+                ])
+            results.append(
+                presubmit_test(
+                    cloud='aws',
+                    distro=distro,
+                    k8s_version=k8s_version,
+                    kops_channel='alpha',
+                    name=f"pull-kops-e2e-cni-{plugin}",
+                    tab_name=f"e2e-{plugin}",
+                    networking=networking_arg,
+                    extra_flags=aws_extra_flags,
+                    run_if_changed=run_if_changed,
+                    optional=optional,
+                )
             )
-        )
         if plugin in supports_azure:
             results.append(
                 presubmit_test(
@@ -1959,6 +1963,7 @@ def generate_presubmits_network_plugins():
                 run_if_changed = None
             results.append(
                 presubmit_test(
+                    cloud='aws',
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
                     distro='u2404arm64',
                     tab_name=f"e2e-{plugin}-ipv6",
