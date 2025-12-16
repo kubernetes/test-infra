@@ -1,5 +1,40 @@
 periodics:
 - annotations:
+    fork-per-release-cron: 0 4/6 * * *, 0 5 * * *
+    testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
+    testgrid-tab-name: ci-kubernetes-unit-ppc64le-1.33
+  cluster: k8s-infra-ppc64le-prow-build
+  cron: 0 3/2 * * *
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  name: ci-kubernetes-unit-ppc64le-1-33
+  spec:
+    containers:
+    - command:
+      - make
+      - test
+      env:
+      - name: KUBE_TIMEOUT
+        value: -timeout=300s
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "6"
+          memory: 28Gi
+        requests:
+          cpu: "6"
+          memory: 28Gi
+      securityContext:
+        allowPrivilegeEscalation: false
+    securityContext:
+      runAsGroup: 2010
+      runAsUser: 2001
+- annotations:
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.33-blocking, conformance-all, conformance-gce
@@ -26,14 +61,13 @@ periodics:
     - args:
       - /bin/bash
       - -c
-      - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; export GO111MODULE=on;
-        go install sigs.k8s.io/kubetest2@latest; go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-        go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest; MARKER_VERSION=latest-1.33.txt;
+      - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; MARKER_VERSION=latest-1.33.txt;
         kubetest2 gce \; --v=9 \; --legacy-mode \; --up \; --down \; --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION
         \; --test=ginkgo \; -- \; --test-package-url=https://dl.k8s.io \; --test-package-dir=ci
         \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'
       command:
       - runner.sh
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       name: ""
       resources:
@@ -46,49 +80,70 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *, 0 14-23/24
+      * * *
+    testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com, release-team@kubernetes.io,
+      sig-node-ci+testgrid@kubernetes.io
     fork-per-release-cron: 0 8-23/12 * * *, 0 14-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
-    testgrid-dashboards: sig-release-1.33-blocking, google-gce, sig-node-gpu
+    testgrid-dashboards: sig-release-1.33-blocking, google-gce, sig-node-gpu, sig-node-containerd
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.33
   cluster: k8s-infra-prow-build
+  cron: 0 0-23/2 * * *
   cron: 0 3-23/6 * * *
   decorate: true
   decoration_config:
     timeout: 5h0m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
   labels:
-    preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
-    preset-service-account: "true"
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-33
   spec:
     containers:
     - args:
-      - --check-leaked-resources
-      - --extract=ci/latest-1.33
-      - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
-      - --gcp-node-image=gci
-      - --gcp-nodes=2
-      - --gcp-project-type=gpu-project
+      - --v=9
+      - --legacy-mode
+      - --up
+      - --down
+      - --node-size=n1-standard-2
+      - --num-nodes=2
       - --gcp-zone=us-central1-b
+      - --boskos-resource-type=gpu-project
+      - --node-accelerators=type=nvidia-tesla-t4,count=2
+      - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
+      - --kubernetes-version=https://dl.k8s.io/ci/latest-1.33
+      - --test=ginkgo
+      - --
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --timeout=180m
-      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --test-package-url=https://dl.k8s.io
+      - --test-package-dir=ci
+      - --test-args=--minStartupPods=8
+      - --test-package-marker=latest-1.33
+      - --focus-regex=\[Feature:GPUDevicePlugin\]
       command:
       - runner.sh
+      - kubetest2
+      - gce
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
       - /workspace/scenarios/kubernetes_e2e.py
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       name: ""
       resources:
         limits:
-          cpu: "1"
-          memory: 3Gi
+          cpu: "2"
+          memory: 6Gi
         requests:
-          cpu: "1"
-          memory: 3Gi
+          cpu: "2"
+          memory: 6Gi
+    serviceAccountName: prow-build
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: "6h 24h"
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
@@ -103,9 +158,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
+  interval: 1h
   interval: 2h
   labels:
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
   name: ci-kubernetes-kind-e2e-json-logging-1-33
   spec:
     containers:
@@ -139,7 +196,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
     testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-1.33-informing
   cluster: eks-prow-build-cluster
   decorate: true
@@ -159,15 +216,15 @@ periodics:
       - |
         set -o pipefail
         # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
-        revision=$(curl --fail --silent --show-error --location ${CI_URL}/${LATEST_TXT})
+        revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/latest-1.33.txt)
         # Report what was tested.
         echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
         # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
         hash=${revision/*+/}
-        kind_yaml=$(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
-        kind_node_source="${CI_URL}/$revision/kubernetes-server-linux-amd64.tar.gz"
+        kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+        kind_node_source="https://dl.k8s.io/ci/$revision/kubernetes-server-linux-amd64.tar.gz"
         features=( )
-        curl --fail --silent --show-error --location "${CI_URL}/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+        curl --fail --silent --show-error --location "https://dl.k8s.io/ci/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
         ginkgo=kubernetes/test/bin/ginkgo
         e2e_test=kubernetes/test/bin/e2e.test
         # The latest kind is assumed to work also for older release branches, should this job get forked.
@@ -176,25 +233,376 @@ periodics:
         GINKGO_E2E_PID=
         trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
         trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-        # Inject ClusterConfiguration which causes etcd to use /tmp
-        # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-        if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
-            # Add kubeadmConfigPatches list before node list, there is none at the moment.
-            kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
-        fi
-        kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
-        # Additional features are not in kind.yaml, but they can be added at the end.
-        kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+        # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+        # and adding something at the end.
+        (
+            ${kind_yaml_cmd[@]}
+
+            # Additional features are not in kind.yaml, but they can be added at the end.
+            for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
+        kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
         atexit () {
             kind export logs "${ARTIFACTS}/kind"
             kind delete cluster
         }
         trap atexit EXIT
-        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+
+        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Alpha && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
         GINKGO_E2E_PID=$!
         wait "${GINKGO_E2E_PID}"
       command:
       - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-job-config-errors
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kind-dra-n-1-1-33
+  spec:
+    containers:
+    - args:
+      - /bin/bash
+      - -xce
+      - |
+        set -o pipefail
+        # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+        revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/latest-1.33.txt)
+        # Report what was tested.
+        echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+        # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+        hash=${revision/*+/}
+        kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+        kind_node_source="https://dl.k8s.io/ci/$revision/kubernetes-server-linux-amd64.tar.gz"
+        features=( )
+        curl --fail --silent --show-error --location "https://dl.k8s.io/ci/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+        ginkgo=kubernetes/test/bin/ginkgo
+        e2e_test=kubernetes/test/bin/e2e.test
+        # The latest kind is assumed to work also for older release branches, should this job get forked.
+        curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+        kind build node-image --image=dra/node:latest "${kind_node_source}"
+        GINKGO_E2E_PID=
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+        # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+        # and adding something at the end.
+        (
+            ${kind_yaml_cmd[@]}
+
+            # Additional features are not in kind.yaml, but they can be added at the end.
+            for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
+        kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+        atexit () {
+            kind export logs "${ARTIFACTS}/kind"
+            kind delete cluster
+        }
+        trap atexit EXIT
+
+        # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+        # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+        major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+        minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+        previous_minor=$((minor - 1))
+        # Test with the most recent CI build, doesn't even need to be released yet.
+        # We want to know if those are broken.
+        previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+        curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+        chmod a+rx /tmp/kubelet
+        /tmp/kubelet --version
+        worker_nodes=$(kind get nodes | grep worker)
+        for n in $worker_nodes; do
+            docker cp /tmp/kubelet $n:/usr/bin/kubelet
+            docker exec $n systemctl restart kubelet
+        done
+
+        # We need support for disabling tests which need a recent kubelet.
+        # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+        # when the deployed kubelet is 1.32. This is enforced by
+        # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+        # including all unsupportd kubelet versions in a deny list.
+        kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+        # Running tests which only cover control plane behavior are not useful
+        # in a kubelet version skew job. We can filter them out by including
+        # only tests which have the DynamicResourceAllocation feature because
+        # only those cover kubelet behavior.
+        kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+        GINKGO_E2E_PID=$!
+        wait "${GINKGO_E2E_PID}"
+      command:
+      - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-job-config-errors
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kind-dra-n-2-1-33
+  spec:
+    containers:
+    - args:
+      - /bin/bash
+      - -xce
+      - |
+        set -o pipefail
+        # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+        revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/latest-1.33.txt)
+        # Report what was tested.
+        echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+        # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+        hash=${revision/*+/}
+        kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+        kind_node_source="https://dl.k8s.io/ci/$revision/kubernetes-server-linux-amd64.tar.gz"
+        features=( )
+        curl --fail --silent --show-error --location "https://dl.k8s.io/ci/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+        ginkgo=kubernetes/test/bin/ginkgo
+        e2e_test=kubernetes/test/bin/e2e.test
+        # The latest kind is assumed to work also for older release branches, should this job get forked.
+        curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+        kind build node-image --image=dra/node:latest "${kind_node_source}"
+        GINKGO_E2E_PID=
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+        # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+        # and adding something at the end.
+        (
+            ${kind_yaml_cmd[@]}
+
+            # Additional features are not in kind.yaml, but they can be added at the end.
+            for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
+        kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+        atexit () {
+            kind export logs "${ARTIFACTS}/kind"
+            kind delete cluster
+        }
+        trap atexit EXIT
+
+        # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+        # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+        major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+        minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+        previous_minor=$((minor - 2))
+        # Test with the most recent CI build, doesn't even need to be released yet.
+        # We want to know if those are broken.
+        previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+        curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+        chmod a+rx /tmp/kubelet
+        /tmp/kubelet --version
+        worker_nodes=$(kind get nodes | grep worker)
+        for n in $worker_nodes; do
+            docker cp /tmp/kubelet $n:/usr/bin/kubelet
+            docker exec $n systemctl restart kubelet
+        done
+
+        # We need support for disabling tests which need a recent kubelet.
+        # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+        # when the deployed kubelet is 1.32. This is enforced by
+        # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+        # including all unsupportd kubelet versions in a deny list.
+        kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+        # Running tests which only cover control plane behavior are not useful
+        # in a kubelet version skew job. We can filter them out by including
+        # only tests which have the DynamicResourceAllocation feature because
+        # only those cover kubelet behavior.
+        kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+        GINKGO_E2E_PID=$!
+        wait "${GINKGO_E2E_PID}"
+      command:
+      - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-job-config-errors
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-kind-dra-n-3-1-33
+  spec:
+    containers:
+    - args:
+      - /bin/bash
+      - -xce
+      - |
+        set -o pipefail
+        # A CI job uses pre-built release artifacts and pulls necessary source files from GitHub.
+        revision=$(curl --fail --silent --show-error --location https://dl.k8s.io/ci/latest-1.33.txt)
+        # Report what was tested.
+        echo "{\"revision\":\"$revision\"}" >"${ARTIFACTS}/metadata.json"
+        # git hash from e.g. v1.33.0-alpha.1.161+e62ce1c9db2dad
+        hash=${revision/*+/}
+        kind_yaml_cmd=(curl --fail --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/$hash/test/e2e/dra/kind.yaml")
+        kind_node_source="https://dl.k8s.io/ci/$revision/kubernetes-server-linux-amd64.tar.gz"
+        features=( )
+        curl --fail --silent --show-error --location "https://dl.k8s.io/ci/$revision/kubernetes-test-linux-amd64.tar.gz" | tar zxvf -
+        ginkgo=kubernetes/test/bin/ginkgo
+        e2e_test=kubernetes/test/bin/e2e.test
+        # The latest kind is assumed to work also for older release branches, should this job get forked.
+        curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+        kind build node-image --image=dra/node:latest "${kind_node_source}"
+        GINKGO_E2E_PID=
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+        trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+        # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+        # and adding something at the end.
+        (
+            ${kind_yaml_cmd[@]}
+
+            # Additional features are not in kind.yaml, but they can be added at the end.
+            for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+            # Append ClusterConfiguration which causes etcd to use /tmp
+            # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+            # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+            cat <<EOF
+        kubeadmConfigPatches:
+        - |
+          kind: ClusterConfiguration
+          etcd:
+            local:
+              dataDir: /tmp/etcd
+        EOF
+        ) >/tmp/kind.yaml
+        cat /tmp/kind.yaml
+        kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+        atexit () {
+            kind export logs "${ARTIFACTS}/kind"
+            kind delete cluster
+        }
+        trap atexit EXIT
+
+        # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+        # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+        major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+        minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+        previous_minor=$((minor - 3))
+        # Test with the most recent CI build, doesn't even need to be released yet.
+        # We want to know if those are broken.
+        previous=$(curl --silent -L "https://dl.k8s.io/ci/latest-$major.$previous_minor.txt" )
+        curl --silent -L "https://dl.k8s.io/ci/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+        chmod a+rx /tmp/kubelet
+        /tmp/kubelet --version
+        worker_nodes=$(kind get nodes | grep worker)
+        for n in $worker_nodes; do
+            docker cp /tmp/kubelet $n:/usr/bin/kubelet
+            docker exec $n systemctl restart kubelet
+        done
+
+        # We need support for disabling tests which need a recent kubelet.
+        # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+        # when the deployed kubelet is 1.32. This is enforced by
+        # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+        # including all unsupportd kubelet versions in a deny list.
+        kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+        # Running tests which only cover control plane behavior are not useful
+        # in a kubelet version skew job. We can filter them out by including
+        # only tests which have the DynamicResourceAllocation feature because
+        # only those cover kubelet behavior.
+        kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+        KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+        GINKGO_E2E_PID=$!
+        wait "${GINKGO_E2E_PID}"
+      command:
+      - runner.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
       env:
       - name: LATEST_TXT
         value: latest-1.33.txt
@@ -213,6 +621,52 @@ periodics:
         privileged: true
 - annotations:
     testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-job-config-errors
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h30m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+    workdir: true
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+  name: ci-dra-integration-1-33
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /bin/bash
+      - -xce
+      - |
+        # test/e2e_dra is a separate Ginkgo suite with a dependency on local-up-cluster.sh.
+        # We could use "make test WHAT=./test/e2e_dra", but then we would get a test JUnit file
+        # in addition to the better one from Ginkgo, so instead we build the test binary and
+        # invoke it directly. The Ginkgo CLI doesn't add any benefit because we cannot run
+        # tests in parallel.
+        #
+        # We also need the control plane binaries.
+        make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
+        KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
     testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-cri-o, sig-release-1.33-informing
   cluster: k8s-infra-prow-build
   decorate: true
@@ -243,17 +697,15 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature:
-        isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } &&
+        !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
-        --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
-        --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
-        --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio
+        --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true
+        --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
         --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-serial.yaml
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
       command:
       - runner.sh
       env:
@@ -273,7 +725,7 @@ periodics:
           cpu: "2"
           memory: 6Gi
 - annotations:
-    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
     testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd,
       sig-release-1.33-informing
   cluster: k8s-infra-prow-build
@@ -305,12 +757,11 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature:
-        isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } &&
+        !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
         --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -328,7 +779,7 @@ periodics:
           cpu: "2"
           memory: 6Gi
 - annotations:
-    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
+    testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com, release-team@kubernetes.io
     testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-node-containerd,
       sig-release-1.33-informing
   cluster: k8s-infra-prow-build
@@ -363,12 +814,11 @@ periodics:
       - --repo-root=.
       - --gcp-zone=us-central1-b
       - --parallelism=1
-      - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature:
-        isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+      - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation } &&
+        !Flaky'
       - --timeout=60m
       - --skip-regex=
-      - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-        --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+      - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
         --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
         --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
         --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -414,6 +864,7 @@ periodics:
       - --allow-dup=false
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
+      - --extra-version-markers=k8s-beta
       - --extra-version-markers=k8s-stable2
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
@@ -428,12 +879,14 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-cron: 0 7 * * *, 0 13 * * *, 0 17 * * *, 0 21 * * *
     fork-per-release-cron: 0 13 * * *, 0 21 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.33-500
   cluster: k8s-infra-prow-build
+  cron: 0 3 * * *
   cron: 0 7 * * *
   decorate: true
   decoration_config:
@@ -506,12 +959,17 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.33'
   - 'perfDashJobType: performance'
 - annotations:
+    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24
+      * * *
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com,
+      release-team@kubernetes.io
     fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/24 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.33-blocking, sig-scalability-gce
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.33-scalability-100
   cluster: k8s-infra-prow-build
+  cron: 0 */6 * * *
   cron: 0 0/12 * * *
   decorate: true
   decoration_config:
@@ -588,6 +1046,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: "6h 24h"
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.33-blocking
@@ -613,6 +1072,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       name: ""
       resources:
@@ -625,11 +1085,12 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
     fork-per-release-periodic-interval: "6h 24h"
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.33-blocking
     testgrid-tab-name: integration-1.33
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - base_ref: release-1.33
@@ -650,6 +1111,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
       name: ""
       resources:
@@ -662,14 +1124,15 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
-    testgrid-alert-stale-results-hours: "24"
-    testgrid-create-test-group: "true"
-    testgrid-dashboards: sig-release-1.33-blocking
-    testgrid-days-of-results: "1"
-    testgrid-num-failures-to-alert: "3"
+    fork-per-release-periodic-interval: 2h 6h 24h
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.33-blocking, sig-testing-kind
+    testgrid-num-columns-recent: "6"
+    testgrid-tab-name: kind-1.33
   cluster: k8s-infra-prow-build
   decorate: true
+  decoration_config:
+    timeout: 1h0m0s
   extra_refs:
   - base_ref: release-1.33
     org: kubernetes
@@ -711,6 +1174,138 @@ periodics:
   interval: 2h
   labels:
     preset-dind-enabled: "true"
+  name: ci-kubernetes-e2e-kind-1-33
+  spec:
+    containers:
+    - command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
+        -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: LABEL_FILTER
+        value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
+      - name: PARALLEL
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.33
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+      imagePullPolicy: Always
+      name: ""
+      resources:
+        limits:
+          cpu: "7"
+          memory: 9Gi
+        requests:
+          cpu: "7"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+- annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: "6h 24h"
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.33-blocking, sig-testing-kind
+    testgrid-num-columns-recent: "6"
+    testgrid-tab-name: kind-ipv6-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  decoration_config:
+    timeout: 1h0m0s
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 1h
+  interval: 2h
+  labels:
+    preset-dind-enabled: "true"
+  name: ci-kubernetes-e2e-kind-ipv6-1-33
+  spec:
+    containers:
+    - command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
+        -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+        value: "true"
+      - name: IP_FAMILY
+        value: ipv6
+      - name: LABEL_FILTER
+        value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
+      - name: PARALLEL
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: "7"
+          memory: 9Gi
+        requests:
+          cpu: "7"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+- annotations:
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-team@kubernetes.io
+    testgrid-alert-stale-results-hours: "24"
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-release-1.33-blocking
+    testgrid-days-of-results: "1"
+    testgrid-num-failures-to-alert: "3"
+    fork-per-release-periodic-interval: "6h 24h"
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.33-blocking, sig-testing-kind
+    testgrid-num-columns-recent: "6"
+    testgrid-tab-name: kind-ipv6-1.33-parallel
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 1h
+  name: ci-kubernetes-unit-1-33
+  spec:
+    containers:
+    - command:
+      - make
+      - test
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
+      name: ""
+      resources:
+        limits:
+          cpu: 7200m
+          memory: 43Gi
+        requests:
+          cpu: 7200m
+          memory: 43Gi
+      securityContext:
+        allowPrivilegeEscalation: false
+    securityContext:
+      runAsGroup: 2010
+      runAsUser: 2001
+- annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, release-managers+alerts@kubernetes.io,
+      release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.33-blocking
+    testgrid-tab-name: verify-1.33
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.33
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 2h
+  labels:
+    preset-dind-enabled: "true"
     preset-service-account: "true"
   name: ci-kubernetes-verify-1-33
   spec:
@@ -728,112 +1323,70 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       - name: TYPECHECK_SERIAL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
       imagePullPolicy: Always
-      name: ""
-      resources:
-        limits:
-          cpu: "6"
-          memory: 24Gi
-        requests:
-          cpu: "6"
-          memory: 24Gi
-      securityContext:
-        privileged: true
-- annotations:
-    fork-per-release-periodic-interval: "6h 24h"
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
-    testgrid-dashboards: sig-release-1.33-blocking, sig-testing-kind
-    testgrid-num-columns-recent: "6"
-    testgrid-tab-name: kind-1.33-parallel
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 1h0m0s
-  extra_refs:
-  - base_ref: release-1.33
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
-  interval: 2h
-  labels:
-    preset-dind-enabled: "true"
-  name: ci-kubernetes-kind-e2e-parallel-1-33
-  spec:
-    containers:
-    - command:
-      - wrapper.sh
-      - bash
-      - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: FOCUS
-        value: .
-      - name: SKIP
-        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
-      - name: PARALLEL
-        value: "true"
       image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
       name: ""
       resources:
         limits:
           cpu: "7"
-          memory: 9Gi
+          memory: 24Gi
         requests:
           cpu: "7"
-          memory: 9Gi
+          memory: 24Gi
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: "6h 24h"
-    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
-    testgrid-dashboards: sig-release-1.33-blocking, sig-testing-kind
-    testgrid-num-columns-recent: "6"
-    testgrid-tab-name: kind-ipv6-1.33-parallel
-  cluster: k8s-infra-prow-build
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io,
+      release-team@kubernetes.io
+    testgrid-dashboards: sig-release-1.33-informing, sig-windows-master-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1.33
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
-    timeout: 1h0m0s
+    timeout: 4h0m0s
   extra_refs:
-  - base_ref: release-1.33
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
-  interval: 2h
+  - base_ref: main
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    repo: cluster-api-provider-azure
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+    workdir: true
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    repo: cloud-provider-azure
+  interval: 3h
   labels:
+    preset-azure-community: "true"
+    preset-capz-containerd-2-0-latest: "true"
+    preset-capz-windows-2022: "true"
+    preset-capz-windows-common: "true"
     preset-dind-enabled: "true"
-  name: ci-kubernetes-kind-ipv6-e2e-parallel-1-33
+    preset-kind-volume-mounts: "true"
+  name: ci-kubernetes-e2e-capz-master-windows-1-33
   spec:
     containers:
     - command:
-      - wrapper.sh
-      - bash
-      - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
-        value: "true"
-      - name: IP_FAMILY
-        value: ipv6
-      - name: FOCUS
-        value: .
-      - name: SKIP
-        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
-      - name: PARALLEL
-        value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
+      - runner.sh
+      - env
+      - KUBERNETES_VERSION=latest-1.33
+      - ./capz/run-capz-e2e.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
       name: ""
       resources:
         limits:
-          cpu: "7"
+          cpu: "2"
           memory: 9Gi
         requests:
-          cpu: "7"
+          cpu: "2"
           memory: 9Gi
       securityContext:
         privileged: true
+    serviceAccountName: azure
 - annotations:
     fork-per-release-cron: ""
     testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
@@ -876,6 +1429,166 @@ presubmits:
     branches:
     - release-1.33
     cluster: k8s-infra-prow-build
+    context: pull-kubernetes-e2e-kind-dependencies
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - base_ref: 
+      org: kubernetes
+      path_alias: k8s.io/test-infra
+      repo: test-infra
+    labels:
+      preset-dind-enabled: "true"
+    name: pull-kubernetes-e2e-kind-dependencies
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
+          --test-mode kind
+        env:
+        - name: LABEL_FILTER
+          value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "7"
+            memory: 9000Mi
+          requests:
+            cpu: "7"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-e2e-unit-dependencies
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/test-infra
+      repo: test-infra
+    name: pull-kubernetes-e2e-unit-dependencies
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./../test-infra/experiment/dependencies/update-dependencies-and-run-tests.sh
+        - --test-mode
+        - unit
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: 7200m
+            memory: 43Gi
+          requests:
+            cpu: 7200m
+            memory: 43Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsGroup: 2010
+        runAsUser: 2001
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-e2e-kind-golang-tip
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/test-infra
+      repo: test-infra
+    labels:
+      preset-dind-enabled: "true"
+    name: pull-kubernetes-e2e-kind-golang-tip
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
+          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        env:
+        - name: LABEL_FILTER
+          value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
+        - name: PARALLEL
+          value: "true"
+        - name: GO_VERSION
+          value: devel
+        image: gcr.io/k8s-staging-test-infra/krte:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "7"
+            memory: 9000Mi
+          requests:
+            cpu: "7"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-e2e-unit-golang-tip
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/test-infra
+      repo: test-infra
+    name: pull-kubernetes-e2e-unit-golang-tip
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - make
+        - test
+        env:
+        - name: GO_VERSION
+          value: devel
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: 7200m
+            memory: 43Gi
+          requests:
+            cpu: 7200m
+            memory: 43Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsGroup: 2010
+        runAsUser: 2001
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-e2e-gce-cos
     decorate: true
     decoration_config:
@@ -902,7 +1615,6 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
@@ -953,7 +1665,6 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
@@ -1001,8 +1712,8 @@ presubmits:
       containers:
       - args:
         - --build=quick
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
-        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.1.0
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.3.0
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -1017,7 +1728,6 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --env=ENABLE_KUBE_LIST_FROM_CACHE_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHLIST_INCONSISTENCY_DETECTOR=true
         - --env=ENABLE_KUBE_WATCHCACHE_CONSISTENCY_CHECKER=true
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
@@ -1117,8 +1827,8 @@ presubmits:
       containers:
       - args:
         - --build=quick
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.0.0
-        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.2.1
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v2.1.0
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.3.0
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -1299,7 +2009,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
         name: ""
         resources:
           limits:
@@ -1318,17 +2028,9 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 1h30m0s
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      path_alias: k8s.io/release
-      repo: release
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
-      preset-pull-gce-device-plugin-gpu: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-service-account: "true"
     max_concurrency: 5
     name: pull-kubernetes-e2e-gce-device-plugin-gpu
     optional: true
@@ -1336,31 +2038,39 @@ presubmits:
     spec:
       containers:
       - args:
-        - --build=quick
-        - --cluster=
-        - --env=KUBE_GCE_NODE_IMAGE=cos-109-17800-147-22
-        - --gcp-node-image=gci
-        - --gcp-nodes=2
-        - --gcp-project-type=gpu-project
+        - --v=9
+        - --legacy-mode
+        - --build
+        - --up
+        - --down
+        - --node-size=n1-standard-2
+        - --num-nodes=2
         - --gcp-zone=us-central1-b
-        - --ginkgo-parallel=30
+        - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
+        - --boskos-resource-type=gpu-project
+        - --node-accelerators=type=nvidia-tesla-t4,count=2
+        - --test=ginkgo
+        - --
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
+        - --use-built-binaries=true
+        - --test-args=--minStartupPods=8
+        - --focus-regex=\[Feature:GPUDevicePlugin\]
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        - kubetest2
+        - gce
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         name: ""
         resources:
           limits:
-            cpu: "4"
+            cpu: "6"
             memory: 14Gi
           requests:
-            cpu: "4"
+            cpu: "6"
             memory: 14Gi
         securityContext:
           privileged: true
+      serviceAccountName: prow-build
   - always_run: false
     branches:
     - release-1.33
@@ -1385,7 +2095,8 @@ presubmits:
         - |
           set -o pipefail
           # A presubmit job uses the checked out and merged source code.
-          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
           kind_node_source=.
           features=( )
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
@@ -1397,26 +2108,40 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # Inject ClusterConfiguration which causes etcd to use /tmp
-          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
-              # Add kubeadmConfigPatches list before node list, there is none at the moment.
-              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
-          fi
-          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
-          # Additional features are not in kind.yaml, but they can be added at the end.
-          kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
         name: ""
         resources:
           limits:
@@ -1451,7 +2176,8 @@ presubmits:
         - |
           set -o pipefail
           # A presubmit job uses the checked out and merged source code.
-          kind_yaml=$(cat test/e2e/dra/kind.yaml)
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
           kind_node_source=.
           # Which DRA features exist can change over time.
           features=( $( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
@@ -1465,26 +2191,546 @@ presubmits:
           GINKGO_E2E_PID=
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
           trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
-          # Inject ClusterConfiguration which causes etcd to use /tmp
-          # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
-          if ! echo "$kind_yaml" | grep -q '^kubeadmConfigPatches:'; then
-              # Add kubeadmConfigPatches list before node list, there is none at the moment.
-              kind_yaml=$(echo "$kind_yaml" | sed -e '/nodes:/ i\kubeadmConfigPatches:')
-          fi
-          kind_yaml=$(echo "$kind_yaml" | sed -e '/^kubeadmConfigPatches:/ a\- |\n  kind: ClusterConfiguration\n  etcd:\n    local:\n      dataDir: /tmp/etcd')
-          # Additional features are not in kind.yaml, but they can be added at the end.
-          kind create cluster --retain --config <(echo "${kind_yaml}"; for feature in ${features[@]}; do echo "  ${feature}: true"; done) --image dra/node:latest
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
           atexit () {
               kind export logs "${ARTIFACTS}/kind"
               kind delete cluster
           }
           trap atexit EXIT
-          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="Feature: containsAny DynamicResourceAllocation && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation$(for feature in ${features[@]}; do echo , ${feature}; done)} && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-kind-dra-all-slow
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-kind-dra-all-slow
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          # Which DRA features exist can change over time.
+          features=( $( grep '"DRA' pkg/features/kube_features.go | sed 's/.*"\(.*\)"/\1/' ) )
+          : "Enabling DRA feature(s): ${features[*]}."
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus && !Flaky" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-kind-dra-n-1
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-kind-dra-n-1
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    spec:
+      containers:
+      - args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 1))
+          # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
+          # Then parse the output using Bash parameter expansion:
+          #   ${response% *}  → everything before the last space (the body)
+          #   ${response##* } → everything after the last space (the HTTP code)
+          response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          previous="${response% *}"
+          status="${response##* }"
+          if [ "$status" == 404 ] ; then
+              # if stable doesn't exist - use latest
+              response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
+              previous="${response% *}"
+              status="${response##* }"
+          fi
+          if [ "$status" -ne 200 ] ; then
+              echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
+              exit 1
+          fi
+          curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We need support for disabling tests which need a recent kubelet.
+          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+          # when the deployed kubelet is 1.32. This is enforced by
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          # Running tests which only cover control plane behavior are not useful
+          # in a kubelet version skew job. We can filter them out by including
+          # only tests which have the DynamicResourceAllocation feature because
+          # only those cover kubelet behavior.
+          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-kind-dra-n-2
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-kind-dra-n-2
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    spec:
+      containers:
+      - args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 2))
+          # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
+          # Then parse the output using Bash parameter expansion:
+          #   ${response% *}  → everything before the last space (the body)
+          #   ${response##* } → everything after the last space (the HTTP code)
+          response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          previous="${response% *}"
+          status="${response##* }"
+          if [ "$status" == 404 ] ; then
+              # if stable doesn't exist - use latest
+              response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
+              previous="${response% *}"
+              status="${response##* }"
+          fi
+          if [ "$status" -ne 200 ] ; then
+              echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
+              exit 1
+          fi
+          curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We need support for disabling tests which need a recent kubelet.
+          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+          # when the deployed kubelet is 1.32. This is enforced by
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          # Running tests which only cover control plane behavior are not useful
+          # in a kubelet version skew job. We can filter them out by including
+          # only tests which have the DynamicResourceAllocation feature because
+          # only those cover kubelet behavior.
+          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
           GINKGO_E2E_PID=$!
           wait "${GINKGO_E2E_PID}"
         command:
         - runner.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-kind-dra-n-3
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-kind-dra-n-3
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    spec:
+      containers:
+      - args:
+        - /bin/bash
+        - -xce
+        - |
+          set -o pipefail
+          # A presubmit job uses the checked out and merged source code.
+          revision=$(git describe --tags)
+          kind_yaml_cmd=(cat test/e2e/dra/kind.yaml)
+          kind_node_source=.
+          features=( )
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test"
+          ginkgo=_output/bin/ginkgo
+          e2e_test=_output/bin/e2e.test
+          # The latest kind is assumed to work also for older release branches, should this job get forked.
+          curl --fail --silent --show-error --location https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind
+          kind build node-image --image=dra/node:latest "${kind_node_source}"
+          GINKGO_E2E_PID=
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -TERM "${GINKGO_E2E_PID}"; fi' TERM
+          trap 'if [ "${GINKGO_E2E_PID}" ]; then kill -INT "${GINKGO_E2E_PID}"; fi' INT
+          # The final kind.yaml the result of getting the original kind.yaml, manipulating it with sed,
+          # and adding something at the end.
+          (
+              ${kind_yaml_cmd[@]}
+
+              # Additional features are not in kind.yaml, but they can be added at the end.
+              for feature in ${features[@]}; do echo "  ${feature}: true"; done
+
+              # Append ClusterConfiguration which causes etcd to use /tmp
+              # (https://github.com/kubernetes-sigs/kind/issues/845#issuecomment-1261248420).
+              # There's no kubeadmConfigPatches in any kind.yaml, so we can append at the end.
+              cat <<EOF
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            etcd:
+              local:
+                dataDir: /tmp/etcd
+          EOF
+          ) >/tmp/kind.yaml
+          cat /tmp/kind.yaml
+          kind create cluster --retain --config /tmp/kind.yaml --image dra/node:latest
+          atexit () {
+              kind export logs "${ARTIFACTS}/kind"
+              kind delete cluster
+          }
+          trap atexit EXIT
+
+          # Replace the kubelet binary and restart it, as in https://gist.github.com/aojea/2c94034f8e86d08842e5916231eb3fe1
+          # and https://github.com/kubernetes/test-infra/blob/9cccc25265537e8dfa556688cf10754622014424/experiment/compatibility-versions/emulated-version-upgrade.sh#L56-L66.
+          major=$(echo "$revision" | sed -e 's/^v\([0-9]*\).*/\1/')
+          minor=$(echo "$revision" | sed -e 's/^v[0-9]*\.\([0-9]*\).*/\1/')
+          previous_minor=$((minor - 3))
+          # Test with the stable release to avoid breaking presubmits because of unrelated issues in a release candidate.
+          # Ask curl to append the HTTP status code after the response body (-w ' %{http_code}').
+          # Then parse the output using Bash parameter expansion:
+          #   ${response% *}  → everything before the last space (the body)
+          #   ${response##* } → everything after the last space (the HTTP code)
+          response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/stable-$major.$previous_minor.txt" )
+          previous="${response% *}"
+          status="${response##* }"
+          if [ "$status" == 404 ] ; then
+              # if stable doesn't exist - use latest
+              response=$(curl --silent -w ' %{http_code}' -L "https://dl.k8s.io/release/latest-$major.$previous_minor.txt" )
+              previous="${response% *}"
+              status="${response##* }"
+          fi
+          if [ "$status" -ne 200 ] ; then
+              echo "error: unable to get release $major.$previous_minor info, HTTP status: $status, response: $previous"
+              exit 1
+          fi
+          curl --silent -L "https://dl.k8s.io/release/$previous/kubernetes-server-linux-amd64.tar.gz" | tar zxOf - kubernetes/server/bin/kubelet >/tmp/kubelet
+          chmod a+rx /tmp/kubelet
+          /tmp/kubelet --version
+          worker_nodes=$(kind get nodes | grep worker)
+          for n in $worker_nodes; do
+              docker cp /tmp/kubelet $n:/usr/bin/kubelet
+              docker exec $n systemctl restart kubelet
+          done
+
+          # We need support for disabling tests which need a recent kubelet.
+          # If a test is labeled with `KubeletMinVersion:1.34`, then it cannot run
+          # when the deployed kubelet is 1.32. This is enforced by
+          # generating `! KubeletMinVersion: containsAny { 1.33, 1.34 }`, i.e.
+          # including all unsupportd kubelet versions in a deny list.
+          kubelet_label_filter=" && ! KubeletMinVersion: containsAny { $( for v in $(seq $((previous_minor + 1)) $((minor - 1))); do echo "1.$v, "; done)1.$minor }"
+
+          # Running tests which only cover control plane behavior are not useful
+          # in a kubelet version skew job. We can filter them out by including
+          # only tests which have the DynamicResourceAllocation feature because
+          # only those cover kubelet behavior.
+          kubelet_label_filter+=" && Feature: containsAny DynamicResourceAllocation"
+
+          KUBECONFIG=${HOME}/.kube/config ${ginkgo} run --nodes=8 --timeout=24h --silence-skips --force-newlines --no-color --label-filter="DRA && Feature: isSubsetOf { OffByDefault, DynamicResourceAllocation } && !FeatureGate:ResourceHealthStatus$kubelet_label_filter && !Alpha && !Flaky && !Slow" ${e2e_test} -- -provider=local -report-dir="${ARTIFACTS}" -report-complete-ginkgo -report-complete-junit &
+          GINKGO_E2E_PID=$!
+          wait "${GINKGO_E2E_PID}"
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-dra-integration
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-dra-integration
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: /(dra|dynamicresources|resourceclaim|deviceclass|resourceslice|resourceclaimtemplate|dynamic-resource-allocation|pkg/apis/resource|api/resource)/.*.go
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /bin/bash
+        - -xce
+        - |
+          # test/e2e_dra is a separate Ginkgo suite with a dependency on local-up-cluster.sh.
+          # We could use "make test WHAT=./test/e2e_dra", but then we would get a test JUnit file
+          # in addition to the better one from Ginkgo, so instead we build the test binary and
+          # invoke it directly. The Ginkgo CLI doesn't add any benefit because we cannot run
+          # tests in parallel.
+          #
+          # We also need the control plane binaries.
+          make WHAT="./test/e2e_dra/e2e_dra.test cmd/kube-apiserver cmd/kube-scheduler cmd/kube-controller-manager cmd/kube-proxy cmd/kubelet"
+          KUBETEST_IN_DOCKER=true CONTAINER_RUNTIME_ENDPOINT=/var/run/docker/containerd/containerd.sock KUBERNETES_SERVER_BIN_DIR="$(pwd)/_output/local/bin/linux/amd64" KUBERNETES_SERVER_CACHE_DIR=/tmp/cache-dir _output/local/go/bin/e2e_dra.test -ginkgo.timeout=30m -ginkgo.junit-report=${ARTIFACTS}/junit.xml -ginkgo.v -test.v
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
         name: ""
         resources:
           limits:
@@ -1524,17 +2770,16 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature:
-          isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation }
+          && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock
           --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service"
           --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-serial.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
         command:
         - runner.sh
         env:
@@ -1582,12 +2827,11 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature:
-          isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation }
+          && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
           --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -1626,6 +2870,7 @@ presubmits:
     name: pull-kubernetes-node-e2e-containerd-2-0-dra
     optional: true
     path_alias: k8s.io/kubernetes
+    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
     spec:
       containers:
       - args:
@@ -1636,12 +2881,67 @@ presubmits:
         - --repo-root=.
         - --gcp-zone=us-central1-b
         - --parallelism=1
-        - '--label-filter=Feature: containsAny DynamicResourceAllocation && Feature:
-          isSubsetOf { Beta, DynamicResourceAllocation } && !Flaky && !Slow'
+        - '--label-filter=DRA && Feature: isSubsetOf { DynamicResourceAllocation }
+          && !Flaky && !Slow'
         - --timeout=60m
         - --skip-regex=
-        - '--test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true"
-          --runtime-config=api/beta=true --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+        - '--test-args=--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+          --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
+          --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
+          --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
+          --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-2.0/image-config.yaml
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: "2"
+            memory: 6Gi
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-node-e2e-containerd-2-0-dra-alpha-beta-features
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/test-infra
+      repo: test-infra
+    - base_ref: release/2.0
+      org: containerd
+      repo: containerd
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-node-e2e-containerd-2-0-dra-alpha-beta-features
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: (/dra/|/dynamicresources/|/resourceclaim/|/deviceclass/|/resourceslice/|/resourceclaimtemplate/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/|/test/e2e_node/dra_).*\.(go|yaml)
+    spec:
+      containers:
+      - args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-zone=us-central1-b
+        - --parallelism=1
+        - '--label-filter=DRA && Feature: isSubsetOf { OffByDefault,DynamicResourceAllocation
+          } && !Flaky && !Slow'
+        - --timeout=60m
+        - --skip-regex=
+        - '--test-args=--feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false
+          --service-feature-gates=AllAlpha=true,AllBeta=true,EventedPLEG=false --runtime-config=api/alpha=true,api/beta=true
+          --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
           --container-runtime-process-name=/usr/local/bin/containerd --container-runtime-pid-file=
           --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/
           --runtime-cgroups=/system.slice/containerd.service --kubelet-cgroups=/system.slice/kubelet.service"
@@ -2042,7 +3342,7 @@ presubmits:
         - name: IMAGE_CONFIG_FILE
           value: aws-instance.yaml
         - name: SKIP
-          value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]
+          value: \[Flaky\]|\[Benchmark\]|\[Feature:Eviction\]|\[Feature:DynamicResourceAllocation\]|\[Feature:PodLevelResources\]
         - name: TEST_ARGS
           value: --kubelet-flags="--cgroup-driver=systemd"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
@@ -2089,6 +3389,8 @@ presubmits:
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
           --profiling --contention-profiling
+        - --env=KUBE_COS_INSTALL_CONTAINERD_VERSION=v2.0.5
+        - --env=KUBE_COS_INSTALL_RUNC_VERSION=v1.2.1
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
         - --gcp-nodes=100
@@ -2325,7 +3627,7 @@ presubmits:
             --test-args="--master-os-distro=custom --node-os-distro=custom" \
             --timeout=120m \
             --focus-regex="\[Feature:SELinux\]" \
-            --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
+            --skip-regex="\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.nfs3\]|\[Driver:.local\]|\[Feature:SELinuxMountReadWriteOncePodOnly\]" \
             --use-built-binaries=true \
             --parallel=1 # [Feature:SELinux] tests include serial ones
         command:
@@ -2364,6 +3666,7 @@ presubmits:
           value: "8"
         - name: KUBE_TIMEOUT
           value: -timeout=30m
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
@@ -2394,9 +3697,10 @@ presubmits:
         - runner.sh
         env:
         - name: GO_VERSION
-          value: 1.24.0
+          value: 1.25.3
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
@@ -2468,6 +3772,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: main
         resources:
@@ -2482,7 +3787,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.33
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-integration
     decorate: true
     labels:
@@ -2496,17 +3801,52 @@ presubmits:
         - ./hack/jenkins/test-integration-dockerized.sh
         command:
         - runner.sh
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "7"
+            memory: 20Gi
+          requests:
+            cpu: "7"
+            memory: 20Gi
+        securityContext:
+          privileged: true
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-integration-race
+    decorate: true
+    decoration_config:
+      timeout: 1h30m0s
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-integration-race
+    optional: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - ./hack/jenkins/test-integration-dockerized.sh
+        command:
+        - runner.sh
         env:
         - name: KUBE_TIMEOUT
+          value: -timeout=30m
+        - name: KUBE_RACE
+          value: -race
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
           value: -timeout=1h30m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: 20Gi
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: 20Gi
         securityContext:
           privileged: true
@@ -2529,9 +3869,10 @@ presubmits:
         - runner.sh
         env:
         - name: GO_VERSION
-          value: 1.24.0
+          value: 1.25.3
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
@@ -2565,10 +3906,8 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
           - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: FOCUS
-          value: .
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: LABEL_FILTER
+          value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
         image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.33
@@ -2582,7 +3921,7 @@ presubmits:
             memory: 9000Mi
         securityContext:
           privileged: true
-  - always_run: true
+  - always_run: false
     branches:
     - release-1.33
     cluster: k8s-infra-prow-build
@@ -2594,6 +3933,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     name: pull-kubernetes-e2e-kind-ipv6
+    optional: true
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -2604,10 +3944,8 @@ presubmits:
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
           - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
-        - name: FOCUS
-          value: .
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[sig-storage\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+        - name: LABEL_FILTER
+          value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
@@ -2618,11 +3956,11 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "4"
-            memory: 9Gi
+            cpu: "7"
+            memory: 9000Mi
           requests:
-            cpu: "4"
-            memory: 9Gi
+            cpu: "7"
+            memory: 9000Mi
         securityContext:
           privileged: true
   - always_run: true
@@ -2680,6 +4018,7 @@ presubmits:
       - command:
         - make
         - test
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
@@ -2711,9 +4050,10 @@ presubmits:
         - test
         env:
         - name: GO_VERSION
-          value: 1.24.0
+          value: 1.25.3
         - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
           value: auto
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
@@ -2795,7 +4135,7 @@ presubmits:
   - always_run: true
     branches:
     - release-1.33
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-verify
     decorate: true
     labels:
@@ -2818,16 +4158,17 @@ presubmits:
           value: release-1.33
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         imagePullPolicy: Always
         name: ""
         resources:
           limits:
             cpu: "7"
-            memory: 12Gi
+            memory: 24Gi
           requests:
             cpu: "7"
-            memory: 12Gi
+            memory: 24Gi
         securityContext:
           privileged: true
   - always_run: true
@@ -2846,6 +4187,7 @@ presubmits:
         - WHAT=golangci-lint-pr-hints
         command:
         - make
+        image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251021-e2c2c9806f-1.33
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.33
         name: ""
         resources:
@@ -2855,6 +4197,58 @@ presubmits:
           requests:
             cpu: "5"
             memory: 12Gi
+  - always_run: false
+    branches:
+    - release-1.33
+    cluster: eks-prow-build-cluster
+    context: pull-kubernetes-e2e-capz-windows-1.33
+    decorate: true
+    decoration_config:
+      timeout: 2h30m0s
+    extra_refs:
+    - base_ref: main
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      repo: cluster-api-provider-azure
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      repo: cloud-provider-azure
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: k8s.io/windows-testing
+      repo: windows-testing
+      workdir: true
+    labels:
+      preset-azure-community: "true"
+      preset-capz-containerd-2-0-latest: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-windows-common-pull: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kubernetes-e2e-capz-windows-master
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - env
+        - KUBERNETES_VERSION=latest-1.33
+        - ./capz/run-capz-e2e.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251021-e2c2c9806f-1.33
+        name: ""
+        resources:
+          limits:
+            cpu: "2"
+            memory: 9Gi
+          requests:
+            cpu: "2"
+            memory: 9Gi
+        securityContext:
+          privileged: true
+      serviceAccountName: azure
   kubernetes/perf-tests:
   - always_run: false
     branches:
