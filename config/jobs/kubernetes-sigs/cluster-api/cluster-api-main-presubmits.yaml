@@ -135,7 +135,7 @@ presubmits:
         # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
         # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
         - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-          value: "1.31.0"
+          value: "1.32.0"
         resources:
           requests:
             cpu: 7300m
@@ -186,7 +186,7 @@ presubmits:
         # Please also make sure to refer a version where a kindest/node image exists
         # for (see https://github.com/kubernetes-sigs/kind/releases/)
         - name: KUBERNETES_VERSION_MANAGEMENT
-          value: "v1.31.12"
+          value: "v1.32.8"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -335,7 +335,7 @@ presubmits:
     annotations:
       testgrid-dashboards: cluster-api-core-main
       testgrid-tab-name: capi-pr-e2e-main-gke
-  - name: pull-cluster-api-e2e-upgrade-1-34-1-35-main
+  - name: pull-cluster-api-e2e-upgrade-1-35-1-36-main
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -363,9 +363,9 @@ presubmits:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.34"
+            value: "stable-1.35"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.35"
+            value: "ci/latest-1.36"
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.6.6-0"
           - name: COREDNS_VERSION_UPGRADE_TO
@@ -384,7 +384,7 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: cluster-api-core-main
-      testgrid-tab-name: capi-pr-e2e-main-1-34-1-35
+      testgrid-tab-name: capi-pr-e2e-main-1-35-1-36
   - name: pull-cluster-api-e2e-conformance-main
     cluster: eks-prow-build-cluster
     labels:
@@ -506,13 +506,13 @@ presubmits:
         - name: KIND_BUILD_IMAGES
           value: "KUBERNETES_VERSION_LATEST_CI"
         - name: KUBERNETES_VERSION_MANAGEMENT
-          value: ci/latest-1.35
+          value: ci/latest-1.36
         - name: KUBERNETES_VERSION
-          value: ci/latest-1.35
+          value: ci/latest-1.36
         - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: stable-1.34
+          value: stable-1.35
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: ci/latest-1.35
+          value: ci/latest-1.36
         - name: ETCD_VERSION_UPGRADE_TO
           value: 3.6.6-0
         - name: COREDNS_VERSION_UPGRADE_TO
