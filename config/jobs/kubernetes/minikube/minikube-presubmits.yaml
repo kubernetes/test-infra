@@ -88,6 +88,37 @@ presubmits:
           limits:
             memory: 20Gi
             cpu: 7
+  - name: integration-docker-containerd-linux-arm
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: true
+    optional: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: minikube-presubmits
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-prow-docker-docker-containerd-arm
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 20Gi
+            cpu: 7
+          limits:
+            memory: 20Gi
+            cpu: 7
   - name: integration-kvm-containerd-linux-x86
     cluster: k8s-infra-prow-build
     decorate: true
