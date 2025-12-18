@@ -234,7 +234,7 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-govmomi-main
       description: Runs e2e tests with vcsim / govmomi mode
-  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-34-1-35-main
+  - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-35-1-36-main
     cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
@@ -264,9 +264,9 @@ presubmits:
         - name: GINKGO_FOCUS
           value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.34"
+          value: "stable-1.35"
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "ci/latest-1.35"
+          value: "ci/latest-1.36"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -281,7 +281,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-govmomi-main-1-34-1-35
+      testgrid-tab-name: pr-e2e-govmomi-main-1-35-1-36
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-main
     cluster: k8s-infra-prow-build
     branches:
@@ -513,7 +513,7 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-vcsim-supervisor-main
       description: Runs e2e tests with vcsim / govmomi mode
-  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-34-1-35-main
+  - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-35-1-36-main
     cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
@@ -543,9 +543,9 @@ presubmits:
         - name: GINKGO_FOCUS
           value: "\\[supervisor\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.34"
+          value: "stable-1.35"
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "ci/latest-1.35"
+          value: "ci/latest-1.36"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -560,7 +560,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-supervisor-main-1-34-1-35
+      testgrid-tab-name: pr-e2e-supervisor-main-1-35-1-36
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-main
     cluster: k8s-infra-prow-build
     branches:
