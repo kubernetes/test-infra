@@ -128,7 +128,7 @@ periodics:
         value: Conformance && !Slow && !Disruptive && !Flaky
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+      image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
       name: ""
       resources:
         limits:
@@ -974,7 +974,7 @@ periodics:
         value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+      image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
       name: ""
       resources:
         limits:
@@ -1021,7 +1021,7 @@ periodics:
         value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+      image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
       name: ""
       resources:
         limits:
@@ -1136,7 +1136,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.34
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-1.34
       name: ""
       resources:
         limits:
@@ -1182,7 +1182,7 @@ presubmits:
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
         name: ""
         resources:
           limits:
@@ -1262,7 +1262,7 @@ presubmits:
           value: "true"
         - name: GO_VERSION
           value: devel
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
         name: ""
         resources:
           limits:
@@ -3248,7 +3248,7 @@ presubmits:
           value: ipv6
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
         name: ""
         resources:
           limits:
@@ -3415,7 +3415,7 @@ presubmits:
           value: 'Feature: isEmpty && !Slow && !Disruptive && !Flaky'
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
         name: ""
         resources:
           limits:
@@ -3457,7 +3457,7 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: ipv6
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
         name: ""
         resources:
           limits:
@@ -3497,7 +3497,7 @@ presubmits:
           value: '{"api/alpha":"false", "api/beta":"false"}'
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-1.34
+        image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-1.34
         name: ""
         resources:
           limits:
