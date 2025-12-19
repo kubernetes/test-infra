@@ -109,7 +109,7 @@ presubmits:
         - runner.sh
         args:
         - make
-        - integration-prow-docker-docker-containerd-arm
+        - integration-prow-docker-containerd-arm
         securityContext:
           privileged: true
         resources:
