@@ -20,7 +20,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
         command:
         - wrapper.sh
         - bash
@@ -111,7 +111,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
         command:
         - wrapper.sh
         - bash
@@ -212,7 +212,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
       command:
       - wrapper.sh
       - bash
@@ -302,7 +302,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251209-855adc2699-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
       command:
       - wrapper.sh
       - bash
