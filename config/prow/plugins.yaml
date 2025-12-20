@@ -2161,3 +2161,9 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kaito-project/kaito:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
