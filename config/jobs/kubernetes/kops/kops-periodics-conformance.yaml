@@ -138,7 +138,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-master
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-master
   cron: '17 1-23/8 * * *'
   labels:
@@ -168,7 +168,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=kindnet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=calico" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest.txt \
@@ -198,7 +198,7 @@ periodics:
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: kindnet
+    test.kops.k8s.io/networking: calico
     testgrid-dashboards: conformance-all, conformance-azure, kops-azure, kops-conformance, kops-distro-u2404, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-master
@@ -339,7 +339,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-32
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.32", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.32", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-32
   cron: '28 6-23/8 * * *'
   labels:
@@ -369,7 +369,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=kindnet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=calico" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.32.txt \
@@ -399,7 +399,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.32'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: kindnet
+    test.kops.k8s.io/networking: calico
     testgrid-dashboards: conformance-all, conformance-azure, kops-azure, kops-conformance, kops-distro-u2404, kops-k8s-1.32, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-1-32
@@ -540,7 +540,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-33
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.33", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.33", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-33
   cron: '38 0-23/8 * * *'
   labels:
@@ -570,7 +570,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=kindnet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=calico" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.33.txt \
@@ -600,7 +600,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.33'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: kindnet
+    test.kops.k8s.io/networking: calico
     testgrid-dashboards: conformance-all, conformance-azure, kops-azure, kops-conformance, kops-distro-u2404, kops-k8s-1.33, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-1-33
@@ -741,7 +741,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-34
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.34", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-34
   cron: '53 3-23/8 * * *'
   labels:
@@ -771,7 +771,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=kindnet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=calico" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.34.txt \
@@ -801,7 +801,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.34'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: kindnet
+    test.kops.k8s.io/networking: calico
     testgrid-dashboards: conformance-all, conformance-azure, kops-azure, kops-conformance, kops-distro-u2404, kops-k8s-1.34, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-1-34
@@ -942,7 +942,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-35
 
-# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
+# {"cloud": "azure", "distro": "u2404", "feature_flags": "Azure", "k8s_version": "1.35", "kops_channel": "alpha", "kops_version": "latest", "networking": "calico"}
 - name: e2e-kops-azure-conformance-1-35
   cron: '35 5-23/8 * * *'
   labels:
@@ -972,7 +972,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=azure \
-          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=kindnet" \
+          --create-args="--image='Canonical:ubuntu-24_04-lts:server:24.04.202512100' --channel=alpha --networking=calico" \
           --env=KOPS_FEATURE_FLAGS=Azure \
           --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/ci/latest-1.35.txt \
@@ -1002,7 +1002,7 @@ periodics:
     test.kops.k8s.io/k8s_version: '1.35'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: latest
-    test.kops.k8s.io/networking: kindnet
+    test.kops.k8s.io/networking: calico
     testgrid-dashboards: conformance-all, conformance-azure, kops-azure, kops-conformance, kops-distro-u2404, kops-k8s-1.35, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-azure-conformance-1-35
