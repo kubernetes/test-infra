@@ -23,11 +23,11 @@ periodics:
       - --timeout=65m
       resources:
         limits:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 14Gi
         requests:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 14Gi
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: prow
