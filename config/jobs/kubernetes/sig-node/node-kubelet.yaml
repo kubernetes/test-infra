@@ -688,6 +688,62 @@ periodics:
     testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
     description: "Runs kubelet in standalone mode with all alpha features enabled"
 
+# Periodic equivalent of pull-kubernetes-node-e2e-containerd-alpha-features
+# Tests all alpha features including PodAndContainerStatsFromCRI with containerd main
+- name: ci-kubernetes-node-e2e-containerd-alpha-features
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  - org: containerd
+    repo: containerd
+    base_ref: main
+    path_alias: github.com/containerd/containerd
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-central1-b
+      - '--node-test-args=--feature-gates=AllAlpha=true,EventedPLEG=false,PodAndContainerStatsFromCRI=true --service-feature-gates=ProcMountType=true,UserNamespacesSupport=true,ResourceHealthStatus=true,KubeletPSI=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --feature-gates=PodAndContainerStatsFromCRI=true" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[Feature:.+\]" --skip="\[Flaky\]|\[Serial\]|\[Slow\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesPodSecurityStandards\]|\[Feature:KubeletCredentialProviders\]|\[Feature:LockContention\]|\[Feature:SCTPConnectivity\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        requests:
+          cpu: 4
+          memory: 6Gi
+        limits:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: ci-node-e2e-containerd-alpha-features
+    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+    description: "Runs node e2e feature tests with all alpha features enabled including PodAndContainerStatsFromCRI, using containerd from main branch"
+
 - name: ci-kubernetes-node-e2e-containerd-standalone-mode
   interval: 24h
   cluster: k8s-infra-prow-build
