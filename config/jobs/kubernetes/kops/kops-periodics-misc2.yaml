@@ -1700,8 +1700,8 @@ periodics:
     testgrid-tab-name: kops-aws-selinux-alpha
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--set=spec.nodeProblemDetector.enabled=true --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-canary
-  cron: '16 1-23/3 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-canary
+  cron: '50 2-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -1764,11 +1764,11 @@ periodics:
     test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '35'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-canary
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-utils", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-canary
-  cron: '33 2-23/3 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-canary
+  cron: '50 0-23/3 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1831,11 +1831,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '35'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-canary
 
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--set=spec.nodeProblemDetector.enabled=true --set=spec.packages=nfs-common", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-ci-kubernetes-e2e-ubuntu-aws-canary
-  cron: '8 1-23/3 * * *'
+- name: e2e-ci-kubernetes-kops-ubuntu-aws-canary
+  cron: '31 1-23/3 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1898,11 +1898,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: kops-distro-u2204, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '35'
-    testgrid-tab-name: ci-kubernetes-e2e-ubuntu-aws-canary
+    testgrid-tab-name: ci-kubernetes-kops-ubuntu-aws-canary
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--set=spec.networking.networkID=default --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-slow-canary
-  cron: '9 1-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-slow-canary
+  cron: '37 2-23/4 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -1966,11 +1966,11 @@ periodics:
     test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-slow-canary
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-slow-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.packages=nfs-utils", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-slow-canary
-  cron: '22 2-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-slow-canary
+  cron: '1 1-23/4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2034,11 +2034,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-slow-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-slow-canary
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-conformance-canary
-  cron: '58 3-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-conformance-canary
+  cron: '44 1-23/4 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -2102,11 +2102,11 @@ periodics:
     test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-conformance-canary
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-conformance-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-conformance-canary
-  cron: '47 1-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-conformance-canary
+  cron: '10 1-23/4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2170,11 +2170,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-conformance-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-conformance-aws-cni
-  cron: '14 1-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-conformance-aws-cni
+  cron: '16 1-23/4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2237,11 +2237,11 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-aws-cni
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-conformance-aws-cni
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary
-  cron: '10 2-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-conformance-aws-cni-canary
+  cron: '30 2-23/4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2306,11 +2306,11 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-conformance-aws-cni-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeProxy.enabled=false --set=spec.networking.cilium.enableNodePort=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "cilium"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary
-  cron: '6 2-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-conformance-cilium-canary
+  cron: '57 1-23/4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2375,11 +2375,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-conformance-cilium-canary
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--node-count=3 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-disruptive-canary
-  cron: '20 6-23/8 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-disruptive-canary
+  cron: '57 0-23/8 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -2443,11 +2443,11 @@ periodics:
     test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-disruptive-canary
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-disruptive-canary
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--node-count=3 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "gce"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-reboot-canary
-  cron: '46 5-23/8 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-reboot-canary
+  cron: '23 3-23/8 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -2511,11 +2511,11 @@ periodics:
     test.kops.k8s.io/networking: gce
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-reboot-canary
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-reboot-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-size=r5d.xlarge --master-size=r5d.xlarge --set=cluster.spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true --set=cluster.spec.networking.amazonVPC.env=MINIMUM_IP_TARGET=80 --set=cluster.spec.networking.amazonVPC.env=WARM_IP_TARGET=10 --set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "amazonvpc"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-disruptive-canary
-  cron: '57 6-23/8 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-disruptive-canary
+  cron: '10 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2579,11 +2579,11 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-disruptive-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-disruptive-canary
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--set=cluster.spec.cloudConfig.manageStorageClasses=false --node-volume-size=100 --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-serial-canary
-  cron: '31 4-23/6 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-serial-canary
+  cron: '22 0-23/6 * * *'
   labels:
     preset-k8s-ssh: "true"
     preset-storage-e2e-service-account: "true"
@@ -2648,11 +2648,11 @@ periodics:
     test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '71'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-serial-canary
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-serial-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--node-volume-size=100 --set=spec.packages=nfs-utils --set=spec.packages=git", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-serial-canary
-  cron: '6 0-23/6 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-serial-canary
+  cron: '48 0-23/6 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2716,11 +2716,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '71'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-serial-canary
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-serial-canary
 
 # {"cloud": "aws", "distro": "al2023", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kubenet"}
-- name: e2e-ci-kubernetes-e2e-al2023-aws-alpha-features
-  cron: '17 3-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-al2023-aws-alpha-features
+  cron: '16 1-23/4 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -2785,11 +2785,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: amazon-ec2-kops, kops-distro-al2023, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-al2023-aws-alpha-features
+    testgrid-tab-name: ci-kubernetes-kops-al2023-aws-alpha-features
 
 # {"cloud": "gce", "distro": "cos125", "extra_flags": "--set=spec.kubeAPIServer.logLevel=4 --set=spec.kubeAPIServer.auditLogMaxSize=2000000000 --set=spec.kubeAPIServer.enableAggregatorRouting=true --set=spec.kubeAPIServer.auditLogPath=/var/log/kube-apiserver-audit.log --set=spec.kubeAPIServer.runtimeConfig=api/all=true --gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": "latest", "networking": "kindnet"}
-- name: e2e-ci-kubernetes-e2e-cos-gce-alpha-features
-  cron: '22 2-23/4 * * *'
+- name: e2e-ci-kubernetes-kops-cos-gce-alpha-features
+  cron: '21 1-23/4 * * *'
   labels:
     preset-k8s-ssh: "true"
   cluster: k8s-infra-prow-build
@@ -2854,4 +2854,4 @@ periodics:
     test.kops.k8s.io/networking: kindnet
     testgrid-dashboards: kops-distro-cos125, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops, sig-cluster-lifecycle-kubeup-to-kops
     testgrid-days-of-results: '47'
-    testgrid-tab-name: ci-kubernetes-e2e-cos-gce-alpha-features
+    testgrid-tab-name: ci-kubernetes-kops-cos-gce-alpha-features

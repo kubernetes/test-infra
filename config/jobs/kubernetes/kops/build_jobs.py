@@ -922,7 +922,7 @@ def generate_misc():
                    alert_num_failures=10),
 
         # test kube-up to kops jobs migration
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-canary",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-canary",
                    cloud="gce",
                    distro="cos125",
                    networking="kindnet",
@@ -938,7 +938,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="kubenet",
@@ -954,7 +954,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=8),
 
-        build_test(name_override="ci-kubernetes-e2e-ubuntu-aws-canary",
+        build_test(name_override="ci-kubernetes-kops-ubuntu-aws-canary",
                    cloud="aws",
                    distro="u2204",
                    networking="kubenet",
@@ -971,7 +971,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=8),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-slow-canary",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-slow-canary",
                    cloud="gce",
                    distro="cos125",
                    networking="kindnet",
@@ -988,7 +988,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-slow-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-slow-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="kubenet",
@@ -1005,7 +1005,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-conformance-canary",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-conformance-canary",
                    cloud="gce",
                    distro="cos125",
                    networking="kindnet",
@@ -1026,7 +1026,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-conformance-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="kubenet",
@@ -1046,7 +1046,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-aws-cni",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-conformance-aws-cni",
                    cloud="aws",
                    distro="al2023",
                    networking="amazonvpc",
@@ -1072,7 +1072,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-aws-cni-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-conformance-aws-cni-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="amazonvpc",
@@ -1099,7 +1099,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-conformance-cilium-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-conformance-cilium-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="cilium",
@@ -1124,7 +1124,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-disruptive-canary",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-disruptive-canary",
                    cloud="gce",
                    distro="cos125",
                    networking="kindnet",
@@ -1142,7 +1142,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=3),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-reboot-canary",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-reboot-canary",
                    cloud="gce",
                    distro="cos125",
                    networking="gce",
@@ -1160,7 +1160,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=3),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-disruptive-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-disruptive-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="amazonvpc",
@@ -1186,7 +1186,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=3),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-serial-canary",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-serial-canary",
                    cloud="gce",
                    distro="cos125",
                    networking="kindnet",
@@ -1206,7 +1206,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops"],
                    runs_per_day=4),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-serial-canary",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-serial-canary",
                    cloud="aws",
                    distro="al2023",
                    networking="kubenet",
@@ -1226,7 +1226,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=4),
 
-        build_test(name_override="ci-kubernetes-e2e-al2023-aws-alpha-features",
+        build_test(name_override="ci-kubernetes-kops-al2023-aws-alpha-features",
                    cloud="aws",
                    distro="al2023",
                    networking="kubenet",
@@ -1249,7 +1249,7 @@ def generate_misc():
                    extra_dashboards=["sig-cluster-lifecycle-kubeup-to-kops", "amazon-ec2-kops"],
                    runs_per_day=6),
 
-        build_test(name_override="ci-kubernetes-e2e-cos-gce-alpha-features",
+        build_test(name_override="ci-kubernetes-kops-cos-gce-alpha-features",
                    cloud="gce",
                    distro="cos125",
                    networking="kindnet",
