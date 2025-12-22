@@ -28,7 +28,7 @@ presubmits:
             cpu: 2
             memory: 3Gi
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-apidiff-release-1-14
       description: Checks for API changes in the PR
 
@@ -62,7 +62,7 @@ presubmits:
             cpu: 2
             memory: 3Gi
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-verify-release-1-14
 
   - name: pull-cluster-api-provider-vsphere-test-release-1-14
@@ -92,7 +92,7 @@ presubmits:
         - make
         - test-junit
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-test-release-1-14
       description: Runs unit tests
 
@@ -140,7 +140,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-govmomi-blocking-release-1-14
       description: Runs only PR Blocking e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-release-1-14
@@ -185,7 +185,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-govmomi-release-1-14
       description: Runs all e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-govmomi-release-1-14
@@ -231,7 +231,7 @@ presubmits:
             cpu: "4000m"
             memory: "3Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-vcsim-govmomi-release-1-14
       description: Runs e2e tests with vcsim / govmomi mode
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-upgrade-1-33-1-34-release-1-14
@@ -280,7 +280,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-govmomi-release-1-14-1-33-1-34
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-release-1-14
     cluster: k8s-infra-prow-build
@@ -324,7 +324,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-govmomi-conformance-release-1-14
       description: Runs conformance tests for CAPV
   - name: pull-cluster-api-provider-vsphere-e2e-govmomi-conformance-ci-latest-release-1-14
@@ -369,7 +369,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-govmomi-conformance-ci-latest-release-1-14
       description: Runs conformance tests with K8S ci latest for CAPV
 
@@ -417,7 +417,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-supervisor-blocking-release-1-14
       description: Runs only PR Blocking e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-release-1-14
@@ -464,7 +464,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-supervisor-release-1-14
       description: Runs all e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-supervisor-release-1-14
@@ -510,7 +510,7 @@ presubmits:
             cpu: "4000m"
             memory: "3Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-vcsim-supervisor-release-1-14
       description: Runs e2e tests with vcsim / govmomi mode
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-upgrade-1-33-1-34-release-1-14
@@ -559,7 +559,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-supervisor-release-1-14-1-33-1-34
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-release-1-14
     cluster: k8s-infra-prow-build
@@ -603,7 +603,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-supervisor-conformance-release-1-14
       description: Runs conformance tests for CAPV
   - name: pull-cluster-api-provider-vsphere-e2e-supervisor-conformance-ci-latest-release-1-14
@@ -648,6 +648,6 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-1.14
       testgrid-tab-name: pr-e2e-supervisor-conformance-ci-latest-release-1-14
       description: Runs conformance tests with K8S ci latest for CAPV

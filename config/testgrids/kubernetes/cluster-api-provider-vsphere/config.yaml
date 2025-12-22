@@ -1,0 +1,13 @@
+dashboard_groups:
+- name: cluster-api-provider-vsphere
+  dashboard_names:
+    - cluster-api-provider-vsphere-main
+    - cluster-api-provider-vsphere-1.13
+    - cluster-api-provider-vsphere-1.14
+    - cluster-api-provider-vsphere-1.15
+
+dashboards:
+- name: cluster-api-provider-vsphere-main
+- name: cluster-api-provider-vsphere-1.13
+- name: cluster-api-provider-vsphere-1.14
+- name: cluster-api-provider-vsphere-1.15

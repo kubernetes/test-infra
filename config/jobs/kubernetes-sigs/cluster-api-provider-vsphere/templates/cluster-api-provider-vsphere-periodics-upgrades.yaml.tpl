@@ -59,7 +59,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.From "stable-") "ci/latest-") "." "-" }}-{{ ReplaceAll (TrimPrefix (TrimPrefix $upgrade.To "stable-") "ci/latest-") "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"

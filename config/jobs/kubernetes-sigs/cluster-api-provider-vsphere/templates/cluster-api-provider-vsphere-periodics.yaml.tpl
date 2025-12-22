@@ -30,7 +30,7 @@ periodics:
       - make
       - test-junit
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-test-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -92,7 +92,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -147,7 +147,7 @@ periodics:
           cpu: "4000m"
           memory: "3Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -198,7 +198,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -249,7 +249,7 @@ periodics:
           cpu: "4000m"
           memory: "6Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -305,7 +305,7 @@ periodics:
           cpu: "4000m"
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-test-coverage-{{ ReplaceAll $.branch "." "-" }}
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
@@ -349,7 +349,7 @@ periodics:
           cpu: "2000m"
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+    testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
     testgrid-tab-name: periodic-e2e-janitor
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
