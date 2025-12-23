@@ -16,12 +16,12 @@ periodics:
     path_alias: k8s.io/minikube
   spec:
     containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-master
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
       command:
       - runner.sh
       args:
       - make
-      - integration-prow-docker-docker-linux-x86-64
+      - integration-prow-docker-docker-linux-x86
       resources:
         limits:
           cpu: 7

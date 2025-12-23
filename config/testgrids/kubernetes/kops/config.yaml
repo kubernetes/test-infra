@@ -9,6 +9,7 @@ dashboard_groups:
   - kops-versions
   - kops-misc
   - kops-ipv6
+  - kops-azure
   - kops-gce
   - kops-grid
   - kops-distro-al2023
@@ -31,12 +32,12 @@ dashboard_groups:
   - kops-k8s-1.32
   - kops-k8s-1.33
   - kops-k8s-1.34
+  - kops-k8s-1.35
   - kops-k8s-ci
   - kops-k8s-stable
   - kops-1.32
   - kops-1.33
   - kops-1.34
-  - kops-master
   - kops-latest
   - kops-upgrades
   - kops-upgrades-many-addons
@@ -50,6 +51,7 @@ dashboards:
 - name: kops-versions
 - name: kops-misc
 - name: kops-ipv6
+- name: kops-azure
 - name: kops-gce
 - name: kops-grid
 - name: kops-distro-al2023
@@ -72,12 +74,12 @@ dashboards:
 - name: kops-k8s-1.32
 - name: kops-k8s-1.33
 - name: kops-k8s-1.34
+- name: kops-k8s-1.35
 - name: kops-k8s-ci
 - name: kops-k8s-stable
 - name: kops-1.32
 - name: kops-1.33
 - name: kops-1.34
-- name: kops-master
 - name: kops-latest
 - name: kops-upgrades
 - name: kops-upgrades-many-addons

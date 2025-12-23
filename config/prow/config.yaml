@@ -18,10 +18,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251212-148e9cff4"
-        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251212-148e9cff4"
-        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251212-148e9cff4"
-        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251212-148e9cff4"
+        clonerefs: "us-docker.pkg.dev/k8s-infra-prow/images/clonerefs:v20251222-e0d8d1ed6"
+        initupload: "us-docker.pkg.dev/k8s-infra-prow/images/initupload:v20251222-e0d8d1ed6"
+        entrypoint: "us-docker.pkg.dev/k8s-infra-prow/images/entrypoint:v20251222-e0d8d1ed6"
+        sidecar: "us-docker.pkg.dev/k8s-infra-prow/images/sidecar:v20251222-e0d8d1ed6"
       gcs_configuration:
         bucket: "kubernetes-ci-logs"
         path_strategy: "legacy"
@@ -733,32 +733,6 @@ tide:
     - do-not-merge/work-in-progress
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-      - master
-      - release-1.35
-    labels:
-      - lgtm
-      - approved
-      - "cncf-cla: yes"
-    missingLabels:
-      - do-not-merge
-      - do-not-merge/blocked-paths
-      - do-not-merge/cherry-pick-not-approved
-      - do-not-merge/contains-merge-commits
-      - do-not-merge/hold
-      - do-not-merge/invalid-commit-message
-      - do-not-merge/invalid-owners-file
-      - do-not-merge/needs-kind
-      - do-not-merge/needs-sig
-      - do-not-merge/release-note-label-needed
-      - do-not-merge/work-in-progress
-      - needs-rebase
-  - repos:
-      - kubernetes/kubernetes
-    milestone: v1.35
-    includedBranches:
-      - master
-      - release-1.35
     labels:
     - lgtm
     - approved

@@ -17,7 +17,6 @@ postsubmits:
       github_team_slugs:
       - org: kubernetes
         slug: sig-k8s-infra-leads
-      # proxy for test-infra-oncall
       - org: kubernetes
         slug: test-infra-admins
     reporter_config:
@@ -52,7 +51,6 @@ postsubmits:
       github_team_slugs:
       - org: kubernetes
         slug: sig-k8s-infra-leads
-      # proxy for test-infra-oncall
       - org: kubernetes
         slug: test-infra-admins
     spec:
@@ -119,12 +117,11 @@ periodics:
     github_team_slugs:
     - org: kubernetes
       slug: sig-k8s-infra-leads
-    # proxy for test-infra-oncall
     - org: kubernetes
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251212-148e9cff4
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251222-e0d8d1ed6
       command:
       - generic-autobumper
       args:
@@ -156,12 +153,11 @@ periodics:
     github_team_slugs:
     - org: kubernetes
       slug: sig-k8s-infra-leads
-    # proxy for test-infra-oncall
     - org: kubernetes
       slug: test-infra-admins
   spec:
     containers:
-    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251212-148e9cff4
+    - image: us-docker.pkg.dev/k8s-infra-prow/images/generic-autobumper:v20251222-e0d8d1ed6
       command:
       - generic-autobumper
       args:

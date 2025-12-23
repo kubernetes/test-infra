@@ -19,55 +19,12 @@ skip_jobs = []
 
 image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master"
 
-# GCE distributions
-gce_distro_options = [
-    "cos121",
-    "cos121arm64",
-    "cos125",
-    "cos125arm64",
-    "cosdev",
-    "cosdevarm64",
-    "debian12",
-    "debian12arm64",
-    "debian13",
-    "debian13arm64",
-    "ubuntu2204",
-    "ubuntu2404",
-    "ubuntu2404arm64",
-    "ubuntuminimal2404",
-    "ubuntuminimal2404arm64",
-    "rocky10",
-    # "rocky10arm64",
-    "rhel10",
-    # "rhel10arm64",
-    # "fedora43", #https://bugzilla.redhat.com/show_bug.cgi?id=2394063
-]
-
-# AWS distributions
-aws_distro_options = [
-    "debian11",
-    "debian12",
-    "debian13",
-    "ubuntu2204",
-    "ubuntu2204arm64",
-    "ubuntu2404",
-    "ubuntu2404arm64",
-    "ubuntu2510",
-    "ubuntu2510arm64",
-    "amazonlinux2",
-    "al2023",
-    "al2023arm64",
-    "rhel9",
-    "rhel10arm64",
-    "rocky9",
-    "rocky10arm64",
-    "flatcar",
-]
-
 k8s_versions = [
+    "master",
     "1.32",
     "1.33",
     "1.34",
+    "1.35",
 ]
 
 # kOps versions tested
@@ -77,6 +34,53 @@ kops_versions = [
     "1.33",
     "1.34",
 ]
+
+def drop_unsupported_versions(original_list, version_to_drop):
+    return list(filter(lambda item: item not in version_to_drop, original_list))
+
+# AWS distributions
+aws_distro_options = {
+    "debian11": kops_versions,
+    "debian12": kops_versions,
+    "debian13": kops_versions,
+    "ubuntu2204": kops_versions,
+    "ubuntu2204arm64": kops_versions,
+    "ubuntu2404": kops_versions,
+    "ubuntu2404arm64": kops_versions,
+    "ubuntu2510": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "ubuntu2510arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "amazonlinux2": kops_versions,
+    "al2023": kops_versions,
+    "al2023arm64": kops_versions,
+    "rhel9": kops_versions,
+    "rhel10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rocky9": kops_versions,
+    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "flatcar": kops_versions,
+}
+
+# GCE distributions
+gce_distro_options = {
+    "cos121": kops_versions,
+    "cos121arm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "cos125": kops_versions,
+    "cos125arm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "cosdev": kops_versions,
+    "cosdevarm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "debian12": kops_versions,
+    "debian12arm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "debian13": kops_versions,
+    "debian13arm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "ubuntu2204": kops_versions,
+    "ubuntu2404": kops_versions,
+    "ubuntu2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "ubuntuminimal2404": kops_versions,
+    "ubuntuminimal2404arm64": drop_unsupported_versions(kops_versions, ['1.32']),
+    "rhel10": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rocky10arm64": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+    "rocky10": drop_unsupported_versions(kops_versions, ['1.32', '1.33']),
+}
+
 
 # Network plugins for periodic network plugin tests
 network_plugins_periodics = {
@@ -106,7 +110,7 @@ network_plugins_periodics = {
         "kuberouter",
     ],
     "supports_gce": ["kubenet", "calico", "cilium", "kindnet", "gce"],
-    "supports_azure": ["cilium"],
+    "supports_azure": ["kubenet", "calico", "cilium", "kindnet"],
 }
 
 # Network plugins for presubmit network plugin tests
@@ -120,10 +124,12 @@ network_plugins_presubmits = {
         "flannel": r"^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/)",
         "kuberouter": r"^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)",
         "kindnet": r"^(upup\/models\/cloudup\/resources\/addons\/networking\.kindnet)",
+        "kubenet": r"^pkg\/apis\/kops\/networking.go",
     },
     "supports_ipv6": {"amazonvpc", "calico", "cilium", "kindnet"},
     "supports_gce": {"calico", "cilium", "kindnet"},
-    "supports_azure": {"cilium"},
+    "supports_azure": {"calico", "cilium", "kubenet", "kindnet"},
+    "supports_aws": {"amazonvpc", "calico", "cilium", "cilium-etcd", "flannel", "cilium-eni", "kindnet", "kubenet", "kuberouter"}
 }
 
 

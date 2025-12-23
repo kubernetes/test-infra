@@ -6,6 +6,9 @@
     {%- if run_if_changed %}
     run_if_changed: '{{run_if_changed}}'
     {%- endif %}
+    {%- if cloud == "gce" and scenario == "scalability" %}
+    job_queue_name: "5k-gce-scale-test"
+    {%- endif %}
     always_run: {{always_run}}
     optional: {{optional}}
     skip_report: {{skip_report}}

@@ -59,8 +59,11 @@
             {%- if kubernetes_feature_gates %}
             --kubernetes-feature-gates={{ kubernetes_feature_gates }} \
             {%- endif %}
-            {%- if boskos_resource_type %}
-            --boskos-resource-type={{boskos_resource_type}} \
+            {%- if boskos_resource_type and cloud == "aws" %}
+            --boskos-aws-resource-type={{boskos_resource_type}} \
+            {%- endif %}
+            {%- if boskos_resource_type and cloud == "gce" %}
+            --boskos-gcp-resource-type={{boskos_resource_type}} \
             {%- endif %}
             --kubernetes-version={{k8s_deploy_url}} \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \

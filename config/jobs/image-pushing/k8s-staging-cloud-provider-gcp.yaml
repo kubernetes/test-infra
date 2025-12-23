@@ -18,7 +18,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
             command:
               - /run.sh
             args:
@@ -48,7 +48,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
             command:
               - /run.sh
             args:
@@ -74,11 +74,12 @@ postsubmits:
         # trigger another image build. Images are only built for tags that follow
         # the repository specific format https://github.com/kubernetes/cloud-provider-gcp#tagging-for-new-cloud-controller-manager-versions
         # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
-        - v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+        # NOTE: this repo cuts additional tags not used by community, eg ccm/v1.0.0
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251205-8481528a19
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
             command:
               - /run.sh
             args:

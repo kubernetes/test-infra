@@ -1,26 +1,26 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- aojea # lead
-- BenTheElder # lead
+- aojea
+- BenTheElder
 - dims
-- stevekuznetsov
-- cjwagner # oncall, lead
-- mpherman2 # oncall
-- krzyzacy
+- upodroid
 approvers:
-- aojea # lead
-- BenTheElder # lead
+- aojea
+- BenTheElder
 - dims
-- stevekuznetsov
-- krzyzacy
-- test-infra-oncall # oncall
+- michelle192837
 - upodroid
 emeritus_approvers:
 - amwat
+- cjwagner
+- chases2
 - fejta
 - ixdy
+- krzyzacy
+- mpherman2
 - spiffxp
+- stevekuznetsov
 
 labels:
 - sig/testing

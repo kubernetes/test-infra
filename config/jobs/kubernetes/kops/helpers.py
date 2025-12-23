@@ -74,6 +74,8 @@ def should_skip_newer_k8s(k8s_version, kops_version):
         return False
     if kops_version is None:
         return False
+    if k8s_version == 'master':
+        return False
     if k8s_version is None:
         return True
     return float(k8s_version) > float(kops_version)
@@ -81,20 +83,19 @@ def should_skip_newer_k8s(k8s_version, kops_version):
 def k8s_version_info(k8s_version):
     test_package_url = ''
     test_package_dir = ''
-    if k8s_version == 'latest':
+    if k8s_version == 'ci':
         marker = 'latest.txt'
-        k8s_deploy_url = "https://dl.k8s.io/release/latest.txt"
-    elif k8s_version == 'ci':
-        marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/k8s-release-dev/ci/latest.txt"
-        test_package_url = 'https://storage.googleapis.com/k8s-release-dev'
+        k8s_deploy_url = "https://dl.k8s.io/ci/latest.txt"
+        test_package_url = 'https://dl.k8s.io'
         test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
         k8s_deploy_url = "https://dl.k8s.io/release/stable.txt"
     elif k8s_version:
-        marker = f"stable-{k8s_version}.txt"
-        k8s_deploy_url = f"https://dl.k8s.io/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
+        marker = f"latest-{k8s_version}.txt"
+        k8s_deploy_url = f"https://dl.k8s.io/ci/latest-{k8s_version}.txt" # pylint: disable=line-too-long
+        test_package_url = 'https://dl.k8s.io'
+        test_package_dir = 'ci'
     else:
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_url, test_package_dir
@@ -208,7 +209,40 @@ def latest_gce_image(project, family, arch="X86_64"):
     set_pinned(pin, image_name)
     return image_name
 
+# latest_azure_image returns the latest Azure image for the given publisher, offer, sku, and arch
+# If the image is pinned, it returns the pinned image
+# Otherwise, it fetches the latest image from Azure
+def latest_azure_image(publisher, offer, sku, arch="X86_64"):
+    pin = f"azure://images/{publisher}/{offer}/{sku}:{arch}"
+    image = get_pinned(pin)
+    if image:
+        return image
+
+    image_name = ""
+    # for now, we just return the image from this hardcoded list
+    # az vm image show --urn Canonical:ubuntu-24_04-lts:server:latest | jq .name
+    if publisher == 'Canonical' and offer == 'ubuntu-24_04-lts':
+        if arch == 'arm64':
+            image_name = "Canonical:ubuntu-24_04-lts:server-arm64:24.04.202512100"
+        else:
+            image_name = "Canonical:ubuntu-24_04-lts:server:24.04.202512100"
+
+    # az vm image show --urn Debian:debian-13:13-gen2:latest | jq .name
+    elif publisher == 'Debian' and offer == 'debian-13':
+        if arch == 'arm64':
+            image_name = "Debian:debian-13:13-arm64:0.20251117.2299"
+        else:
+            image_name = "Debian:debian-13:13-gen2:0.20251117.2299"
+    set_pinned(pin, image_name)
+    return image_name
+
 # Get latest images from some public images families
+azure_distro_images = {
+    'u2404': latest_azure_image('Canonical', 'ubuntu-24_04-lts', 'server'),
+    'u2404arm64': latest_azure_image('Canonical', 'ubuntu-24_04-lts', 'server-arm64', 'arm64'),
+    'deb13': latest_azure_image('Debian', 'debian-13', '13-gen2'),
+}
+
 gce_distro_images = {
     "deb12": latest_gce_image("debian-cloud", "debian-12"),
     "deb12arm64": latest_gce_image("debian-cloud", "debian-12-arm64", "ARM64"),

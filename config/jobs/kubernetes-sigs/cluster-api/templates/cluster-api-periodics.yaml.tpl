@@ -104,7 +104,7 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
-            # enable IPV6 in bootstrap image
+          # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
 {{- if eq $.branch "release-1.9" }}
@@ -161,7 +161,7 @@ periodics:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
-        # enable IPV6 in bootstrap image
+      # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
         value: "true"
 {{- if eq $.branch "release-1.9" }}
@@ -335,7 +335,7 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
-            # enable IPV6 in bootstrap image
+          # enable IPV6 in bootstrap image
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
 {{- if eq $.branch "release-1.9" }}

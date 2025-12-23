@@ -284,6 +284,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
+    job_queue_name: "5k-gce-scale-test"
     always_run: false
     optional: false
     skip_report: false
@@ -387,6 +388,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
+    run_if_changed: '^tests\/e2e\/scenarios\/scalability\/run-test.sh'
+    job_queue_name: "5k-gce-scale-test"
     always_run: false
     optional: false
     skip_report: false
@@ -488,6 +491,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     branches:
     - master
+    job_queue_name: "5k-gce-scale-test"
     always_run: false
     optional: false
     skip_report: false

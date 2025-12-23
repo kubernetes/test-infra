@@ -1,16 +1,18 @@
-# Only oncall gets approval here because it provides access to magic secrets.
+# Only sig k8s infra TLS get approval here because it provides access to infra secrets.
 options:
   no_parent_owners: true
 
-# Oncallers with context on this
+# k8s-infra TLs
 reviewers:
 - ameukam
-- BenTheElder
-- dims
 - upodroid
 - xmudrii
 
-# All oncallers
 approvers:
-- test-infra-oncall
-- sig-k8s-infra-leads
+- ameukam
+- upodroid
+- xmudrii
+
+emeritus_approvers:
+- BenTheElder
+- dims

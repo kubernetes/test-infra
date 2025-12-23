@@ -1,0 +1,25 @@
+postsubmits:
+  kubernetes-sigs/node-readiness-controller:
+    - name: post-node-readiness-controller-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main$
+        - ^release-
+        # Build semver tags, too
+        # regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string.
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --with-git-dir
+              - .
