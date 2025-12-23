@@ -234,6 +234,7 @@ download_current_version_bins() {
   tar -xf kubernetes-test-$(go env GOOS)-$(go env GOARCH).tar.gz
   mkdir -p _output/bin
   mv kubernetes/test/bin/* _output/bin
+  export PATH="${PWD}/_output/bin:$PATH"
   return 0
 }
 
