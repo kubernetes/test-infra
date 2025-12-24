@@ -15,7 +15,7 @@ periodics:
     testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
     testgrid-tab-name: registry-sandbox-e2e-gcp
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '3'
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
   spec:
     containers:
@@ -48,7 +48,7 @@ periodics:
     testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
     testgrid-tab-name: registry-sandbox-e2e-aws
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '3'
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
   spec:
     containers:
@@ -82,7 +82,7 @@ periodics:
     testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
     testgrid-tab-name: registry-sandbox-e2e-ibm
-    testgrid-num-failures-to-alert: '1'
+    testgrid-num-failures-to-alert: '3'
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
   spec:
     containers:
