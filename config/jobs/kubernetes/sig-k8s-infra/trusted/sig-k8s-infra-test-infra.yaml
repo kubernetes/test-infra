@@ -58,6 +58,32 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
       description: Compiles and updates testgrid config on test-infra pushes
+  - name: post-test-infra-upload-metrics-dashboards
+    cluster: k8s-infra-prow-build-trusted
+    branches:
+    - ^master$
+    max_concurrency: 1
+    run_if_changed: '^metrics/web/.*\.html$'
+    decorate: true
+    spec:
+      serviceAccountName: k8s-metrics
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        command:
+        - make
+        args:
+        - -C
+        - ./metrics/web/
+        - push-static
+        resources:
+          requests:
+            memory: "256Mi"
+    annotations:
+      testgrid-dashboards: sig-testing-misc, sig-k8s-infra-prow
+      testgrid-tab-name: metrics-dashboards-update
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: Updates the HTML dashboards for k8s-metrics bucket.
 
 
 periodics:

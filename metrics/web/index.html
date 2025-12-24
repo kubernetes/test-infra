@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes CI Metrics Dashboards</title>
+    <style>
+        :root {
+            --bg-dark: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --link: #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+        }
+
+        .subtitle a {
+            color: var(--link);
+            text-decoration: none;
+        }
+
+        .subtitle a:hover {
+            text-decoration: underline;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            margin-top: 32px;
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--link);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--link);
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .json-list {
+            list-style: none;
+        }
+
+        .json-list li {
+            margin: 8px 0;
+        }
+
+        .json-list a {
+            color: var(--link);
+            text-decoration: none;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .json-list a:hover {
+            text-decoration: underline;
+        }
+
+        .json-desc {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kubernetes CI Metrics Dashboards</h1>
+        <p class="subtitle">
+            Interactive dashboards for CI job health data from
+            <a href="https://console.cloud.google.com/storage/browser/k8s-metrics" target="_blank">gs://k8s-metrics</a>
+        </p>
+
+        <h2>Dashboards</h2>
+        <div class="card-grid">
+            <a href="failures-latest.html" class="card">
+                <div class="card-title">Failures Dashboard</div>
+                <div class="card-desc">
+                    Jobs that have been consistently failing, sorted by number of consecutive failing days.
+                    Helps identify long-standing broken jobs that need attention.
+                </div>
+            </a>
+            <a href="flakes-latest.html" class="card">
+                <div class="card-title">Weekly Flakes Dashboard</div>
+                <div class="card-desc">
+                    Jobs with flaky test results over the past week. Shows consistency percentage
+                    and individual flaky tests within each job.
+                </div>
+            </a>
+            <a href="flakes-daily-latest.html" class="card">
+                <div class="card-title">Daily Flakes Dashboard</div>
+                <div class="card-desc">
+                    Jobs with flaky test results from the past day. Useful for catching
+                    newly introduced flakiness before it becomes chronic.
+                </div>
+            </a>
+            <a href="job-health-latest.html" class="card">
+                <div class="card-title">Job Health Dashboard</div>
+                <div class="card-desc">
+                    Daily snapshot of all CI jobs showing run counts, failure rates,
+                    test counts, and duration percentiles (p50, p75, p99).
+                </div>
+            </a>
+            <a href="presubmit-health-latest.html" class="card">
+                <div class="card-title">Presubmit Health Dashboard</div>
+                <div class="card-desc">
+                    Presubmit job health metrics showing PR failure rates, run counts,
+                    and average run times to help identify problematic presubmits.
+                </div>
+            </a>
+        </div>
+
+        <h2>Raw Data (JSON)</h2>
+        <div class="section">
+            <ul class="json-list">
+                <li>
+                    <a href="failures-latest.json">failures-latest.json</a>
+                    <span class="json-desc">— Jobs failing for consecutive days</span>
+                </li>
+                <li>
+                    <a href="flakes-latest.json">flakes-latest.json</a>
+                    <span class="json-desc">— Weekly flake data with test-level details</span>
+                </li>
+                <li>
+                    <a href="flakes-daily-latest.json">flakes-daily-latest.json</a>
+                    <span class="json-desc">— Daily flake data with test-level details</span>
+                </li>
+                <li>
+                    <a href="job-health-latest.json">job-health-latest.json</a>
+                    <span class="json-desc">— Daily job health with failure rates and durations</span>
+                </li>
+                <li>
+                    <a href="presubmit-health-latest.json">presubmit-health-latest.json</a>
+                    <span class="json-desc">— Presubmit job health with PR failure rates</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

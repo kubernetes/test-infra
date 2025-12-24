@@ -57,6 +57,37 @@ jqfilter: |
     - [Config](configs/weekly-consistency-config.yaml)
     - [weekly-consistency-latest.json](http://storage.googleapis.com/k8s-metrics/weekly-consistency-latest.json)
 
+## Web Dashboards
+
+Interactive HTML dashboards are available in the [web/](web/) directory for visualizing metrics data:
+
+* [failures-latest.html](web/failures-latest.html) - Jobs failing for consecutive days
+* [flakes-latest.html](web/flakes-latest.html) - Weekly flake data with test-level details
+* [flakes-daily-latest.html](web/flakes-daily-latest.html) - Daily flake data
+* [job-health-latest.html](web/job-health-latest.html) - Daily job health with failure rates and durations
+* [presubmit-health-latest.html](web/presubmit-health-latest.html) - Presubmit job health with PR failure rates
+* [index.html](web/index.html) - Landing page linking all dashboards
+
+### Local Testing
+
+To test the dashboards locally:
+
+```bash
+cd metrics/web
+
+# Download latest data from GCS
+gsutil cp gs://k8s-metrics/failures-latest.json .
+gsutil cp gs://k8s-metrics/flakes-latest.json .
+gsutil cp gs://k8s-metrics/flakes-daily-latest.json .
+gsutil cp gs://k8s-metrics/job-health-latest.json .
+gsutil cp gs://k8s-metrics/presubmit-health-latest.json .
+
+# Serve locally
+python3 -m http.server 8080
+
+# Open http://localhost:8080/
+```
+
 ## Adding a new metric
 
 To add a new metric, create a PR that adds a new yaml config file
