@@ -62,6 +62,13 @@ update-go-deps:
 .PHONY: verify-go-deps
 verify-go-deps:
 	hack/make-rules/verify/go-deps.sh
+.PHONY: update-unit
+.PHONY: update-go-unit
+update-unit: update-go-unit
+	UPDATE_FIXTURE_DATA=true hack/make-rules/go-test/unit.sh
+.PHONY: update-config-fixture
+update-config-fixture:
+	UPDATE_FIXTURE_DATA=true hack/make-rules/go-test/unit.sh ./config/tests/...
 # ======================== Image Building/Publishing ===========================
 # Build and publish miscellaneous images that get pushed to the specified REGISTRY.
 # The full set of images covered by these targets is configured in
