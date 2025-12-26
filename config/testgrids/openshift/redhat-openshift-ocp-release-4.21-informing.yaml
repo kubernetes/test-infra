@@ -532,6 +532,168 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-candidate-x86-loaded-upgrade-from-4.20-loaded-upgrade-420to421-24nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-candidate-x86-loaded-upgrade-from-4.20-loaded-upgrade-420to421-24nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-cluster-density-v2-249nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-cluster-density-v2-249nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-120nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-120nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-24nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-24nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-data-path-9nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-data-path-9nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-node-density-heavy-24nodes
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-node-density-heavy-24nodes
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-netobserv-perf-tests-netobserv-aws-4.21-nightly-x86-cluster-density-v2-250nodes
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -8227,33 +8389,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-ptp-upstream
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-ptp-upstream
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-sno-cnftests
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -9760,6 +9895,18 @@ test_groups:
   name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-aws-4.21-nightly-x86-udn-density-l3-24nodes
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.21-nightly-x86-olmv1-benchmark-test
   name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.21-nightly-x86-olmv1-benchmark-test
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-candidate-x86-loaded-upgrade-from-4.20-loaded-upgrade-420to421-24nodes
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-candidate-x86-loaded-upgrade-from-4.20-loaded-upgrade-420to421-24nodes
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-cluster-density-v2-249nodes
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-cluster-density-v2-249nodes
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-120nodes
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-120nodes
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-24nodes
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-control-plane-24nodes
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-data-path-9nodes
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-data-path-9nodes
+- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-node-density-heavy-24nodes
+  name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-rosa-4.21-nightly-x86-node-density-heavy-24nodes
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-netobserv-perf-tests-netobserv-aws-4.21-nightly-x86-cluster-density-v2-250nodes
   name: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-netobserv-perf-tests-netobserv-aws-4.21-nightly-x86-cluster-density-v2-250nodes
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-eng-ocp-qe-perfscale-ci-netobserv-perf-tests-netobserv-aws-4.21-nightly-x86-node-density-heavy-25nodes
@@ -10454,8 +10601,6 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-mno-ztp-cnftests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-ptp
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-ptp
-- gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-ptp-upstream
-  name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-ptp-upstream
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-sno-cnftests
   name: periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-sno-cnftests
 - gcs_prefix: test-platform-results/logs/periodic-ci-openshift-release-master-nightly-4.21-e2e-telco5g-sno-ztp-cnftests
