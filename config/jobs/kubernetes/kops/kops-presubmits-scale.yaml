@@ -128,8 +128,6 @@ presubmits:
           value: "c5.18xlarge"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-infra-kops-scale-tests"
-        - name: KOPS_DISCOVERY_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"
         - name: CL2_ENABLE_DNS_PROGRAMMING
@@ -237,8 +235,6 @@ presubmits:
         - name: NODE_MODE
           value: "master"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
-        - name: KOPS_DISCOVERY_STORE
           value: "s3://k8s-infra-kops-scale-tests"
         - name: PROMETHEUS_SCRAPE_KUBE_PROXY
           value: "true"

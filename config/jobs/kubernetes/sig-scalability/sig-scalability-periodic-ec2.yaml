@@ -99,10 +99,8 @@ periodics:
       - name: CONTROL_PLANE_COUNT
         value: "3"
       - name: CONTROL_PLANE_SIZE
-        value: "c7i.24xlarge"
+        value: "c5.18xlarge"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-infra-kops-scale-tests"
-      - name: KOPS_DISCOVERY_STORE
         value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
@@ -208,8 +206,6 @@ periodics:
       - name: CONTROL_PLANE_SIZE
         value: "c5.4xlarge"
       - name: KOPS_STATE_STORE
-        value: "s3://k8s-infra-kops-scale-tests"
-      - name: KOPS_DISCOVERY_STORE
         value: "s3://k8s-infra-kops-scale-tests"
       - name: PROMETHEUS_SCRAPE_KUBE_PROXY
         value: "true"
