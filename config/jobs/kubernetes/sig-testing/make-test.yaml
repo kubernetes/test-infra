@@ -34,6 +34,50 @@ presubmits:
             requests:
               cpu: 7.2
               memory: "43Gi"
+  - name: pull-kubernetes-unit-canary
+    annotations:
+      fork-per-release: "false"
+      testgrid-dashboards: sig-testing-canaries
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: true
+    always_run: false
+    path_alias: k8s.io/kubernetes
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - make
+            - test
+          env:
+          # Slightly less than the default from "cpu: 7.2".
+          #
+          # With the default we get potentially 7 test binaries
+          # with each 7 tests running in parallel. CPU
+          # starvation became a problem when removing polling
+          # and the time.Sleep calls used during polling in
+          # https://github.com/kubernetes/kubernetes/pull/135395.
+          - name: PARALLEL
+            value: "5"
+          resources:
+            limits:
+              cpu: 7.2
+              memory: "43Gi"
+            requests:
+              cpu: 7.2
+              memory: "43Gi"
   - name: pull-kubernetes-unit-go-compatibility
     annotations:
       fork-per-release: "true"
