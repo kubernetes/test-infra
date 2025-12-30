@@ -686,11 +686,11 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: 7200m
-          memory: 43Gi
+          cpu: 7
+          memory: 16Gi
         requests:
-          cpu: 7200m
-          memory: 43Gi
+          cpu: 7
+          memory: 16Gi
       securityContext:
         allowPrivilegeEscalation: false
     securityContext:
@@ -2750,10 +2750,10 @@ presubmits:
         resources:
           limits:
             cpu: "5"
-            memory: 32Gi
+            memory: 12Gi
           requests:
             cpu: "5"
-            memory: 32Gi
+            memory: 12Gi
   - always_run: false
     branches:
     - release-1.33

@@ -79,11 +79,11 @@ presubmits:
         - unit
         resources:
           limits:
-            cpu: 7.2
-            memory: "43Gi"
+            cpu: 7
+            memory: 16Gi
           requests:
-            cpu: 7.2
-            memory: "43Gi"
+            cpu: 7
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-arch-code-organization
       testgrid-tab-name: pull-unit-master-dependencies
@@ -174,11 +174,11 @@ presubmits:
           value: "devel"
         resources:
           limits:
-            cpu: 7.2
-            memory: "43Gi"
+            cpu: 7
+            memory: 16Gi
           requests:
-            cpu: 7.2
-            memory: "43Gi"
+            cpu: 7
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-arch-code-organization
       testgrid-tab-name: pull-unit-master-golang-tip
@@ -271,11 +271,11 @@ periodics:
       - unit
       resources:
         limits:
-          cpu: 7.2
-          memory: "43Gi"
+          cpu: 7
+          memory: 16Gi
         requests:
-          cpu: 7.2
-          memory: "43Gi"
+          cpu: 7
+          memory: 16Gi
 
 - interval: 4h
   cluster: k8s-infra-prow-build
@@ -365,11 +365,11 @@ periodics:
         value: "devel"
       resources:
         limits:
-          cpu: 7.2
-          memory: "43Gi"
+          cpu: 7
+          memory: 16Gi
         requests:
-          cpu: 7.2
-          memory: "43Gi"
+          cpu: 7
+          memory: 16Gi
 
 - interval: 4h
   cluster: k8s-infra-prow-build

@@ -29,11 +29,11 @@ presubmits:
             - test
           resources:
             limits:
-              cpu: 7.2
-              memory: "43Gi"
+              cpu: 7
+              memory: "16Gi"
             requests:
-              cpu: 7.2
-              memory: "43Gi"
+              cpu: 7
+              memory: "16Gi"
   - name: pull-kubernetes-unit-canary
     annotations:
       fork-per-release: "false"
@@ -73,11 +73,11 @@ presubmits:
             value: "5"
           resources:
             limits:
-              cpu: 7.2
-              memory: "43Gi"
+              cpu: 7
+              memory: 16Gi
             requests:
-              cpu: 7.2
-              memory: "43Gi"
+              cpu: 7
+              memory: 16Gi
   - name: pull-kubernetes-unit-go-compatibility
     annotations:
       fork-per-release: "true"
@@ -186,11 +186,10 @@ periodics:
           command:
             - make
             - test
-          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
-              cpu: 7.2
-              memory: "43Gi"
+              cpu: 7
+              memory: 16Gi
             requests:
-              cpu: 7.2
-              memory: "43Gi"
+              cpu: 7
+              memory: 16Gi

@@ -23,11 +23,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 7300m
-            memory: "41Gi"
+            cpu: 7
+            memory: "25Gi"
           requests:
-            cpu: 7300m
-            memory: "41Gi"
+            cpu: 7
+            memory: "25Gi"
     annotations:
       testgrid-create-test-group: 'true'
 
