@@ -124,11 +124,11 @@ periodics:
         value: "true"
       resources:
         requests:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
         limits:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
 
 # This job is the same as above, but using 100 nodes instead of 5000
 - name: ci-kubernetes-e2e-kops-aws-small-scale-amazonvpc-using-cl2
@@ -229,8 +229,8 @@ periodics:
         value: "true"
       resources:
         requests:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
         limits:
-          cpu: "10"
-          memory: "48Gi"
+          cpu: 7
+          memory: 24Gi
