@@ -409,6 +409,11 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-cos-containerd: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 70m
   spec:
@@ -448,6 +453,11 @@ periodics:
     preset-k8s-ssh: "true"
     preset-e2e-cos-containerd: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 70m
   spec:
@@ -847,6 +857,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 70m
   spec:

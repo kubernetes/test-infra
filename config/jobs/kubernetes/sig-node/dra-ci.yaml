@@ -19,6 +19,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
@@ -104,6 +110,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
@@ -194,6 +206,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
@@ -316,6 +334,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
@@ -438,6 +462,12 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 90m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master

@@ -4,6 +4,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds API review process description to kind/api-change PRs
@@ -43,6 +48,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -52,6 +64,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds stable metrics review documentation to area/stable-metrics PRs
@@ -82,6 +99,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -91,6 +115,11 @@ periodics:
   interval: 10m
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: A sample job to make sure things work
@@ -125,6 +154,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -134,6 +170,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Closes rotten issues after 30d of inactivity
@@ -187,6 +228,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -196,6 +244,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Closes rotten PRs after 30d of inactivity
@@ -245,6 +298,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -254,6 +314,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/rotten to stale issues after 30d of inactivity
@@ -307,6 +372,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -316,6 +388,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/rotten to stale PRs after 30d of inactivity
@@ -366,6 +443,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -375,6 +459,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/stale to issues after 90d of inactivity
@@ -428,6 +517,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -437,6 +533,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/stale to PRs after 90d of inactivity
@@ -487,6 +588,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -496,6 +604,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes lifecycle/frozen from PRs
@@ -535,6 +648,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -544,6 +664,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes the triage/accepted label after 1 year of inactivity
@@ -586,6 +711,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -595,6 +727,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes the triage/accepted label on important issues after 3 months of inactivity
@@ -638,6 +775,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -647,6 +791,11 @@ periodics:
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Removes the triage/accepted label on critical issues after 1 month of inactivity
@@ -690,6 +839,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:
@@ -701,6 +857,11 @@ periodics:
   labels:
     preset-service-account: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+    path_alias: k8s.io/org
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Creates github issues based on data from various 'IssueSource's.
@@ -721,6 +882,13 @@ periodics:
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: token
       secret:

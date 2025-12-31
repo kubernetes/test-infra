@@ -6,6 +6,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master

@@ -6,6 +6,11 @@ periodics:
     testgrid-tab-name: gce-serial
   cluster: k8s-infra-prow-build
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 8h40m0s
   interval: 12h
@@ -76,43 +81,6 @@ periodics:
         requests:
           cpu: "4"
           memory: 6Gi
-- annotations:
-    testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
-    testgrid-dashboards: sig-cli-master
-    testgrid-tab-name: aws
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-aws-credential: "true"
-    preset-aws-ssh: "true"
-    preset-e2e-platform-aws: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-kops-aws-sig-cli
-  spec:
-    containers:
-    - args:
-      - --aws
-      - --cluster=e2e-kops-aws-sig-cli.test-cncf-aws.k8s.io
-      - --extract=ci/latest
-      - --ginkgo-parallel
-      - --provider=aws
-      - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "2"
-          memory: 8Gi
-        requests:
-          cpu: "2"
-          memory: 8Gi
 - annotations:
     testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
     testgrid-tab-name: gce-latest-stable2-gci-kubectl-skew

@@ -57,6 +57,11 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h0m0s
+  extra_refs:
+  - base_ref: release-1.34
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
