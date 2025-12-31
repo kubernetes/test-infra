@@ -12,7 +12,7 @@ plank:
     # limits concurrency for k8s-test-infra-staging project
     'test-infra-staging-image-push': 1
     # limits concurrency for 5k GCE jobs
-    '5k-gce-scale-test': 1
+    '5k-gce-scale-test': 4
   default_decoration_config_entries:
   - config:
       timeout: 2h
