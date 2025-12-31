@@ -348,6 +348,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 80m
   spec:
@@ -387,6 +392,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 60m
   spec:
@@ -425,6 +435,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 80m
   spec:
@@ -463,6 +478,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:
@@ -497,6 +517,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 80m
   spec:
@@ -536,6 +561,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 80m
   spec:
@@ -575,6 +605,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:
@@ -610,6 +645,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 340m
   spec:
@@ -648,6 +688,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 340m
   spec:
@@ -685,6 +730,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 200m
   spec:
@@ -721,6 +771,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 70m
   spec:
@@ -759,6 +814,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:
@@ -797,6 +857,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:
@@ -840,6 +905,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:
@@ -873,6 +943,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:
@@ -908,6 +983,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 520m
   spec:
@@ -943,6 +1023,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 520m
   spec:
@@ -980,6 +1065,11 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   decoration_config:
     timeout: 170m
   spec:

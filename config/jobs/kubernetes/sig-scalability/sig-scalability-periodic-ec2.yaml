@@ -7,6 +7,11 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential-boskos-scale-001-kops: "true"
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - command:

@@ -121,6 +121,11 @@ periodics:
   interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   decoration_config:
     timeout: 3h
   max_concurrency: 1
@@ -164,10 +169,10 @@ periodics:
       resources:
         requests:
           cpu: 7
-          memory: 48Gi
+          memory: 12Gi
         limits:
           cpu: 7
-          memory: 48Gi
+          memory: 12Gi
 
 - name: ci-test-infra-autobump-prowjobs
   cron: "06 14-23 * * 1-5"  # Run every hour at 7:06 - 16:06 PDT (in UTC) Mon-Fri
@@ -188,6 +193,13 @@ periodics:
       - name: github
         mountPath: /etc/github-token
         readOnly: true
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     volumes:
     - name: github
       secret:

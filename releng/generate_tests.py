@@ -338,6 +338,16 @@ class E2ETest:
         # Generates Prow config.
         prow_config = self.__get_prow_config(test_suite)
 
+        # Generate extra_refs
+        prow_config['extra_refs'] = [
+            {
+                'org': 'kubernetes',
+                'repo': 'kubernetes',
+                'base_ref': f"release-{k8s_version['version']}",
+                'path_alias': 'k8s.io/kubernetes',
+            }
+        ]
+
         tg_config = self.__get_testgrid_config()
 
         annotations = prow_config.setdefault('annotations', {})

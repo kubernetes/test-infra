@@ -157,10 +157,6 @@ jobs:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
-    interval: 24h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable4-default:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
