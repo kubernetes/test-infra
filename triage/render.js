@@ -66,7 +66,7 @@ function addElement(parent, type, opts, children) {
 function spyglassURLForBuild(build, test) {
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
   var spyglassURL = 'https://prow.k8s.io/view/gs/' + buildPath.slice(5);
-  if (build.pr) {
+  if (build.pr && build.pr !== 'batch') {
     spyglassURL = spyglassURL.replace(/(\/pr-logs\/pull\/([^/]*\/)?)\d+\//, '$1' + build.pr + '/');
     //                                                   ^ optional repo segment, not present for k/k jobs
   }
