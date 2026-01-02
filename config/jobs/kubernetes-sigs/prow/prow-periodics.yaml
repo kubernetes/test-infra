@@ -25,10 +25,10 @@ periodics:
       resources:
         limits:
           cpu: 2
-          memory: 4Gi
+          memory: 6Gi
         requests:
           cpu: 2
-          memory: 4Gi
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-testing-prow-repo
     testgrid-tab-name: continuous-test-verify
