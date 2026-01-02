@@ -33,10 +33,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
   - name: pull-kubernetes-cmd-canary
     cluster: eks-prow-build-cluster
@@ -71,10 +71,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 20Gi
   - name: pull-kubernetes-cmd-go-compatibility
     cluster: k8s-infra-prow-build

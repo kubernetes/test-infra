@@ -26,10 +26,10 @@ postsubmits:
           requests:
             # This job is very CPU intensive as building prow images in
             # parallel
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: sig-testing-misc

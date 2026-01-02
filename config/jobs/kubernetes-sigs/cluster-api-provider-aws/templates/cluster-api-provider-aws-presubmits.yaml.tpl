@@ -19,10 +19,10 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -49,10 +49,10 @@ presubmits:
         image: {{ $.config.TestImage }}
         resources:
           requests:
-            cpu: 7300m
+            cpu: 7
             memory: 9Gi
           limits:
-            cpu: 7300m
+            cpu: 7
             memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws

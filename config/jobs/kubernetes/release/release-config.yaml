@@ -160,10 +160,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: "12"
+            cpu: 7
           limits:
             memory: "4Gi"
-            cpu: "12"
+            cpu: 7
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-integration-test
@@ -185,10 +185,10 @@ presubmits:
         resources:
           limits:
             memory: 4Gi
-            cpu: 8500m
+            cpu: 7
           requests:
             memory: 4Gi
-            cpu: 8500m
+            cpu: 7
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-verify
@@ -221,10 +221,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -259,10 +259,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -329,10 +329,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -364,10 +364,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -398,10 +398,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -433,10 +433,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
@@ -468,10 +468,10 @@ presubmits:
               value: "gcr.io/k8s-staging-releng-test"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 1Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
