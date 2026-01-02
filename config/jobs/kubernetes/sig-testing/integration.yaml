@@ -114,7 +114,7 @@ presubmits:
     always_run: true
     decorate: true
     skip_branches:
-    - .* # per-release job
+    - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
@@ -217,6 +217,48 @@ periodics:
         requests:
           cpu: 6
           memory: 20Gi
+    nodeSelector:
+      kubernetes.io/arch: amd64
+- interval: 1h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-integration-arm64-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  labels:
+    preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 2h 2h 6h 24h
+    testgrid-dashboards: sig-release-master-blocking
+    testgrid-tab-name: integration-arm64-master
+    testgrid-alert-email: release-team@kubernetes.io
+    description: "Ends up running: make test-integration on arm node"
+  spec:
+    containers:
+    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-integration-dockerized.sh
+      env:
+      - name: SHORT
+        value: --short=false
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 6
+          memory: 20Gi
+        requests:
+          cpu: 6
+          memory: 20Gi
+    nodeSelector:
+      kubernetes.io/arch: arm64
 - interval: 6h
   cluster: k8s-infra-prow-build
   name: ci-kubernetes-integration-race-master
