@@ -1,0 +1,107 @@
+periodics:
+- name: ci-kubernetes-e2e-capz-master-windows-1-35
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-release-1.35-informing, sig-windows-1.35-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1.35
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 4h0m0s
+  extra_refs:
+  - base_ref: release-1.21
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    repo: cluster-api-provider-azure
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+    workdir: true
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    repo: cloud-provider-azure
+  interval: 24h
+  labels:
+    preset-azure-community: "true"
+    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-windows-2022: "true"
+    preset-capz-windows-common: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    serviceAccountName: azure
+    containers:
+    - command:
+      - runner.sh
+      - env
+      - KUBERNETES_VERSION=latest-1.35
+      - ./capz/run-capz-e2e.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
+      name: ""
+      resources:
+        limits:
+          cpu: "2"
+          memory: 9Gi
+        requests:
+          cpu: "2"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+- name: ci-kubernetes-e2e-capz-1-35-windows-serial-slow
+  cluster: eks-prow-build-cluster
+  interval: 48h
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-azure-community: "true"
+    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-serial-slow: "true"
+    preset-capz-gmsa-setup: "true"
+    preset-capz-windows-2022: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.21
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: false
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    serviceAccountName: azure
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.35
+        command:
+          - "runner.sh"
+          - "env"
+          - KUBERNETES_VERSION=latest-1.35
+          - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
+        env:
+          - name: GINKGO_FOCUS
+            value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
+          - name: GINKGO_SKIP
+            value: \[LinuxOnly\]|device.plugin.for.Windows|\[sig-autoscaling\].\[Feature:HPA\]|should.be.able.to.gracefully.shutdown.pods.with.various.grace.periods|\[Alpha\]|\[Feature:SchedulerAsyncPreemption\]
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-1.35-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1-35-serial-slow
