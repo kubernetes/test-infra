@@ -9,8 +9,10 @@ periodics:
         base_ref: master
         path_alias: k8s.io/kubernetes
     annotations:
+      fork-per-release: "true"
+      fork-per-release-cron: 0 3/2 * * *, 0 4/6 * * *, 0 5 * * *, 0 6 * * *, 0 7 * * *
       testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
-      testgrid-tab-name: ci-kubernetes-unit-ppc64le
+      testgrid-tab-name: ci-kubernetes-unit-ppc64le-master
       testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '2'
     spec:

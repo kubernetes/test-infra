@@ -558,6 +558,44 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    fork-per-release-cron: 0 7 * * *
+    testgrid-alert-email: sig-cloud-provider-ibm-ppc64le-alerts@kubernetes.io
+    testgrid-dashboards: ibm-ppc64le-k8s, ibm-ppc64le-periodics
+    testgrid-num-failures-to-alert: "2"
+    testgrid-tab-name: ci-kubernetes-unit-ppc64le-1.32
+  cluster: k8s-infra-ppc64le-prow-build
+  cron: 0 6 * * *
+  decorate: true
+  extra_refs:
+  - base_ref: release-1.32
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  name: ci-kubernetes-unit-ppc64le-1-32
+  spec:
+    containers:
+    - command:
+      - make
+      - test
+      env:
+      - name: KUBE_TIMEOUT
+        value: -timeout=300s
+      - name: KUBE_RACE
+      image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-855adc2699-1.32
+      name: ""
+      resources:
+        limits:
+          cpu: "6"
+          memory: 28Gi
+        requests:
+          cpu: "6"
+          memory: 28Gi
+      securityContext:
+        allowPrivilegeEscalation: false
+    securityContext:
+      runAsGroup: 2010
+      runAsUser: 2001
+- annotations:
     testgrid-alert-email: eduard.bartosh@intel.com, patrick.ohly@intel.com
     testgrid-dashboards: sig-node-dynamic-resource-allocation, sig-release-1.32-informing
   cluster: eks-prow-build-cluster
