@@ -804,10 +804,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 7200m
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 7200m
+            cpu: 7
             memory: 20Gi
         securityContext:
           privileged: true

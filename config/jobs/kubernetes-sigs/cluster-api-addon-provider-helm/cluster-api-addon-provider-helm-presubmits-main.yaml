@@ -191,10 +191,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 7300m
+            cpu: 7
             memory: 32Gi
           limits:
-            cpu: 7300m
+            cpu: 7
             memory: 32Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm

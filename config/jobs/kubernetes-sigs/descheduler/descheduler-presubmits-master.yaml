@@ -23,10 +23,10 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 8Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 8Gi
   - name: pull-descheduler-verify-build-master
     cluster: eks-prow-build-cluster
