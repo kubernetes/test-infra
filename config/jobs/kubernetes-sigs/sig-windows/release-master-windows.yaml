@@ -110,7 +110,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
+          - "KUBERNETES_VERSION=latest-1.35" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -164,7 +164,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
+          - "KUBERNETES_VERSION=latest-1.35" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -217,7 +217,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest-1.35"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -327,7 +327,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest-1.35"
           - "./capz/run-capz-e2e.sh"
         env:
           - name: WINDOWS_CONTAINERD_URL
@@ -379,7 +379,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest-1.35"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -440,7 +440,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest"
+          - "KUBERNETES_VERSION=latest-1.35"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -498,7 +498,7 @@ periodics:
         command:
           - "runner.sh"
           - "env"
-          - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
+          - "KUBERNETES_VERSION=latest-1.35" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
