@@ -86,6 +86,13 @@ default:
       target: both
       addedBy: label
     - color: 0052cc
+      description: Issues or PRs related to logging instrumentation or tooling.
+      name: area/logging
+      previously:
+        - name: wg/structured-logging
+      target: both
+      addedBy: label
+    - color: 0052cc
       description: Issues or PRs that should potentially be discussed in a Kubernetes community meeting.
       name: area/community-meeting
       target: both
