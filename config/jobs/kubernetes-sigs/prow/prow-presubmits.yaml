@@ -1,7 +1,7 @@
 presubmits:
   kubernetes-sigs/prow:
   - name: pull-prow-integration
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     skip_if_only_changed: '^site/'
     decorate: true
     labels:
@@ -22,10 +22,10 @@ presubmits:
           requests:
             # This job is very CPU intensive as building prow images in
             # parallel
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: sig-testing-prow-repo
@@ -55,10 +55,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-testing-prow-repo
@@ -83,10 +83,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-testing-prow-repo
@@ -113,10 +113,10 @@ presubmits:
           requests:
             # This job is very CPU intensive as building prow images in
             # parallel
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: sig-testing-prow-repo
@@ -141,10 +141,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-testing-prow-repo

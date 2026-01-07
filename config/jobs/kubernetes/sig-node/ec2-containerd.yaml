@@ -53,10 +53,10 @@ periodics:
               value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: ci-kubernetes-node-arm64-e2e-containerd-ec2
     interval: 6h
@@ -106,10 +106,10 @@ periodics:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: ci-containerd-node-arm64-e2e-serial-ec2
     interval: 6h
@@ -161,10 +161,10 @@ periodics:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: ci-containerd-node-e2e-serial-ec2
     interval: 6h
@@ -208,8 +208,8 @@ periodics:
               value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi

@@ -67,10 +67,10 @@ presubmits:
         - scripts/ci/presubmits/integration-tests
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 16Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
@@ -97,10 +97,10 @@ presubmits:
         - scripts/ci/presubmits/e2e-tests
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 16Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cloud-provider-kro-presubmits
