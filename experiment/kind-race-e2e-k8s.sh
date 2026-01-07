@@ -157,8 +157,8 @@ kubeadmConfigPatches:
   ---
   kind: KubeletConfiguration
   apiVersion: kubelet.config.k8s.io/v1beta1
-    enableSystemLogHandler: true
-    enableSystemLogQuery: true
+  enableSystemLogHandler: true
+  enableSystemLogQuery: true
 # v1beta3 for v1.23.0 ... ?
 - |
   kind: ClusterConfiguration
@@ -195,8 +195,8 @@ kubeadmConfigPatches:
   ---
   kind: KubeletConfiguration
   apiVersion: kubelet.config.k8s.io/v1beta1
-    enableSystemLogHandler: true
-    enableSystemLogQuery: true
+  enableSystemLogHandler: true
+  enableSystemLogQuery: true
 EOF
   # NOTE: must match the number of workers above
   NUM_NODES=2
