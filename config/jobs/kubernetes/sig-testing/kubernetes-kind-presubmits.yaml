@@ -594,10 +594,11 @@ presubmits:
         - bash
         # The modified e2e-k8s.sh enables the log query feature in the kubelet config (off by default for security reasons).
         - -c
+        - >
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
-          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-race-e2e-k8s.sh >$(which e2e-k8s.sh) &&
-          chmod u+x $(which e2e-k8s.sh) &&
-          e2e-k8s.sh
+          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-race-e2e-k8s.sh >/tmp/kind-race-e2e-k8s.sh &&
+          chmod u+x /tmp/kind-race-e2e-k8s.sh &&
+          /tmp/kind-race-e2e-k8s.sh
         env:
         # EventedPLEG is disabled temporarily for https://github.com/kubernetes/kubernetes/issues/122721
         - name: FEATURE_GATES
