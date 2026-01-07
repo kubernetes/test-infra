@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2026 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -154,6 +154,11 @@ kubeadmConfigPatches:
         value: "10"
       - name: "container-log-max-size"
         value: "100Mi"
+  ---
+  kind: KubeletConfiguration
+  apiVersion: kubelet.config.k8s.io/v1beta1
+    enableSystemLogHandler: true
+    enableSystemLogQuery: true
 # v1beta3 for v1.23.0 ... ?
 - |
   kind: ClusterConfiguration
@@ -187,6 +192,11 @@ kubeadmConfigPatches:
       # Most CI jobs should not need them, but some CI jobs might.
       "container-log-max-files": "10"
       "container-log-max-size": "100Mi"
+  ---
+  kind: KubeletConfiguration
+  apiVersion: kubelet.config.k8s.io/v1beta1
+    enableSystemLogHandler: true
+    enableSystemLogQuery: true
 EOF
   # NOTE: must match the number of workers above
   NUM_NODES=2
