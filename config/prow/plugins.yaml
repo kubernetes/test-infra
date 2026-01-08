@@ -645,9 +645,6 @@ repo_milestone:
   kubernetes-sigs/cluster-api-provider-gcp:
     maintainers_team: cluster-api-provider-gcp-maintainers
     maintainers_friendly_name: Cluster API Provider GCP Maintainers
-  kubernetes-sigs/cluster-api-provider-nested:
-    maintainers_team: cluster-api-provider-nested-maintainers
-    maintainers_friendly_name: Cluster API Provider Nested Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
     maintainers_team: cluster-api-provider-vsphere-maintainers
     maintainers_friendly_name: Cluster API Provider vSphere Maintainers
@@ -1674,11 +1671,6 @@ plugins:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
     plugins:
     - milestone
-
-  kubernetes-sigs/cluster-api-provider-nested:
-    plugins:
-    - milestone
-    - override
 
   kubernetes-sigs/cluster-api-provider-vsphere:
     plugins:
