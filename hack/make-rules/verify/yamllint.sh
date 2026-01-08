@@ -35,7 +35,7 @@ LINT_COMMAND=("yamllint" "-c" "config/jobs/.yamllint.conf" "config/jobs" "config
     --rm -i \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
     --security-opt="label=disable" \
-    "cytopia/yamllint:1.26@sha256:1bf8270a671a2e5f2fea8ac2e80164d627e0c5fa083759862bbde80628f942b2" \
+    "pipelinecomponents/yamllint:0.35.0@sha256:792a5c9f8c0f3b334996c8c5f9b58f000bd57ff8a87ba54fdd5e8d02679097f9" \
     "${LINT_COMMAND[@]:1}"
 
 if [[ -n "${NO_DOCKER:-}" ]]; then

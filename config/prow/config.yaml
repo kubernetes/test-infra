@@ -1109,6 +1109,15 @@ presets:
       secret:
         defaultMode: 256
         secretName: prow-job-ssh-private-key
+
+# set this preset to enable jobs to run on both amd64 and arm64 nodes on GKE/AWS
+- labels:
+    preset-enable-multiarch-support: "true"
+  tolerations:
+    - effect: NoSchedule
+      key: kubernetes.io/arch
+      operator: Equal
+      value: arm64
 # enable GOPROXY by default
 - env:
   - name: GOPROXY

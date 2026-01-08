@@ -64,7 +64,7 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-unit-test
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     branches:
     - master
     always_run: true
@@ -72,9 +72,10 @@ presubmits:
     labels:
       # Python unit tests run in docker.
       preset-dind-enabled: "true"
+      preset-enable-multiarch-support: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-c89b045f57-master
         command:
         - runner.sh
         args:
@@ -95,17 +96,16 @@ presubmits:
       testgrid-tab-name: unit-test
   # The following test builds the images specified in .test-infra-misc-images.yaml
   - name: pull-test-infra-misc-image-build-test
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     branches:
     - ^master$
     run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
     labels:
-      # Building deck requires docker for typescript compilation.
-      preset-dind-enabled: "true"
+      preset-enable-multiarch-support: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-c89b045f57-master
         command:
         - runner.sh
         args:
@@ -126,7 +126,7 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: misc-image-build-test
   - name: pull-test-infra-verify-lint
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     branches:
     - master
     always_run: true
@@ -134,9 +134,10 @@ presubmits:
     labels:
       # Enable dind for linters that required docker to run, for example typescript.
       preset-dind-enabled: "true"
+      preset-enable-multiarch-support: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20250904-c89b045f57-master
         command:
         - runner.sh
         args:
