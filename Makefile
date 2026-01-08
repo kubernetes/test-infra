@@ -126,9 +126,12 @@ verify-labels:
 .PHONY: verify-boilerplate
 verify-boilerplate:
 	hack/make-rules/verify/boilerplate.sh
-.PHONY: verify-yamllint
-verify-yamllint:
-	hack/make-rules/verify/yamllint.sh
+.PHONY: verify-yamlfmt
+verify-yamlfmt:
+	hack/make-rules/verify/yamlfmt.sh
+.PHONY: update-yamlfmt
+update-yamlfmt:
+	hack/make-rules/update/yamlfmt.sh
 .PHONY: verify-generated-jobs
 verify-generated-jobs:
 	hack/make-rules/verify/generated-jobs.sh

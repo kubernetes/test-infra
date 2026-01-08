@@ -74,10 +74,10 @@ if [[ "${VERIFY_BOILERPLATE:-true}" == "true" ]]; then
   hack/make-rules/verify/boilerplate.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
-if [[ "${VERIFY_YAMLLINT:-true}" == "true" ]]; then
-  name="yamllint"
+if [[ "${VERIFY_YAMLFMT:-true}" == "true" ]]; then
+  name="yamlfmt"
   echo "verifying $name"
-  hack/make-rules/verify/yamllint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  hack/make-rules/verify/yamlfmt.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_TS_ROLLUP:-true}" == "true" ]]; then
