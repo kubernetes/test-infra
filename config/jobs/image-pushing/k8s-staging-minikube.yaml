@@ -3,10 +3,11 @@ postsubmits:
     - name: post-kubernetes-bootcamp-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: minikube-periodics, sig-k8s-infra-gcb
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
+      run_if_changed: "^deploy/images/kubernetes-bootcamp/"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -18,6 +19,29 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
               - --gcb-config=hack/prow/image/kubernetes-bootcamp/cloudbuild.yaml
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+    - name: post-minikube-gvisor-addon-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      run_if_changed: "^deploy/images/gvisor/"
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-images
+              - --scratch-bucket=gs://k8s-staging-images-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --gcb-config=hack/prow/image/gvisor/cloudbuild.yaml
               - .
             env:
               - name: LOG_TO_STDOUT
