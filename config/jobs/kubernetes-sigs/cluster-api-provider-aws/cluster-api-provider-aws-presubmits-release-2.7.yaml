@@ -20,10 +20,10 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
@@ -50,10 +50,10 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30
         resources:
           requests:
-            cpu: 7300m
+            cpu: 7
             memory: 9Gi
           limits:
-            cpu: 7300m
+            cpu: 7
             memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws

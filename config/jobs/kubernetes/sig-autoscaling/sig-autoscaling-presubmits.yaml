@@ -206,7 +206,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 120m
-    run_if_changed: '^vertical-pod-autoscaler\/(common|deploy|e2e|hack|pkg)\/'
+    run_if_changed: '^vertical-pod-autoscaler\/'
     path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"
@@ -249,7 +249,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 200m
-    run_if_changed: '^vertical-pod-autoscaler\/(common|deploy|e2e|hack|pkg)\/'
+    run_if_changed: '^vertical-pod-autoscaler\/'
     path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"
@@ -294,7 +294,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 120m
-    run_if_changed: '^vertical-pod-autoscaler\/(common|deploy|e2e|hack|pkg)\/'
+    run_if_changed: '^vertical-pod-autoscaler\/'
     path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"
@@ -337,7 +337,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 120m
-    run_if_changed: '^vertical-pod-autoscaler\/(common|deploy|e2e|hack|pkg)\/'
+    run_if_changed: '^vertical-pod-autoscaler\/'
     path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"
@@ -380,7 +380,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 120m
-    run_if_changed: '^vertical-pod-autoscaler\/(common|deploy|e2e|hack|pkg)\/'
+    run_if_changed: '^vertical-pod-autoscaler\/'
     path_alias: k8s.io/autoscaler
     labels:
       preset-service-account: "true"

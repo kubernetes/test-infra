@@ -1180,10 +1180,10 @@ periodics:
       name: ""
       resources:
         limits:
-          cpu: 7200m
+          cpu: 7
           memory: 43Gi
         requests:
-          cpu: 7200m
+          cpu: 7
           memory: 43Gi
       securityContext:
         allowPrivilegeEscalation: false
@@ -1341,10 +1341,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 7200m
+            cpu: 7
             memory: 43Gi
           requests:
-            cpu: 7200m
+            cpu: 7
             memory: 43Gi
         securityContext:
           allowPrivilegeEscalation: false
@@ -1423,10 +1423,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 7200m
+            cpu: 7
             memory: 43Gi
           requests:
-            cpu: 7200m
+            cpu: 7
             memory: 43Gi
         securityContext:
           allowPrivilegeEscalation: false
@@ -1588,10 +1588,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 7200m
+            cpu: 7
             memory: 20Gi
           requests:
-            cpu: 7200m
+            cpu: 7
             memory: 20Gi
         securityContext:
           privileged: true
@@ -2995,10 +2995,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: 10Gi
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: 10Gi
         securityContext:
           privileged: true
@@ -3047,10 +3047,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: 10Gi
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: 10Gi
         securityContext:
           privileged: true
@@ -3200,10 +3200,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: 10Gi
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: 10Gi
       serviceAccountName: node-e2e-tests
   - always_run: false
@@ -3521,10 +3521,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: 20Gi
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: 20Gi
         securityContext:
           privileged: true
@@ -3866,10 +3866,10 @@ presubmits:
         name: ""
         resources:
           limits:
-            cpu: 7200m
+            cpu: 7
             memory: 43Gi
           requests:
-            cpu: 7200m
+            cpu: 7
             memory: 43Gi
         securityContext:
           allowPrivilegeEscalation: false

@@ -185,5 +185,5 @@ periodics:
     testgrid-alert-stale-results-hours: '48'
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance-ga-only
-    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-architecture@googlegroups.com"
+    testgrid-alert-email: "release-team@kubernetes.io, sig-architecture@kubernetes.io"
     description: "OWNER: sig-architecture (conformance); conformance tests run against a master kind cluster with only GA APIs and features enabled"

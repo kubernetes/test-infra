@@ -194,10 +194,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-release-0-14-1-33
@@ -240,10 +240,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-release-0-14-1-34
@@ -286,10 +286,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-multikueue-release-0-14
@@ -332,10 +332,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-tas-release-0-14
@@ -378,10 +378,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-customconfigs-release-0-14
@@ -424,10 +424,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-certmanager-release-0-14
@@ -470,10 +470,10 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-kueueviz-release-0-14
@@ -516,8 +516,8 @@ periodics:
             privileged: true
           resources:
             requests:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"
             limits:
-              cpu: "10"
+              cpu: "7"
               memory: "10Gi"

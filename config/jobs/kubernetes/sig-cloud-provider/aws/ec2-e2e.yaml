@@ -56,10 +56,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-arm64
     skip_branches:
@@ -117,10 +117,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-conformance
     skip_branches:
@@ -177,10 +177,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-conformance-arm64
     skip_branches:
@@ -237,10 +237,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-device-plugin-gpu
     skip_branches:
@@ -305,10 +305,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   kubernetes-sigs/provider-aws-test-infra:
   - name: pull-kubernetes-e2e-ec2-quick
@@ -361,10 +361,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-cloud-provider-quick
     skip_branches:
@@ -417,10 +417,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-canary
     skip_branches:
@@ -476,10 +476,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-cloud-provider-canary
     skip_branches:
@@ -536,10 +536,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-conformance-canary
     skip_branches:
@@ -595,10 +595,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
   - name: pull-kubernetes-e2e-ec2-eks-conformance-canary
     skip_branches:
@@ -659,10 +659,10 @@ presubmits:
             privileged: true
           resources:
             limits:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
             requests:
-              cpu: 8
+              cpu: 7
               memory: 10Gi
 periodics:
 - interval: 6h
@@ -718,10 +718,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -776,10 +776,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -834,10 +834,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 6h
   cluster: eks-prow-build-cluster
@@ -893,10 +893,10 @@ periodics:
           privileged: true
         resources:
           limits:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
           requests:
-            cpu: 8
+            cpu: 7
             memory: 10Gi
 - interval: 1h
   cluster: eks-prow-build-cluster
@@ -924,7 +924,7 @@ periodics:
         - --ttl=6h
         - --path=s3://provider-aws-test-infra/objs.json
         - --region=us-east-1
-        image: gcr.io/k8s-staging-boskos/aws-janitor:v20251218-e3340a3
+        image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
         resources:
           requests:
             cpu: 1

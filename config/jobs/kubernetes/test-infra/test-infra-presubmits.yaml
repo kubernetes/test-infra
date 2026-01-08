@@ -35,7 +35,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20251223-f0341d7b5
+      - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20260107-b51ff4a6e
         command:
         - checkconfig
         args:
@@ -85,10 +85,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -117,10 +117,10 @@ presubmits:
         resources:
           requests:
             # This job is very CPU intensive as it builds images in parallel.
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
           limits:
-            cpu: "14"
+            cpu: "7"
             memory: "16Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
@@ -147,10 +147,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
           limits:
-            cpu: "8"
+            cpu: "7"
             memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
