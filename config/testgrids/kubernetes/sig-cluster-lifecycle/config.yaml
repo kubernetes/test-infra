@@ -8,7 +8,6 @@ dashboard_groups:
     - sig-cluster-lifecycle-cluster-api-provider-aws
     - sig-cluster-lifecycle-cluster-api-provider-azure
     - sig-cluster-lifecycle-cluster-api-provider-digitalocean
-    - sig-cluster-lifecycle-cluster-api-provider-vsphere
     - sig-cluster-lifecycle-cluster-api-provider-gcp
     - sig-cluster-lifecycle-cluster-api-provider-ibmcloud
     - sig-cluster-lifecycle-cluster-api-provider-openstack
@@ -46,7 +45,6 @@ dashboards:
     - name: capibm-pr-coverage-main
       test_group_name: pull-cluster-api-provider-ibmcloud-coverage
       base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
-- name: sig-cluster-lifecycle-cluster-api-provider-vsphere
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
 - name: sig-cluster-lifecycle-cluster-api-provider-cloudstack
 - name: sig-cluster-lifecycle-cluster-api-operator

@@ -27,7 +27,7 @@ presubmits:
             cpu: 2
             memory: 3Gi
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-apidiff-{{ ReplaceAll $.branch "." "-" }}
       description: Checks for API changes in the PR
 
@@ -61,7 +61,7 @@ presubmits:
             cpu: 2
             memory: 3Gi
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-verify-{{ ReplaceAll $.branch "." "-" }}
 
   - name: pull-cluster-api-provider-vsphere-test-{{ ReplaceAll $.branch "." "-" }}
@@ -91,7 +91,7 @@ presubmits:
         - make
         - test-junit
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-test-{{ ReplaceAll $.branch "." "-" }}
       description: Runs unit tests
 {{ $modes := list "govmomi" "supervisor" -}}
@@ -142,7 +142,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-blocking-{{ ReplaceAll $.branch "." "-" }}
       description: Runs only PR Blocking e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -191,7 +191,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
       description: Runs all e2e tests
   - name: pull-cluster-api-provider-vsphere-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
@@ -241,7 +241,7 @@ presubmits:
             cpu: "4000m"
             memory: "3Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-vcsim-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}
       description: Runs e2e tests with vcsim / govmomi mode
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-upgrade-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}-{{ ReplaceAll $.branch "." "-" }}
@@ -290,7 +290,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-{{ ReplaceAll $.branch "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).From "." "-" }}-{{ ReplaceAll (last $.config.Upgrades).To "." "-" }}
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
     cluster: k8s-infra-prow-build
@@ -334,7 +334,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-conformance-{{ ReplaceAll $.branch "." "-" }}
       description: Runs conformance tests for CAPV
   - name: pull-cluster-api-provider-vsphere-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
@@ -379,7 +379,7 @@ presubmits:
             cpu: "4000m"
             memory: "6Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-{{ $mode }}-conformance-ci-latest-{{ ReplaceAll $.branch "." "-" }}
       description: Runs conformance tests with K8S ci latest for CAPV
 {{ end -}}
@@ -416,7 +416,7 @@ presubmits:
             cpu: "2000m"
             memory: "4Gi"
     annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-dashboards: cluster-api-provider-vsphere-{{ TrimPrefix $.branch "release-" }}
       testgrid-tab-name: pr-e2e-janitor-main
       description: Runs the janitor to cleanup orphaned objects in CI
 {{ end -}}

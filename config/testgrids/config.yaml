@@ -54,7 +54,6 @@ test_groups:
 # Start dashboards
 #
 dashboards:
-- name: vmware-cluster-api-provider-vsphere
 - name: vmware-presubmits-cloud-provider-vsphere
 - name: vmware-postsubmits-cloud-provider-vsphere
 - name: vmware-presubmits-vsphere-csi-driver
@@ -71,4 +70,3 @@ dashboard_groups:
   - vmware-postsubmits-cloud-provider-vsphere
   - vmware-presubmits-vsphere-csi-driver
   - vmware-postsubmits-vsphere-csi-driver
-  - vmware-cluster-api-provider-vsphere
