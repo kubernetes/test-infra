@@ -289,7 +289,7 @@ presubmits:
     annotations:
       testgrid-dashboards: cluster-api-core-1.12
       testgrid-tab-name: capi-pr-e2e-release-1-12
-  - name: pull-cluster-api-e2e-upgrade-1-34-1-35-release-1-12
+  - name: pull-cluster-api-e2e-upgrade-1-35-1-36-release-1-12
     cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
@@ -317,9 +317,9 @@ presubmits:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.34"
-          - name: KUBERNETES_VERSION_UPGRADE_TO
             value: "stable-1.35"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "ci/latest-1.36"
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.6.6-0"
           - name: COREDNS_VERSION_UPGRADE_TO
@@ -338,7 +338,7 @@ presubmits:
             memory: 6Gi
     annotations:
       testgrid-dashboards: cluster-api-core-1.12
-      testgrid-tab-name: capi-pr-e2e-release-1-12-1-34-1-35
+      testgrid-tab-name: capi-pr-e2e-release-1-12-1-35-1-36
   - name: pull-cluster-api-e2e-conformance-release-1-12
     cluster: eks-prow-build-cluster
     labels:
