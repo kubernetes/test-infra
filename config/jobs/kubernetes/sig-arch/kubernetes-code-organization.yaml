@@ -69,7 +69,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -162,7 +162,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -261,7 +261,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
       securityContext:
         allowPrivilegeEscalation: false
       command:
@@ -353,7 +353,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
       securityContext:
         allowPrivilegeEscalation: false
       command:
@@ -394,7 +394,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -445,7 +445,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
         command:
           - runner.sh
           - /workspace/scenarios/kubernetes_e2e.py
