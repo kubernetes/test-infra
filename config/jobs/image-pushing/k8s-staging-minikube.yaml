@@ -39,7 +39,7 @@ postsubmits:
               - --project=k8s-staging-images
               - --scratch-bucket=gs://k8s-staging-images-gcb
               - --env-passthrough=PULL_BASE_REF
-              - --gcb-config=hack/prow/image/kubernetes-gvisor/cloudbuild.yaml
+              - --gcb-config=hack/prow/image/gvisor/cloudbuild.yaml
               - .
             env:
               - name: LOG_TO_STDOUT
