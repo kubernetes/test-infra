@@ -163,7 +163,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.31
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -194,7 +194,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.31.2"
+              value: "v1.32.2"
             - name: ENABLE_BLOBFUSE_PROXY
               value: "true"
     annotations:
@@ -383,7 +383,7 @@ presubmits:
         workdir: true
       - org: kubernetes-sigs
         repo: cloud-provider-azure
-        base_ref: release-1.31
+        base_ref: release-1.32
         path_alias: sigs.k8s.io/cloud-provider-azure
         workdir: false
     spec:
@@ -412,7 +412,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "v1.31.2"
+              value: "v1.32.2"
             - name: DISABLE_ZONE
               value: "true"
     annotations:
