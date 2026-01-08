@@ -3,7 +3,7 @@ postsubmits:
     - name: post-kubernetes-bootcamp-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: minikube-periodics, sig-k8s-infra-gcb
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^images$
@@ -25,7 +25,7 @@ postsubmits:
     - name: post-minikube-gvisor-addon-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: minikube-periodics, sig-k8s-infra-gcb
+        testgrid-dashboards: minikube-images, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^images$
