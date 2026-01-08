@@ -7,6 +7,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+      run_if_changed: "^deploy/images/kubernetes-bootcamp/"
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -29,6 +30,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+      run_if_changed: "^deploy/images/gvisor/"
       spec:
         serviceAccountName: gcb-builder
         containers:
