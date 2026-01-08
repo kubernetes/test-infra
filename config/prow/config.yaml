@@ -42,14 +42,9 @@ plank:
           requests:
             cpu: 100m
       blobless_fetch: true
-  - cluster: gke_rules-k8s_us-central1-f_testing
+  - cluster: k8s-infra-aks-prow-build
     config:
       gcs_credentials_secret: ""
-      default_service_account_name: "prowjob-default-sa"
-  - cluster: test-infra-trusted
-    config:
-      gcs_credentials_secret: ""
-      default_service_account_name: "prowjob-default-sa"
 
 sinker:
   resync_period: 1m
