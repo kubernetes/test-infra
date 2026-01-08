@@ -21,6 +21,7 @@ periodics:
       - --path=s3://cloud-provider-aws-shared-e2e/objs.json
       - --exclude-tags=Shared=Ignore
       - --enable-target-group-clean=true
+      - --clean-ecr-repositories=aws-ebs-csi-driver
       image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
       resources:
         requests:
@@ -55,6 +56,7 @@ periodics:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
       - --exclude-tags=Shared=Ignore
+      - --clean-ecr-repositories=aws-ebs-csi-driver
       image: gcr.io/k8s-staging-boskos/aws-janitor:v20260107-c2c6f43
   annotations:
     testgrid-dashboards: sig-testing-maintenance
