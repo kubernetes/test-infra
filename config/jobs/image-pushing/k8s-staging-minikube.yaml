@@ -6,7 +6,7 @@ postsubmits:
         testgrid-dashboards: minikube-periodics, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^images$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -28,7 +28,7 @@ postsubmits:
         testgrid-dashboards: minikube-periodics, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^images$
       spec:
         serviceAccountName: gcb-builder
         containers:
