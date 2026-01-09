@@ -1,128 +1,124 @@
 presubmits:
   kubernetes-sigs/security-profiles-operator:
-  - name: pull-security-profiles-operator-build
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-num-columns-recent: '30'
-      testgrid-create-test-group: 'true'
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        command:
-        - hack/pull-security-profiles-operator-build
-        resources:
-          limits:
-            cpu: 7
-            memory: 4Gi
-          requests:
-            cpu: 7
-            memory: 4Gi
-
-  - name: pull-security-profiles-operator-verify
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-num-columns-recent: '30'
-      testgrid-create-test-group: 'true'
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        command:
-        - hack/pull-security-profiles-operator-verify
-        resources:
-          limits:
-            cpu: 7
-            memory: 8Gi
-          requests:
-            cpu: 7
-            memory: 8Gi
-
-  - name: pull-security-profiles-operator-test-unit
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-num-columns-recent: '30'
-      testgrid-create-test-group: 'true'
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.25
-        command:
-        - hack/pull-security-profiles-operator-test-unit
-        resources:
-          limits:
-            cpu: 7
-            memory: 4Gi
-          requests:
-            cpu: 7
-            memory: 4Gi
-
-  - name: pull-security-profiles-operator-build-image
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-num-columns-recent: '30'
-      testgrid-create-test-group: 'true'
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        securityContext:
-          privileged: true  # for dind
-        resources:
-          requests:
-            memory: 1Gi
-            cpu: 2
-          limits:
-            memory: 1Gi
-            cpu: 2
-        command:
-        - runner.sh
-        args:
-        - hack/pull-security-profiles-operator-build-image
-
-  - name: pull-security-profiles-operator-test-e2e
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    annotations:
-      testgrid-num-columns-recent: '30'
-      testgrid-create-test-group: 'true'
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      hostNetwork: true
-      hostPID: true
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        securityContext:
-          privileged: true  # for dind
-        resources:
-          requests:
-            memory: 2Gi
-            cpu: 5
-          limits:
-            memory: 2Gi
-            cpu: 5
-        command:
-        - runner.sh
-        args:
-        - hack/pull-security-profiles-operator-test-e2e
-        volumeMounts:
-        - name: varlog
-          mountPath: /var/log/audit
-          readOnly: true
-      volumes:
-      - name: varlog
-        hostPath:
-          path: /var/log/audit
-          type: DirectoryOrCreate
+    - name: pull-security-profiles-operator-build
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-num-columns-recent: '30'
+        testgrid-create-test-group: 'true'
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25
+            command:
+              - hack/pull-security-profiles-operator-build
+            resources:
+              limits:
+                cpu: 7
+                memory: 4Gi
+              requests:
+                cpu: 7
+                memory: 4Gi
+    - name: pull-security-profiles-operator-verify
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-num-columns-recent: '30'
+        testgrid-create-test-group: 'true'
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25
+            command:
+              - hack/pull-security-profiles-operator-verify
+            resources:
+              limits:
+                cpu: 7
+                memory: 8Gi
+              requests:
+                cpu: 7
+                memory: 8Gi
+    - name: pull-security-profiles-operator-test-unit
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-num-columns-recent: '30'
+        testgrid-create-test-group: 'true'
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.25
+            command:
+              - hack/pull-security-profiles-operator-test-unit
+            resources:
+              limits:
+                cpu: 7
+                memory: 4Gi
+              requests:
+                cpu: 7
+                memory: 4Gi
+    - name: pull-security-profiles-operator-build-image
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-num-columns-recent: '30'
+        testgrid-create-test-group: 'true'
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            securityContext:
+              privileged: true # for dind
+            resources:
+              requests:
+                memory: 1Gi
+                cpu: 2
+              limits:
+                memory: 1Gi
+                cpu: 2
+            command:
+              - runner.sh
+            args:
+              - hack/pull-security-profiles-operator-build-image
+    - name: pull-security-profiles-operator-test-e2e
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      annotations:
+        testgrid-num-columns-recent: '30'
+        testgrid-create-test-group: 'true'
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        hostNetwork: true
+        hostPID: true
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            securityContext:
+              privileged: true # for dind
+            resources:
+              requests:
+                memory: 2Gi
+                cpu: 5
+              limits:
+                memory: 2Gi
+                cpu: 5
+            command:
+              - runner.sh
+            args:
+              - hack/pull-security-profiles-operator-test-e2e
+            volumeMounts:
+              - name: varlog
+                mountPath: /var/log/audit
+                readOnly: true
+        volumes:
+          - name: varlog
+            hostPath:
+              path: /var/log/audit
+              type: DirectoryOrCreate

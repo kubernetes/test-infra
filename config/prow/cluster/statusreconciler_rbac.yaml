@@ -27,5 +27,5 @@ roleRef:
   kind: Role
   name: statusreconciler
 subjects:
-- kind: ServiceAccount
-  name: statusreconciler
+  - kind: ServiceAccount
+    name: statusreconciler

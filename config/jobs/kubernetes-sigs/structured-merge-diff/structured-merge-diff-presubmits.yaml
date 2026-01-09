@@ -1,131 +1,131 @@
 presubmits:
   kubernetes-sigs/structured-merge-diff:
-  - name: pull-structured-merge-diff-test
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-service-account: "true"
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/structured-merge-diff
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - go
-        args:
-        - test
-        - -race
-        - ./...
-        resources:
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-          limits:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      testgrid-tab-name: pr-test
-      testgrid-num-columns-recent: '30'
-  - name: pull-structured-merge-diff-vet
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-service-account: "true"
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/structured-merge-diff
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - go
-        args:
-        - vet
-        - ./...
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      testgrid-tab-name: pr-vet
-      testgrid-num-columns-recent: '30'
-  - name: pull-structured-merge-diff-gofmt
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-service-account: "true"
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/structured-merge-diff
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - bash
-        - -c
-        - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      testgrid-tab-name: pr-gofmt
-      testgrid-num-columns-recent: '30'
-  - name: pull-structured-merge-diff-benchmark
-    cluster: eks-prow-build-cluster
-    always_run: false
-    skip_report: true
-    decorate: true
-    path_alias: sigs.k8s.io/structured-merge-diff
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
-        command:
-        - /benchmarkjunit
-        args:
-        - --log-file=$(ARTIFACTS)/benchmark-log.txt
-        - --output=$(ARTIFACTS)/junit_benchmarks.xml
-        - ./...
-        resources:
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-          limits:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      testgrid-tab-name: pr-benchmark
-      testgrid-num-columns-recent: '30'
-  - name: pull-structured-merge-diff-apidiff
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-service-account: "true"
-    always_run: true
-    optional: true
-    decorate: true
-    path_alias: sigs.k8s.io/structured-merge-diff
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - bash
-        - -c
-        - ./hack/apidiff.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 8Gi
-          requests:
-            cpu: 2
-            memory: 8Gi
-    annotations:
-      testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      testgrid-tab-name: pr-apidiff
+    - name: pull-structured-merge-diff-test
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-service-account: "true"
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/structured-merge-diff
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - go
+            args:
+              - test
+              - -race
+              - ./...
+            resources:
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-api-machinery-structured-merge-diff
+        testgrid-tab-name: pr-test
+        testgrid-num-columns-recent: '30'
+    - name: pull-structured-merge-diff-vet
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-service-account: "true"
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/structured-merge-diff
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - go
+            args:
+              - vet
+              - ./...
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-api-machinery-structured-merge-diff
+        testgrid-tab-name: pr-vet
+        testgrid-num-columns-recent: '30'
+    - name: pull-structured-merge-diff-gofmt
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-service-account: "true"
+      always_run: true
+      decorate: true
+      path_alias: sigs.k8s.io/structured-merge-diff
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - bash
+              - -c
+              - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-api-machinery-structured-merge-diff
+        testgrid-tab-name: pr-gofmt
+        testgrid-num-columns-recent: '30'
+    - name: pull-structured-merge-diff-benchmark
+      cluster: eks-prow-build-cluster
+      always_run: false
+      skip_report: true
+      decorate: true
+      path_alias: sigs.k8s.io/structured-merge-diff
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
+            command:
+              - /benchmarkjunit
+            args:
+              - --log-file=$(ARTIFACTS)/benchmark-log.txt
+              - --output=$(ARTIFACTS)/junit_benchmarks.xml
+              - ./...
+            resources:
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-api-machinery-structured-merge-diff
+        testgrid-tab-name: pr-benchmark
+        testgrid-num-columns-recent: '30'
+    - name: pull-structured-merge-diff-apidiff
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-service-account: "true"
+      always_run: true
+      optional: true
+      decorate: true
+      path_alias: sigs.k8s.io/structured-merge-diff
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - bash
+              - -c
+              - ./hack/apidiff.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 8Gi
+              requests:
+                cpu: 2
+                memory: 8Gi
+      annotations:
+        testgrid-dashboards: sig-api-machinery-structured-merge-diff
+        testgrid-tab-name: pr-apidiff

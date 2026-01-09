@@ -1,177 +1,176 @@
 periodics:
-- interval: 2h
-  name: ci-kubernetes-e2e-gci-gce-network-proxy-http-connect
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 80m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --env=PREPARE_KONNECTIVITY_SERVICE=true
-      - --env=RUN_KONNECTIVITY_PODS=true
-      - --env=EGRESS_VIA_KONNECTIVITY=true
-      - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
-      - --timeout=60m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      resources:
-        requests:
-          cpu: 2
-          memory: 6Gi
-        limits:
-          cpu: 2
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-api-machinery-network-proxy
-- interval: 2h
-  name: ci-kubernetes-e2e-gci-gce-network-proxy-grpc
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 80m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --env=PREPARE_KONNECTIVITY_SERVICE=true
-      - --env=RUN_KONNECTIVITY_PODS=true
-      - --env=EGRESS_VIA_KONNECTIVITY=true
-      - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
-      - --timeout=60m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      resources:
-        requests:
-          cpu: 2
-          memory: 6Gi
-        limits:
-          cpu: 2
-          memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-api-machinery-network-proxy
-
+  - interval: 2h
+    name: ci-kubernetes-e2e-gci-gce-network-proxy-http-connect
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    spec:
+      containers:
+        - command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --check-leaked-resources
+            - --env=PREPARE_KONNECTIVITY_SERVICE=true
+            - --env=RUN_KONNECTIVITY_PODS=true
+            - --env=EGRESS_VIA_KONNECTIVITY=true
+            - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel=25
+            - --provider=gce
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+            - --timeout=60m
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          resources:
+            requests:
+              cpu: 2
+              memory: 6Gi
+            limits:
+              cpu: 2
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-api-machinery-network-proxy
+  - interval: 2h
+    name: ci-kubernetes-e2e-gci-gce-network-proxy-grpc
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    spec:
+      containers:
+        - command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          args:
+            - --check-leaked-resources
+            - --env=PREPARE_KONNECTIVITY_SERVICE=true
+            - --env=RUN_KONNECTIVITY_PODS=true
+            - --env=EGRESS_VIA_KONNECTIVITY=true
+            - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel=25
+            - --provider=gce
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+            - --timeout=60m
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          resources:
+            requests:
+              cpu: 2
+              memory: 6Gi
+            limits:
+              cpu: 2
+              memory: 6Gi
+    annotations:
+      testgrid-dashboards: sig-api-machinery-network-proxy
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
-    cluster: k8s-infra-prow-build
-    always_run: false
-    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    decorate: true
-    decoration_config:
-      timeout: 105m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --build=quick
-        - --cluster=
-        - --env=PREPARE_KONNECTIVITY_SERVICE=true
-        - --env=RUN_KONNECTIVITY_PODS=true
-        - --env=EGRESS_VIA_KONNECTIVITY=true
-        - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
-        - --gcp-node-image=gci
-        - --gcp-zone=us-central1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
-        - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        resources:
-          requests:
-            cpu: 2
-            memory: 6Gi
-          limits:
-            cpu: 2
-            memory: 6Gi
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-api-machinery-network-proxy
-  - name: pull-kubernetes-e2e-gce-network-proxy-grpc
-    always_run: false
-    optional: true
-    cluster: k8s-infra-prow-build
-    run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    decorate: true
-    decoration_config:
-      timeout: 105m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --build=quick
-        - --cluster=
-        - --env=PREPARE_KONNECTIVITY_SERVICE=true
-        - --env=RUN_KONNECTIVITY_PODS=true
-        - --env=EGRESS_VIA_KONNECTIVITY=true
-        - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
-        - --gcp-node-image=gci
-        - --gcp-zone=us-central1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
-        - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        resources:
-          requests:
-            cpu: 4
-            memory: 14Gi
-          limits:
-            cpu: 4
-            memory: 14Gi
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-api-machinery-network-proxy
+    - name: pull-kubernetes-e2e-gce-network-proxy-http-connect
+      cluster: k8s-infra-prow-build
+      always_run: false
+      run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-kubernetes-e2e-gce: "true"
+      decorate: true
+      decoration_config:
+        timeout: 105m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: release
+          base_ref: master
+          path_alias: k8s.io/release
+      spec:
+        containers:
+          - command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --build=quick
+              - --cluster=
+              - --env=PREPARE_KONNECTIVITY_SERVICE=true
+              - --env=RUN_KONNECTIVITY_PODS=true
+              - --env=EGRESS_VIA_KONNECTIVITY=true
+              - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+              - --gcp-node-image=gci
+              - --gcp-zone=us-central1-b
+              - --ginkgo-parallel=30
+              - --provider=gce
+              - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+              - --timeout=80m
+            image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            resources:
+              requests:
+                cpu: 2
+                memory: 6Gi
+              limits:
+                cpu: 2
+                memory: 6Gi
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: sig-api-machinery-network-proxy
+    - name: pull-kubernetes-e2e-gce-network-proxy-grpc
+      always_run: false
+      optional: true
+      cluster: k8s-infra-prow-build
+      run_if_changed: '^(cluster/gce/manifests/konnectivity-server.yaml$|cluster/gce/addons/konnectivity-agent)'
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-kubernetes-e2e-gce: "true"
+      decorate: true
+      decoration_config:
+        timeout: 105m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: release
+          base_ref: master
+          path_alias: k8s.io/release
+      spec:
+        containers:
+          - command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --build=quick
+              - --cluster=
+              - --env=PREPARE_KONNECTIVITY_SERVICE=true
+              - --env=RUN_KONNECTIVITY_PODS=true
+              - --env=EGRESS_VIA_KONNECTIVITY=true
+              - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
+              - --gcp-node-image=gci
+              - --gcp-zone=us-central1-b
+              - --ginkgo-parallel=30
+              - --provider=gce
+              - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
+              - --timeout=80m
+            image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            resources:
+              requests:
+                cpu: 4
+                memory: 14Gi
+              limits:
+                cpu: 4
+                memory: 14Gi
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: sig-api-machinery-network-proxy

@@ -1,60 +1,60 @@
 presubmits:
   kubernetes-sigs/aws-encryption-provider:
-  - name: pull-aws-encryption-provider-verify
-    cluster: eks-prow-build-cluster
-    decorate: true
-    always_run: true
-    max_concurrency: 5
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - lint
-        env:
-        - name: GO111MODULE
-          value: "on"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: provider-aws-encryption-provider, amazon-ec2-presubmits
-      testgrid-tab-name: verify-enc
-      description: aws-encryption-provider verification
-      testgrid-num-columns-recent: '30'
-  - name: pull-aws-encryption-provider-unittest
-    cluster: eks-prow-build-cluster
-    decorate: true
-    always_run: true
-    max_concurrency: 5
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - test
-        - build-server
-        - TAG=$PULL_PULL_SHA
-        env:
-        - name: GO111MODULE
-          value: "on"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: provider-aws-encryption-provider, amazon-ec2-presubmits
-      testgrid-tab-name: unit-enc-test
-      description: aws-encryption-provider unit tests
-      testgrid-num-columns-recent: '30'
+    - name: pull-aws-encryption-provider-verify
+      cluster: eks-prow-build-cluster
+      decorate: true
+      always_run: true
+      max_concurrency: 5
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - lint
+            env:
+              - name: GO111MODULE
+                value: "on"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: provider-aws-encryption-provider, amazon-ec2-presubmits
+        testgrid-tab-name: verify-enc
+        description: aws-encryption-provider verification
+        testgrid-num-columns-recent: '30'
+    - name: pull-aws-encryption-provider-unittest
+      cluster: eks-prow-build-cluster
+      decorate: true
+      always_run: true
+      max_concurrency: 5
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - test
+              - build-server
+              - TAG=$PULL_PULL_SHA
+            env:
+              - name: GO111MODULE
+                value: "on"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: provider-aws-encryption-provider, amazon-ec2-presubmits
+        testgrid-tab-name: unit-enc-test
+        description: aws-encryption-provider unit tests
+        testgrid-num-columns-recent: '30'

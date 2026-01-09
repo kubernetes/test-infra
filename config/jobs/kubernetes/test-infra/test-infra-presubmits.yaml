@@ -1,189 +1,188 @@
 presubmits:
   kubernetes/test-infra:
-  - name: pull-test-infra-gubernator
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    run_if_changed: 'gubernator|config/prow/config.yaml|config/jobs/.+\.yaml'
-    decorate: true
-    optional: false
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20230111-cd1b3caf9c
-        command:
-        - ./gubernator/test-gubernator.sh
-        env:
-        - name: WORKSPACE
-          value: "/workspace"
-        resources:
-          requests:
-            cpu: "4"
-            memory: "8Gi"
-          limits:
-            cpu: "4"
-            memory: "8Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: gubernator
-
-  # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
-  - name: pull-test-infra-prow-checkconfig
-    cluster: eks-prow-build-cluster
-    decorate: true
-    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
-    spec:
-      containers:
-      - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20260108-1a02de84b
-        command:
-        - checkconfig
-        args:
-        - --config-path=config/prow/config.yaml
-        - --job-config-path=config/jobs
-        - --plugin-config=config/prow/plugins.yaml
-        - --strict
-        - --warnings=mismatched-tide-lenient
-        - --warnings=tide-strict-branch
-        - --warnings=needs-ok-to-test
-        - --warnings=validate-owners
-        - --warnings=missing-trigger
-        - --warnings=validate-urls
-        - --warnings=unknown-fields
-        - --warnings=duplicate-job-refs
-        - --warnings=unknown-fields-all
-        - --warnings=non-decorated-jobs
-        - --warnings=valid-decoration-config
-        resources:
-          requests:
-            cpu: "1"
-            memory: "2Gi"
-          limits:
-            cpu: "1"
-            memory: "2Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-  - name: pull-test-infra-unit-test
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      # Python unit tests run in docker.
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - unit
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "7"
-            memory: "8Gi"
-          limits:
-            cpu: "7"
-            memory: "8Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: unit-test
-  # The following test builds the images specified in .test-infra-misc-images.yaml
-  - name: pull-test-infra-misc-image-build-test
-    cluster: eks-prow-build-cluster
-    branches:
-    - ^master$
-    run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
-    decorate: true
-    labels:
-      # Building deck requires docker for typescript compilation.
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - build-misc-images
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            # This job is very CPU intensive as it builds images in parallel.
-            cpu: "7"
-            memory: "16Gi"
-          limits:
-            cpu: "7"
-            memory: "16Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: misc-image-build-test
-  - name: pull-test-infra-verify-lint
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      # Enable dind for linters that required docker to run, for example typescript.
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - verify
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "7"
-            memory: "8Gi"
-          limits:
-            cpu: "7"
-            memory: "8Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: verify-test
-  - name: pull-test-infra-verify-cri-o
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    run_if_changed: 'jobs\/e2e_node\/crio\/'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - verify
-        - -C
-        - jobs/e2e_node/crio
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "4"
-            memory: "8Gi"
-          limits:
-            cpu: "4"
-            memory: "8Gi"
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: verify-cri-o
+    - name: pull-test-infra-gubernator
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      run_if_changed: 'gubernator|config/prow/config.yaml|config/jobs/.+\.yaml'
+      decorate: true
+      optional: false
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/gubernator:v20230111-cd1b3caf9c
+            command:
+              - ./gubernator/test-gubernator.sh
+            env:
+              - name: WORKSPACE
+                value: "/workspace"
+            resources:
+              requests:
+                cpu: "4"
+                memory: "8Gi"
+              limits:
+                cpu: "4"
+                memory: "8Gi"
+      annotations:
+        testgrid-dashboards: presubmits-test-infra
+        testgrid-tab-name: gubernator
+    # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
+    - name: pull-test-infra-prow-checkconfig
+      cluster: eks-prow-build-cluster
+      decorate: true
+      run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+      spec:
+        containers:
+          - image: us-docker.pkg.dev/k8s-infra-prow/images/checkconfig:v20260108-1a02de84b
+            command:
+              - checkconfig
+            args:
+              - --config-path=config/prow/config.yaml
+              - --job-config-path=config/jobs
+              - --plugin-config=config/prow/plugins.yaml
+              - --strict
+              - --warnings=mismatched-tide-lenient
+              - --warnings=tide-strict-branch
+              - --warnings=needs-ok-to-test
+              - --warnings=validate-owners
+              - --warnings=missing-trigger
+              - --warnings=validate-urls
+              - --warnings=unknown-fields
+              - --warnings=duplicate-job-refs
+              - --warnings=unknown-fields-all
+              - --warnings=non-decorated-jobs
+              - --warnings=valid-decoration-config
+            resources:
+              requests:
+                cpu: "1"
+                memory: "2Gi"
+              limits:
+                cpu: "1"
+                memory: "2Gi"
+      annotations:
+        testgrid-dashboards: presubmits-test-infra
+    - name: pull-test-infra-unit-test
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      always_run: true
+      decorate: true
+      labels:
+        # Python unit tests run in docker.
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - unit
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "8Gi"
+              limits:
+                cpu: "7"
+                memory: "8Gi"
+      annotations:
+        testgrid-dashboards: presubmits-test-infra
+        testgrid-tab-name: unit-test
+    # The following test builds the images specified in .test-infra-misc-images.yaml
+    - name: pull-test-infra-misc-image-build-test
+      cluster: eks-prow-build-cluster
+      branches:
+        - ^master$
+      run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+      decorate: true
+      labels:
+        # Building deck requires docker for typescript compilation.
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - build-misc-images
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                # This job is very CPU intensive as it builds images in parallel.
+                cpu: "7"
+                memory: "16Gi"
+              limits:
+                cpu: "7"
+                memory: "16Gi"
+      annotations:
+        testgrid-dashboards: presubmits-test-infra
+        testgrid-tab-name: misc-image-build-test
+    - name: pull-test-infra-verify-lint
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      always_run: true
+      decorate: true
+      labels:
+        # Enable dind for linters that required docker to run, for example typescript.
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "7"
+                memory: "8Gi"
+              limits:
+                cpu: "7"
+                memory: "8Gi"
+      annotations:
+        testgrid-dashboards: presubmits-test-infra
+        testgrid-tab-name: verify-test
+    - name: pull-test-infra-verify-cri-o
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      run_if_changed: 'jobs\/e2e_node\/crio\/'
+      decorate: true
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - verify
+              - -C
+              - jobs/e2e_node/crio
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "4"
+                memory: "8Gi"
+              limits:
+                cpu: "4"
+                memory: "8Gi"
+      annotations:
+        testgrid-dashboards: presubmits-test-infra
+        testgrid-tab-name: verify-cri-o

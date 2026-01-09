@@ -1,43 +1,43 @@
 periodics:
-- name: ci-kubernetes-unit-windows-master
-  cluster: eks-prow-build-cluster
-  interval: 3h
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  labels:
-    preset-dind-enabled: "true"
-    preset-azure-community: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: windows-testing
-    base_ref: master
-    path_alias: sigs.k8s.io/windows-testing
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-          - "runner.sh"
-          - "./scripts/ci-k8s-unit-test.sh"
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 2
-            memory: "5Gi"
-          limits:
-            cpu: 2
-            memory: "5Gi"
-        env:
-          - name: VM_LOCATION
-            value: uksouth
-          - name: VM_SIZE
-            value: Standard_D8as_v5
-  annotations:
-    #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-windows-signal
-    testgrid-tab-name: windows-unit-master
+  - name: ci-kubernetes-unit-windows-master
+    cluster: eks-prow-build-cluster
+    interval: 3h
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    labels:
+      preset-dind-enabled: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: windows-testing
+        base_ref: master
+        path_alias: sigs.k8s.io/windows-testing
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - "runner.sh"
+            - "./scripts/ci-k8s-unit-test.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "5Gi"
+            limits:
+              cpu: 2
+              memory: "5Gi"
+          env:
+            - name: VM_LOCATION
+              value: uksouth
+            - name: VM_SIZE
+              value: Standard_D8as_v5
+    annotations:
+      #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+      testgrid-dashboards: sig-windows-signal
+      testgrid-tab-name: windows-unit-master
 presubmits:
   kubernetes/kubernetes:
     - name: pull-kubernetes-unit-windows-master

@@ -17,27 +17,27 @@ spec:
     spec:
       serviceAccountName: prow-pipeline
       containers:
-      - name: pipeline
-        image: us-docker.pkg.dev/k8s-infra-prow/images/pipeline:v20240802-66b115076
-        args:
-        - --all-contexts
-        - --config=/etc/prow-config/config.yaml
-        env:
-        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
-        - name: KUBECONFIG
-          value: "/etc/kubeconfig/config"
-        volumeMounts:
-        - mountPath: /etc/kubeconfig
-          name: kubeconfig
-          readOnly: true
-        - mountPath: /etc/prow-config
-          name: prow-config
-          readOnly: true
+        - name: pipeline
+          image: us-docker.pkg.dev/k8s-infra-prow/images/pipeline:v20240802-66b115076
+          args:
+            - --all-contexts
+            - --config=/etc/prow-config/config.yaml
+          env:
+            # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+            - name: KUBECONFIG
+              value: "/etc/kubeconfig/config"
+          volumeMounts:
+            - mountPath: /etc/kubeconfig
+              name: kubeconfig
+              readOnly: true
+            - mountPath: /etc/prow-config
+              name: prow-config
+              readOnly: true
       volumes:
-      - name: kubeconfig
-        secret:
-          defaultMode: 420
-          secretName: kubeconfig
-      - name: prow-config
-        configMap:
-          name: config
+        - name: kubeconfig
+          secret:
+            defaultMode: 420
+            secretName: kubeconfig
+        - name: prow-config
+          configMap:
+            name: config

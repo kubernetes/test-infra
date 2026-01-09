@@ -19,7 +19,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-ingressconformance-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/echoserver
-
     - name: post-ingress-conformance-push-reports-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -39,7 +38,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-ingressconformance-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/reports
-
     - name: post-ingress-conformance-push-image
       cluster: k8s-infra-prow-build-trusted
       annotations:

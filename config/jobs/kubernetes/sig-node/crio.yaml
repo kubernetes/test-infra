@@ -1,449 +1,449 @@
 periodics:
-- name: ci-crio-node-e2e-features
-  cluster: k8s-infra-prow-build
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 240m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
+  - name: ci-crio-node-e2e-features
+    cluster: k8s-infra-prow-build
+    interval: 1h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: ci-crio-node-e2e-features
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v2"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=8
+            - --focus-regex=\[Feature:.+\]|\[Feature\]
+            - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards]|\[Feature:KubeletCredentialProviders]|\[Alpha\]
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          env:
+            - name: GOPATH
+              value: /go
+            - name: KUBE_SSH_USER
+              value: core
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+  - name: ci-crio-node-e2e-unlabelled
+    cluster: k8s-infra-prow-build
+    interval: 12h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 400m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: ci-crio-node-e2e-unlabelled
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=1
+            - --skip-regex=\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --timeout=300m
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
+          env:
+            - name: GOPATH
+              value: /go
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+            - name: KUBE_SSH_USER
+              value: core
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+  - name: ci-crio-node-e2e-eviction
+    cluster: k8s-infra-prow-build
+    interval: 4h30m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 320m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: ci-crio-node-e2e-eviction
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=1
+            - --focus-regex=\[Feature:Eviction\]
+            - --skip-regex=""
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --timeout=300m
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          env:
+            - name: GOPATH
+              value: /go
+            - name: KUBE_SSH_USER
+              value: core
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+  - name: ci-node-kubelet-crio-performance-test
+    cluster: k8s-infra-prow-build
+    interval: 12h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: node-kubelet-crio-performance-test
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=1
+            - --focus-regex=Node Performance Testing
+            - --skip-regex=
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --timeout=60m
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-performance.yaml
+          env:
+            - name: GOPATH
+              value: /go
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+            - name: KUBE_SSH_USER
+              value: core
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+  - name: ci-crio-node-e2e-conformance
+    cluster: k8s-infra-prow-build
+    interval: 1h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 240m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-release-master-blocking, sig-node-cri-o, sig-node-release-blocking
+      testgrid-tab-name: ci-crio-node-e2e-conformance
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, release-team@kubernetes.io
+      description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=8
+            - --focus-regex=\[NodeConformance\]
+            - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --timeout=180m
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
+          env:
+            - name: GOPATH
+              value: /go
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+            - name: KUBE_SSH_USER
+              value: core
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+  - name: ci-crio-node-e2e-resource-managers
+    cluster: k8s-infra-prow-build
+    interval: 4h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: ci-crio-node-e2e-resource-managers
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: "Executes CPU, Memory and Topology manager e2e tests with cgroup v2"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=1
+            - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
+            - '--label-filter=Feature: containsAny { CPUManager, MemoryManager, TopologyManager } && Feature: isSubsetOf { CPUManager, MemoryManager, TopologyManager }'
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-resource-managers.yaml
+            - --timeout=120m
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          env:
+            - name: GOPATH
+              value: /go
+            - name: KUBE_SSH_USER
+              value: core
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+  - name: ci-crio-node-e2e-hugepages
+    cluster: k8s-infra-prow-build
+    interval: 4h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    decorate: true
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: ci-crio-node-e2e-hugepages
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      description: "Executes hugepages e2e tests"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=1
+            - --focus-regex=\[Feature:HugePages\]
+            - --skip-regex=""
+            - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-hugepages.yaml
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          env:
+            - name: GOPATH
+              value: /go
+            - name: KUBE_SSH_USER
+              value: core
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"
+  - name: ci-crio-userns-e2e-serial
+    cluster: k8s-infra-prow-build
+    interval: 24h
+    decorate: true
     path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-node-e2e-features
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "OWNER: sig-node; runs Features e2e tests with crio master and cgroup v2"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=8
-      - --focus-regex=\[Feature:.+\]|\[Feature\]
-      - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]|\[Feature:InPlacePodVerticalScaling\]|\[Feature:UserNamespacesSupport]|\[Feature:UserNamespacesPodSecurityStandards]|\[Feature:KubeletCredentialProviders]|\[Alpha\]
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-      env:
-        - name: GOPATH
-          value: /go
-        - name: KUBE_SSH_USER
-          value: core
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-- name: ci-crio-node-e2e-unlabelled
-  cluster: k8s-infra-prow-build
-  interval: 12h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 400m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-node-e2e-unlabelled
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [Feature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=1
-      - --skip-regex=\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[Feature:.+\]|\[Feature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --timeout=300m
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
-      env:
-      - name: GOPATH
-        value: /go
-      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-        value: "1"
-      - name: KUBE_SSH_USER
-        value: core
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-- name: ci-crio-node-e2e-eviction
-  cluster: k8s-infra-prow-build
-  interval: 4h30m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 320m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-node-e2e-eviction
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=1
-      - --focus-regex=\[Feature:Eviction\]
-      - --skip-regex=""
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --timeout=300m
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-      env:
-        - name: GOPATH
-          value: /go
-        - name: KUBE_SSH_USER
-          value: core
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-- name: ci-node-kubelet-crio-performance-test
-  cluster: k8s-infra-prow-build
-  interval: 12h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: node-kubelet-crio-performance-test
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v2"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=1
-      - --focus-regex=Node Performance Testing
-      - --skip-regex=
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --timeout=60m
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-performance.yaml
-      env:
-      - name: GOPATH
-        value: /go
-      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-        value: "1"
-      - name: KUBE_SSH_USER
-        value: core
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-- name: ci-crio-node-e2e-conformance
-  cluster: k8s-infra-prow-build
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 240m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-release-master-blocking, sig-node-cri-o, sig-node-release-blocking
-    testgrid-tab-name: ci-crio-node-e2e-conformance
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io, release-team@kubernetes.io
-    description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master and cgroup v2"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=8
-      - --focus-regex=\[NodeConformance\]
-      - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --timeout=180m
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config.yaml
-      env:
-      - name: GOPATH
-        value: /go
-      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-        value: "1"
-      - name: KUBE_SSH_USER
-        value: core
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-- name: ci-crio-node-e2e-resource-managers
-  cluster: k8s-infra-prow-build
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 120m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-node-e2e-resource-managers
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "Executes CPU, Memory and Topology manager e2e tests with cgroup v2"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=1
-      - --skip-regex= # Override kubetest2 default in https://github.com/kubernetes-sigs/kubetest2/blob/9f385d26316f5256755bb8fe333970aa5759ec7f/pkg/testers/node/node.go#L92
-      - '--label-filter=Feature: containsAny { CPUManager, MemoryManager, TopologyManager } && Feature: isSubsetOf { CPUManager, MemoryManager, TopologyManager }'
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-resource-managers.yaml
-      - --timeout=120m
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-      env:
-        - name: GOPATH
-          value: /go
-        - name: KUBE_SSH_USER
-          value: core
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-- name: ci-crio-node-e2e-hugepages
-  cluster: k8s-infra-prow-build
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-pull-kubernetes-e2e: "true"
-    preset-pull-kubernetes-e2e-gce: "true"
-  decorate: true
-  decoration_config:
-    timeout: 120m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-node-e2e-hugepages
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    description: "Executes hugepages e2e tests"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      command:
-      - runner.sh
-      args:
-      - kubetest2
-      - noop
-      - --test=node
-      - --
-      - --repo-root=.
-      - --gcp-zone=us-central1-b
-      - --parallelism=1
-      - --focus-regex=\[Feature:HugePages\]
-      - --skip-regex=""
-      - '--test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-hugepages.yaml
-      resources:
-        limits:
-          cpu: 4
-          memory: 6Gi
-        requests:
-          cpu: 4
-          memory: 6Gi
-      env:
-        - name: GOPATH
-          value: /go
-        - name: KUBE_SSH_USER
-          value: core
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
-- name: ci-crio-userns-e2e-serial
-  cluster: k8s-infra-prow-build
-  interval: 24h
-  decorate: true
-  path_alias: k8s.io/kubernetes
-  extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-  decoration_config:
-    timeout: 240m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-pull-kubernetes-e2e: "true"
-    preset-pull-kubernetes-e2e-gce: "true"
-  annotations:
-    testgrid-dashboards: sig-node-cri-o
-    testgrid-tab-name: ci-crio-userns-e2e-serial
-    testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
-    # Before UserNamespacesHostNetworkSupport reaches GA, if we need to migrate the userns tests to the conformance tests,
-    # we must retain the test job for UserNamespacesHostNetworkSupport.
-    description: "Executes userns E2E tests with ProcMountType, UserNamespacesSupport and UserNamespacesHostNetworkSupport feature gates"
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-          - runner.sh
-        args:
-          - kubetest2
-          - noop
-          - --test=node
-          - --
-          - --repo-root=.
-          - --gcp-zone=us-central1-b
-          - --parallelism=1
-          - --focus-regex=\[Feature:ProcMountType\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesHostNetworkSupport\]
-          - '--test-args=--service-feature-gates="UserNamespacesSupport=true,ProcMountType=true,UserNamespacesHostNetworkSupport=true" --feature-gates="UserNamespacesSupport=true,ProcMountType=true,UserNamespacesHostNetworkSupport=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
-          - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-userns.yaml
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        env:
-          - name: KUBE_SSH_USER
-            value: core
-          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-            value: "1"
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+        workdir: true
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    decoration_config:
+      timeout: 240m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    annotations:
+      testgrid-dashboards: sig-node-cri-o
+      testgrid-tab-name: ci-crio-userns-e2e-serial
+      testgrid-alert-email: sig-node-ci+testgrid@kubernetes.io
+      # Before UserNamespacesHostNetworkSupport reaches GA, if we need to migrate the userns tests to the conformance tests,
+      # we must retain the test job for UserNamespacesHostNetworkSupport.
+      description: "Executes userns E2E tests with ProcMountType, UserNamespacesSupport and UserNamespacesHostNetworkSupport feature gates"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+          args:
+            - kubetest2
+            - noop
+            - --test=node
+            - --
+            - --repo-root=.
+            - --gcp-zone=us-central1-b
+            - --parallelism=1
+            - --focus-regex=\[Feature:ProcMountType\]|\[Feature:UserNamespacesSupport\]|\[Feature:UserNamespacesHostNetworkSupport\]
+            - '--test-args=--service-feature-gates="UserNamespacesSupport=true,ProcMountType=true,UserNamespacesHostNetworkSupport=true" --feature-gates="UserNamespacesSupport=true,ProcMountType=true,UserNamespacesHostNetworkSupport=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+            - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-userns.yaml
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
+          env:
+            - name: KUBE_SSH_USER
+              value: core
+            - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+              value: "1"

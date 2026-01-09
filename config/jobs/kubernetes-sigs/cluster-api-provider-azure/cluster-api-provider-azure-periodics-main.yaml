@@ -1,505 +1,505 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-conformance-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      workdir: false
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        env:
-        - name: E2E_ARGS
-          value: "-kubetest.use-ci-artifacts"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-k8s-ci-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-dra-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 4h # TODO: increase this to 48h when we're confident it's stable
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      workdir: false
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        env:
-        - name: E2E_ARGS
-          value: "-kubetest.use-ci-artifacts"
-        - name: CONFORMANCE_FLAVOR
-          value: conformance-ci-artifacts-dra
-        - name: KUBETEST_CONF_PATH
-          value: ${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-dra-ginkgo-v2.yaml
-        - name: KUBERNETES_VERSION
-          value: latest
-        - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: Standard_D8s_v3
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-k8s-ci-dra-main
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node DRA tests on latest kubernetes master with cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-capi-e2e-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    serviceAccountName: azure
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-      command:
-        - runner.sh
-      args:
-        - ./scripts/ci-e2e.sh
-      env:
-        - name: GINKGO_FOCUS
-          value: "Cluster API E2E tests"
-        - name: GINKGO_SKIP
-          value: "\\[K8s-Upgrade\\]|API Version Upgrade"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-capi-e2e-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs Cluster API E2E tests on latest cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-apiversion-upgrade-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-e2e.sh
-        env:
-          - name: GINKGO_FOCUS
-            value: "API Version Upgrade"
-          - name: KUBERNETES_VERSION
-            value: "v1.30.3"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-apiversion-upgrade-main
-    description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
-- name: periodic-cluster-api-provider-azure-coverage
-  cluster: eks-prow-build-cluster
-  minimum_interval: 12h
-  decorate: true
-  path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-      command:
-        - runner.sh
-      args:
-        - bash
-        - -c
-        - |
-          result=0
-          ./scripts/ci-test-coverage.sh || result=$?
-          cp coverage.* ${ARTIFACTS}
-          cd ../../k8s.io/test-infra/gopherage
-          GO111MODULE=on go build .
-          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
-          exit $result
-      resources:
-        limits:
-          cpu: 7
-          memory: "16Gi"
-        requests:
-          cpu: 7
-          memory: "16Gi"
-      securityContext:
-        privileged: true
-- name: periodic-cluster-api-provider-azure-e2e-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    serviceAccountName: azure
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-      command:
-        - runner.sh
-      args:
-        - ./scripts/ci-e2e.sh
-      env:
-        - name: GINKGO_FOCUS
-          value: "Workload cluster creation"
-        - name: GINKGO_SKIP
-          value: \[Managed Kubernetes\]|\[WINDOWS\]
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs workload cluster creation E2E tests on latest cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-e2e-aks-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    serviceAccountName: azure
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-      command:
-        - runner.sh
-      args:
-        - ./scripts/ci-e2e.sh
-      env:
-        - name: GINKGO_FOCUS
-          value: \[Managed Kubernetes\]
-        - name: GINKGO_SKIP
-          value: ""
-      resources:
-        limits:
-          cpu: 6
-          memory: "9Gi"
-        requests:
-          cpu: 6
-          memory: "9Gi"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-e2e-aks-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs managed Kubernetes E2E tests on latest cluster-api-provider-azure
-- name: periodic-cluster-api-provider-azure-windows-with-ci-artifacts-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 72h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-  - base_ref: main
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    repo: cluster-api-provider-azure
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        env:
-          - name: E2E_ARGS
-            value: "-kubetest.use-ci-artifacts"
-          - name: WINDOWS
-            value: "true"
-          - name: WINDOWS_FLAVOR
-            value: "containerd"
-          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
-          - name: CONFORMANCE_NODES
-            value: "4"
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2019"
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-upstream-k8s-ci-windows-containerd-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs cluster-api-provider-azure-windows-with-ci-artifacts periodic job # expect failures in this job as it pulls latest k8s version
-- name: periodic-cluster-api-provider-azure-windows-custom-builds-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 72h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-  - base_ref: main
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    repo: cluster-api-provider-azure
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    serviceAccountName: azure
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        env:
-          - name: TEST_K8S
-            value: "true"
-          - name: WINDOWS
-            value: "true"
-          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
-          - name: CONFORMANCE_NODES
-            value: "4"
-          - name: WINDOWS_SERVER_VERSION
-            value: "windows-2019"
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-windows-containerd-upstream-custom-k8s-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Tests Windows support with custom builds on the main branch. # expect failures in this job as it pulls latest k8s version
-- name: periodic-cluster-api-provider-azure-aks-mgmt-e2e-main
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  minimum_interval: 48h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-community: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    serviceAccountName: azure
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
-      command:
-        - runner.sh
-      args:
-        - ./scripts/ci-aks-e2e.sh
-      env:
-        - name: GINKGO_FOCUS
-          value: "Workload cluster creation"
-        - name: GINKGO_SKIP
-          value: \[Managed Kubernetes\]|\[WINDOWS\]
-        - name: MGMT_CLUSTER_TYPE
-          value: "aks"
-      securityContext:
-        privileged: true
-      resources:
-          requests:
-            cpu: 6
-            memory: "9Gi"
-          limits:
-            cpu: 6
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: periodic-aks-mgmt-e2e-main
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: "Runs E2E tests using AKS as the management cluster to validate the aks-as-mgmt.sh flow"
+  - name: periodic-cluster-api-provider-azure-conformance-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-conformance-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
+  - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-conformance-k8s-ci-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
+  - name: periodic-cluster-api-provider-azure-conformance-with-ci-artifacts-dra-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 4h # TODO: increase this to 48h when we're confident it's stable
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+            - name: CONFORMANCE_FLAVOR
+              value: conformance-ci-artifacts-dra
+            - name: KUBETEST_CONF_PATH
+              value: ${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-dra-ginkgo-v2.yaml
+            - name: KUBERNETES_VERSION
+              value: latest
+            - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+              value: Standard_D8s_v3
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-conformance-k8s-ci-dra-main
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: Runs conformance & node DRA tests on latest kubernetes master with cluster-api-provider-azure
+  - name: periodic-cluster-api-provider-azure-capi-e2e-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-e2e.sh
+          env:
+            - name: GINKGO_FOCUS
+              value: "Cluster API E2E tests"
+            - name: GINKGO_SKIP
+              value: "\\[K8s-Upgrade\\]|API Version Upgrade"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-capi-e2e-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs Cluster API E2E tests on latest cluster-api-provider-azure
+  - name: periodic-cluster-api-provider-azure-apiversion-upgrade-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-e2e.sh
+          env:
+            - name: GINKGO_FOCUS
+              value: "API Version Upgrade"
+            - name: KUBERNETES_VERSION
+              value: "v1.30.3"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-apiversion-upgrade-main
+      description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
+  - name: periodic-cluster-api-provider-azure-coverage
+    cluster: eks-prow-build-cluster
+    minimum_interval: 12h
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              result=0
+              ./scripts/ci-test-coverage.sh || result=$?
+              cp coverage.* ${ARTIFACTS}
+              cd ../../k8s.io/test-infra/gopherage
+              GO111MODULE=on go build .
+              ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+              ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+              ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+              exit $result
+          resources:
+            limits:
+              cpu: 7
+              memory: "16Gi"
+            requests:
+              cpu: 7
+              memory: "16Gi"
+          securityContext:
+            privileged: true
+  - name: periodic-cluster-api-provider-azure-e2e-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-e2e.sh
+          env:
+            - name: GINKGO_FOCUS
+              value: "Workload cluster creation"
+            - name: GINKGO_SKIP
+              value: \[Managed Kubernetes\]|\[WINDOWS\]
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-e2e-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs workload cluster creation E2E tests on latest cluster-api-provider-azure
+  - name: periodic-cluster-api-provider-azure-e2e-aks-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-e2e.sh
+          env:
+            - name: GINKGO_FOCUS
+              value: \[Managed Kubernetes\]
+            - name: GINKGO_SKIP
+              value: ""
+          resources:
+            limits:
+              cpu: 6
+              memory: "9Gi"
+            requests:
+              cpu: 6
+              memory: "9Gi"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-e2e-aks-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs managed Kubernetes E2E tests on latest cluster-api-provider-azure
+  - name: periodic-cluster-api-provider-azure-windows-with-ci-artifacts-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 72h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        repo: cluster-api-provider-azure
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+            - name: WINDOWS
+              value: "true"
+            - name: WINDOWS_FLAVOR
+              value: "containerd"
+            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+            - name: CONFORMANCE_NODES
+              value: "4"
+            - name: WINDOWS_SERVER_VERSION
+              value: "windows-2019"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-upstream-k8s-ci-windows-containerd-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Runs cluster-api-provider-azure-windows-with-ci-artifacts periodic job # expect failures in this job as it pulls latest k8s version
+  - name: periodic-cluster-api-provider-azure-windows-custom-builds-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 72h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - base_ref: main
+        org: kubernetes-sigs
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        repo: cluster-api-provider-azure
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: TEST_K8S
+              value: "true"
+            - name: WINDOWS
+              value: "true"
+            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+            - name: CONFORMANCE_NODES
+              value: "4"
+            - name: WINDOWS_SERVER_VERSION
+              value: "windows-2019"
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-periodic-windows-containerd-upstream-custom-k8s-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Tests Windows support with custom builds on the main branch. # expect failures in this job as it pulls latest k8s version
+  - name: periodic-cluster-api-provider-azure-aks-mgmt-e2e-main
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    minimum_interval: 48h
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-community: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      serviceAccountName: azure
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20251209-13d7d11b0f-1.32
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-aks-e2e.sh
+          env:
+            - name: GINKGO_FOCUS
+              value: "Workload cluster creation"
+            - name: GINKGO_SKIP
+              value: \[Managed Kubernetes\]|\[WINDOWS\]
+            - name: MGMT_CLUSTER_TYPE
+              value: "aks"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 6
+              memory: "9Gi"
+            limits:
+              cpu: 6
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: periodic-aks-mgmt-e2e-main
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: "Runs E2E tests using AKS as the management cluster to validate the aks-as-mgmt.sh flow"

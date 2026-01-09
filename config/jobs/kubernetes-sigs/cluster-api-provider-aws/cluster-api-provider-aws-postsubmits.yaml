@@ -3,8 +3,8 @@ postsubmits:
     - name: ci-cluster-api-provider-aws-e2e
       cluster: eks-prow-build-cluster
       branches:
-      # The script this job runs is not in all branches.
-      - ^main
+        # The script this job runs is not in all branches.
+        - ^main
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
       decoration_config:
@@ -51,8 +51,8 @@ postsubmits:
     - name: ci-cluster-api-provider-aws-eks-e2e
       cluster: eks-prow-build-cluster
       branches:
-      # The script this job runs is not in all branches.
-      - ^main
+        # The script this job runs is not in all branches.
+        - ^main
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
       decoration_config:
@@ -97,8 +97,8 @@ postsubmits:
     - name: ci-cluster-api-provider-aws-e2e-conformance
       cluster: eks-prow-build-cluster
       branches:
-      # The script this job runs is not in all branches.
-      - ^main
+        # The script this job runs is not in all branches.
+        - ^main
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
       decoration_config:

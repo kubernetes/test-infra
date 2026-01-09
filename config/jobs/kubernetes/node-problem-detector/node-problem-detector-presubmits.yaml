@@ -1,382 +1,324 @@
 presubmits:
   kubernetes/node-problem-detector:
-  - name: pull-npd-build
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        # TODO: this job doesn't match the CI version (no .env file push).
-        # Consider making it similar or even deleting it.
-        - >-
-          ./test/build.sh install-lib &&
-          make build
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-test
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh install-lib &&
-          make test
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-verify-gomod
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./hack/verify-gomod.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-e2e-node
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh -p $(BUILD_ID) pr &&
-          source pr.env &&
-          cd $(GOPATH)/src/k8s.io/kubernetes &&
-          /workspace/scenarios/kubernetes_e2e.py
-          --deployment=node
-          --provider=gce
-          --gcp-zone=us-central1-b
-          --node-tests=true
-          "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml --extra-envs=${EXTRA_ENVS}"
-          '--node-test-args=--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/"'
-          '--test_args=--nodes=8 --focus=NodeProblemDetector'
-          --timeout=90m
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-e2e-kubernetes-gce-gci
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh -p $(BUILD_ID) pr &&
-          source pr.env &&
-          /workspace/scenarios/kubernetes_e2e.py
-          --cluster=
-          --extract=ci/latest
-          --provider=gce
-          --gcp-node-image=gci
-          --gcp-zone=us-central1-b
-          --ginkgo-parallel=30
-          --test_args=--ginkgo.focus=NodeProblemDetector
-          --timeout=60m
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh -p $(BUILD_ID) -f pr &&
-          source pr.env &&
-          /workspace/scenarios/kubernetes_e2e.py
-          --cluster=
-          --extract=ci/latest
-          --provider=gce
-          --gcp-node-image=gci
-          --gcp-zone=us-central1-b
-          --ginkgo-parallel=30
-          --test_args=--ginkgo.focus=NodeProblemDetector
-          --timeout=60m
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-e2e-test
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        env:
-        - name: ZONE
-          value: us-central1-a
-        - name: IMAGE_FAMILY
-          value: pipeline-1-33-amd64
-        - name: IMAGE_PROJECT
-          value: ubuntu-os-gke-cloud
-        - name: BOSKOS_PROJECT_TYPE
-          value: gce-project
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh install-lib &&
-          SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-e2e-kubernetes-gce-ubuntu
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh -p $(BUILD_ID) pr &&
-          source pr.env &&
-          /workspace/scenarios/kubernetes_e2e.py
-          --cluster=
-          --extract=ci/latest
-          --provider=gce
-          --gcp-node-image=ubuntu
-          --gcp-zone=us-central1-b
-          --ginkgo-parallel=30
-          --image-family=ubuntu-2404-lts-amd64
-          --image-project=ubuntu-os-cloud
-          --test_args=--ginkgo.focus=NodeProblemDetector
-          --timeout=60m
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
-  - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-.*$
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh -p $(BUILD_ID) -f pr &&
-          source pr.env &&
-          /workspace/scenarios/kubernetes_e2e.py
-          --cluster=
-          --extract=ci/latest
-          --provider=gce
-          --gcp-node-image=ubuntu
-          --gcp-zone=us-central1-b
-          --ginkgo-parallel=30
-          --image-family=ubuntu-2404-lts-amd64
-          --image-project=ubuntu-os-cloud
-          --test_args=--ginkgo.focus=NodeProblemDetector
-          --timeout=60m
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: presubmits-node-problem-detector
-      testgrid-num-columns-recent: '30'
+    - name: pull-npd-build
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              # TODO: this job doesn't match the CI version (no .env file push).
+              # Consider making it similar or even deleting it.
+              - >-
+                ./test/build.sh install-lib && make build
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-test
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh install-lib && make test
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-verify-gomod
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - >-
+                ./hack/verify-gomod.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-e2e-node
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: k8s.io/test-infra
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh -p $(BUILD_ID) pr && source pr.env && cd $(GOPATH)/src/k8s.io/kubernetes && /workspace/scenarios/kubernetes_e2e.py --deployment=node --provider=gce --gcp-zone=us-central1-b --node-tests=true "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml --extra-envs=${EXTRA_ENVS}" '--node-test-args=--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/"' '--test_args=--nodes=8 --focus=NodeProblemDetector' --timeout=90m
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-e2e-kubernetes-gce-gci
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh -p $(BUILD_ID) pr && source pr.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=gci --gcp-zone=us-central1-b --ginkgo-parallel=30 --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh -p $(BUILD_ID) -f pr && source pr.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=gci --gcp-zone=us-central1-b --ginkgo-parallel=30 --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-e2e-test
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            env:
+              - name: ZONE
+                value: us-central1-a
+              - name: IMAGE_FAMILY
+                value: pipeline-1-33-amd64
+              - name: IMAGE_PROJECT
+                value: ubuntu-os-gke-cloud
+              - name: BOSKOS_PROJECT_TYPE
+                value: gce-project
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh install-lib && SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-e2e-kubernetes-gce-ubuntu
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh -p $(BUILD_ID) pr && source pr.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=ubuntu --gcp-zone=us-central1-b --ginkgo-parallel=30 --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'
+    - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-.*$
+      always_run: true
+      decorate: true
+      path_alias: k8s.io/node-problem-detector
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            # TODO: we need to specify to only use cgroupv2 images, but for now allow both v1 and v2
+            args:
+              - bash
+              - -c
+              - >-
+                ./test/build.sh -p $(BUILD_ID) -f pr && source pr.env && /workspace/scenarios/kubernetes_e2e.py --cluster= --extract=ci/latest --provider=gce --gcp-node-image=ubuntu --gcp-zone=us-central1-b --ginkgo-parallel=30 --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud --test_args=--ginkgo.focus=NodeProblemDetector --timeout=60m
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: presubmits-node-problem-detector
+        testgrid-num-columns-recent: '30'

@@ -1,60 +1,44 @@
 periodics:
-- interval: 3h
-  cluster: k8s-infra-prow-build
-  name: ci-kubernetes-gce-conformance-latest
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
-    testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
-    testgrid-tab-name: Conformance - GCE - master
-    description: Runs conformance tests using kubetest2 against kubernetes master on GCE
-    testgrid-num-failures-to-alert: '1'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '3'
-    testgrid-alert-email: release-team@kubernetes.io
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 220m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 14Gi
-        requests:
-          cpu: 4
-          memory: 14Gi
-      command:
-      - runner.sh
-      args:
-      - "/bin/bash"
-      - "-c"
-      - set -o errexit;
-        set -o nounset;
-        set -o pipefail;
-        set -o xtrace;
-        MARKER_VERSION=latest.txt;
-        kubetest2 gce \;
-          --v=9 \;
-          --legacy-mode \;
-          --up \;
-          --down \;
-          --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION \;
-          --test=ginkgo \;
-          -- \;
-          --test-package-url=https://dl.k8s.io \;
-          --test-package-dir=ci \;
-          --test-package-marker=$MARKER_VERSION \;
-          --focus-regex='\[Conformance\]'
+  - interval: 3h
+    cluster: k8s-infra-prow-build
+    name: ci-kubernetes-gce-conformance-latest
+    annotations:
+      fork-per-release: "true"
+      fork-per-release-replacements: "MARKER_VERSION=latest.txt -> MARKER_VERSION=latest-{{.Version}}.txt"
+      testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
+      testgrid-tab-name: Conformance - GCE - master
+      description: Runs conformance tests using kubetest2 against kubernetes master on GCE
+      testgrid-num-failures-to-alert: '1'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-num-columns-recent: '3'
+      testgrid-alert-email: release-team@kubernetes.io
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+    decorate: true
+    decoration_config:
+      timeout: 220m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 14Gi
+            requests:
+              cpu: 4
+              memory: 14Gi
+          command:
+            - runner.sh
+          args:
+            - "/bin/bash"
+            - "-c"
+            - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; MARKER_VERSION=latest.txt; kubetest2 gce \; --v=9 \; --legacy-mode \; --up \; --down \; --kubernetes-version=https://dl.k8s.io/ci/$MARKER_VERSION \; --test=ginkgo \; -- \; --test-package-url=https://dl.k8s.io \; --test-package-dir=ci \; --test-package-marker=$MARKER_VERSION \; --focus-regex='\[Conformance\]'

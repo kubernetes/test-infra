@@ -1,185 +1,277 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-kind-dual-canary
+    - name: pull-kubernetes-e2e-kind-dual-canary
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      skip_report: false
+      decorate: true
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: PARALLEL
+                value: "true"
+              # enable IPV6 in bootstrap image
+              - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+                value: "true"
+              # tell kind CI script to use DualStack
+              - name: "IP_FAMILY"
+                value: "dual"
+              - name: FOCUS
+                value: \[sig-network\]|\[Conformance\]
+              - name: SKIP
+                value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|LoadBalancer|SCTPConnectivity
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        testgrid-dashboards: sig-network-kind
+        testgrid-tab-name: pr-sig-network-kind, dual
+        description: Runs tests against a Dual Stack Kubernetes in Docker cluster
+        testgrid-alert-email: antonio.ojea.garcia@gmail.com
+    - name: pull-kubernetes-e2e-kind-cloud-provider-loadbalancer
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      skip_report: false
+      # Pending https://github.com/kubernetes/kubernetes/pull/124729
+      # run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
+      decorate: true
+      branches:
+        - master
+        - ^release-
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cloud-provider-kind
+          base_ref: main
+          path_alias: sigs.k8s.io/cloud-provider-kind
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              # compile cloud-provider-kind with kubernetes changes on the PR
+              - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind; curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+            env:
+              # skip serial tests and run with --ginkgo-parallel
+              - name: "PARALLEL"
+                value: "true"
+              - name: FOCUS
+                value: \[sig-network\]|\[Conformance\]
+              #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+              - name: SKIP
+                value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|LoadBalancer.Service.without.NodePort|SCTPConnectivity
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        testgrid-dashboards: sig-network-kind
+        testgrid-tab-name: pr-sig-network-kind, loadbalancer
+        description: Runs loadbalancer tests in kind with cloud-provider-kind
+        testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    - name: pull-kubernetes-e2e-kind-nftables
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+        - ^release-
+      optional: true
+      always_run: false
+      skip_report: false
+      run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)'
+      decorate: true
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: "k8s.io/test-infra"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: PARALLEL
+                value: "true"
+              - name: KUBE_PROXY_MODE
+                value: "nftables"
+              - name: FOCUS
+                value: \[sig-network\]|\[Conformance\]
+              - name: SKIP
+                value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        testgrid-dashboards: sig-network-kind
+        testgrid-tab-name: pr-sig-network-kind, nftables
+        description: Runs tests against a Kubernetes in Docker cluster and the nftables proxy mode
+        testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    - name: pull-kubernetes-e2e-kind-ipvs
+      cluster: k8s-infra-prow-build
+      branches:
+        - master
+      optional: true
+      always_run: false
+      skip_report: false
+      decorate: true
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: "k8s.io/test-infra"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+            env:
+              - name: PARALLEL
+                value: "true"
+              - name: KUBE_PROXY_MODE
+                value: "ipvs"
+              - name: FOCUS
+                value: \[sig-network\]|\[Conformance\]
+              # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
+              - name: SKIP
+                value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        testgrid-dashboards: sig-network-kind
+        testgrid-tab-name: pr-sig-network-kind, ipvs
+        description: Runs tests against a Kubernetes in Docker cluster and the ipvs proxy mode
+        testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+    # network test against kubernetes master branch with `kind` multizone cluster
+    - name: pull-kubernetes-e2e-kind-multizone
+      cluster: k8s-infra-prow-build
+      optional: true
+      always_run: false
+      skip_report: false
+      decorate: true
+      labels:
+        preset-dind-enabled: "true"
+      decoration_config:
+        timeout: 60m
+        grace_period: 15m
+      path_alias: k8s.io/kubernetes
+      extra_refs:
+        - org: kubernetes
+          repo: test-infra
+          base_ref: master
+          path_alias: "k8s.io/test-infra"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+            command:
+              - wrapper.sh
+              - bash
+              - -c
+              - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
+            env:
+              - name: "PARALLEL"
+                value: "true"
+              - name: FOCUS
+                value: \[sig-network\]|\[Conformance\]
+              - name: SKIP
+                value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 4
+                memory: 9Gi
+              requests:
+                cpu: 4
+                memory: 9Gi
+      annotations:
+        testgrid-dashboards: sig-network-kind
+        testgrid-tab-name: pr-sig-network-kind, multizone
+        description: Runs tests against a Multizone Kubernetes in Docker cluster
+        testgrid-alert-email: antonio.ojea.garcia@gmail.com, robertjscott@google.com
+periodics:
+  # network test against kubernetes master branch with `kind`
+  - interval: 6h
+    name: ci-kubernetes-kind-network
     cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    skip_report: false
-    decorate: true
     labels:
+      preset-service-account: "true"
       preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: PARALLEL
-          value: "true"
-        # enable IPV6 in bootstrap image
-        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-          value: "true"
-        # tell kind CI script to use DualStack
-        - name: "IP_FAMILY"
-          value: "dual"
-        - name: FOCUS
-          value: \[sig-network\]|\[Conformance\]
-        - name: SKIP
-          value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|LoadBalancer|SCTPConnectivity
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-    annotations:
-      testgrid-dashboards: sig-network-kind
-      testgrid-tab-name: pr-sig-network-kind, dual
-      description: Runs tests against a Dual Stack Kubernetes in Docker cluster
-      testgrid-alert-email: antonio.ojea.garcia@gmail.com
-  - name: pull-kubernetes-e2e-kind-cloud-provider-loadbalancer
-    cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    skip_report: false
-    # Pending https://github.com/kubernetes/kubernetes/pull/124729
-    # run_if_changed: '(provider|cloud-controller-manager|cloud|ipam|endpoint|pkg\/proxy|test\/e2e\/network|test\/e2e\/storage)'
     decorate: true
-    branches:
-    - master
-    - ^release-
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cloud-provider-kind
-      base_ref: main
-      path_alias: sigs.k8s.io/cloud-provider-kind
-    labels:
-      preset-dind-enabled: "true"
     decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        # compile cloud-provider-kind with kubernetes changes on the PR
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
-          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
-        env:
-        # skip serial tests and run with --ginkgo-parallel
-        - name: "PARALLEL"
-          value: "true"
-        - name: FOCUS
-          value: \[sig-network\]|\[Conformance\]
-        #  cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
-        - name: SKIP
-          value: Alpha|Beta|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|LoadBalancer.Service.without.NodePort|SCTPConnectivity
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-    annotations:
-      testgrid-dashboards: sig-network-kind
-      testgrid-tab-name: pr-sig-network-kind, loadbalancer
-      description: Runs loadbalancer tests in kind with cloud-provider-kind
-      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-  - name: pull-kubernetes-e2e-kind-nftables
-    cluster: k8s-infra-prow-build
-    branches:
-    - master
-    - ^release-
-    optional: true
-    always_run: false
-    skip_report: false
-    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/proxy/nftables/)'
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: "k8s.io/test-infra"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-        env:
-        - name: PARALLEL
-          value: "true"
-        - name: KUBE_PROXY_MODE
-          value: "nftables"
-        - name: FOCUS
-          value: \[sig-network\]|\[Conformance\]
-        - name: SKIP
-          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
-    annotations:
-      testgrid-dashboards: sig-network-kind
-      testgrid-tab-name: pr-sig-network-kind, nftables
-      description: Runs tests against a Kubernetes in Docker cluster and the nftables proxy mode
-      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-  - name: pull-kubernetes-e2e-kind-ipvs
-    cluster: k8s-infra-prow-build
-    branches:
-      - master
-    optional: true
-    always_run: false
-    skip_report: false
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
+      timeout: 200m
     extra_refs:
       - org: kubernetes
-        repo: test-infra
+        repo: kubernetes
         base_ref: master
-        path_alias: "k8s.io/test-infra"
+        path_alias: k8s.io/kubernetes
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
@@ -189,10 +281,158 @@ presubmits:
             - -c
             - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
           env:
-            - name: PARALLEL
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|PerformanceDNS|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, master
+      description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  # network test against kubernetes master branch with `kind` ipv6
+  - interval: 6h
+    name: ci-kubernetes-kind-network-ipv6
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 200m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
               value: "true"
+            # tell kind CI script to use ipv6
+            - name: "IP_FAMILY"
+              value: "ipv6"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, IPv6, master
+      description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  # network test against kubernetes master branch with `kind` dual stack
+  - interval: 6h
+    name: ci-kubernetes-kind-network-dual
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
+            - name: BUILD_TYPE
+              value: docker
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+              value: "true"
+            # tell kind CI script to use ipv6
+            - name: "IP_FAMILY"
+              value: "dual"
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, dual, master
+      description: Runs network tests using KIND against latest kubernetes master with a DualStack kubernetes-in-docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  # network test against kubernetes master branch with `kind`
+  - interval: 24h
+    name: ci-kubernetes-kind-network-ipvs
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
             - name: KUBE_PROXY_MODE
               value: "ipvs"
+            - name: "PARALLEL"
+              value: "true"
             - name: FOCUS
               value: \[sig-network\]|\[Conformance\]
             # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
@@ -209,817 +449,561 @@ presubmits:
               cpu: 4
               memory: 9Gi
     annotations:
-      testgrid-dashboards: sig-network-kind
-      testgrid-tab-name: pr-sig-network-kind, ipvs
-      description: Runs tests against a Kubernetes in Docker cluster and the ipvs proxy mode
-      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-  # network test against kubernetes master branch with `kind` multizone cluster
-  - name: pull-kubernetes-e2e-kind-multizone
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, ipvs, master
+      description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  # network test against kubernetes master branch with `kind` dual stack
+  - interval: 24h
+    name: ci-kubernetes-kind-network-nftables
     cluster: k8s-infra-prow-build
-    optional: true
-    always_run: false
-    skip_report: false
-    decorate: true
     labels:
+      preset-service-account: "true"
       preset-dind-enabled: "true"
+    decorate: true
     decoration_config:
       timeout: 60m
-      grace_period: 15m
-    path_alias: k8s.io/kubernetes
     extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: "k8s.io/test-infra"
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
-        env:
-        - name: "PARALLEL"
-          value: "true"
-        - name: FOCUS
-          value: \[sig-network\]|\[Conformance\]
-        - name: SKIP
-          value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|SCTPConnectivity
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 9Gi
-          requests:
-            cpu: 4
-            memory: 9Gi
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, nftables, master
+      description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster using kube-proxy nftables
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  - interval: 24h
+    name: ci-kubernetes-kind-network-nftables-ipv6
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+              value: "true"
+            # tell kind CI script to use ipv6
+            - name: "IP_FAMILY"
+              value: "ipv6"
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, nftables, IPv6, master
+      description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster using kube-proxy nftables
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  - interval: 24h
+    name: ci-kubernetes-kind-network-nftables-dual
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
+            - name: BUILD_TYPE
+              value: docker
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+              value: "true"
+            - name: "IP_FAMILY"
+              value: "dual"
+            - name: KUBE_PROXY_MODE
+              value: "nftables"
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, nftables, dual, master
+      description: Runs network tests using KIND against latest kubernetes master with a DualStack kubernetes-in-docker cluster using kube-proxy nftables
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  # network test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  - interval: 6h
+    name: ci-kubernetes-kind-network-parallel
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          env:
+            # skip serial tests and run with --ginkgo-parallel
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, master [non-serial]
+      description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  # network test against kubernetes master branch with `kind` ipv6
+  - interval: 6h
+    name: ci-kubernetes-kind-network-parallel-ipv6
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          env:
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+              value: "true"
+            # tell kind CI script to use ipv6
+            - name: "IP_FAMILY"
+              value: "ipv6"
+            # skip serial tests and run with --ginkgo-parallel
+            - name: PARALLEL
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind, sig-testing-kind
+      testgrid-tab-name: sig-network-kind, IPv6, master [non-serial]
+      description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
+      testgrid-num-columns-recent: '3'
+  - interval: 12h
+    name: ci-kubernetes-kind-multizone
+    cluster: k8s-infra-prow-build
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: "k8s.io/test-infra"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
+          env:
+            - name: PARALLEL
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack|SCTPConnectivity
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
     annotations:
       testgrid-dashboards: sig-network-kind
-      testgrid-tab-name: pr-sig-network-kind, multizone
+      testgrid-tab-name: sig-network-kind, multizone
       description: Runs tests against a Multizone Kubernetes in Docker cluster
       testgrid-alert-email: antonio.ojea.garcia@gmail.com, robertjscott@google.com
-
-periodics:
-# network test against kubernetes master branch with `kind`
-- interval: 6h
-  name: ci-kubernetes-kind-network
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 200m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|PerformanceDNS|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, master
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-# network test against kubernetes master branch with `kind` ipv6
-- interval: 6h
-  name: ci-kubernetes-kind-network-ipv6
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 200m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "ipv6"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv4|IPv6DualStack|Internet.connection|PerformanceDNS|upstream.nameserver|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, IPv6, master
-    description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-# network test against kubernetes master branch with `kind` dual stack
-- interval: 6h
-  name: ci-kubernetes-kind-network-dual
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: BUILD_TYPE
-        value: docker
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "dual"
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, dual, master
-    description: Runs network tests using KIND against latest kubernetes master with a DualStack kubernetes-in-docker cluster
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-# network test against kubernetes master branch with `kind`
-- interval: 24h
-  name: ci-kubernetes-kind-network-ipvs
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: KUBE_PROXY_MODE
-        value: "ipvs"
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      # FIXME: AdmissionWebhooks flakes https://issues.k8s.io/128230
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|Networking-IPv6|IPv6DualStack|AdmissionWebhook|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, ipvs, master
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-# network test against kubernetes master branch with `kind` dual stack
-- interval: 24h
-  name: ci-kubernetes-kind-network-nftables
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, nftables, master
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster using kube-proxy nftables
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-- interval: 24h
-  name: ci-kubernetes-kind-network-nftables-ipv6
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "ipv6"
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, nftables, IPv6, master
-    description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster using kube-proxy nftables
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-- interval: 24h
-  name: ci-kubernetes-kind-network-nftables-dual
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: BUILD_TYPE
-        value: docker
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      - name: "IP_FAMILY"
-        value: "dual"
-      - name: KUBE_PROXY_MODE
-        value: "nftables"
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, nftables, dual, master
-    description: Runs network tests using KIND against latest kubernetes master with a DualStack kubernetes-in-docker cluster using kube-proxy nftables
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-# network test against kubernetes master branch with `kind`, skipping
-# serial tests so it runs in ~20m
-- interval: 6h
-  name: ci-kubernetes-kind-network-parallel
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      env:
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv6|Internet.connection|SCTPConnectivity
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, master [non-serial]
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-# network test against kubernetes master branch with `kind` ipv6
-- interval: 6h
-  name: ci-kubernetes-kind-network-parallel-ipv6
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      env:
-      # enable IPV6 in bootstrap image
-      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
-        value: "true"
-      # tell kind CI script to use ipv6
-      - name: "IP_FAMILY"
-        value: "ipv6"
-      # skip serial tests and run with --ginkgo-parallel
-      - name: PARALLEL
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6DualStack|Networking-IPv4|Internet.connection|SCTPConnectivity
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind, sig-testing-kind
-    testgrid-tab-name: sig-network-kind, IPv6, master [non-serial]
-    description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
-    testgrid-num-columns-recent: '3'
-- interval: 12h
-  name: ci-kubernetes-kind-multizone
-  cluster: k8s-infra-prow-build
-  decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: "k8s.io/test-infra"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
-      env:
-      - name: PARALLEL
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack|SCTPConnectivity
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind
-    testgrid-tab-name: sig-network-kind, multizone
-    description: Runs tests against a Multizone Kubernetes in Docker cluster
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, robertjscott@google.com
-# network test against kubernetes master branch with `kind` and kube-proxy detectLocalMode="NodeCIDR"
-- interval: 6h
-  name: ci-kubernetes-kind-network-detect-local-node-cidr
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: "k8s.io/test-infra"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
-      env:
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack|SCTPConnectivity
-      - name: KUBE_PROXY_DETECT_LOCAL_MODE
-        value: NodeCIDR
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind
-    testgrid-tab-name: sig-network-kind, detect-local-node-cidr
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=NodeCIDR
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
-# network test against kubernetes master branch with `kind` and kube-proxy detectLocalMode="InterfaceNamePrefix"
-- interval: 6h
-  name: ci-kubernetes-kind-network-detect-local-interface-name-prefix
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: "k8s.io/test-infra"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-        - wrapper.sh
-        - bash
-        - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
-      env:
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack|SCTPConnectivity
-      - name: KUBE_PROXY_DETECT_LOCAL_MODE
-        value: InterfaceNamePrefix
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-network-kind
-    testgrid-tab-name: sig-network-kind, detect-local-interface-name-prefix
-    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=InterfaceNamePrefix
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
-- interval: 12h
-  name: ci-kubernetes-kind-cloud-provider-loadbalancer
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-kind
-    base_ref: main
-    path_alias: sigs.k8s.io/cloud-provider-kind
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      # compile cloud-provider-kind with kubernetes changes on the PR
-      - set -o errexit;
-        set -o nounset;
-        set -o pipefail;
-        set -o xtrace;
-        cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
-        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
-      env:
-      # skip serial tests and run with --ginkgo-parallel
-      - name: "PARALLEL"
-        value: "true"
-      - name: FOCUS
-        value: \[sig-network\]|\[Conformance\]
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|NetworkPolicy|Disruptive|Flaky|IPv6|SCTPConnectivity|IPerf2
-      # cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-release-master-blocking, sig-network-kind
-    testgrid-tab-name: sig-network-kind, loadbalancer
-    description: "OWNER: sig-network; runs loadbalancer tests in kind with cloud-provider-kind"
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com, kubernetes-sig-network-test-failures@googlegroups.com, release-team@kubernetes.io
-    testgrid-num-columns-recent: '3'
-- interval: 6h
-  cluster: k8s-infra-prow-build
-  name: ci-kubernetes-network-kind-alpha-beta-features
-  annotations:
-    testgrid-dashboards: sig-network-kind
-    testgrid-tab-name: sig-network-kind, alpha, beta
-    description: Uses kind to run e2e sig-network tests against a latest kubernetes master and all features enabled cluster created with sigs.k8s.io/kind
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
-      env:
-      - name: FEATURE_GATES
-        value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
-      - name: RUNTIME_CONFIG
-        value: '{"api/all":"true"}'
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
-      - name: SKIP
-        value: SCTPConnectivity
-      - name: PARALLEL
-        value: "true"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          memory: 9Gi
-          cpu: 7
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: 9Gi
-          cpu: 7
-- interval: 24h
-  cluster: k8s-infra-prow-build
-  name: ci-kubernetes-kind-network-deprecate-endpoints
-  annotations:
-    testgrid-dashboards: sig-network-kind
-    testgrid-tab-name: sig-network-kind, deprecate-endpoints
-    description: Uses kind to run e2e sig-network tests against latest kubernetes master with the Endpoints and EndpointSlice mirroring controllers disabled
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
-    testgrid-num-columns-recent: '6'
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: "k8s.io/test-infra"
-  - org: kubernetes-sigs
-    repo: cloud-provider-kind
-    base_ref: main
-    path_alias: sigs.k8s.io/cloud-provider-kind
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      # compile cloud-provider-kind with kubernetes changes on the PR
-      - set -o errexit;
-        set -o nounset;
-        set -o pipefail;
-        set -o xtrace;
-        cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind;
-        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-noendpoints-e2e.sh
-      env:
-      - name: LABEL_FILTER
-        value: "(Conformance || sig-network ) && !Disruptive && !Flaky"
-      - name: SKIP
-        value: Alpha|Beta|LoadBalancer.Service.without.NodePort|IPv6|SCTPConnectivity|EndpointsController|EndpointSliceMirroring
-      - name: PARALLEL
-        value: "true"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
+  # network test against kubernetes master branch with `kind` and kube-proxy detectLocalMode="NodeCIDR"
+  - interval: 6h
+    name: ci-kubernetes-kind-network-detect-local-node-cidr
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: "k8s.io/test-infra"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
+          env:
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack|SCTPConnectivity
+            - name: KUBE_PROXY_DETECT_LOCAL_MODE
+              value: NodeCIDR
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind
+      testgrid-tab-name: sig-network-kind, detect-local-node-cidr
+      description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=NodeCIDR
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
+  # network test against kubernetes master branch with `kind` and kube-proxy detectLocalMode="InterfaceNamePrefix"
+  - interval: 6h
+    name: ci-kubernetes-kind-network-detect-local-interface-name-prefix
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: "k8s.io/test-infra"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
+          env:
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|NetworkPolicy|LoadBalancer|Disruptive|Flaky|IPv6|IPv6DualStack|SCTPConnectivity
+            - name: KUBE_PROXY_DETECT_LOCAL_MODE
+              value: InterfaceNamePrefix
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-network-kind
+      testgrid-tab-name: sig-network-kind, detect-local-interface-name-prefix
+      description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=InterfaceNamePrefix
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
+  - interval: 12h
+    name: ci-kubernetes-kind-cloud-provider-loadbalancer
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes-sigs
+        repo: cloud-provider-kind
+        base_ref: main
+        path_alias: sigs.k8s.io/cloud-provider-kind
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            # compile cloud-provider-kind with kubernetes changes on the PR
+            - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind; curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+          env:
+            # skip serial tests and run with --ginkgo-parallel
+            - name: "PARALLEL"
+              value: "true"
+            - name: FOCUS
+              value: \[sig-network\]|\[Conformance\]
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer.Service.without.NodePort|NetworkPolicy|Disruptive|Flaky|IPv6|SCTPConnectivity|IPerf2
+          # cloud-provider-kind implements loadbalancer in Proxy mode; it requires NodePort
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-release-master-blocking, sig-network-kind
+      testgrid-tab-name: sig-network-kind, loadbalancer
+      description: "OWNER: sig-network; runs loadbalancer tests in kind with cloud-provider-kind"
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com, kubernetes-sig-network-test-failures@googlegroups.com, release-team@kubernetes.io
+      testgrid-num-columns-recent: '3'
+  - interval: 6h
+    cluster: k8s-infra-prow-build
+    name: ci-kubernetes-network-kind-alpha-beta-features
+    annotations:
+      testgrid-dashboards: sig-network-kind
+      testgrid-tab-name: sig-network-kind, alpha, beta
+      description: Uses kind to run e2e sig-network tests against a latest kubernetes master and all features enabled cluster created with sigs.k8s.io/kind
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+      testgrid-num-columns-recent: '6'
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+          env:
+            - name: FEATURE_GATES
+              value: '{"AllAlpha":true,"AllBeta":true,"EventedPLEG": false}'
+            - name: RUNTIME_CONFIG
+              value: '{"api/all":"true"}'
+            - name: LABEL_FILTER
+              value: "(Conformance || sig-network ) && !Feature: containsAny {Networking-IPv6, LoadBalancer, IPv6DualStack} && !Disruptive && !Flaky"
+            - name: SKIP
+              value: SCTPConnectivity
+            - name: PARALLEL
+              value: "true"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              memory: 9Gi
+              cpu: 7
+            requests:
+              # these are both a bit below peak usage during build
+              # this is mostly for building kubernetes
+              memory: 9Gi
+              cpu: 7
+  - interval: 24h
+    cluster: k8s-infra-prow-build
+    name: ci-kubernetes-kind-network-deprecate-endpoints
+    annotations:
+      testgrid-dashboards: sig-network-kind
+      testgrid-tab-name: sig-network-kind, deprecate-endpoints
+      description: Uses kind to run e2e sig-network tests against latest kubernetes master with the Endpoints and EndpointSlice mirroring controllers disabled
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, danwinship@redhat.com
+      testgrid-num-columns-recent: '6'
+    labels:
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: "k8s.io/test-infra"
+      - org: kubernetes-sigs
+        repo: cloud-provider-kind
+        base_ref: main
+        path_alias: sigs.k8s.io/cloud-provider-kind
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            # compile cloud-provider-kind with kubernetes changes on the PR
+            - set -o errexit; set -o nounset; set -o pipefail; set -o xtrace; cd $GOPATH/src/sigs.k8s.io/cloud-provider-kind; curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-noendpoints-e2e.sh
+          env:
+            - name: LABEL_FILTER
+              value: "(Conformance || sig-network ) && !Disruptive && !Flaky"
+            - name: SKIP
+              value: Alpha|Beta|LoadBalancer.Service.without.NodePort|IPv6|SCTPConnectivity|EndpointsController|EndpointSliceMirroring
+            - name: PARALLEL
+              value: "true"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi

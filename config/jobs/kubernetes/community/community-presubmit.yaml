@@ -1,29 +1,29 @@
 presubmits:
   kubernetes/community:
-  - name: pull-community-verify
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.22.4
-        command:
-        - sh
-        - "-c"
-        # Add GOPATH/bin back to PATH to workaround #9469
-        - "export PATH=$PATH:$GOPATH/bin && make verify"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-contribex-community
-      testgrid-tab-name: pull-verify
+    - name: pull-community-verify
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.22.4
+            command:
+              - sh
+              - "-c"
+              # Add GOPATH/bin back to PATH to workaround #9469
+              - "export PATH=$PATH:$GOPATH/bin && make verify"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-contribex-community
+        testgrid-tab-name: pull-verify
 # TODO: add back this job but instead of dry-run mode, use a "parse & validate only" mode
 # I.E. no credential.
 #  - name: pull-community-tempelis-check

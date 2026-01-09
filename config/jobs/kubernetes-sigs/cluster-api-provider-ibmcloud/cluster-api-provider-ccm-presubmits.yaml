@@ -1,39 +1,39 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
-  - name: pull-cluster-api-provider-ccm-image
-    cluster: eks-prow-build-cluster
-    run_if_changed: '^hack/ccm/'
-    branches:
-      - ^main$
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - command:
-        - "runner.sh"
-        args:
-        - bash
-        - -c
-        - |
-          pushd hack/ccm
-          make build-image-linux-amd64
-          make build-image-linux-ppc64le
-          popd
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-1164926229-1.27
-        imagePullPolicy: IfNotPresent
-        resources:
-          limits:
-            cpu: "2"
-            memory: "6Gi"
-          requests:
-            cpu: "2"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-      testgrid-tab-name: pr-ccm
+    - name: pull-cluster-api-provider-ccm-image
+      cluster: eks-prow-build-cluster
+      run_if_changed: '^hack/ccm/'
+      branches:
+        - ^main$
+      decorate: true
+      path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - command:
+              - "runner.sh"
+            args:
+              - bash
+              - -c
+              - |
+                pushd hack/ccm
+                make build-image-linux-amd64
+                make build-image-linux-ppc64le
+                popd
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20241021-1164926229-1.27
+            imagePullPolicy: IfNotPresent
+            resources:
+              limits:
+                cpu: "2"
+                memory: "6Gi"
+              requests:
+                cpu: "2"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+        testgrid-tab-name: pr-ccm

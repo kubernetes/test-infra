@@ -109,7 +109,6 @@ prow_ignored:
           to: "1.32"
         - from: "1.32"
           to: "1.33"
-
   # The generator will run each template per branch and use a filename friendly
   # branch variable to format the target filename.
   templates:
@@ -119,7 +118,6 @@ prow_ignored:
       template: 'cluster-api-{{ ReplaceAll .branch "." "-" }}-periodics-upgrades.yaml'
     - name: "cluster-api-presubmits.yaml.tpl"
       template: 'cluster-api-{{ ReplaceAll .branch "." "-" }}-presubmits.yaml'
-
   # Versions provides kubernetes minor version to key-value pairs mapping.
   versions:
     "1.27":

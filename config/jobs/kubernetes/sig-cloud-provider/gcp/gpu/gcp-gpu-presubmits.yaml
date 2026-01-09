@@ -1,64 +1,63 @@
 presets:
-- labels:
-    preset-pull-gce-device-plugin-gpu: "true"
-  env:
-  - name: NODE_ACCELERATORS
-    value: type=nvidia-tesla-t4,count=4
-  - name: CREATE_CUSTOM_NETWORK
-    value: "true"
-  - name: NODE_SIZE
-    value: n1-standard-2
-
+  - labels:
+      preset-pull-gce-device-plugin-gpu: "true"
+    env:
+      - name: NODE_ACCELERATORS
+        value: type=nvidia-tesla-t4,count=4
+      - name: CREATE_CUSTOM_NETWORK
+        value: "true"
+      - name: NODE_SIZE
+        value: n1-standard-2
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+
-    annotations:
-      fork-per-release: "true"
-      testgrid-create-test-group: "true"
-    optional: true
-    max_concurrency: 5
-    labels:
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: prow-build
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        - kubetest2
-        - gce
-        args:
-        - --v=9
-        - --legacy-mode
-        - --build
-        - --up
-        - --down
-        - --node-size=n1-standard-2
-        - --num-nodes=2
-        - --gcp-zone=us-central1-b
-        - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
-        - --boskos-resource-type=gpu-project
-        - --node-accelerators=type=nvidia-tesla-t4,count=2
-        - --test=ginkgo
-        - --
-        - --provider=gce
-        - --use-built-binaries=true
-        - --test-args=--minStartupPods=8
-        - --focus-regex=\[Feature:GPUDevicePlugin\]
-        resources:
-          limits:
-            cpu: 6
-            memory: "14Gi"
-          requests:
-            cpu: 6
-            memory: "14Gi"
-        securityContext:
-          privileged: true
+    - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+      cluster: k8s-infra-prow-build
+      skip_branches:
+        - release-\d+\.\d+
+      annotations:
+        fork-per-release: "true"
+        testgrid-create-test-group: "true"
+      optional: true
+      max_concurrency: 5
+      labels:
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      decorate: true
+      decoration_config:
+        timeout: 90m
+      path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: prow-build
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+              - kubetest2
+              - gce
+            args:
+              - --v=9
+              - --legacy-mode
+              - --build
+              - --up
+              - --down
+              - --node-size=n1-standard-2
+              - --num-nodes=2
+              - --gcp-zone=us-central1-b
+              - --env=KUBE_CLUSTER_INITIALIZATION_TIMEOUT=900
+              - --boskos-resource-type=gpu-project
+              - --node-accelerators=type=nvidia-tesla-t4,count=2
+              - --test=ginkgo
+              - --
+              - --provider=gce
+              - --use-built-binaries=true
+              - --test-args=--minStartupPods=8
+              - --focus-regex=\[Feature:GPUDevicePlugin\]
+            resources:
+              limits:
+                cpu: 6
+                memory: "14Gi"
+              requests:
+                cpu: 6
+                memory: "14Gi"
+            securityContext:
+              privileged: true

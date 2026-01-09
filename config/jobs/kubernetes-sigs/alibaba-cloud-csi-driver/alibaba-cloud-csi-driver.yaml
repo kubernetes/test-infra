@@ -1,204 +1,197 @@
 presubmits:
   kubernetes-sigs/alibaba-cloud-csi-driver:
-
-  - name: pull-alibaba-cloud-csi-driver-verify-fmt
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - make
-        args:
-        - fmt
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-fmt
-      description: Verifies the Golang sources have been formatted
-
-  - name: pull-alibaba-cloud-csi-driver-verify-lint
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - make
-        args:
-        - lint
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-lint
-      description: Verifies the Golang sources are linted
-
-  - name: pull-alibaba-cloud-csi-driver-verify-vet
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - make
-        args:
-        - vet
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-vet
-      description: Vets the Golang sources have been vetted
-
-  - name: pull-alibaba-cloud-csi-driver-verify-unit
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
-    decorate: true
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - make
-        args:
-        - test
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-unit
-      description: Alibaba cloud csi driver unit test
-
-  - name: pull-alibaba-cloud-csi-driver-verify-deps
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
-    optional: false
-    decorate: true
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - make
-        args:
-        - check-deps
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-deps
-      description: Alibaba cloud csi driver dependencies are up to date
-
-  - name: pull-alibaba-cloud-csi-driver-verify-helm
-    cluster: k8s-infra-prow-build
-    always_run: false
-    run_if_changed: "^deploy/charts/"
-    optional: true  # TODO: testing
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - check-helm-kind
-        securityContext:
-          privileged: true
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-helm
-      description: Alibaba cloud csi driver helm chart are valid
-
-  - name: pull-alibaba-cloud-csi-driver-verify-base-image-deps
-    cluster: k8s-infra-prow-build
-    always_run: false
-    run_if_changed: "^(hack/base-image-deps.txt$|build/)"
-    optional: true  # TODO: testing
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - check-base-image-deps
-        securityContext:
-          privileged: true
-        env:
-        - name: GOMAXPROCS
-          value: "2"
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
-      testgrid-tab-name: pr-verify-base-image-deps
-      description: Alibaba cloud csi driver base image dependencies are up to date
+    - name: pull-alibaba-cloud-csi-driver-verify-fmt
+      cluster: k8s-infra-prow-build
+      always_run: false
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
+      decorate: true
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - make
+            args:
+              - fmt
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-fmt
+        description: Verifies the Golang sources have been formatted
+    - name: pull-alibaba-cloud-csi-driver-verify-lint
+      cluster: k8s-infra-prow-build
+      always_run: false
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
+      decorate: true
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - make
+            args:
+              - lint
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-lint
+        description: Verifies the Golang sources are linted
+    - name: pull-alibaba-cloud-csi-driver-verify-vet
+      cluster: k8s-infra-prow-build
+      always_run: false
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
+      decorate: true
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - make
+            args:
+              - vet
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-vet
+        description: Vets the Golang sources have been vetted
+    - name: pull-alibaba-cloud-csi-driver-verify-unit
+      cluster: k8s-infra-prow-build
+      always_run: false
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
+      decorate: true
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - make
+            args:
+              - test
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-unit
+        description: Alibaba cloud csi driver unit test
+    - name: pull-alibaba-cloud-csi-driver-verify-deps
+      cluster: k8s-infra-prow-build
+      always_run: false
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE|OWNERS)$"
+      optional: false
+      decorate: true
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - make
+            args:
+              - check-deps
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-deps
+        description: Alibaba cloud csi driver dependencies are up to date
+    - name: pull-alibaba-cloud-csi-driver-verify-helm
+      cluster: k8s-infra-prow-build
+      always_run: false
+      run_if_changed: "^deploy/charts/"
+      optional: true # TODO: testing
+      decorate: true
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - check-helm-kind
+            securityContext:
+              privileged: true
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-helm
+        description: Alibaba cloud csi driver helm chart are valid
+    - name: pull-alibaba-cloud-csi-driver-verify-base-image-deps
+      cluster: k8s-infra-prow-build
+      always_run: false
+      run_if_changed: "^(hack/base-image-deps.txt$|build/)"
+      optional: true # TODO: testing
+      decorate: true
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - check-base-image-deps
+            securityContext:
+              privileged: true
+            env:
+              - name: GOMAXPROCS
+                value: "2"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: presubmits-alibaba-cloud-csi-driver
+        testgrid-tab-name: pr-verify-base-image-deps
+        description: Alibaba cloud csi driver base image dependencies are up to date

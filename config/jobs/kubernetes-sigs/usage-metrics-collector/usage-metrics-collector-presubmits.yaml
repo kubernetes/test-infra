@@ -1,48 +1,48 @@
 presubmits:
   kubernetes-sigs/usage-metrics-collector:
-  - name: pull-usage-metrics-collector-verify
-    cluster: eks-prow-build-cluster
-    decorate: true
-    path_alias: sigs.k8s.io/usage-metrics-collector
-    always_run: true
-    optional: false
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - make
-        - verify
-        resources:
-          requests:
-            cpu: 1
-            memory: "2Gi"
-          limits:
-            cpu: 1
-            memory: "2Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-usage-metrics-collector
-      testgrid-tab-name: pr-verify
-  - name: pull-usage-metrics-collector-test
-    cluster: eks-prow-build-cluster
-    decorate: true
-    path_alias: sigs.k8s.io/usage-metrics-collector
-    always_run: true
-    optional: false
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - make
-        - test
-        resources:
-          requests:
-            cpu: 1
-            memory: "2Gi"
-          limits:
-            cpu: 1
-            memory: "2Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-usage-metrics-collector
-      testgrid-tab-name: pr-test
+    - name: pull-usage-metrics-collector-verify
+      cluster: eks-prow-build-cluster
+      decorate: true
+      path_alias: sigs.k8s.io/usage-metrics-collector
+      always_run: true
+      optional: false
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - verify
+            resources:
+              requests:
+                cpu: 1
+                memory: "2Gi"
+              limits:
+                cpu: 1
+                memory: "2Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+        testgrid-tab-name: pr-verify
+    - name: pull-usage-metrics-collector-test
+      cluster: eks-prow-build-cluster
+      decorate: true
+      path_alias: sigs.k8s.io/usage-metrics-collector
+      always_run: true
+      optional: false
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - test
+            resources:
+              requests:
+                cpu: 1
+                memory: "2Gi"
+              limits:
+                cpu: 1
+                memory: "2Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+        testgrid-tab-name: pr-test

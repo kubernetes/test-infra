@@ -1,48 +1,48 @@
 presets:
-- labels:
-    preset-azure-windows: "true"
-  env:
-  - name: WIN_BUILD
-    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
-  - name: K8S_SSH_PUBLIC_KEY_PATH
-    value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
-  - name: K8S_SSH_PRIVATE_KEY_PATH
-    value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
-- labels:
-    preset-capz-containerd-1-7-latest: "true"
-  env:
-  - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-windows-amd64.tar.gz"
-- labels:
-    preset-capz-containerd-2-0-latest: "true"
-  env:
-  - name: WINDOWS_CONTAINERD_URL
-    value: "latest"
-- labels:
-    preset-windows-repo-list: "true"
-  env:
-  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
-- labels:
-    preset-common-gce-windows: "true"
-  env:
-  - name: KUBE_GCE_ENABLE_IP_ALIASES
-    value: "true"
-  - name: KUBERNETES_NODE_PLATFORM
-    value: "windows"
-  - name: USE_TEST_INFRA_LOG_DUMPING
-    value: "true"
-- labels:
-    preset-e2e-gce-windows: "true"
-  env:
-  - name: NUM_WINDOWS_NODES
-    value: "3"
-  - name: NUM_NODES
-    value: "2"
-- labels:
-    preset-e2e-gce-windows-containerd: "true"
-  env:
-  - name: PREPULL_TIMEOUT
-    value: "30m"
-  - name: WINDOWS_ENABLE_DSR
-    value: "true"
+  - labels:
+      preset-azure-windows: "true"
+    env:
+      - name: WIN_BUILD
+        value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
+      - name: K8S_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # from preset-k8s-ssh label
+      - name: K8S_SSH_PRIVATE_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # from preset-k8s-ssh label
+  - labels:
+      preset-capz-containerd-1-7-latest: "true"
+    env:
+      - name: WINDOWS_CONTAINERD_URL
+        value: "https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-windows-amd64.tar.gz"
+  - labels:
+      preset-capz-containerd-2-0-latest: "true"
+    env:
+      - name: WINDOWS_CONTAINERD_URL
+        value: "latest"
+  - labels:
+      preset-windows-repo-list: "true"
+    env:
+      - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
+        value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
+  - labels:
+      preset-common-gce-windows: "true"
+    env:
+      - name: KUBE_GCE_ENABLE_IP_ALIASES
+        value: "true"
+      - name: KUBERNETES_NODE_PLATFORM
+        value: "windows"
+      - name: USE_TEST_INFRA_LOG_DUMPING
+        value: "true"
+  - labels:
+      preset-e2e-gce-windows: "true"
+    env:
+      - name: NUM_WINDOWS_NODES
+        value: "3"
+      - name: NUM_NODES
+        value: "2"
+  - labels:
+      preset-e2e-gce-windows-containerd: "true"
+    env:
+      - name: PREPULL_TIMEOUT
+        value: "30m"
+      - name: WINDOWS_ENABLE_DSR
+        value: "true"

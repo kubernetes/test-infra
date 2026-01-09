@@ -1,27 +1,27 @@
 periodics:
-- name: ci-usage-metrics-collector-test
-  cluster: eks-prow-build-cluster
-  interval: 8h
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: usage-metrics-collector
-    base_ref: main
-    path_alias: sigs.k8s.io/usage-metrics-collector
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - make
-        - test
-        resources:
-          requests:
-            cpu: 1
-            memory: "2Gi"
-          limits:
-            cpu: 1
-            memory: "2Gi"
-  annotations:
-    testgrid-dashboards: sig-instrumentation-usage-metrics-collector
-    testgrid-tab-name: periodic-test
+  - name: ci-usage-metrics-collector-test
+    cluster: eks-prow-build-cluster
+    interval: 8h
+    decorate: true
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: usage-metrics-collector
+        base_ref: main
+        path_alias: sigs.k8s.io/usage-metrics-collector
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+            - make
+            - test
+          resources:
+            requests:
+              cpu: 1
+              memory: "2Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+      testgrid-tab-name: periodic-test

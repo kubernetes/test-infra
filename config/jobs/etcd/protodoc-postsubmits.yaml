@@ -1,24 +1,25 @@
----
 postsubmits:
   etcd-io/protodoc:
-  - name: post-protodoc-test
-    cluster: eks-prow-build-cluster
-    branches:
-    - master
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-etcd-protodoc-postsubmits
-      testgrid-tab-name: post-protodoc-test
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args: ['make', 'test']
-        resources:
-          requests:
-            cpu: "4"
-            memory: "4Gi"
-          limits:
-            cpu: "4"
-            memory: "4Gi"
+    - name: post-protodoc-test
+      cluster: eks-prow-build-cluster
+      branches:
+        - master
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-etcd-protodoc-postsubmits
+        testgrid-tab-name: post-protodoc-test
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            args:
+              - 'make'
+              - 'test'
+            resources:
+              requests:
+                cpu: "4"
+                memory: "4Gi"
+              limits:
+                cpu: "4"
+                memory: "4Gi"

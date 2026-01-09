@@ -32,7 +32,6 @@ postsubmits:
       rerun_auth_config:
         github_team_ids:
           - 3925239 # https://github.com/orgs/kubernetes-sigs/teams/kubetest2-maintainers
-
 periodics:
   - interval: 72h
     name: ci-kubetest2-push-binaries

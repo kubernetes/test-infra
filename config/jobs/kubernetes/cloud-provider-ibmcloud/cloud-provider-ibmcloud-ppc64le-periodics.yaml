@@ -40,16 +40,15 @@ periodics:
             limits:
               cpu: 6
               memory: "28Gi"
-
   - name: ci-kubernetes-integration-master-ppc64le
     interval: 1h
     cluster: k8s-infra-ppc64le-prow-build
     decorate: true
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
     annotations:
       fork-per-release: "true"
       fork-per-release-cron: 0 0/2 * * *, 0 1/6 * * *, 0 2 * * *
@@ -60,25 +59,24 @@ periodics:
       description: "Ends up running: make test-integration"
     spec:
       containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-integration-dockerized.sh
-        env:
-        - name: SHORT
-          value: --short=false
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 20Gi
-          requests:
-            cpu: 6
-            memory: 20Gi
-
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/test-integration-dockerized.sh
+          env:
+            - name: SHORT
+              value: --short=false
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
+            requests:
+              cpu: 6
+              memory: 20Gi
   - name: ci-kubernetes-ppc64le-conformance-latest-kubetest2
     cron: "0 2-23/3 * * *" # every 3h starting at 02:00 UTC
     cluster: k8s-infra-ppc64le-prow-build
@@ -148,7 +146,6 @@ periodics:
 
               [ -z "${BOSKOS_HOST:-}" ] || release_account >> "$ARTIFACTS/boskos.log" 2>&1
               [ $rc != 0 ] && echo "ERROR: E2E Conformance Test suite exited with code:$rc"; exit $rc
-
   - name: ci-kubernetes-ppc64le-e2e-node-latest-kubetest2
     cron: "30 3-21/6 * * *" #  every 6h starting at 03:30 UTC
     cluster: k8s-infra-ppc64le-prow-build

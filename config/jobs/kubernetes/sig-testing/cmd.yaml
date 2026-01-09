@@ -1,186 +1,186 @@
 presubmits:
   kubernetes/kubernetes:
-  # this replaces the bootstrap / scenario based job going forward
-  - name: pull-kubernetes-cmd
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    annotations:
-      fork-per-release: "true"
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        env:
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "8"
-        - name: KUBE_TIMEOUT
-          value: "-timeout=30m"
-        args:
-        - ./hack/jenkins/test-cmd-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 20Gi
-          requests:
-            cpu: 7
-            memory: 20Gi
-  - name: pull-kubernetes-cmd-canary
-    cluster: eks-prow-build-cluster
-    always_run: false # Only for canary!
-    decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    annotations:
-      fork-per-release: "false" # Only for canary!
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-canaries # Only for canary!
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        env:
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "8"
-        - name: KUBE_TIMEOUT
-          value: "-timeout=30m"
-        args:
-        - ./hack/jenkins/test-cmd-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 7
-            memory: 20Gi
-          requests:
-            cpu: 7
-            memory: 20Gi
-  - name: pull-kubernetes-cmd-go-compatibility
-    cluster: k8s-infra-prow-build
-    always_run: true
-    decorate: true
-    skip_branches:
-    - .* # per-release job
-    annotations:
-      fork-per-release: "true"
-      fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
-      testgrid-create-test-group: 'true'
-      description: run with GO_VERSION set to the original go version used for this branch
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        env:
-        - name: GO_VERSION
-          value: ""
-        - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
-          value: auto
-        args:
-        - ./hack/jenkins/test-cmd-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 15Gi
-          requests:
-            cpu: 6
-            memory: 15Gi
-  - name: pull-kubernetes-cmd-go-canary
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_report: false
-    decorate: true
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-go-canary
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-cmd-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 15Gi
-          requests:
-            cpu: 6
-            memory: 15Gi
+    # this replaces the bootstrap / scenario based job going forward
+    - name: pull-kubernetes-cmd
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      skip_branches:
+        - release-\d+.\d+ # per-release job
+      annotations:
+        fork-per-release: "true"
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+      path_alias: k8s.io/kubernetes
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            env:
+              - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+                value: "8"
+              - name: KUBE_TIMEOUT
+                value: "-timeout=30m"
+            args:
+              - ./hack/jenkins/test-cmd-dockerized.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 20Gi
+              requests:
+                cpu: 7
+                memory: 20Gi
+    - name: pull-kubernetes-cmd-canary
+      cluster: eks-prow-build-cluster
+      always_run: false # Only for canary!
+      decorate: true
+      skip_branches:
+        - release-\d+.\d+ # per-release job
+      annotations:
+        fork-per-release: "false" # Only for canary!
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-testing-canaries # Only for canary!
+      path_alias: k8s.io/kubernetes
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            env:
+              - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+                value: "8"
+              - name: KUBE_TIMEOUT
+                value: "-timeout=30m"
+            args:
+              - ./hack/jenkins/test-cmd-dockerized.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 20Gi
+              requests:
+                cpu: 7
+                memory: 20Gi
+    - name: pull-kubernetes-cmd-go-compatibility
+      cluster: k8s-infra-prow-build
+      always_run: true
+      decorate: true
+      skip_branches:
+        - .* # per-release job
+      annotations:
+        fork-per-release: "true"
+        fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
+        testgrid-create-test-group: 'true'
+        description: run with GO_VERSION set to the original go version used for this branch
+      path_alias: k8s.io/kubernetes
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+            command:
+              - runner.sh
+            env:
+              - name: GO_VERSION
+                value: ""
+              - name: KUBE_HACK_TOOLS_GOTOOLCHAIN
+                value: auto
+            args:
+              - ./hack/jenkins/test-cmd-dockerized.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 6
+                memory: 15Gi
+              requests:
+                cpu: 6
+                memory: 15Gi
+    - name: pull-kubernetes-cmd-go-canary
+      cluster: k8s-infra-prow-build
+      always_run: false
+      skip_report: false
+      decorate: true
+      annotations:
+        testgrid-num-failures-to-alert: '10'
+        testgrid-alert-stale-results-hours: '24'
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
+      path_alias: k8s.io/kubernetes
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-go-canary
+            command:
+              - runner.sh
+            args:
+              - ./hack/jenkins/test-cmd-dockerized.sh
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 6
+                memory: 15Gi
+              requests:
+                cpu: 6
+                memory: 15Gi
 periodics:
-- interval: 1h
-  cluster: eks-prow-build-cluster
-  name: ci-kubernetes-cmd-master
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 2h 2h 6h 24h
-    testgrid-dashboards: sig-release-master-blocking
-    testgrid-tab-name: cmd-master
-    testgrid-alert-email: release-team@kubernetes.io
-    description: "Ends up running: make test-cmd"
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-      command:
-      - runner.sh
-      args:
-      - ./hack/jenkins/test-cmd-dockerized.sh
-      env:
-      - name: SHORT
-        value: --short=false
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 6
-          memory: 20Gi
-        requests:
-          cpu: 6
-          memory: 20Gi
+  - interval: 1h
+    cluster: eks-prow-build-cluster
+    name: ci-kubernetes-cmd-master
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    annotations:
+      fork-per-release: "true"
+      fork-per-release-periodic-interval: 2h 2h 6h 24h
+      testgrid-dashboards: sig-release-master-blocking
+      testgrid-tab-name: cmd-master
+      testgrid-alert-email: release-team@kubernetes.io
+      description: "Ends up running: make test-cmd"
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/test-cmd-dockerized.sh
+          env:
+            - name: SHORT
+              value: --short=false
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
+            requests:
+              cpu: 6
+              memory: 20Gi

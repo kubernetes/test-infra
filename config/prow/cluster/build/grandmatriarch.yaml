@@ -13,16 +13,15 @@ metadata:
   name: grandmatriarch
   namespace: test-pods
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - get
-  - update
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - get
+      - update
 ---
-
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -33,8 +32,8 @@ roleRef:
   kind: Role
   name: grandmatriarch
 subjects:
-- kind: ServiceAccount
-  name: grandmatriarch
+  - kind: ServiceAccount
+    name: grandmatriarch
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,7 +54,7 @@ spec:
     spec:
       serviceAccountName: grandmatriarch
       containers:
-      - name: bakery
-        image: us-docker.pkg.dev/k8s-infra-prow/images/grandmatriarch:v20240802-66b115076
-        args:
-        - http-cookiefile
+        - name: bakery
+          image: us-docker.pkg.dev/k8s-infra-prow/images/grandmatriarch:v20240802-66b115076
+          args:
+            - http-cookiefile

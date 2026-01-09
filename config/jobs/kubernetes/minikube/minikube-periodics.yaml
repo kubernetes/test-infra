@@ -1,34 +1,34 @@
 periodics:
-- name: ci-minikube-integration
-  cluster: k8s-infra-prow-build
-  interval: 4h
-  decorate: true
-  labels:
-    preset-dind-enabled: "true"
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  annotations:
-    testgrid-dashboards: minikube-periodics
-  extra_refs:
-  - org: kubernetes
-    repo: minikube
-    base_ref: master
-    path_alias: k8s.io/minikube
-  spec:
-    containers:
-    - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-      command:
-      - runner.sh
-      args:
-      - make
-      - integration-prow-docker-docker-linux-x86
-      resources:
-        limits:
-          cpu: 7
-          memory: 20Gi
-        requests:
-          cpu: 7
-          memory: 20Gi
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+  - name: ci-minikube-integration
+    cluster: k8s-infra-prow-build
+    interval: 4h
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: minikube-periodics
+    extra_refs:
+      - org: kubernetes
+        repo: minikube
+        base_ref: master
+        path_alias: k8s.io/minikube
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - integration-prow-docker-docker-linux-x86
+          resources:
+            limits:
+              cpu: 7
+              memory: 20Gi
+            requests:
+              cpu: 7
+              memory: 20Gi
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true

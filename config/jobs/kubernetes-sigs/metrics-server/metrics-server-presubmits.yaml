@@ -1,182 +1,182 @@
 presubmits:
   kubernetes-sigs/metrics-server:
-  - name: pull-metrics-server-verify
-    cluster: eks-prow-build-cluster
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.3
-    path_alias: sigs.k8s.io/metrics-server
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - make
-        - verify
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-dashboards: sig-instrumentation-metrics-server
-      testgrid-tab-name: pr-verify
-  - name: pull-metrics-server-test-unit
-    cluster: eks-prow-build-cluster
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.3
-    path_alias: sigs.k8s.io/metrics-server
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - make
-        - test-unit
-        resources:
-          limits:
-            cpu: "6000m"
-            memory: "6Gi"
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-metrics-server
-      testgrid-tab-name: pr-test-unit
-  - name: pull-metrics-server-test-version
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.3
-    path_alias: sigs.k8s.io/metrics-server
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - make
-        - test-version
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: "6000m"
-            memory: "6Gi"
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-metrics-server
-      testgrid-tab-name: pr-test-version
-  - name: pull-metrics-server-test-e2e
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.3
-    path_alias: sigs.k8s.io/metrics-server
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-          - runner.sh
-          - make
-          - test-e2e-all
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: "6000m"
-            memory: "6Gi"
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-metrics-server
-      testgrid-tab-name: pr-test-e2e
-  - name: pull-metrics-server-test-e2e-ha
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.3
-      - release-0.4
-      - release-0.5
-    path_alias: sigs.k8s.io/metrics-server
-    always_run: true
-    optional: true # remove when we deflake the ha tests
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-          - runner.sh
-          - make
-          - test-e2e-ha-all
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: "6000m"
-            memory: "6Gi"
-          requests:
-            cpu: "6000m"
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-metrics-server
-      testgrid-tab-name: pr-test-e2e-ha
-  - name: pull-metrics-server-test-e2e-helm
-    cluster: eks-prow-build-cluster
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    skip_branches:
-      - gh-pages
-      - release-0.3
-      - release-0.4
-      - release-0.5
-    path_alias: sigs.k8s.io/metrics-server
-    always_run: true
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-            - make
-            - test-e2e-helm-all
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            limits:
-              cpu: "6000m"
-              memory: "6Gi"
-            requests:
-              cpu: "6000m"
-              memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-instrumentation-metrics-server
-      testgrid-tab-name: pr-test-e2e-helm
+    - name: pull-metrics-server-verify
+      cluster: eks-prow-build-cluster
+      decorate: true
+      skip_branches:
+        - gh-pages
+        - release-0.3
+      path_alias: sigs.k8s.io/metrics-server
+      always_run: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - verify
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-instrumentation-metrics-server
+        testgrid-tab-name: pr-verify
+    - name: pull-metrics-server-test-unit
+      cluster: eks-prow-build-cluster
+      decorate: true
+      skip_branches:
+        - gh-pages
+        - release-0.3
+      path_alias: sigs.k8s.io/metrics-server
+      always_run: true
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - test-unit
+            resources:
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-metrics-server
+        testgrid-tab-name: pr-test-unit
+    - name: pull-metrics-server-test-version
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-dind-enabled: "true"
+      decorate: true
+      skip_branches:
+        - gh-pages
+        - release-0.3
+      path_alias: sigs.k8s.io/metrics-server
+      always_run: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - test-version
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-metrics-server
+        testgrid-tab-name: pr-test-version
+    - name: pull-metrics-server-test-e2e
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      decorate: true
+      skip_branches:
+        - gh-pages
+        - release-0.3
+      path_alias: sigs.k8s.io/metrics-server
+      always_run: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - test-e2e-all
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-metrics-server
+        testgrid-tab-name: pr-test-e2e
+    - name: pull-metrics-server-test-e2e-ha
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      decorate: true
+      skip_branches:
+        - gh-pages
+        - release-0.3
+        - release-0.4
+        - release-0.5
+      path_alias: sigs.k8s.io/metrics-server
+      always_run: true
+      optional: true # remove when we deflake the ha tests
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - test-e2e-ha-all
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-metrics-server
+        testgrid-tab-name: pr-test-e2e-ha
+    - name: pull-metrics-server-test-e2e-helm
+      cluster: eks-prow-build-cluster
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      decorate: true
+      skip_branches:
+        - gh-pages
+        - release-0.3
+        - release-0.4
+        - release-0.5
+      path_alias: sigs.k8s.io/metrics-server
+      always_run: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - make
+              - test-e2e-helm-all
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: "6000m"
+                memory: "6Gi"
+              requests:
+                cpu: "6000m"
+                memory: "6Gi"
+      annotations:
+        testgrid-dashboards: sig-instrumentation-metrics-server
+        testgrid-tab-name: pr-test-e2e-helm

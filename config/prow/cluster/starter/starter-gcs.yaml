@@ -1,7 +1,6 @@
 # This file contains Kubernetes YAML files for the most important prow
 # components. Don't edit resources in this file. Instead, pull them out into
 # their own files.
----
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -162,64 +161,64 @@ spec:
       serviceAccountName: "hook"
       terminationGracePeriodSeconds: 180
       containers:
-      - name: hook
-        image: us-docker.pkg.dev/k8s-infra-prow/images/hook:v20240802-66b115076
-        imagePullPolicy: Always
-        args:
-        - --dry-run=false
-        - --config-path=/etc/config/config.yaml
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --github-app-id=$(GITHUB_APP_ID)
-        - --github-app-private-key-path=/etc/github/cert
-        env:
-        - name: GITHUB_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: github-token
-              key: appid
-        ports:
-          - name: http
-            containerPort: 8888
-        volumeMounts:
-        - name: hmac
-          mountPath: /etc/webhook
-          readOnly: true
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-          initialDelaySeconds: 3
-          periodSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /healthz/ready
-            port: 8081
-          initialDelaySeconds: 10
-          periodSeconds: 3
-          timeoutSeconds: 600
+        - name: hook
+          image: us-docker.pkg.dev/k8s-infra-prow/images/hook:v20240802-66b115076
+          imagePullPolicy: Always
+          args:
+            - --dry-run=false
+            - --config-path=/etc/config/config.yaml
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --github-app-id=$(GITHUB_APP_ID)
+            - --github-app-private-key-path=/etc/github/cert
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: appid
+          ports:
+            - name: http
+              containerPort: 8888
+          volumeMounts:
+            - name: hmac
+              mountPath: /etc/webhook
+              readOnly: true
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: plugins
+              mountPath: /etc/plugins
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            timeoutSeconds: 600
       volumes:
-      - name: hmac
-        secret:
-          secretName: hmac-token
-      - name: github-token
-        secret:
-          secretName: github-token
-      - name: config
-        configMap:
-          name: config
-      - name: plugins
-        configMap:
-          name: plugins
+        - name: hmac
+          secret:
+            secretName: hmac-token
+        - name: github-token
+          secret:
+            secretName: github-token
+        - name: config
+          configMap:
+            name: config
+        - name: plugins
+          configMap:
+            name: plugins
 ---
 apiVersion: v1
 kind: Service
@@ -230,7 +229,7 @@ spec:
   selector:
     app: hook
   ports:
-  - port: 8888
+    - port: 8888
   type: NodePort
 ---
 apiVersion: apps/v1
@@ -252,19 +251,19 @@ spec:
     spec:
       serviceAccountName: "sinker"
       containers:
-      - name: sinker
-        image: us-docker.pkg.dev/k8s-infra-prow/images/sinker:v20240802-66b115076
-        args:
-        - --config-path=/etc/config/config.yaml
-        - --dry-run=false
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
+        - name: sinker
+          image: us-docker.pkg.dev/k8s-infra-prow/images/sinker:v20240802-66b115076
+          args:
+            - --config-path=/etc/config/config.yaml
+            - --dry-run=false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
       volumes:
-      - name: config
-        configMap:
-          name: config
+        - name: config
+          configMap:
+            name: config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -291,67 +290,67 @@ spec:
       serviceAccountName: "deck"
       terminationGracePeriodSeconds: 30
       containers:
-      - name: deck
-        image: us-docker.pkg.dev/k8s-infra-prow/images/deck:v20240802-66b115076
-        args:
-        - --config-path=/etc/config/config.yaml
-        - --plugin-config=/etc/plugins/plugins.yaml
-        - --tide-url=http://tide/
-        - --hook-url=http://hook:8888/plugin-help
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --github-graphql-endpoint=http://ghproxy/graphql
-        - --spyglass=true
-        - --github-app-id=$(GITHUB_APP_ID)
-        - --github-app-private-key-path=/etc/github/cert
-        env:
-        - name: GITHUB_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: github-token
-              key: appid
-        ports:
-          - name: http
-            containerPort: 8080
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
-          readOnly: true
-        - name: gcs-credentials
-          mountPath: /etc/gcs-credentials
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-          initialDelaySeconds: 3
-          periodSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /healthz/ready
-            port: 8081
-          initialDelaySeconds: 10
-          periodSeconds: 3
-          timeoutSeconds: 600
+        - name: deck
+          image: us-docker.pkg.dev/k8s-infra-prow/images/deck:v20240802-66b115076
+          args:
+            - --config-path=/etc/config/config.yaml
+            - --plugin-config=/etc/plugins/plugins.yaml
+            - --tide-url=http://tide/
+            - --hook-url=http://hook:8888/plugin-help
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --github-graphql-endpoint=http://ghproxy/graphql
+            - --spyglass=true
+            - --github-app-id=$(GITHUB_APP_ID)
+            - --github-app-private-key-path=/etc/github/cert
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: appid
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: plugins
+              mountPath: /etc/plugins
+              readOnly: true
+            - name: gcs-credentials
+              mountPath: /etc/gcs-credentials
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            timeoutSeconds: 600
       volumes:
-      - name: config
-        configMap:
-          name: config
-      - name: github-token
-        secret:
-          secretName: github-token
-      - name: plugins
-        configMap:
-          name: plugins
-      - name: gcs-credentials
-        secret:
-          secretName: gcs-credentials
+        - name: config
+          configMap:
+            name: config
+        - name: github-token
+          secret:
+            secretName: github-token
+        - name: plugins
+          configMap:
+            name: plugins
+        - name: gcs-credentials
+          secret:
+            secretName: gcs-credentials
 ---
 apiVersion: v1
 kind: Service
@@ -362,8 +361,8 @@ spec:
   selector:
     app: deck
   ports:
-  - port: 80
-    targetPort: 8080
+    - port: 80
+      targetPort: 8080
   type: NodePort
 ---
 apiVersion: apps/v1
@@ -388,19 +387,19 @@ spec:
       serviceAccountName: "horologium"
       terminationGracePeriodSeconds: 30
       containers:
-      - name: horologium
-        image: us-docker.pkg.dev/k8s-infra-prow/images/horologium:v20240802-66b115076
-        args:
-        - --dry-run=false
-        - --config-path=/etc/config/config.yaml
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
+        - name: horologium
+          image: us-docker.pkg.dev/k8s-infra-prow/images/horologium:v20240802-66b115076
+          args:
+            - --dry-run=false
+            - --config-path=/etc/config/config.yaml
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
       volumes:
-      - name: config
-        configMap:
-          name: config
+        - name: config
+          configMap:
+            name: config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -423,48 +422,48 @@ spec:
     spec:
       serviceAccountName: "tide"
       containers:
-      - name: tide
-        image: us-docker.pkg.dev/k8s-infra-prow/images/tide:v20240802-66b115076
-        args:
-        - --dry-run=false
-        - --config-path=/etc/config/config.yaml
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --github-graphql-endpoint=http://ghproxy/graphql
-        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
-        - --status-path=gs://your-bucket-name/tide-status
-        - --history-uri=gs://your-bucket-name/tide-history.json
-        - --github-app-id=$(GITHUB_APP_ID)
-        - --github-app-private-key-path=/etc/github/cert
-        env:
-        - name: GITHUB_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: github-token
-              key: appid
-        ports:
-          - name: http
-            containerPort: 8888
-        volumeMounts:
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: gcs-credentials
-          mountPath: /etc/gcs-credentials
-          readOnly: true
+        - name: tide
+          image: us-docker.pkg.dev/k8s-infra-prow/images/tide:v20240802-66b115076
+          args:
+            - --dry-run=false
+            - --config-path=/etc/config/config.yaml
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --github-graphql-endpoint=http://ghproxy/graphql
+            - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
+            - --status-path=gs://your-bucket-name/tide-status
+            - --history-uri=gs://your-bucket-name/tide-history.json
+            - --github-app-id=$(GITHUB_APP_ID)
+            - --github-app-private-key-path=/etc/github/cert
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: appid
+          ports:
+            - name: http
+              containerPort: 8888
+          volumeMounts:
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: gcs-credentials
+              mountPath: /etc/gcs-credentials
+              readOnly: true
       volumes:
-      - name: github-token
-        secret:
-          secretName: github-token
-      - name: config
-        configMap:
-          name: config
-      - name: gcs-credentials
-        secret:
-          secretName: gcs-credentials
+        - name: github-token
+          secret:
+            secretName: github-token
+        - name: config
+          configMap:
+            name: config
+        - name: gcs-credentials
+          secret:
+            secretName: gcs-credentials
 ---
 apiVersion: v1
 kind: Service
@@ -475,8 +474,8 @@ spec:
   selector:
     app: tide
   ports:
-  - port: 80
-    targetPort: 8888
+    - port: 80
+      targetPort: 8888
   type: NodePort
 ---
 apiVersion: networking.k8s.io/v1
@@ -496,23 +495,23 @@ spec:
       port:
         number: 80
   rules:
-  - host: $PROW_HOST
-    http:
-      paths:
-      - path: /
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: deck
-            port:
-              number: 80
-      - path: /hook
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: hook
-            port:
-              number: 8888
+    - host: $PROW_HOST
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: deck
+                port:
+                  number: 80
+          - path: /hook
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: hook
+                port:
+                  number: 8888
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -534,51 +533,51 @@ spec:
       serviceAccountName: statusreconciler
       terminationGracePeriodSeconds: 180
       containers:
-      - name: statusreconciler
-        image: us-docker.pkg.dev/k8s-infra-prow/images/status-reconciler:v20240802-66b115076
-        args:
-        - --dry-run=false
-        - --continue-on-error=true
-        - --plugin-config=/etc/plugins/plugins.yaml
-        - --config-path=/etc/config/config.yaml
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
-        - --status-path=gs://your-bucket-name/status-reconciler-status
-        - --github-app-id=$(GITHUB_APP_ID)
-        - --github-app-private-key-path=/etc/github/cert
-        env:
-        - name: GITHUB_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: github-token
-              key: appid
-        volumeMounts:
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
-          readOnly: true
-        - name: gcs-credentials
-          mountPath: /etc/gcs-credentials
-          readOnly: true
+        - name: statusreconciler
+          image: us-docker.pkg.dev/k8s-infra-prow/images/status-reconciler:v20240802-66b115076
+          args:
+            - --dry-run=false
+            - --continue-on-error=true
+            - --plugin-config=/etc/plugins/plugins.yaml
+            - --config-path=/etc/config/config.yaml
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
+            - --status-path=gs://your-bucket-name/status-reconciler-status
+            - --github-app-id=$(GITHUB_APP_ID)
+            - --github-app-private-key-path=/etc/github/cert
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: appid
+          volumeMounts:
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: plugins
+              mountPath: /etc/plugins
+              readOnly: true
+            - name: gcs-credentials
+              mountPath: /etc/gcs-credentials
+              readOnly: true
       volumes:
-      - name: github-token
-        secret:
-          secretName: github-token
-      - name: config
-        configMap:
-          name: config
-      - name: plugins
-        configMap:
-          name: plugins
-      - name: gcs-credentials
-        secret:
-          secretName: gcs-credentials
+        - name: github-token
+          secret:
+            secretName: github-token
+        - name: config
+          configMap:
+            name: config
+        - name: plugins
+          configMap:
+            name: plugins
+        - name: gcs-credentials
+          secret:
+            secretName: gcs-credentials
 ---
 apiVersion: v1
 kind: Namespace
@@ -601,8 +600,8 @@ roleRef:
   kind: Role
   name: "deck"
 subjects:
-- kind: ServiceAccount
-  name: "deck"
+  - kind: ServiceAccount
+    name: "deck"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -614,9 +613,9 @@ roleRef:
   kind: Role
   name: "deck"
 subjects:
-- kind: ServiceAccount
-  name: "deck"
-  namespace: prow
+  - kind: ServiceAccount
+    name: "deck"
+    namespace: prow
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -681,8 +680,8 @@ roleRef:
   kind: Role
   name: "horologium"
 subjects:
-- kind: ServiceAccount
-  name: "horologium"
+  - kind: ServiceAccount
+    name: "horologium"
 ---
 kind: ServiceAccount
 apiVersion: v1
@@ -697,45 +696,45 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-    - "prow.k8s.io"
+      - "prow.k8s.io"
     resources:
-    - prowjobs
+      - prowjobs
     verbs:
-    - delete
-    - list
-    - watch
-    - get
+      - delete
+      - list
+      - watch
+      - get
   - apiGroups:
-    - coordination.k8s.io
+      - coordination.k8s.io
     resources:
-    - leases
+      - leases
     resourceNames:
-    - prow-sinker-leaderlock
+      - prow-sinker-leaderlock
     verbs:
-    - get
-    - update
+      - get
+      - update
   - apiGroups:
-    - coordination.k8s.io
+      - coordination.k8s.io
     resources:
-    - leases
+      - leases
     verbs:
-    - create
+      - create
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
+      - configmaps
     resourceNames:
-    - prow-sinker-leaderlock
+      - prow-sinker-leaderlock
     verbs:
-    - get
-    - update
+      - get
+      - update
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
-    - events
+      - configmaps
+      - events
     verbs:
-    - create
+      - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -764,8 +763,8 @@ roleRef:
   kind: Role
   name: "sinker"
 subjects:
-- kind: ServiceAccount
-  name: "sinker"
+  - kind: ServiceAccount
+    name: "sinker"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -777,9 +776,9 @@ roleRef:
   kind: Role
   name: "sinker"
 subjects:
-- kind: ServiceAccount
-  name: "sinker"
-  namespace: prow
+  - kind: ServiceAccount
+    name: "sinker"
+    namespace: prow
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -821,8 +820,8 @@ roleRef:
   kind: Role
   name: "hook"
 subjects:
-- kind: ServiceAccount
-  name: "hook"
+  - kind: ServiceAccount
+    name: "hook"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -856,8 +855,8 @@ roleRef:
   kind: Role
   name: "tide"
 subjects:
-- kind: ServiceAccount
-  name: "tide"
+  - kind: ServiceAccount
+    name: "tide"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -888,8 +887,8 @@ roleRef:
   kind: Role
   name: "statusreconciler"
 subjects:
-- kind: ServiceAccount
-  name: "statusreconciler"
+  - kind: ServiceAccount
+    name: "statusreconciler"
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -926,22 +925,22 @@ spec:
         app: ghproxy
     spec:
       containers:
-      - name: ghproxy
-        image: us-docker.pkg.dev/k8s-infra-prow/images/ghproxy:v20240802-66b115076
-        args:
-        - --cache-dir=/cache
-        - --cache-sizeGB=99
-        - --push-gateway=pushgateway
-        - --serve-metrics=true
-        ports:
-        - containerPort: 8888
-        volumeMounts:
-        - name: cache
-          mountPath: /cache
+        - name: ghproxy
+          image: us-docker.pkg.dev/k8s-infra-prow/images/ghproxy:v20240802-66b115076
+          args:
+            - --cache-dir=/cache
+            - --cache-sizeGB=99
+            - --push-gateway=pushgateway
+            - --serve-metrics=true
+          ports:
+            - containerPort: 8888
+          volumeMounts:
+            - name: cache
+              mountPath: /cache
       volumes:
-      - name: cache
-        persistentVolumeClaim:
-          claimName: ghproxy
+        - name: cache
+          persistentVolumeClaim:
+            claimName: ghproxy
 ---
 apiVersion: v1
 kind: Service
@@ -952,12 +951,12 @@ metadata:
   name: ghproxy
 spec:
   ports:
-  - name: main
-    port: 80
-    protocol: TCP
-    targetPort: 8888
-  - name: metrics
-    port: 9090
+    - name: main
+      port: 80
+      protocol: TCP
+      targetPort: 8888
+    - name: metrics
+      port: 9090
   selector:
     app: ghproxy
   type: ClusterIP
@@ -981,36 +980,36 @@ spec:
     spec:
       serviceAccountName: prow-controller-manager
       containers:
-      - name: prow-controller-manager
-        args:
-        - --dry-run=false
-        - --config-path=/etc/config/config.yaml
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --enable-controller=plank
-        - --github-app-id=$(GITHUB_APP_ID)
-        - --github-app-private-key-path=/etc/github/cert
-        env:
-        - name: GITHUB_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: github-token
-              key: appid
-        image: us-docker.pkg.dev/k8s-infra-prow/images/prow-controller-manager:v20240802-66b115076
-        volumeMounts:
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
+        - name: prow-controller-manager
+          args:
+            - --dry-run=false
+            - --config-path=/etc/config/config.yaml
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --enable-controller=plank
+            - --github-app-id=$(GITHUB_APP_ID)
+            - --github-app-private-key-path=/etc/github/cert
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: appid
+          image: us-docker.pkg.dev/k8s-infra-prow/images/prow-controller-manager:v20240802-66b115076
+          volumeMounts:
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
       volumes:
-      - name: github-token
-        secret:
-          secretName: github-token
-      - name: config
-        configMap:
-          name: config
+        - name: github-token
+          secret:
+            secretName: github-token
+        - name: config
+          configMap:
+            name: config
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -1025,46 +1024,46 @@ metadata:
   name: prow-controller-manager
 rules:
   - apiGroups:
-    - "prow.k8s.io"
+      - "prow.k8s.io"
     resources:
-    - prowjobs
+      - prowjobs
     verbs:
-    - get
-    - list
-    - watch
-    - update
-    - patch
+      - get
+      - list
+      - watch
+      - update
+      - patch
   - apiGroups:
-    - coordination.k8s.io
+      - coordination.k8s.io
     resources:
-    - leases
+      - leases
     resourceNames:
-    - prow-controller-manager-leader-lock
+      - prow-controller-manager-leader-lock
     verbs:
-    - get
-    - update
+      - get
+      - update
   - apiGroups:
-    - coordination.k8s.io
+      - coordination.k8s.io
     resources:
-    - leases
+      - leases
     verbs:
-    - create
+      - create
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
+      - configmaps
     resourceNames:
-    - prow-controller-manager-leader-lock
+      - prow-controller-manager-leader-lock
     verbs:
-    - get
-    - update
+      - get
+      - update
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
-    - events
+      - configmaps
+      - events
     verbs:
-    - create
+      - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1094,8 +1093,8 @@ roleRef:
   kind: Role
   name: prow-controller-manager
 subjects:
-- kind: ServiceAccount
-  name: prow-controller-manager
+  - kind: ServiceAccount
+    name: prow-controller-manager
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1107,9 +1106,9 @@ roleRef:
   kind: Role
   name: prow-controller-manager
 subjects:
-- kind: ServiceAccount
-  name: prow-controller-manager
-  namespace: prow
+  - kind: ServiceAccount
+    name: prow-controller-manager
+    namespace: prow
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1131,44 +1130,44 @@ spec:
       serviceAccountName: crier
       terminationGracePeriodSeconds: 30
       containers:
-      - name: crier
-        image: us-docker.pkg.dev/k8s-infra-prow/images/crier:v20240802-66b115076
-        args:
-        - --blob-storage-workers=10
-        - --config-path=/etc/config/config.yaml
-        - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
-        - --github-endpoint=http://ghproxy
-        - --github-endpoint=https://api.github.com
-        - --github-workers=10
-        - --kubernetes-blob-storage-workers=10
-        - --github-app-id=$(GITHUB_APP_ID)
-        - --github-app-private-key-path=/etc/github/cert
-        env:
-        - name: GITHUB_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: github-token
-              key: appid
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: github-token
-          mountPath: /etc/github
-          readOnly: true
-        - name: gcs-credentials
-          mountPath: /etc/gcs-credentials
-          readOnly: true
+        - name: crier
+          image: us-docker.pkg.dev/k8s-infra-prow/images/crier:v20240802-66b115076
+          args:
+            - --blob-storage-workers=10
+            - --config-path=/etc/config/config.yaml
+            - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
+            - --github-workers=10
+            - --kubernetes-blob-storage-workers=10
+            - --github-app-id=$(GITHUB_APP_ID)
+            - --github-app-private-key-path=/etc/github/cert
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: appid
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config
+              readOnly: true
+            - name: github-token
+              mountPath: /etc/github
+              readOnly: true
+            - name: gcs-credentials
+              mountPath: /etc/gcs-credentials
+              readOnly: true
       volumes:
-      - name: config
-        configMap:
-          name: config
-      - name: github-token
-        secret:
-          secretName: github-token
-      - name: gcs-credentials
-        secret:
-          secretName: gcs-credentials
+        - name: config
+          configMap:
+            name: config
+        - name: github-token
+          secret:
+            secretName: github-token
+        - name: gcs-credentials
+          secret:
+            secretName: gcs-credentials
 ---
 kind: ServiceAccount
 apiVersion: v1
@@ -1182,15 +1181,15 @@ metadata:
   namespace: prow
   name: crier
 rules:
-- apiGroups:
-    - "prow.k8s.io"
-  resources:
-    - "prowjobs"
-  verbs:
-    - "get"
-    - "watch"
-    - "list"
-    - "patch"
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - "prowjobs"
+    verbs:
+      - "get"
+      - "watch"
+      - "list"
+      - "patch"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1198,20 +1197,20 @@ metadata:
   namespace: test-pods
   name: crier
 rules:
-- apiGroups:
-    - ""
-  resources:
-    - "pods"
-    - "events"
-  verbs:
-    - "get"
-    - "list"
-- apiGroups:
-    - ""
-  resources:
-    - "pods"
-  verbs:
-    - "patch"
+  - apiGroups:
+      - ""
+    resources:
+      - "pods"
+      - "events"
+    verbs:
+      - "get"
+      - "list"
+  - apiGroups:
+      - ""
+    resources:
+      - "pods"
+    verbs:
+      - "patch"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1223,9 +1222,9 @@ roleRef:
   kind: Role
   name: crier
 subjects:
-- kind: ServiceAccount
-  name: crier
-  namespace: prow
+  - kind: ServiceAccount
+    name: crier
+    namespace: prow
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1237,6 +1236,6 @@ roleRef:
   kind: Role
   name: crier
 subjects:
-- kind: ServiceAccount
-  name: crier
-  namespace: prow
+  - kind: ServiceAccount
+    name: crier
+    namespace: prow

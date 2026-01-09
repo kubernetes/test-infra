@@ -23,7 +23,6 @@ presubmits:
       annotations:
         testgrid-dashboards: sig-release-releng-presubmits
         testgrid-alert-email: release-managers+alerts@kubernetes.io
-
     - name: pull-downloadkubernetes-verify
       always_run: true
       optional: false

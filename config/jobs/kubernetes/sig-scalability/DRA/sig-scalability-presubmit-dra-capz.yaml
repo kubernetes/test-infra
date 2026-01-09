@@ -1,355 +1,327 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
-  - name: pull-cluster-api-provider-azure-load-test-dra-custom-builds
-    cluster: eks-prow-build-cluster
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
-    branches:
-      - ^main$
-      - ^release-1.*
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: nojnhuh
-      repo: perf-tests
-      base_ref: api-avail-err-log
-      path_alias: k8s.io/perf-tests
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - ./scripts/ci-entrypoint.sh
-        args:
-        - bash
-        - -c
-        - >-
-          sleep 300 &&
-          cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-          ./run-e2e.sh cluster-loader2
-          --nodes=100 \
-          --provider=aks \
-          --testconfig=testing/load/config.yaml \
-          --testconfig=testing/huge-service/config.yaml \
-          --testconfig=testing/access-tokens/config.yaml \
-          --testoverrides=./testing/experiments/enable_restart_count_check.yaml \
-          --testoverrides=./testing/experiments/use_simple_latency_query.yaml \
-          --testoverrides=./testing/overrides/load_throughput.yaml \
-          --report-dir=${ARTIFACTS}
-          --v=2
-        securityContext:
-          privileged: true
-        env:
-        # CAPZ variables
-        - name: TEST_K8S
-          value: "true"
-        - name: WINDOWS
-          value: "false"
-        - name: CLUSTER_TEMPLATE
-          value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
-        - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: AZURE_NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
-        - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
-          value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
-        # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
-        - name: DEPLOY_AZURE_CSI_DRIVER
-          value: "false"
-        - name: "CONTROL_PLANE_MACHINE_COUNT"
-          value: "5"
-        - name: WINDOWS_WORKER_MACHINE_COUNT
-          value: "0" # Don't create windows workers
-        - name: WORKER_MACHINE_COUNT
-          value: "100"
-        # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "0"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.99"
-        # CAPZ clusters don't expose each individual control plane node.
-        - name: CL2_API_AVAILABILITY_MEASUREMENT_IPS_CONFIGURED
-          value: "true"
-        - name: CL2_API_AVAILABILITY_MEASUREMENT_USE_INTERNAL_IPS
-          value: "false"
-        - name: CL2_NODE_AVAILABLE_MILLICORES
-          value: "2000"
-        - name: CL2_SYSTEM_USED_MILLICORES
-          value: "1200"  # this allows each workload pod to run with 100m
-        - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "true"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "9Gi"
-          limits:
-            cpu: "6"
-            memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-scalability-100-node-dra-k8s-main
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-      description: Conducts load testing with custom builds to assess scalability on the main branch when DRA is enabled.
-  - name: pull-cluster-api-provider-azure-load-test-dra-with-workload-custom-builds
-    cluster: eks-prow-build-cluster
-    decorate: true
-    decoration_config:
-      timeout: 8h
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
-    branches:
-      - ^main$
-      - ^release-1.*
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - ./scripts/ci-entrypoint.sh
-        args:
-          - bash
-          - -c
-          - >-
-            sleep 300 &&
-            cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-            ./run-e2e.sh cluster-loader2
-            --nodes=100 \
-            --provider=aks \
-            --enable-prometheus-server=true \
-            --testconfig=testing/dra/config.yaml \
-            --report-dir=${ARTIFACTS} \
-            --v=2
-        securityContext:
-          privileged: true
-        env:
-        # CAPZ variables
-        - name: TEST_K8S
-          value: "true"
-        - name: WINDOWS
-          value: "false"
-        - name: CLUSTER_TEMPLATE
-          value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
-        - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: AZURE_NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
-        - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
-          value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
-        # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
-        - name: DEPLOY_AZURE_CSI_DRIVER
-          value: "false"
-        - name: "CONTROL_PLANE_MACHINE_COUNT"
-          value: "5"
-        - name: WINDOWS_WORKER_MACHINE_COUNT
-          value: "0" # Don't create windows workers
-        - name: WORKER_MACHINE_COUNT
-          value: "100"
-        # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "0"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        # For DRA cl2 tests
-        - name: CL2_MODE
-          value: "Indexed"
-        - name: CL2_NODES_PER_NAMESPACE
-          value: "10"
-        - name: CL2_JOB_RUNNING_TIME
-          value: "3s"
-        - name: CL2_LONG_JOB_RUNNING_TIME
-          value: "45m"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "default"
-        - name: PROMETHEUS_APISERVER_SCRAPE_PORT
-          value: "6443"
-        - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "true"
-        - name: NODE_PRELOAD_IMAGES
-          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "9Gi"
-          limits:
-            cpu: "6"
-            memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-scalability-100-node-dra-with-workload-k8s-main
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-      description: Conducts load testing with custom builds to assess DRA scalability on the main branch.
-  - name: pull-cluster-api-provider-azure-load-test-1k-dra-with-workload-custom-builds
-    cluster: eks-prow-build-cluster
-    decorate: true
-    decoration_config:
-      timeout: 8h
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    always_run: false
-    optional: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-community: "true"
-    branches:
-      - ^main$
-      - ^release-1.*
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    spec:
-      serviceAccountName: azure
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - ./scripts/ci-entrypoint.sh
-        args:
-          - bash
-          - -c
-          - >-
-            sleep 300 &&
-            cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-            ./run-e2e.sh cluster-loader2
-            --nodes=1000 \
-            --provider=aks \
-            --enable-prometheus-server=true \
-            --testconfig=testing/dra/config.yaml \
-            --report-dir=${ARTIFACTS} \
-            --v=2
-        securityContext:
-          privileged: true
-        env:
-        # CAPZ variables
-        - name: TEST_K8S
-          value: "true"
-        - name: WINDOWS
-          value: "false"
-        - name: CLUSTER_TEMPLATE
-          value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
-        - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D32s_v3"
-        - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D32s_v3"
-        - name: AZURE_NODE_MACHINE_TYPE
-          value: "Standard_D2s_v3"
-        - name: NODE_MACHINE_TYPE
-          value: "Standard_D2s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
-        - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
-          value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
-        # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
-        - name: DEPLOY_AZURE_CSI_DRIVER
-          value: "false"
-        - name: "CONTROL_PLANE_MACHINE_COUNT"
-          value: "5"
-        - name: WINDOWS_WORKER_MACHINE_COUNT
-          value: "0" # Don't create windows workers
-        - name: WORKER_MACHINE_COUNT
-          value: "1000"
-        # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "0"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        # For DRA cl2 tests
-        - name: CL2_MODE
-          value: "Indexed"
-        - name: CL2_NODES_PER_NAMESPACE
-          value: "100"
-        - name: CL2_JOB_RUNNING_TIME
-          value: "3s"
-        - name: CL2_LONG_JOB_RUNNING_TIME
-          value: "150m"
-        - name: CL2_PROMETHEUS_CPU_SCALE_FACTOR
-          value: "20"
-        - name: CL2_PROMETHEUS_MEMORY_SCALE_FACTOR
-          value: "10"
-        - name: PROMETHEUS_PVC_STORAGE_CLASS
-          value: "default"
-        - name: PROMETHEUS_APISERVER_SCRAPE_PORT
-          value: "6443"
-        - name: PROMETHEUS_SCRAPE_KUBELETS
-          value: "false" # Too heavy for a test of this size
-        - name: NODE_PRELOAD_IMAGES
-          value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
-        resources:
-          requests:
-            cpu: "6"
-            memory: "9Gi"
-          limits:
-            cpu: "6"
-            memory: "9Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-scalability-1000-node-dra-with-workload-k8s-main
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-      description: Conducts load testing with custom builds to assess DRA scalability on the main branch.
+    - name: pull-cluster-api-provider-azure-load-test-dra-custom-builds
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      always_run: false
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-community: "true"
+      branches:
+        - ^main$
+        - ^release-1.*
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cloud-provider-azure
+          base_ref: master
+          path_alias: sigs.k8s.io/cloud-provider-azure
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+        - org: nojnhuh
+          repo: perf-tests
+          base_ref: api-avail-err-log
+          path_alias: k8s.io/perf-tests
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                sleep 300 && cd ${GOPATH}/src/k8s.io/perf-tests/ && ./run-e2e.sh cluster-loader2 --nodes=100 \ --provider=aks \ --testconfig=testing/load/config.yaml \ --testconfig=testing/huge-service/config.yaml \ --testconfig=testing/access-tokens/config.yaml \ --testoverrides=./testing/experiments/enable_restart_count_check.yaml \ --testoverrides=./testing/experiments/use_simple_latency_query.yaml \ --testoverrides=./testing/overrides/load_throughput.yaml \ --report-dir=${ARTIFACTS} --v=2
+            securityContext:
+              privileged: true
+            env:
+              # CAPZ variables
+              - name: TEST_K8S
+                value: "true"
+              - name: WINDOWS
+                value: "false"
+              - name: CLUSTER_TEMPLATE
+                value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
+              - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: CONTROL_PLANE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: AZURE_NODE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: NODE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: TEST_WINDOWS
+                value: "false"
+              - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
+                value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
+              # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+              - name: DEPLOY_AZURE_CSI_DRIVER
+                value: "false"
+              - name: "CONTROL_PLANE_MACHINE_COUNT"
+                value: "5"
+              - name: WINDOWS_WORKER_MACHINE_COUNT
+                value: "0" # Don't create windows workers
+              - name: WORKER_MACHINE_COUNT
+                value: "100"
+              # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+                value: "0"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.99"
+              # CAPZ clusters don't expose each individual control plane node.
+              - name: CL2_API_AVAILABILITY_MEASUREMENT_IPS_CONFIGURED
+                value: "true"
+              - name: CL2_API_AVAILABILITY_MEASUREMENT_USE_INTERNAL_IPS
+                value: "false"
+              - name: CL2_NODE_AVAILABLE_MILLICORES
+                value: "2000"
+              - name: CL2_SYSTEM_USED_MILLICORES
+                value: "1200" # this allows each workload pod to run with 100m
+              - name: PROMETHEUS_SCRAPE_KUBELETS
+                value: "true"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "9Gi"
+              limits:
+                cpu: "6"
+                memory: "9Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+        testgrid-tab-name: capz-pr-scalability-100-node-dra-k8s-main
+        testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+        description: Conducts load testing with custom builds to assess scalability on the main branch when DRA is enabled.
+    - name: pull-cluster-api-provider-azure-load-test-dra-with-workload-custom-builds
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 8h
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      always_run: false
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-community: "true"
+      branches:
+        - ^main$
+        - ^release-1.*
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cloud-provider-azure
+          base_ref: master
+          path_alias: sigs.k8s.io/cloud-provider-azure
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                sleep 300 && cd ${GOPATH}/src/k8s.io/perf-tests/ && ./run-e2e.sh cluster-loader2 --nodes=100 \ --provider=aks \ --enable-prometheus-server=true \ --testconfig=testing/dra/config.yaml \ --report-dir=${ARTIFACTS} \ --v=2
+            securityContext:
+              privileged: true
+            env:
+              # CAPZ variables
+              - name: TEST_K8S
+                value: "true"
+              - name: WINDOWS
+                value: "false"
+              - name: CLUSTER_TEMPLATE
+                value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
+              - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: CONTROL_PLANE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: AZURE_NODE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: NODE_MACHINE_TYPE
+                value: "Standard_D8s_v3"
+              - name: TEST_WINDOWS
+                value: "false"
+              - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
+                value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
+              # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+              - name: DEPLOY_AZURE_CSI_DRIVER
+                value: "false"
+              - name: "CONTROL_PLANE_MACHINE_COUNT"
+                value: "5"
+              - name: WINDOWS_WORKER_MACHINE_COUNT
+                value: "0" # Don't create windows workers
+              - name: WORKER_MACHINE_COUNT
+                value: "100"
+              # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+                value: "0"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              # For DRA cl2 tests
+              - name: CL2_MODE
+                value: "Indexed"
+              - name: CL2_NODES_PER_NAMESPACE
+                value: "10"
+              - name: CL2_JOB_RUNNING_TIME
+                value: "3s"
+              - name: CL2_LONG_JOB_RUNNING_TIME
+                value: "45m"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "default"
+              - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+                value: "6443"
+              - name: PROMETHEUS_SCRAPE_KUBELETS
+                value: "true"
+              - name: NODE_PRELOAD_IMAGES
+                value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "9Gi"
+              limits:
+                cpu: "6"
+                memory: "9Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+        testgrid-tab-name: capz-pr-scalability-100-node-dra-with-workload-k8s-main
+        testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+        description: Conducts load testing with custom builds to assess DRA scalability on the main branch.
+    - name: pull-cluster-api-provider-azure-load-test-1k-dra-with-workload-custom-builds
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 8h
+      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      always_run: false
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-community: "true"
+      branches:
+        - ^main$
+        - ^release-1.*
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cloud-provider-azure
+          base_ref: master
+          path_alias: sigs.k8s.io/cloud-provider-azure
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+        - org: kubernetes
+          repo: perf-tests
+          base_ref: master
+          path_alias: k8s.io/perf-tests
+      spec:
+        serviceAccountName: azure
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                sleep 300 && cd ${GOPATH}/src/k8s.io/perf-tests/ && ./run-e2e.sh cluster-loader2 --nodes=1000 \ --provider=aks \ --enable-prometheus-server=true \ --testconfig=testing/dra/config.yaml \ --report-dir=${ARTIFACTS} \ --v=2
+            securityContext:
+              privileged: true
+            env:
+              # CAPZ variables
+              - name: TEST_K8S
+                value: "true"
+              - name: WINDOWS
+                value: "false"
+              - name: CLUSTER_TEMPLATE
+                value: "templates/test/dev/cluster-template-custom-builds-machine-pool-load-dra.yaml"
+              - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+                value: "Standard_D32s_v3"
+              - name: CONTROL_PLANE_MACHINE_TYPE
+                value: "Standard_D32s_v3"
+              - name: AZURE_NODE_MACHINE_TYPE
+                value: "Standard_D2s_v3"
+              - name: NODE_MACHINE_TYPE
+                value: "Standard_D2s_v3"
+              - name: TEST_WINDOWS
+                value: "false"
+              - name: MONITORING_MACHINE_COUNT # This is the number of dedicated nodes for prometheus server
+                value: "1" # We use the same VM size as control plane nodes, see CONTROL_PLANE_MACHINE_TYPE
+              # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+              - name: DEPLOY_AZURE_CSI_DRIVER
+                value: "false"
+              - name: "CONTROL_PLANE_MACHINE_COUNT"
+                value: "5"
+              - name: WINDOWS_WORKER_MACHINE_COUNT
+                value: "0" # Don't create windows workers
+              - name: WORKER_MACHINE_COUNT
+                value: "1000"
+              # Based on pull-kubernetes-e2e-gce-100-performance CL2 config
+              - name: CL2_ENABLE_DNS_PROGRAMMING
+                value: "true"
+              - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+                value: "0"
+              - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+                value: "true"
+              - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+                value: "99.5"
+              # For DRA cl2 tests
+              - name: CL2_MODE
+                value: "Indexed"
+              - name: CL2_NODES_PER_NAMESPACE
+                value: "100"
+              - name: CL2_JOB_RUNNING_TIME
+                value: "3s"
+              - name: CL2_LONG_JOB_RUNNING_TIME
+                value: "150m"
+              - name: CL2_PROMETHEUS_CPU_SCALE_FACTOR
+                value: "20"
+              - name: CL2_PROMETHEUS_MEMORY_SCALE_FACTOR
+                value: "10"
+              - name: PROMETHEUS_PVC_STORAGE_CLASS
+                value: "default"
+              - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+                value: "6443"
+              - name: PROMETHEUS_SCRAPE_KUBELETS
+                value: "false" # Too heavy for a test of this size
+              - name: NODE_PRELOAD_IMAGES
+                value: "gcr.io/k8s-staging-perf-tests/sleep:v0.0.3"
+            resources:
+              requests:
+                cpu: "6"
+                memory: "9Gi"
+              limits:
+                cpu: "6"
+                memory: "9Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+        testgrid-tab-name: capz-pr-scalability-1000-node-dra-with-workload-k8s-main
+        testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+        description: Conducts load testing with custom builds to assess DRA scalability on the main branch.

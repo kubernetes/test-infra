@@ -23,7 +23,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - .
-
     # Ingress NGINX: CFSSL
     - name: post-ingress-nginx-cfssl
       annotations:
@@ -47,7 +46,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/cfssl
-
     # Ingress NGINX: Custom Error Pages
     - name: post-ingress-nginx-custom-error-pages
       annotations:
@@ -71,7 +69,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/custom-error-pages
-
     # Ingress NGINX: E2E Test Echo
     - name: post-ingress-nginx-e2e-test-echo
       annotations:
@@ -95,7 +92,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/e2e-test-echo
-
     # Ingress NGINX: FastCGI HelloServer
     - name: post-ingress-nginx-fastcgi-helloserver
       annotations:
@@ -119,7 +115,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/fastcgi-helloserver
-
     # Ingress NGINX: HTTPBun
     - name: post-ingress-nginx-httpbun
       annotations:
@@ -143,7 +138,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/httpbun
-
     # Ingress NGINX: Kube Webhook CertGen
     - name: post-ingress-nginx-kube-webhook-certgen
       annotations:
@@ -167,7 +161,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/kube-webhook-certgen
-
     # Ingress NGINX: NGINX
     - name: post-ingress-nginx-nginx
       annotations:
@@ -191,7 +184,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/nginx
-
     # Ingress NGINX: Test Runner
     - name: post-ingress-nginx-test-runner
       annotations:
@@ -215,7 +207,6 @@ postsubmits:
               - --build-dir=.
               - --with-git-dir
               - images/test-runner
-
     # Ingress NGINX: Chart
     - name: post-ingress-nginx-chart
       annotations:

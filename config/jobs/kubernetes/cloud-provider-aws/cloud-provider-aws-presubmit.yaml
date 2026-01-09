@@ -1,205 +1,203 @@
 presubmits:
   kubernetes/cloud-provider-aws:
-  - name: pull-cloud-provider-aws-e2e
-    cluster: eks-prow-build-cluster
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
-    skip_branches:
-    - gh-pages
-    path_alias: k8s.io/cloud-provider-aws
-    labels:
-      preset-dind-enabled: "true"
-      preset-aws-credential-aws-shared-testing: "true"
-    spec:
-      serviceAccountName: aws-shared-testing-role
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-        command:
-        - runner.sh
-        args:
-        - make
-        - test-e2e
-        - KOPS_STATE_STORE=s3://cloud-provider-aws-shared-e2e
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: provider-aws-cloud-provider-aws, amazon-ec2-presubmits
-      testgrid-tab-name: e2e
-      description: aws cloud provider e2e tests
-      testgrid-num-columns-recent: '30'
+    - name: pull-cloud-provider-aws-e2e
+      cluster: eks-prow-build-cluster
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
+      skip_branches:
+        - gh-pages
+      path_alias: k8s.io/cloud-provider-aws
+      labels:
+        preset-dind-enabled: "true"
+        preset-aws-credential-aws-shared-testing: "true"
+      spec:
+        serviceAccountName: aws-shared-testing-role
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            resources:
+              limits:
+                cpu: 2
+                memory: 6Gi
+              requests:
+                cpu: 2
+                memory: 6Gi
+            command:
+              - runner.sh
+            args:
+              - make
+              - test-e2e
+              - KOPS_STATE_STORE=s3://cloud-provider-aws-shared-e2e
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: provider-aws-cloud-provider-aws, amazon-ec2-presubmits
+        testgrid-tab-name: e2e
+        description: aws cloud provider e2e tests
+        testgrid-num-columns-recent: '30'
+    - name: pull-cloud-provider-aws-e2e-kubetest2
+      cluster: eks-prow-build-cluster
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
+      skip_branches:
+        - release-\d+\.\d+ # per-release image
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+        preset-dind-enabled: "true"
+        preset-aws-credential-aws-shared-testing: "true"
+      path_alias: k8s.io/cloud-provider-aws
+      optional: true
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: aws-shared-testing-role
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                set -o errexit
+                set -o nounset
+                set -o pipefail
 
-  - name: pull-cloud-provider-aws-e2e-kubetest2
-    cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
-    skip_branches:
-      - release-\d+\.\d+  # per-release image
-    annotations:
-      testgrid-alert-stale-results-hours: "24"
-      testgrid-create-test-group: "true"
-      testgrid-num-failures-to-alert: "10"
-      testgrid-dashboards: presubmits-ec2
-    labels:
-      preset-e2e-containerd-ec2: "true"
-      preset-dind-enabled: "true"
-      preset-aws-credential-aws-shared-testing: "true"
-    path_alias: k8s.io/cloud-provider-aws
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: aws-shared-testing-role
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-          args:
-            - bash
-            - -c
-            - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
+                GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
 
-              GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+                VERSION=$(git describe --dirty --tags --match='v*')
+                BUILD_IMAGE=ko.local:${VERSION}
+                REGION=${REGION:-"us-east-1"}
 
-              VERSION=$(git describe --dirty --tags --match='v*')
-              BUILD_IMAGE=ko.local:${VERSION}
-              REGION=${REGION:-"us-east-1"}
+                make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
 
-              make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
+                AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
+                IMAGE_TAG=${VERSION}
 
-              AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-              IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
-              IMAGE_TAG=${VERSION}
+                echo "Building and pushing test driver image to ${IMAGE_NAME}:${IMAGE_TAG}"
+                aws ecr get-login-password --region "${REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+                docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
+                docker push "${IMAGE_NAME}:${IMAGE_TAG}"
 
-              echo "Building and pushing test driver image to ${IMAGE_NAME}:${IMAGE_TAG}"
-              aws ecr get-login-password --region "${REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
-              docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+                kubetest2 ec2 \
+                 --build \
+                 --region us-east-1 \
+                 --target-build-arch linux/amd64 \
+                 --stage provider-aws-test-infra \
+                 --external-cloud-provider true \
+                 --external-cloud-provider-image="${IMAGE_NAME}:${IMAGE_TAG}" \
+                 --up \
+                 --down \
+                 --test=ginkgo \
+                 -- \
+                 --use-built-binaries true \
+                 --parallel=30 \
+                 --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+            env:
+              - name: USE_DOCKERIZED_BUILD
+                value: "true"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 10Gi
+              requests:
+                cpu: 7
+                memory: 10Gi
+    - name: pull-cloud-provider-aws-e2e-kubetest2-quick
+      cluster: eks-prow-build-cluster
+      skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
+      skip_branches:
+        - release-\d+\.\d+ # per-release image
+      annotations:
+        testgrid-alert-stale-results-hours: "24"
+        testgrid-create-test-group: "true"
+        testgrid-num-failures-to-alert: "10"
+        testgrid-dashboards: presubmits-ec2
+      labels:
+        preset-e2e-containerd-ec2: "true"
+        preset-dind-enabled: "true"
+        preset-aws-credential-aws-shared-testing: "true"
+      path_alias: k8s.io/cloud-provider-aws
+      optional: true
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        serviceAccountName: aws-shared-testing-role
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - bash
+              - -c
+              - |
+                set -o errexit
+                set -o nounset
+                set -o pipefail
 
-              kubetest2 ec2 \
-               --build \
-               --region us-east-1 \
-               --target-build-arch linux/amd64 \
-               --stage provider-aws-test-infra \
-               --external-cloud-provider true \
-               --external-cloud-provider-image="${IMAGE_NAME}:${IMAGE_TAG}" \
-               --up \
-               --down \
-               --test=ginkgo \
-               -- \
-               --use-built-binaries true \
-               --parallel=30 \
-               --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
-          env:
-            - name: USE_DOCKERIZED_BUILD
-              value: "true"
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          resources:
-            limits:
-              cpu: 7
-              memory: 10Gi
-            requests:
-              cpu: 7
-              memory: 10Gi
+                GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
 
-  - name: pull-cloud-provider-aws-e2e-kubetest2-quick
-    cluster: eks-prow-build-cluster
-    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(LICENSE|OWNERS)$"
-    skip_branches:
-      - release-\d+\.\d+  # per-release image
-    annotations:
-      testgrid-alert-stale-results-hours: "24"
-      testgrid-create-test-group: "true"
-      testgrid-num-failures-to-alert: "10"
-      testgrid-dashboards: presubmits-ec2
-    labels:
-      preset-e2e-containerd-ec2: "true"
-      preset-dind-enabled: "true"
-      preset-aws-credential-aws-shared-testing: "true"
-    path_alias: k8s.io/cloud-provider-aws
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: aws-shared-testing-role
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-          command:
-            - runner.sh
-          args:
-            - bash
-            - -c
-            - |
-              set -o errexit
-              set -o nounset
-              set -o pipefail
+                VERSION=$(git describe --dirty --tags --match='v*')
+                BUILD_IMAGE=ko.local:${VERSION}
+                REGION=${REGION:-"us-east-1"}
 
-              GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+                make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
 
-              VERSION=$(git describe --dirty --tags --match='v*')
-              BUILD_IMAGE=ko.local:${VERSION}
-              REGION=${REGION:-"us-east-1"}
+                AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
+                IMAGE_TAG=${VERSION}
 
-              make switch-to-latest-k8s ko-build-local VERSION=${VERSION}
+                echo "Building and pushing test driver image to ${IMAGE_NAME}:${IMAGE_TAG}"
+                aws ecr get-login-password --region "${REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+                docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
+                docker push "${IMAGE_NAME}:${IMAGE_TAG}"
 
-              AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-              IMAGE_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/provider-aws/cloud-controller-manager
-              IMAGE_TAG=${VERSION}
-
-              echo "Building and pushing test driver image to ${IMAGE_NAME}:${IMAGE_TAG}"
-              aws ecr get-login-password --region "${REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
-              docker tag "${BUILD_IMAGE}" "${IMAGE_NAME}:${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:${IMAGE_TAG}"
-
-              VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
-              kubetest2 ec2 \
-               --stage https://dl.k8s.io/ci/fast/ \
-               --external-cloud-provider true \
-               --external-cloud-provider-image="${IMAGE_NAME}:${IMAGE_TAG}" \
-               --version $VERSION \
-               --up \
-               --down \
-               --test=ginkgo \
-               -- \
-               --parallel=30 \
-               --test-package-url=https://dl.k8s.io/ \
-               --test-package-dir=ci/fast \
-               --test-package-marker=latest-fast.txt \
-               --focus-regex='Pods should be submitted and removed'
-          env:
-            - name: USE_DOCKERIZED_BUILD
-              value: "true"
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          resources:
-            limits:
-              cpu: 7
-              memory: 10Gi
-            requests:
-              cpu: 7
-              memory: 10Gi
+                VERSION=$(curl -Ls https://dl.k8s.io/ci/fast/latest-fast.txt)
+                kubetest2 ec2 \
+                 --stage https://dl.k8s.io/ci/fast/ \
+                 --external-cloud-provider true \
+                 --external-cloud-provider-image="${IMAGE_NAME}:${IMAGE_TAG}" \
+                 --version $VERSION \
+                 --up \
+                 --down \
+                 --test=ginkgo \
+                 -- \
+                 --parallel=30 \
+                 --test-package-url=https://dl.k8s.io/ \
+                 --test-package-dir=ci/fast \
+                 --test-package-marker=latest-fast.txt \
+                 --focus-regex='Pods should be submitted and removed'
+            env:
+              - name: USE_DOCKERIZED_BUILD
+                value: "true"
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                cpu: 7
+                memory: 10Gi
+              requests:
+                cpu: 7
+                memory: 10Gi

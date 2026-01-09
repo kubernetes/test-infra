@@ -39,7 +39,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cloud-provider-ibm-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-
   kubernetes-sigs/ibm-powervs-block-csi-driver:
     # The name should be changed to match the repo name above
     - name: post-ibm-powervs-block-csi-driver-push-images

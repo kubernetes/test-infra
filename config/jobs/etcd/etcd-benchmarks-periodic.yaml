@@ -1,39 +1,37 @@
----
 periodics:
-
-- name: ci-etcd-benchmark-put-amd64
-  interval: 24h
-  cluster: eks-prow-build-cluster
-  decorate: true
-  decoration_config:
-    timeout: 30m
-  extra_refs:
-    - org: etcd-io
-      repo: etcd
-      base_ref: main
-  annotations:
-    testgrid-dashboards: sig-etcd-periodics
-  spec:
-    containers:
-      - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-          set -euo pipefail
-          make install-benchmark
-          make bench-put
-        resources:
-          requests:
-            cpu: "4"
-            memory: "8Gi"
-          limits:
-            cpu: "4"
-            memory: "8Gi"
-    nodeSelector:
-      kubernetes.io/arch: amd64
-  tags:
-    - "perfDashPrefix: etcd"
-    - "perfDashJobType: etcdAPIBenchmark"
+  - name: ci-etcd-benchmark-put-amd64
+    interval: 24h
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 30m
+    extra_refs:
+      - org: etcd-io
+        repo: etcd
+        base_ref: main
+    annotations:
+      testgrid-dashboards: sig-etcd-periodics
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/k8s-staging-test-infra/images/kubekins-e2e:v20251209-72d275a594-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              set -euo pipefail
+              make install-benchmark
+              make bench-put
+          resources:
+            requests:
+              cpu: "4"
+              memory: "8Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+      nodeSelector:
+        kubernetes.io/arch: amd64
+    tags:
+      - "perfDashPrefix: etcd"
+      - "perfDashJobType: etcdAPIBenchmark"

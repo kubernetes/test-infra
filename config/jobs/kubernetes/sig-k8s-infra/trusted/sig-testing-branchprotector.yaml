@@ -1,44 +1,44 @@
 periodics:
-- cron: "54 * * * *"  # Every hour at 54 minutes past the hour
-  name: ci-test-infra-branchprotector
-  cluster: k8s-infra-prow-build-trusted
-  labels:
-    app: branchprotector
-  decorate: true
-  decoration_config:
-    # TODO: this is WAY too long, the latency on applying rules needs to be much lower.
-    # ... but failing on timeout isn't better when we already know it takes too long.
-    timeout: 12h
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - name: branchprotector
-      image: us-docker.pkg.dev/k8s-infra-prow/images/branchprotector:v20260108-1a02de84b
-      command:
-      - branchprotector
-      args:
-      - --config-path=config/prow/config.yaml
-      - --job-config-path=config/jobs
-      - --github-token-path=/etc/github/token
-      - --confirm
-      - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
-      - --github-endpoint=https://api.github.com
-      - --github-hourly-tokens=1000 # Up the rate limit from default (300) to 1000
-      volumeMounts:
-      - name: github
-        mountPath: /etc/github
-        readOnly: true
-    volumes:
-    - name: github
-      secret:
-        secretName: k8s-github-robot-github-token
-  annotations:
-    testgrid-num-failures-to-alert: '6'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: branchprotector
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
-    description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
+  - cron: "54 * * * *" # Every hour at 54 minutes past the hour
+    name: ci-test-infra-branchprotector
+    cluster: k8s-infra-prow-build-trusted
+    labels:
+      app: branchprotector
+    decorate: true
+    decoration_config:
+      # TODO: this is WAY too long, the latency on applying rules needs to be much lower.
+      # ... but failing on timeout isn't better when we already know it takes too long.
+      timeout: 12h
+    extra_refs:
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+    spec:
+      containers:
+        - name: branchprotector
+          image: us-docker.pkg.dev/k8s-infra-prow/images/branchprotector:v20260108-1a02de84b
+          command:
+            - branchprotector
+          args:
+            - --config-path=config/prow/config.yaml
+            - --job-config-path=config/jobs
+            - --github-token-path=/etc/github/token
+            - --confirm
+            - --github-endpoint=http://ghproxy.test-pods.svc.cluster.local
+            - --github-endpoint=https://api.github.com
+            - --github-hourly-tokens=1000 # Up the rate limit from default (300) to 1000
+          volumeMounts:
+            - name: github
+              mountPath: /etc/github
+              readOnly: true
+      volumes:
+        - name: github
+          secret:
+            secretName: k8s-github-robot-github-token
+    annotations:
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '12'
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: branchprotector
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+      description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.

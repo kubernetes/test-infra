@@ -9,27 +9,27 @@ metadata:
     networking.gke.io/managed-certificates: prow-canary-k8s-io
 spec:
   rules:
-  - host: prow-canary.k8s.io
-    http:
-      paths:
-      - path: /*
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: deck
-            port:
-              number: 80
-      - path: /hook
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: hook
-            port:
-              number: 8888
-      - path: /metrics
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: pushgateway-external
-            port:
-              number: 80
+    - host: prow-canary.k8s.io
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: deck
+                port:
+                  number: 80
+          - path: /hook
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: hook
+                port:
+                  number: 8888
+          - path: /metrics
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: pushgateway-external
+                port:
+                  number: 80

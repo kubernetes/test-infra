@@ -14,21 +14,21 @@ postsubmits:
         description: builds and pushes the image builder's own image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/bazelbuild/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/bazelbuild/
     - name: post-test-infra-push-benchmarkjunit
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^pkg/benchmarkjunit/'
@@ -40,21 +40,21 @@ postsubmits:
         description: builds and pushes the image builder's own image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - pkg/benchmarkjunit/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - pkg/benchmarkjunit/
     - name: post-test-infra-push-bigquery
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bigquery|scenarios)/'
@@ -66,21 +66,21 @@ postsubmits:
         description: builds and pushes the bigquery image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/bigquery/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/bigquery/
     - name: post-test-infra-push-bootstrap
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bootstrap|scenarios)/'
@@ -92,19 +92,19 @@ postsubmits:
         description: builds and pushes the bootstrap image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/bootstrap/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/bootstrap/
     - name: post-test-infra-push-gcb-docker-gcloud
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/gcb-docker-gcloud/'
@@ -116,21 +116,21 @@ postsubmits:
         description: builds and pushes the image builder's own image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/gcb-docker-gcloud/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/gcb-docker-gcloud/
     - name: post-test-infra-push-gcloud-in-go
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/gcloud-in-go/'
@@ -142,21 +142,21 @@ postsubmits:
         description: builds and pushes the gcloud-in-go image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/gcloud-in-go/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/gcloud-in-go/
     - name: post-test-infra-push-image-builder
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/builder/'
@@ -168,21 +168,21 @@ postsubmits:
         description: builds and pushes the image builder's own image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/builder/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/builder/
     - name: post-test-infra-push-krte
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/(krte/|kubekins-e2e-v2/variants.yaml)'
@@ -194,21 +194,21 @@ postsubmits:
         description: builds and pushes the krte image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/krte/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/krte/
     - name: post-test-infra-push-kubekins-e2e
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -223,22 +223,21 @@ postsubmits:
         timeout: 180m
         grace_period: 10m
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - images/kubekins-e2e/
-
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - images/kubekins-e2e/
     - name: post-test-infra-push-kubekins-e2e-v2
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -253,20 +252,20 @@ postsubmits:
         timeout: 180m
         grace_period: 10m
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - images/kubekins-e2e-v2/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - images/kubekins-e2e-v2/
     - name: post-test-infra-push-alpine
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/alpine/'
@@ -275,20 +274,20 @@ postsubmits:
         testgrid-tab-name: alpine
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - images/alpine/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - images/alpine/
     - name: post-test-infra-push-git
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/git/'
@@ -297,20 +296,20 @@ postsubmits:
         testgrid-tab-name: git
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - images/git/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - images/git/
     - name: post-test-infra-push-git-custom-k8s-auth
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/git-custom-k8s-auth/'
@@ -319,20 +318,20 @@ postsubmits:
         testgrid-tab-name: git-custom-k8s-auth
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - images/git-custom-k8s-auth/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - images/git-custom-k8s-auth/
     - name: post-test-infra-push-misc-images
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
@@ -344,23 +343,22 @@ postsubmits:
         description: builds and pushes misc test-infra images on each commit by running make push-misc-images
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - --with-git-dir
-          - .
-
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - --with-git-dir
+              - .
     #
     # components, e.g. kettle/, triage/
     #
@@ -378,21 +376,21 @@ postsubmits:
         timeout: 50m
         grace_period: 10m
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --build-dir=.
-          - kettle/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --build-dir=.
+              - kettle/
     - name: post-test-infra-push-triage
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^triage/'
@@ -404,18 +402,18 @@ postsubmits:
         description: builds and pushes the triage image
       decorate: true
       branches:
-      - ^master$
+        - ^master$
       max_concurrency: 1
       # avoid overloading GCB logs quota for the shared staging project
       job_queue_name: "test-infra-staging-image-push"
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
-          command:
-          - /run.sh
-          args:
-          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
-          - --project=k8s-staging-test-infra
-          - --env-passthrough=PULL_BASE_REF
-          - triage/
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20251215-d7853fe2a6
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+              - --project=k8s-staging-test-infra
+              - --env-passthrough=PULL_BASE_REF
+              - triage/

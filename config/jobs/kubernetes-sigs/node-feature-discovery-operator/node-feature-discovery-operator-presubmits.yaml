@@ -1,125 +1,125 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery-operator:
-  - name: pull-node-feature-discovery-operator-verify
-    cluster: eks-prow-build-cluster
-    always_run: true
-    skip_branches:
-    - gh-pages
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: operator-verify
-      description: "Verify source code of node-feature-discovery-operator: check formatting, lint etc."
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
-        command:
-        - scripts/test-infra/verify.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-  - name: pull-node-feature-discovery-operator-unit-tests
-    cluster: eks-prow-build-cluster
-    always_run: true
-    skip_branches:
-    - gh-pages
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: operator-unit-tests
-      description: "Unit tests for node-feature-discovery-operator"
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.21
-        command:
-        - scripts/test-infra/unit-tests.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-  - name: pull-node-feature-discovery-operator-verify-docs
-    cluster: eks-prow-build-cluster
-    always_run: true
-    skip_branches:
-    - gh-pages
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: operator-verify-docs
-      description: "Verify documentation sources of the operator project"
-    spec:
-      containers:
-      - image: ruby:slim
-        command:
-        - scripts/test-infra/mdlint.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-  - name: pull-node-feature-discovery-operator-build-image
-    cluster: eks-prow-build-cluster
-    always_run: true
-    skip_branches:
-    - gh-pages
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: operator-build-image
-      description: "Build container image of node-feature-discovery-operator"
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        securityContext:
-          privileged: true
-        command:
-        - runner.sh
-        args:
-        - scripts/test-infra/build-image.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-  - name: pull-node-feature-discovery-operator-build-gh-pages
-    cluster: eks-prow-build-cluster
-    always_run: true
-    skip_branches:
-    - gh-pages
-    decorate: true
-    annotations:
-      testgrid-dashboards: sig-node-node-feature-discovery
-      testgrid-tab-name: operator-build-gh-pages
-      description: "Test build of gh-pages documentation of the operator project"
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        securityContext:
-          privileged: true
-        command:
-        - runner.sh
-        args:
-        - scripts/test-infra/build-gh-pages.sh
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
+    - name: pull-node-feature-discovery-operator-verify
+      cluster: eks-prow-build-cluster
+      always_run: true
+      skip_branches:
+        - gh-pages
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-node-feature-discovery
+        testgrid-tab-name: operator-verify
+        description: "Verify source code of node-feature-discovery-operator: check formatting, lint etc."
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            command:
+              - scripts/test-infra/verify.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+    - name: pull-node-feature-discovery-operator-unit-tests
+      cluster: eks-prow-build-cluster
+      always_run: true
+      skip_branches:
+        - gh-pages
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-node-feature-discovery
+        testgrid-tab-name: operator-unit-tests
+        description: "Unit tests for node-feature-discovery-operator"
+      spec:
+        containers:
+          - image: public.ecr.aws/docker/library/golang:1.21
+            command:
+              - scripts/test-infra/unit-tests.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+    - name: pull-node-feature-discovery-operator-verify-docs
+      cluster: eks-prow-build-cluster
+      always_run: true
+      skip_branches:
+        - gh-pages
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-node-feature-discovery
+        testgrid-tab-name: operator-verify-docs
+        description: "Verify documentation sources of the operator project"
+      spec:
+        containers:
+          - image: ruby:slim
+            command:
+              - scripts/test-infra/mdlint.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+    - name: pull-node-feature-discovery-operator-build-image
+      cluster: eks-prow-build-cluster
+      always_run: true
+      skip_branches:
+        - gh-pages
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-node-feature-discovery
+        testgrid-tab-name: operator-build-image
+        description: "Build container image of node-feature-discovery-operator"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            securityContext:
+              privileged: true
+            command:
+              - runner.sh
+            args:
+              - scripts/test-infra/build-image.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+    - name: pull-node-feature-discovery-operator-build-gh-pages
+      cluster: eks-prow-build-cluster
+      always_run: true
+      skip_branches:
+        - gh-pages
+      decorate: true
+      annotations:
+        testgrid-dashboards: sig-node-node-feature-discovery
+        testgrid-tab-name: operator-build-gh-pages
+        description: "Test build of gh-pages documentation of the operator project"
+      labels:
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            securityContext:
+              privileged: true
+            command:
+              - runner.sh
+            args:
+              - scripts/test-infra/build-gh-pages.sh
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi

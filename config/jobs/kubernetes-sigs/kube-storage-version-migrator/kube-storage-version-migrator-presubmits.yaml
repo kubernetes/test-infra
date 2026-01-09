@@ -1,145 +1,144 @@
 presubmits:
   kubernetes-sigs/kube-storage-version-migrator:
-  - name: pull-kube-storage-version-migrator-test
-    cluster: eks-prow-build-cluster
-    decorate: true
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - make
-        - test
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      testgrid-tab-name: pr-test
-  - name: pull-kube-storage-version-migrator-manually-launched-e2e
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --check-leaked-resources
-        - --extract=ci/latest
-        - --gcp-master-image=gci
-        - --gcp-node-image=gci
-        - --gcp-nodes=1
-        - --gcp-zone=us-central1-f
-        - --provider=gce
-        - --test=false
-        - --test-cmd=../test/e2e/test-cmd.sh
-        - --timeout=50m
-        - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
-        - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: 6Gi
-            cpu: 2
-          limits:
-            memory: 6Gi
-            cpu: 2
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      testgrid-tab-name: pr-e2e-manually-launched
-  - name: pull-kube-storage-version-migrator-fully-automated-e2e
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --check-leaked-resources
-        - --extract=ci/latest
-        - --gcp-master-image=gci
-        - --gcp-node-image=gci
-        - --gcp-nodes=1
-        - --gcp-zone=us-central1-f
-        - --provider=gce
-        - --test=false
-        - --test-cmd=../test/e2e/test-fully-automated.sh
-        - --test-cmd-args=--skip=\[Disruptive\]
-        - --timeout=50m
-        - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
-        - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: 6Gi
-            cpu: 2
-          limits:
-            memory: 6Gi
-            cpu: 2
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      testgrid-tab-name: pr-e2e-fully-automated
-  - name: pull-kube-storage-version-migrator-ha-master
-    cluster: eks-prow-build-cluster
-    path_alias: "sigs.k8s.io/kube-storage-version-migrator"
-    decorate: true
-    decoration_config:
-      timeout: 60m
-    extra_refs:
-    - org: kubernetes
-      repo: kubeadm
-      base_ref: main
-      path_alias: k8s.io/kubeadm
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    always_run: true
-    optional: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - "../../k8s.io/kubeadm/kinder/ci/kinder-run.sh"
-        args:
-        - regular-latest
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: 6Gi
-            cpu: 2
-          limits:
-            memory: 6Gi
-            cpu: 2
-    annotations:
-      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      testgrid-tab-name: pr-e2e-ha-master
+    - name: pull-kube-storage-version-migrator-test
+      cluster: eks-prow-build-cluster
+      decorate: true
+      always_run: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - make
+              - test
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+        testgrid-tab-name: pr-test
+    - name: pull-kube-storage-version-migrator-manually-launched-e2e
+      cluster: k8s-infra-prow-build
+      decorate: true
+      always_run: true
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --check-leaked-resources
+              - --extract=ci/latest
+              - --gcp-master-image=gci
+              - --gcp-node-image=gci
+              - --gcp-nodes=1
+              - --gcp-zone=us-central1-f
+              - --provider=gce
+              - --test=false
+              - --test-cmd=../test/e2e/test-cmd.sh
+              - --timeout=50m
+              - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
+              - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: 6Gi
+                cpu: 2
+              limits:
+                memory: 6Gi
+                cpu: 2
+      annotations:
+        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+        testgrid-tab-name: pr-e2e-manually-launched
+    - name: pull-kube-storage-version-migrator-fully-automated-e2e
+      cluster: k8s-infra-prow-build
+      decorate: true
+      always_run: true
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-dind-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - /workspace/scenarios/kubernetes_e2e.py
+            args:
+              - --check-leaked-resources
+              - --extract=ci/latest
+              - --gcp-master-image=gci
+              - --gcp-node-image=gci
+              - --gcp-nodes=1
+              - --gcp-zone=us-central1-f
+              - --provider=gce
+              - --test=false
+              - --test-cmd=../test/e2e/test-fully-automated.sh
+              - --test-cmd-args=--skip=\[Disruptive\]
+              - --timeout=50m
+              - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
+              - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: 6Gi
+                cpu: 2
+              limits:
+                memory: 6Gi
+                cpu: 2
+      annotations:
+        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+        testgrid-tab-name: pr-e2e-fully-automated
+    - name: pull-kube-storage-version-migrator-ha-master
+      cluster: eks-prow-build-cluster
+      path_alias: "sigs.k8s.io/kube-storage-version-migrator"
+      decorate: true
+      decoration_config:
+        timeout: 60m
+      extra_refs:
+        - org: kubernetes
+          repo: kubeadm
+          base_ref: main
+          path_alias: k8s.io/kubeadm
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      always_run: true
+      optional: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - "../../k8s.io/kubeadm/kinder/ci/kinder-run.sh"
+            args:
+              - regular-latest
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                memory: 6Gi
+                cpu: 2
+              limits:
+                memory: 6Gi
+                cpu: 2
+      annotations:
+        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+        testgrid-tab-name: pr-e2e-ha-master

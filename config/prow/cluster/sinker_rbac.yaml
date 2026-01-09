@@ -11,45 +11,45 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-    - "prow.k8s.io"
+      - "prow.k8s.io"
     resources:
-    - prowjobs
+      - prowjobs
     verbs:
-    - delete
-    - list
-    - watch
-    - get
+      - delete
+      - list
+      - watch
+      - get
   - apiGroups:
-    - coordination.k8s.io
+      - coordination.k8s.io
     resources:
-    - leases
+      - leases
     resourceNames:
-    - prow-sinker-leaderlock
+      - prow-sinker-leaderlock
     verbs:
-    - get
-    - update
+      - get
+      - update
   - apiGroups:
-    - coordination.k8s.io
+      - coordination.k8s.io
     resources:
-    - leases
+      - leases
     verbs:
-    - create
+      - create
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
+      - configmaps
     resourceNames:
-    - prow-sinker-leaderlock
+      - prow-sinker-leaderlock
     verbs:
-    - get
-    - update
+      - get
+      - update
   - apiGroups:
-    - ""
+      - ""
     resources:
-    - configmaps
-    - events
+      - configmaps
+      - events
     verbs:
-    - create
+      - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -78,8 +78,8 @@ roleRef:
   kind: Role
   name: "sinker"
 subjects:
-- kind: ServiceAccount
-  name: "sinker"
+  - kind: ServiceAccount
+    name: "sinker"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -91,6 +91,6 @@ roleRef:
   kind: Role
   name: "sinker"
 subjects:
-- kind: ServiceAccount
-  name: "sinker"
-  namespace: default
+  - kind: ServiceAccount
+    name: "sinker"
+    namespace: default

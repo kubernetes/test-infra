@@ -29,7 +29,8 @@ presubmits:
             securityContext:
               privileged: true
               capabilities:
-                add: ["NET_ADMIN"]
+                add:
+                  - "NET_ADMIN"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-image-builder
         testgrid-tab-name: pr-ova-all

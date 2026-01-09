@@ -1,9 +1,9 @@
 periodics:
   - name: ci-kubernetes-e2e-azure-scalability
     tags:
-    - "perfDashPrefix: azure-100Nodes"
-    - "perfDashBuildsCount: 270"
-    - "perfDashJobType: performance"
+      - "perfDashPrefix: azure-100Nodes"
+      - "perfDashBuildsCount: 270"
+      - "perfDashJobType: performance"
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
@@ -15,91 +15,79 @@ periodics:
       preset-kind-volume-mounts: "true"
       preset-azure-community: "true"
     extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.21
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.21
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: master
+        path_alias: k8s.io/perf-tests
     spec:
       serviceAccountName: azure
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - ./scripts/ci-entrypoint.sh
-        args:
-        - bash
-        - -c
-        - >-
-          sleep 300 &&
-          cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-          ./run-e2e.sh cluster-loader2
-          --nodes=100 \
-          --provider=aks \
-          --testconfig=testing/load/config.yaml \
-          --testconfig=testing/huge-service/config.yaml \
-          --testconfig=testing/access-tokens/config.yaml \
-          --testoverrides=./testing/experiments/enable_restart_count_check.yaml \
-          --testoverrides=./testing/experiments/use_simple_latency_query.yaml \
-          --testoverrides=./testing/overrides/load_throughput.yaml \
-          --report-dir=${ARTIFACTS}
-          --v=2
-        securityContext:
-          privileged: true
-        env:
-        # CAPZ variables
-        - name: TEST_K8S
-          value: "true"
-        - name: WINDOWS
-          value: "false"
-        - name: CLUSTER_TEMPLATE
-          value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
-        - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: CONTROL_PLANE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: AZURE_NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: NODE_MACHINE_TYPE
-          value: "Standard_D8s_v3"
-        - name: TEST_WINDOWS
-          value: "false"
-        - name: "CONTROL_PLANE_MACHINE_COUNT"
-          value: "5"
-        - name: WINDOWS_WORKER_MACHINE_COUNT
-          value: "0" # Don't create windows workers
-        - name: WORKER_MACHINE_COUNT
-          value: "100"
-        # From google cl2
-        - name: CL2_ENABLE_DNS_PROGRAMMING
-          value: "true"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "0"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
-        # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
-        - name: DEPLOY_AZURE_CSI_DRIVER
-          value: "false"
-        resources:
-          requests:
-            cpu: "4"
-            memory: "9Gi"
-          limits:
-            cpu: "4"
-            memory: "9Gi"
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              sleep 300 && cd ${GOPATH}/src/k8s.io/perf-tests/ && ./run-e2e.sh cluster-loader2 --nodes=100 \ --provider=aks \ --testconfig=testing/load/config.yaml \ --testconfig=testing/huge-service/config.yaml \ --testconfig=testing/access-tokens/config.yaml \ --testoverrides=./testing/experiments/enable_restart_count_check.yaml \ --testoverrides=./testing/experiments/use_simple_latency_query.yaml \ --testoverrides=./testing/overrides/load_throughput.yaml \ --report-dir=${ARTIFACTS} --v=2
+          securityContext:
+            privileged: true
+          env:
+            # CAPZ variables
+            - name: TEST_K8S
+              value: "true"
+            - name: WINDOWS
+              value: "false"
+            - name: CLUSTER_TEMPLATE
+              value: "templates/test/dev/cluster-template-custom-builds-load.yaml"
+            - name: AZURE_CONTROL_PLANE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: CONTROL_PLANE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: AZURE_NODE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D8s_v3"
+            - name: TEST_WINDOWS
+              value: "false"
+            - name: "CONTROL_PLANE_MACHINE_COUNT"
+              value: "5"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "0" # Don't create windows workers
+            - name: WORKER_MACHINE_COUNT
+              value: "100"
+            # From google cl2
+            - name: CL2_ENABLE_DNS_PROGRAMMING
+              value: "true"
+            - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+              value: "0"
+            - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+              value: "true"
+            - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+              value: "99.5"
+            # Don't install Azure disk CSI driver as it's installed using a HelmChartProxy
+            - name: DEPLOY_AZURE_CSI_DRIVER
+              value: "false"
+          resources:
+            requests:
+              cpu: "4"
+              memory: "9Gi"
+            limits:
+              cpu: "4"
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure, sig-scalability-azure
       testgrid-tab-name: azure-master-scalability-100

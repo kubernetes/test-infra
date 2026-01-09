@@ -1,74 +1,74 @@
 periodics:
-- name: ci-k8s-triage-robot-retester
-  interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: org
-    base_ref: main
-    path_alias: k8s.io/org
-  annotations:
-    testgrid-dashboards: sig-contribex-k8s-triage-robot
-    testgrid-tab-name: retester
-    description: Automatically /retest-required for approved PRs that are failing tests
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/commenter:v20251212-3f863f26d7
-      command:
-      - commenter
-      args:
-      - |-
-        --query=is:pr
-        -label:do-not-merge
-        -label:do-not-merge/blocked-paths
-        -label:do-not-merge/cherry-pick-not-approved
-        -label:do-not-merge/contains-merge-commits
-        -label:do-not-merge/hold
-        -label:do-not-merge/invalid-commit-message
-        -label:do-not-merge/invalid-owners-file
-        -label:do-not-merge/needs-sig
-        -label:do-not-merge/needs-kind
-        -label:do-not-merge/release-note-label-needed
-        -label:do-not-merge/work-in-progress
-        label:lgtm
-        label:approved
-        label:"cncf-cla: yes"
-        status:failure
-        -label:needs-rebase
-        -label:needs-ok-to-test
-        -label:"cncf-cla: no"
-        repo:kubernetes/kops
-        repo:kubernetes/kubernetes
-        repo:kubernetes/test-infra
-      - --token=/etc/github-token/token
-      - --endpoint=http://ghproxy.test-pods.svc.cluster.local
-      - |-
-        --comment=Retesting failed PR that otherwise appears ready for merge.
+  - name: ci-k8s-triage-robot-retester
+    interval: 20m # Retest at most 1 PR per 20m, which should not DOS the queue.
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: org
+        base_ref: main
+        path_alias: k8s.io/org
+    annotations:
+      testgrid-dashboards: sig-contribex-k8s-triage-robot
+      testgrid-tab-name: retester
+      description: Automatically /retest-required for approved PRs that are failing tests
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/commenter:v20251212-3f863f26d7
+          command:
+            - commenter
+          args:
+            - |-
+              --query=is:pr
+              -label:do-not-merge
+              -label:do-not-merge/blocked-paths
+              -label:do-not-merge/cherry-pick-not-approved
+              -label:do-not-merge/contains-merge-commits
+              -label:do-not-merge/hold
+              -label:do-not-merge/invalid-commit-message
+              -label:do-not-merge/invalid-owners-file
+              -label:do-not-merge/needs-sig
+              -label:do-not-merge/needs-kind
+              -label:do-not-merge/release-note-label-needed
+              -label:do-not-merge/work-in-progress
+              label:lgtm
+              label:approved
+              label:"cncf-cla: yes"
+              status:failure
+              -label:needs-rebase
+              -label:needs-ok-to-test
+              -label:"cncf-cla: no"
+              repo:kubernetes/kops
+              repo:kubernetes/kubernetes
+              repo:kubernetes/test-infra
+            - --token=/etc/github-token/token
+            - --endpoint=http://ghproxy.test-pods.svc.cluster.local
+            - |-
+              --comment=Retesting failed PR that otherwise appears ready for merge.
 
-        Please help us fix flaky tests by following our [Flaky Tests Guide][1].
+              Please help us fix flaky tests by following our [Flaky Tests Guide][1].
 
-        Prevent this bot from retesting with `/lgtm cancel` or `/hold`.
-        For this robot's configuration, see [here][2].
+              Prevent this bot from retesting with `/lgtm cancel` or `/hold`.
+              For this robot's configuration, see [here][2].
 
-        /retest-required
+              /retest-required
 
-        [1]: https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md
-        [2]: https://git.k8s.io/test-infra/config/jobs/kubernetes/sig-k8s-infra/trusted/sig-contribex-triage-robot-retester.yaml.
-      - --template
-      - --ceiling=1
-      - --confirm
-      volumeMounts:
-      - name: token
-        mountPath: /etc/github-token
-      resources:
-        limits:
-          cpu: 1
-          memory: 2Gi
-        requests:
-          cpu: 1
-          memory: 2Gi
-    volumes:
-    - name: token
-      secret:
-        secretName: k8s-triage-robot-github-token
+              [1]: https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md
+              [2]: https://git.k8s.io/test-infra/config/jobs/kubernetes/sig-k8s-infra/trusted/sig-contribex-triage-robot-retester.yaml.
+            - --template
+            - --ceiling=1
+            - --confirm
+          volumeMounts:
+            - name: token
+              mountPath: /etc/github-token
+          resources:
+            limits:
+              cpu: 1
+              memory: 2Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+      volumes:
+        - name: token
+          secret:
+            secretName: k8s-triage-robot-github-token

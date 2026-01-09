@@ -1,58 +1,56 @@
 # k8s.io/kubeadm presubmits
 presubmits:
   kubernetes/kubeadm:
-
-  # kinder presubmits
-  - name: pull-kubeadm-kinder-verify
-    cluster: eks-prow-build-cluster
-    decorate: true
-    optional: false
-    path_alias: "k8s.io/kubeadm"
-    run_if_changed: '^kinder\/.*$'
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - "./kinder/hack/verify-all.sh"
-        resources:
-          requests:
-            cpu: "2"
-            memory: "9Gi"
-          limits:
-            cpu: "2"
-            memory: "9Gi"
-
-  - name: pull-kubeadm-kinder-upgrade-latest
-    cluster: eks-prow-build-cluster
-    decorate: true
-    optional: false
-    run_if_changed: '^kinder\/.*$'
-    skip_branches:
-    - release-\d+\.\d+ # revisit once the k/kubeadm repo has branches
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decoration_config:
-      timeout: 40m
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        - "../kubeadm/kinder/ci/kinder-run.sh"
-        args:
-        - "presubmit-upgrade-latest"
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: "2"
-            memory: "9Gi"
-          limits:
-            cpu: "2"
-            memory: "9Gi"
+    # kinder presubmits
+    - name: pull-kubeadm-kinder-verify
+      cluster: eks-prow-build-cluster
+      decorate: true
+      optional: false
+      path_alias: "k8s.io/kubeadm"
+      run_if_changed: '^kinder\/.*$'
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - "./kinder/hack/verify-all.sh"
+            resources:
+              requests:
+                cpu: "2"
+                memory: "9Gi"
+              limits:
+                cpu: "2"
+                memory: "9Gi"
+    - name: pull-kubeadm-kinder-upgrade-latest
+      cluster: eks-prow-build-cluster
+      decorate: true
+      optional: false
+      run_if_changed: '^kinder\/.*$'
+      skip_branches:
+        - release-\d+\.\d+ # revisit once the k/kubeadm repo has branches
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      decoration_config:
+        timeout: 40m
+      extra_refs:
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: master
+          path_alias: k8s.io/kubernetes
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+              - "../kubeadm/kinder/ci/kinder-run.sh"
+            args:
+              - "presubmit-upgrade-latest"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: "2"
+                memory: "9Gi"
+              limits:
+                cpu: "2"
+                memory: "9Gi"

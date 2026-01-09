@@ -23,10 +23,10 @@ spec:
   selector:
     app: hook
   ports:
-  - name: main
-    port: 8888
-    protocol: TCP
-  - name: metrics
-    port: 9090
-    protocol: TCP
+    - name: main
+      port: 8888
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      protocol: TCP
   type: NodePort

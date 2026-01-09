@@ -18,11 +18,10 @@ prow_ignored:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30"
     release-2.7:
       testImage: "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20250714-70266d743a-1.30"
-
   # The generator will run each template per branch and use a the name template
   # to generate the target filename.
   templates:
-  - name: "cluster-api-provider-aws-periodics.yaml.tpl"
-    template: 'cluster-api-provider-aws-periodics-{{ .branch }}.yaml'
-  - name: "cluster-api-provider-aws-presubmits.yaml.tpl"
-    template: 'cluster-api-provider-aws-presubmits-{{ .branch }}.yaml'
+    - name: "cluster-api-provider-aws-periodics.yaml.tpl"
+      template: 'cluster-api-provider-aws-periodics-{{ .branch }}.yaml'
+    - name: "cluster-api-provider-aws-presubmits.yaml.tpl"
+      template: 'cluster-api-provider-aws-presubmits-{{ .branch }}.yaml'

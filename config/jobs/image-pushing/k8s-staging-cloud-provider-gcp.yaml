@@ -58,7 +58,6 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cloud-provider-gcp-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-
   kubernetes/cloud-provider-gcp:
     - name: post-cloud-provider-gcp-push-images
       cluster: k8s-infra-prow-build-trusted

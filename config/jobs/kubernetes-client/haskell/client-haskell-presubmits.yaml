@@ -1,29 +1,29 @@
 presubmits:
   kubernetes-client/haskell:
-  - name: kubernetes-clients-haskell-unit-tests
-    cluster: eks-prow-build-cluster
-    always_run: true
-    decorate: true
-    optional: true
-    spec:
-      containers:
-      - image: docker.io/haskell:8.6.5
-        env:
-        command:
-        - bash
-        args:
-        - -c
-        - |
-          set -euo pipefail
+    - name: kubernetes-clients-haskell-unit-tests
+      cluster: eks-prow-build-cluster
+      always_run: true
+      decorate: true
+      optional: true
+      spec:
+        containers:
+          - image: docker.io/haskell:8.6.5
+            env:
+            command:
+              - bash
+            args:
+              - -c
+              - |
+                set -euo pipefail
 
-          stack upgrade
-          stack test --system-ghc --no-install-ghc --allow-different-user
-        resources:
-          limits:
-            cpu: 2
-            memory: 4Gi
-          requests:
-            cpu: 2
-            memory: 4Gi
-    annotations:
-      testgrid-create-test-group: 'true'
+                stack upgrade
+                stack test --system-ghc --no-install-ghc --allow-different-user
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
+      annotations:
+        testgrid-create-test-group: 'true'

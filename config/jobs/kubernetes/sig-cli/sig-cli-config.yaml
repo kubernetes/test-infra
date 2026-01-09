@@ -1,553 +1,535 @@
 periodics:
-- annotations:
-    description: kubectl gce serial e2e tests for master branch
-    testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
-    testgrid-dashboards: sig-cli-master
-    testgrid-tab-name: gce-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  decoration_config:
-    timeout: 8h40m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\]
-        --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=500m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    description: kubectl gce e2e tests for master branch
-    testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
-    testgrid-dashboards: sig-cli-master
-    testgrid-tab-name: gce
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 1h10m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-sig-cli
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-nodes=4
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel=30
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-        --minStartupPods=8
-      - --timeout=50m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-latest-stable2-gci-kubectl-skew
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-latest-stable2-gci-kubectl-skew
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable2
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --provider=gce
-      - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\]
-        --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "1"
-          memory: 6Gi
-        requests:
-          cpu: "1"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-latest-stable2-gci-kubectl-skew-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-latest-stable2-gci-kubectl-skew-serial
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable2
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\]
-        --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    description: stable1 e2e tests run against a master gce cluster using a stable1
-      kubectl binary
-    testgrid-alert-email: release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com
-    testgrid-alert-stale-results-hours: "24"
-    testgrid-dashboards: sig-release-master-blocking, sig-cli-master
-    testgrid-num-columns-recent: "3"
-    testgrid-num-failures-to-alert: "2"
-    testgrid-tab-name: skew-cluster-latest-kubectl-stable2-gce
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable2
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\]
-        --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "1"
-          memory: 6Gi
-        requests:
-          cpu: "1"
-          memory: 6Gi
-- annotations:
-    description: stable1 serial tests run against a master gce cluster using a stable1
-      kubectl binary
-    testgrid-dashboards: sig-cli-master
-    testgrid-tab-name: skew-cluster-latest-kubectl-stable2-gce-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable2
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\]
-        --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    description: stable1 e2e tests run against a stable1 gce cluster using a master
-      kubectl binary
-    testgrid-dashboards: sig-cli-master
-    testgrid-tab-name: skew-cluster-stable2-kubectl-latest-gce
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/latest
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\]
-        --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    description: stable1 serial tests run against a stable1 gce cluster using a master
-      kubectl binary
-    testgrid-dashboards: sig-cli-master
-    testgrid-tab-name: skew-cluster-stable2-kubectl-latest-gce-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/latest
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\]
-        --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-stable2-latest-gci-kubectl-skew
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-stable2-latest-gci-kubectl-skew
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/latest
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\]
-        --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-stable2-latest-gci-kubectl-skew-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-stable2-latest-gci-kubectl-skew-serial
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/latest
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\]
-        --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-stable2-stable3-gci-kubectl-skew
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable3
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --provider=gce
-      - --skew
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\]
-        --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-stable2-stable3-gci-kubectl-skew-serial
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable3
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --skew
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\]
-        --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-stable3-stable2-gci-kubectl-skew
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable2
-      - --extract=ci/k8s-stable3
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\]
-        --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
-    testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 2h20m0s
-  interval: 12h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-stable3-stable2-gci-kubectl-skew-serial
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --extract=ci/k8s-stable2
-      - --extract=ci/k8s-stable3
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\]
-        --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
-      - --timeout=120m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-      name: ""
-      resources:
-        limits:
-          cpu: "4"
-          memory: 6Gi
-        requests:
-          cpu: "4"
-          memory: 6Gi
+  - annotations:
+      description: kubectl gce serial e2e tests for master branch
+      testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
+      testgrid-dashboards: sig-cli-master
+      testgrid-tab-name: gce-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 8h40m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --timeout=500m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      description: kubectl gce e2e tests for master branch
+      testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
+      testgrid-dashboards: sig-cli-master
+      testgrid-tab-name: gce
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 1h10m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gci-gce-sig-cli
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --extract=ci/latest
+            - --gcp-master-image=gci
+            - --gcp-node-image=gci
+            - --gcp-nodes=4
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel=30
+            - --provider=gce
+            - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --timeout=50m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-latest-stable2-gci-kubectl-skew
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-latest-stable2-gci-kubectl-skew
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable2
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel
+            - --provider=gce
+            - --skew
+            - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "1"
+              memory: 6Gi
+            requests:
+              cpu: "1"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-latest-stable2-gci-kubectl-skew-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-latest-stable2-gci-kubectl-skew-serial
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable2
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --skew
+            - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      description: stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary
+      testgrid-alert-email: release-team@kubernetes.io, kubernetes-sig-cli@googlegroups.com
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-dashboards: sig-release-master-blocking, sig-cli-master
+      testgrid-num-columns-recent: "3"
+      testgrid-num-failures-to-alert: "2"
+      testgrid-tab-name: skew-cluster-latest-kubectl-stable2-gce
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable2
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel=25
+            - --provider=gce
+            - --skew
+            - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "1"
+              memory: 6Gi
+            requests:
+              cpu: "1"
+              memory: 6Gi
+  - annotations:
+      description: stable1 serial tests run against a master gce cluster using a stable1 kubectl binary
+      testgrid-dashboards: sig-cli-master
+      testgrid-tab-name: skew-cluster-latest-kubectl-stable2-gce-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable2
+            - --extract=ci/latest
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --skew
+            - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      description: stable1 e2e tests run against a stable1 gce cluster using a master kubectl binary
+      testgrid-dashboards: sig-cli-master
+      testgrid-tab-name: skew-cluster-stable2-kubectl-latest-gce
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/latest
+            - --extract=ci/k8s-stable2
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel=25
+            - --provider=gce
+            - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      description: stable1 serial tests run against a stable1 gce cluster using a master kubectl binary
+      testgrid-dashboards: sig-cli-master
+      testgrid-tab-name: skew-cluster-stable2-kubectl-latest-gce-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/latest
+            - --extract=ci/k8s-stable2
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-stable2-latest-gci-kubectl-skew
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-stable2-latest-gci-kubectl-skew
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/latest
+            - --extract=ci/k8s-stable2
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel
+            - --provider=gce
+            - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-stable2-latest-gci-kubectl-skew-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-stable2-latest-gci-kubectl-skew-serial
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/latest
+            - --extract=ci/k8s-stable2
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-stable2-stable3-gci-kubectl-skew
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable3
+            - --extract=ci/k8s-stable2
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel
+            - --provider=gce
+            - --skew
+            - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-stable2-stable3-gci-kubectl-skew-serial
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable3
+            - --extract=ci/k8s-stable2
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --skew
+            - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-stable3-stable2-gci-kubectl-skew
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable2
+            - --extract=ci/k8s-stable3
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --ginkgo-parallel
+            - --provider=gce
+            - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\]|\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
+  - annotations:
+      testgrid-dashboards: sig-release-job-config-errors, sig-cli-master
+      testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial
+    cluster: k8s-infra-prow-build
+    decorate: true
+    decoration_config:
+      timeout: 2h20m0s
+    interval: 12h
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: ci-kubernetes-e2e-gce-stable3-stable2-gci-kubectl-skew-serial
+    spec:
+      containers:
+        - args:
+            - --check-leaked-resources
+            - --check-version-skew=false
+            - --extract=ci/k8s-stable2
+            - --extract=ci/k8s-stable3
+            - --gcp-node-image=gci
+            - --gcp-zone=us-central1-b
+            - --provider=gce
+            - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --ginkgo.skip=\[Deprecated\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+            - --timeout=120m
+          command:
+            - runner.sh
+            - /workspace/scenarios/kubernetes_e2e.py
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+          name: ""
+          resources:
+            limits:
+              cpu: "4"
+              memory: 6Gi
+            requests:
+              cpu: "4"
+              memory: 6Gi
 postsubmits: null
 presubmits: null

@@ -1,94 +1,93 @@
 periodics:
-- interval: 6h
-  name: ci-kubernetes-kind-scheduling-multizone-serial
-  cluster: k8s-infra-prow-build
-  decorate: true
-  decoration_config:
-    timeout: 200m # allow plenty of time for a serial conformance run
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: "k8s.io/test-infra"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
-      command:
-      - wrapper.sh
-      - bash
-      - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
-      env:
-      - name: PARALLEL
-        value: "false"
-      - name: FOCUS
-        value: \[Conformance\]|Multi-AZ
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 4
-          memory: 9Gi
-        requests:
-          cpu: 4
-          memory: 9Gi
-  annotations:
-    testgrid-dashboards: sig-scheduling
-    testgrid-tab-name: sig-scheduling-kind, multizone
-    description: Runs tests against a Multizone Kubernetes in Docker cluster
-    testgrid-alert-email: antonio.ojea.garcia@gmail.com, acondor@google.com
-
-presubmits:
-  kubernetes/kubernetes:
-  # This corresponds to ci-benchmark-scheduler-perf-master, without the reporting
-  # to the performance dashboard. It can be started manually to verify changes
-  # to test/integration/scheduler_perf. In contrast to pull-scheduler-perf, it
-  # is defined for the k/k repo.
-  #
-  # The job runs the default set of benchmarks. A PR can temporarily override
-  # what those are by changing test/integration/scheduler_perf/config/performance-config.yaml
-  #
-  # ktesting.SetDefaultVerbosity(2) in test/integration/scheduler_perf/main_test.go
-  # can be changed the same way to increase verbosity. Per-test output can be enabled
-  # by changing the default for useTestingLog in scheduler_perf.go.
-  - name: pull-kubernetes-scheduler-perf
+  - interval: 6h
+    name: ci-kubernetes-kind-scheduling-multizone-serial
     cluster: k8s-infra-prow-build
-    always_run: false
-    optional: true
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: scheduler-perf
-      testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
     decorate: true
-    path_alias: k8s.io/kubernetes
     decoration_config:
-      timeout: 3h55m
+      timeout: 200m # allow plenty of time for a serial conformance run
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
-        command:
-        - runner.sh
-        args:
-        - /bin/sh
-        - -c
-        - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf/... KUBE_CACHE_MUTATION_DETECTOR=false KUBE_TIMEOUT=--timeout=3h55m ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling -data-items-dir=${ARTIFACTS}" SHORT='--short=false' KUBE_PRUNE_JUNIT_TESTS=false
-        # We need to constraint compute resources so all the tests
-        # finish approximately at the same time. More compute power
-        # can increase scheduling throughput and make consequent results
-        # incomparable.
-        resources:
-          requests:
-            cpu: 6
-            memory: "24Gi"
-          limits:
-            cpu: 6
-            memory: "24Gi"
+        - image: gcr.io/k8s-staging-test-infra/krte:v20251210-5e6349e4b2-master
+          command:
+            - wrapper.sh
+            - bash
+            - -c
+            - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
+          env:
+            - name: PARALLEL
+              value: "false"
+            - name: FOCUS
+              value: \[Conformance\]|Multi-AZ
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 9Gi
+            requests:
+              cpu: 4
+              memory: 9Gi
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: sig-scheduling-kind, multizone
+      description: Runs tests against a Multizone Kubernetes in Docker cluster
+      testgrid-alert-email: antonio.ojea.garcia@gmail.com, acondor@google.com
+presubmits:
+  kubernetes/kubernetes:
+    # This corresponds to ci-benchmark-scheduler-perf-master, without the reporting
+    # to the performance dashboard. It can be started manually to verify changes
+    # to test/integration/scheduler_perf. In contrast to pull-scheduler-perf, it
+    # is defined for the k/k repo.
+    #
+    # The job runs the default set of benchmarks. A PR can temporarily override
+    # what those are by changing test/integration/scheduler_perf/config/performance-config.yaml
+    #
+    # ktesting.SetDefaultVerbosity(2) in test/integration/scheduler_perf/main_test.go
+    # can be changed the same way to increase verbosity. Per-test output can be enabled
+    # by changing the default for useTestingLog in scheduler_perf.go.
+    - name: pull-kubernetes-scheduler-perf
+      cluster: k8s-infra-prow-build
+      always_run: false
+      optional: true
+      annotations:
+        testgrid-dashboards: sig-scheduling
+        testgrid-tab-name: scheduler-perf
+        testgrid-alert-email: sig-scheduling-alerts@kubernetes.io
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      decoration_config:
+        timeout: 3h55m
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20260108-6ef4f0b08f-master
+            command:
+              - runner.sh
+            args:
+              - /bin/sh
+              - -c
+              - ./hack/install-etcd.sh && PATH=${PWD}/third_party/etcd:${PATH} make test-integration WHAT=./test/integration/scheduler_perf/... KUBE_CACHE_MUTATION_DETECTOR=false KUBE_TIMEOUT=--timeout=3h55m ETCD_LOGLEVEL=warn KUBE_TEST_ARGS="-run=nothing-because-no-test-has-this-name -benchtime=1ns -bench=BenchmarkPerfScheduling -data-items-dir=${ARTIFACTS}" SHORT='--short=false' KUBE_PRUNE_JUNIT_TESTS=false
+            # We need to constraint compute resources so all the tests
+            # finish approximately at the same time. More compute power
+            # can increase scheduling throughput and make consequent results
+            # incomparable.
+            resources:
+              requests:
+                cpu: 6
+                memory: "24Gi"
+              limits:
+                cpu: 6
+                memory: "24Gi"

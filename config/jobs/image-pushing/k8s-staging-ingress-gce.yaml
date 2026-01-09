@@ -1,5 +1,4 @@
 postsubmits:
-
   kubernetes/ingress-gce:
     - name: post-ingress-gce-push-image
       cluster: k8s-infra-prow-build-trusted
